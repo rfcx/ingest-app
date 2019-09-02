@@ -1,0 +1,27 @@
+{
+  "name": "ingest-app",
+  "version": "1.0.0",
+  "description": "Desktop application for ingesting audio to RFCx platform",
+  "main": "scripts/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rfcx/ingest-app.git"
+  },
+  "keywords": [
+    "ingest"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rfcx/ingest-app/issues"
+  },
+  "homepage": "https://github.com/rfcx/ingest-app#readme",
+  "devDependencies": {
+    "electron": "^6.0.7",
+    "standard": "^14.1.0"
+  }
+}
