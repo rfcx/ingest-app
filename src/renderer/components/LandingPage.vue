@@ -1,5 +1,6 @@
 <template>
   <div id="wrapper">
+    <navigation></navigation>
     <img id="logo" src="~@/assets/logo.png" alt="electron-vue">
     <main>
       <div class="left-side">
@@ -31,10 +32,11 @@
 
 <script>
   import SystemInformation from './LandingPage/SystemInformation'
+  import Navigation from './Navigation/Navigation'
 
   export default {
     name: 'landing-page',
-    components: { SystemInformation },
+    components: { SystemInformation, Navigation },
     methods: {
       open (link) {
         this.$electron.shell.openExternal(link)
@@ -54,6 +56,18 @@
 
   body { font-family: 'Source Sans Pro', sans-serif; }
 
+  .navbar {
+      padding: 8px;
+  }
+
+  .user-info-nav {
+    text-align: right
+  }
+
+  .user-info-nav .name {
+      font-weight: bold;
+  }
+
   #wrapper {
     background:
       radial-gradient(
@@ -62,7 +76,7 @@
         rgba(229, 229, 229, .9) 100%
       );
     height: 100vh;
-    padding: 60px 80px;
+    padding: 0;
     width: 100vw;
   }
 
