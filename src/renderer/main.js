@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import axios from 'axios'
+import 'bulma/css/bulma.css'
 
 import App from './App'
 import router from './router'
