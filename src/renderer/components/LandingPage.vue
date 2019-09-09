@@ -48,24 +48,26 @@
 <style>
   @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
 
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
   body { font-family: 'Source Sans Pro', sans-serif; }
 
   .navbar {
-      padding: 8px;
+      padding: 0.5rem;
   }
 
   .user-info-nav {
-    text-align: right
+    text-align: right;
   }
 
   .user-info-nav .name {
       font-weight: bold;
+  }
+
+  .user-info-name {
+    padding: 1rem;
+  }
+
+  .user-info-image {
+    margin: auto;
   }
 
   #wrapper {
@@ -139,4 +141,23 @@
     color: #42b983;
     background-color: transparent;
   }
+
+  @media screen and (min-width: 400px) {
+    
+    .navbar-end {
+      justify-content: flex-end;
+      margin-left: auto;
+    }
+
+    .navbar, .navbar-menu, .navbar-start, .navbar-end {
+      align-items: stretch;
+      display: flex;
+    }
+
+    .navbar-item {
+      display: flex;
+    }
+
+  }
+
 </style>
