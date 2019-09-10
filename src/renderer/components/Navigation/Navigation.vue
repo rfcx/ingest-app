@@ -4,7 +4,7 @@
     <div class="navbar-item">
       <img src="~@/assets/rfcx-logo.png" alt="rfcx">
     </div>
-    <span class="navbar-item"><strong>RFCx Ingestion</strong></span>
+    <span class="navbar-item">RFCx Ingestion</span>
   </div>
   <div class="navbar-end">
       <div class="navbar-item" v-if="login">

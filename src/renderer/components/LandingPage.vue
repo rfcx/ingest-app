@@ -33,12 +33,16 @@
       padding: 0 0.75rem;
   }
 
+  .navbar-brand span {
+    font-weight: 600;
+  }
+
   .user-info-nav {
     text-align: right;
   }
 
   .user-info-nav .name {
-      font-weight: bold;
+      font-weight: 600;
   }
 
   .user-info-name {
