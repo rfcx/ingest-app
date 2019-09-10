@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="13px" height="13px" viewBox="0 0 13 13" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Icon/add@1.5x</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Label" transform="translate(-174.000000, -9.000000)">
+            <g id="Icon/add" transform="translate(168.000000, 3.000000)">
+                <rect id="bounds" x="0" y="0" width="24" height="24"></rect>
+                <g id="Fill-436-+-Fill-437" stroke-width="1" fill-rule="evenodd" transform="translate(6.000000, 6.000000)" fill="#9B9B9B">
+                    <path d="M6.5,11.7 C3.63285,11.7 1.3,9.36715 1.3,6.5 C1.3,3.63285 3.63285,1.3 6.5,1.3 C9.36715,1.3 11.7,3.63285 11.7,6.5 C11.7,9.36715 9.36715,11.7 6.5,11.7 M6.5,0 C2.9159,0 0,2.9159 0,6.5 C0,10.08475 2.9159,13 6.5,13 C10.0841,13 13,10.08475 13,6.5 C13,2.9159 10.0841,0 6.5,0" id="Fill-436"></path>
+                    <polygon id="Fill-437" points="7.2 3 5.8 3 5.8 5.8 3 5.8 3 7.2 5.8 7.2 5.8 10 7.2 10 7.2 7.2 10 7.2 10 5.8 7.2 5.8"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

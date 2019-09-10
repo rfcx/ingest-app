@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="18px" height="12px" viewBox="0 0 18 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>baseline-cloud_done-24px (1)@1x</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="State/stream/cloud-complete" transform="translate(-3.000000, -6.000000)">
+            <g id="baseline-cloud_done-24px-(1)" transform="translate(3.000000, 3.000000)">
+                <polygon id="Shape" points="0 0 18 0 18 18 0 18"></polygon>
+                <path d="M14.5125,7.53 C14.0025,4.9425 11.73,3 9,3 C6.8325,3 4.95,4.23 4.0125,6.03 C1.755,6.27 0,8.1825 0,10.5 C0,12.9825 2.0175,15 4.5,15 L14.25,15 C16.32,15 18,13.32 18,11.25 C18,9.27 16.4625,7.665 14.5125,7.53 Z M7.5,12.75 L4.875,10.125 L5.9325,9.0675 L7.5,10.6275 L11.385,6.75 L12.4425,7.8075 L7.5,12.75 Z" id="Shape" fill="#6D6F72" fill-rule="nonzero"></path>
+            </g>
+        </g>
+    </g>
+</svg>
