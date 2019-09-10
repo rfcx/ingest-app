@@ -3,7 +3,7 @@
     <navigation></navigation>
     <section class="main-content columns is-mobile">
       <side-navigation></side-navigation>
-      <div class="column  is-desktop">xx</div>
+      <div class="column is-desktop">xx</div>
     </section>
   </div>
 </template>
@@ -50,7 +50,7 @@
   }
 
   #wrapper {
-    background-color: #FDFDFD;
+    background-color: #fdfdfd;
     height: 100vh;
     padding: 0;
     width: 100vw;
@@ -58,6 +58,12 @@
 
   .main-content {
     padding: 0 0.75rem;
+    height: inherit;
+  }
+
+  .side-menu {
+    flex: none;
+    width: 250px !important;
   }
 
   .menu {

@@ -1,5 +1,5 @@
 <template>
-    <aside class="column is-one-quarter menu">
+    <aside class="column menu side-menu">
         <div class="menu-container">
             <p class="menu-label"> {{ menuTitle }} </p>
             <a href="#"><img src="~@/assets/ic-add.svg"></a>
@@ -35,10 +35,7 @@
           { id: 'Jaguar 1', state: 'uploading', progress: 60, additional: '2/4 synced 1 error', notSynced: true, isActive: true },
           { id: 'Pucho Tree', state: 'waiting', progress: 0, additional: '', notSynced: true, isActive: false },
           { id: 'Jaguar 2', state: 'completed', progress: 100, additional: '', notSynced: false, isActive: false }
-        ],
-        isActive: {
-          'is-active': true
-        }
+        ]
       }
     },
     methods: {
