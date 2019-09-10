@@ -25,9 +25,9 @@
 </script>
 
 <style>
-  @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro');
+  @import url('https://fonts.googleapis.com/css?family=Avenir+Next');
 
-  body { font-family: 'Source Sans Pro', sans-serif; }
+  body { font-family: 'Avenir Next', sans-serif; }
 
   .navbar {
       padding: 0 0.75rem;
