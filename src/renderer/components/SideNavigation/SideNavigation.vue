@@ -1,6 +1,6 @@
 <template>
     <aside class="column menu side-menu">
-        <div class="menu-container">
+        <div class="menu-container side-menu-title">
             <p class="menu-label"> {{ menuTitle }} </p>
             <a href="#"><img src="~@/assets/ic-add.svg"></a>
         </div>
@@ -14,8 +14,8 @@
                     <div class="state-progress" v-if="item.notSynced">
                         <progress class="progress is-primary" :value="item.progress" max="100"></progress>
                         <div class="menu-container">
-                            <span>{{ item.state }}</span>
-                            <span> {{ item.additional }} </span>
+                            <span class="is-size-7">{{ item.state }}</span>
+                            <span class="is-size-7"> {{ item.additional }} </span>
                         </div>
                     </div>
                 </div>

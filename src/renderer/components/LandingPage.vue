@@ -64,6 +64,8 @@
   .side-menu {
     flex: none;
     width: 250px !important;
+    padding: 0.75em 0;
+    margin-right: 0.75em;
   }
 
   .menu {
@@ -76,32 +78,31 @@
     justify-content: space-between;
   }
 
-  .menu-label {
-    margin: auto 0 !important;
-  }
-
-  .menu-list a {
-    border-radius: 0;
-  }
-
-  .menu a.is-active {
-    border-left: 5px solid #2FB04A;
-    background-color: transparent;
-    color: #4a4a4a;
-    font-weight: bold;
+  .side-menu-title {
+    padding: 0 0.75em;
   }
 
   .menu .menu-item {
-    padding: 0.5em 0 0.5em 0.75em;
+    padding: 0.75em;
+  }
+
+  .menu .menu-item:hover {
+    background-color: #fafafa;
   }
 
   .menu div.is-active {
-    border-left: 5px solid #2FB04A;
+    border-left: 0.35em solid #2FB04A;
     background-color: transparent;
+    padding-left: 0.4em;
   }
 
   .menu div.is-active .stream-title {
-    font-weight: bold;
+    font-weight: 600;
+  }
+
+  .menu .stream-title {
+    color: #000;
+    font-weight: 500;
   }
 
   .progress {
@@ -124,10 +125,6 @@
     .navbar-item {
       display: flex;
     }
-
-    /* .columns.is-desktop {
-      display: flex;
-    } */
 
   }
 
