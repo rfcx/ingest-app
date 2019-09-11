@@ -2,7 +2,7 @@
     <aside class="column menu side-menu">
         <div class="menu-container side-menu-title">
             <p class="menu-label"> {{ menuTitle }} </p>
-            <a href="#"><img src="~@/assets/ic-add.svg"></a>
+            <router-link to="/add"><img src="~@/assets/ic-add.svg"></router-link>
         </div>
         <ul class="menu-list">
             <li v-for="item in items" :key="item.id">

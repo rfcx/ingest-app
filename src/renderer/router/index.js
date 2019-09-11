@@ -11,6 +11,11 @@ export default new Router({
       component: require('@/components/LandingPage').default
     },
     {
+      path: '/add',
+      name: 'add-new-stream-page',
+      component: require('@/components/AddNewStreamPage').default
+    },
+    {
       path: '*',
       redirect: '/'
     }
