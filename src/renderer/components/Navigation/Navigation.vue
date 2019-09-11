@@ -2,7 +2,7 @@
   <nav class="navbar" role="navigation" aria-label="main navigation">
   <div class="navbar-brand">
     <div class="navbar-item">
-      <img src="~@/assets/rfcx-logo.png" alt="rfcx">
+      <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx"></router-link>
     </div>
     <span class="navbar-item">RFCx Ingestion</span>
   </div>
