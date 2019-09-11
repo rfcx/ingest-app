@@ -1,31 +1,34 @@
 <template>
     <fieldset>
         <div class="field">
-            <label class="label">Name</label>
+            <label for="name" class="label">Name</label>
             <div class="control">
-                <input class="input" type="text" placeholder="Jaguar 1">
+                <input v-model="name" class="input" type="text" placeholder="Jaguar 1">
             </div>
         </div>
-        <label class="label">Folder path</label>
+        <label for="folderPath" class="label">Folder path</label>
         <div class="field has-addons">
             <p class="control input-control">
-                <input class="input" type="text" placeholder="/User/Documents/RFCx">
+                <input v-model="folderPath" class="input" type="text" placeholder="/User/Documents/RFCx">
             </p>
             <p class="control">
                 <a class="button">Browse</a>
             </p>
         </div>
         <div class="field">
-            <label class="label">Timestamp format</label>
+            <label for="timestampFormat" class="label">Timestamp format</label>
             <div class="control">
                 <div class="select is-fullwidth">
-                    <select>
-                    <option>Auto-detect</option>
-                    <option>yyyymmdd-hhMM</option>
-                    <option>yyyymmddThh:MM:SS</option>
-                    <option>Custom</option>
+                    <select v-model="timestampFormat">
+                    <option v-for="option in timestampFormatOptions" :key="option">{{ option }}</option>
                     </select>
                 </div>
+            </div>
+        </div>
+        <div class="field" v-if="isCustomTimestampFormatSelected(timestampFormat)">
+            <label for="customTimestampFormat" class="label">Custom timestamp format</label>
+            <div class="control">
+                <input v-model="customTimestampFormat" class="input" type="text" placeholder="yyyymmdd-hh:MM:SS">
             </div>
         </div>
         <div class="field is-grouped">
@@ -39,10 +42,27 @@
     </fieldset>
 </template>
 
-<style>
+<script>
+export default {
+  data () {
+    return {
+      name: '',
+      folderPath: '',
+      timestampFormat: 'Auto-detect',
+      customTimestampFormat: '',
+      timestampFormatOptions: ['Auto-detect', 'yyyymmdd-hhMM', 'yyyymmddThh:MM:SS', 'Custom']
+    }
+  },
+  methods: {
+    isCustomTimestampFormatSelected: function (timestampFormat) {
+      return timestampFormat.toLowerCase() === 'custom'
+    }
+  }
+}
+</script>
 
+<style>
     .has-addons .input-control {
         width: -webkit-fill-available;
     }
-
 </style>
