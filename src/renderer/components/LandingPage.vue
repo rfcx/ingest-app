@@ -113,6 +113,10 @@
     height: 0.5rem;
   }
 
+  .field {
+    margin-bottom: 1rem !important;
+  }
+
   @media screen and (min-width: 400px) {
     
     .navbar-end {
