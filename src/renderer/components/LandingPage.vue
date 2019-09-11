@@ -9,13 +9,12 @@
 </template>
 
 <script>
-  import SystemInformation from './LandingPage/SystemInformation'
   import Navigation from './Navigation/Navigation'
   import SideNavigation from './SideNavigation/SideNavigation'
 
   export default {
     name: 'landing-page',
-    components: { SystemInformation, Navigation, SideNavigation },
+    components: { Navigation, SideNavigation },
     methods: {
       open (link) {
         this.$electron.shell.openExternal(link)
@@ -25,9 +24,9 @@
 </script>
 
 <style>
-  @import url('https://fonts.googleapis.com/css?family=Avenir+Next');
+  @import url('https://fonts.googleapis.com/css?family=Open+Sans');
 
-  body { font-family: 'Avenir Next', sans-serif; }
+  body { font-family: 'Open Sans', sans-serif; }
 
   .navbar {
       padding: 0 0.75rem;
