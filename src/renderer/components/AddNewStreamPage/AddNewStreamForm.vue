@@ -7,13 +7,14 @@
             </div>
         </div>
         <label for="folderPath" class="label">Folder path</label>
-        <div class="field has-addons">
-            <p class="control input-control">
-                <input v-model="folderPath" class="input" type="text" placeholder="/User/Documents/RFCx">
-            </p>
-            <p class="control">
-                <a class="button">Browse</a>
-            </p>
+        <div class="field file has-name is-right is-fullwidth">
+            <label class="file-label">
+                <input class="file-input" type="file" name="resume" v-on:change="onFileChange($event)" webkitdirectory directory multiple/>
+                <span class="file-cta">
+                    <span class="file-label">Browse</span>
+                </span>
+                <span class="file-name">{{folderPath}}</span>
+            </label>
         </div>
         <div class="field">
             <label for="timestampFormat" class="label">Timestamp format</label>
@@ -33,10 +34,10 @@
         </div>
         <div class="field is-grouped">
             <p class="control">
-                <router-link to="/"><a class="button is-light">Cancel</a></router-link>
+                <router-link to="/"><a class="button is-rounded">Cancel</a></router-link>
             </p>
             <p class="control">
-                <a class="button is-primary">Create</a>
+                <a class="button is-rounded is-primary">Create</a>
             </p>
         </div>
     </fieldset>
@@ -54,15 +55,24 @@ export default {
     }
   },
   methods: {
-    isCustomTimestampFormatSelected: function (timestampFormat) {
+    isCustomTimestampFormatSelected (timestampFormat) {
       return timestampFormat.toLowerCase() === 'custom'
+    },
+    onFileChange (event) {
+      const file = event.target.files[0]
+      if (file) this.folderPath = file.path
     }
   }
 }
 </script>
 
 <style>
+
     .has-addons .input-control {
         width: -webkit-fill-available;
+    }
+
+    .file.is-fullwidth .file-name {
+        max-width: 23.5em !important;
     }
 </style>
