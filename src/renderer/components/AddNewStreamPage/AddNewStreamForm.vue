@@ -37,7 +37,7 @@
                 <router-link to="/"><a class="button is-rounded">Cancel</a></router-link>
             </p>
             <p class="control">
-                <a class="button is-rounded is-primary">Create</a>
+                <a class="button is-rounded is-primary" :disabled="!hasPassedValidation">Create</a>
             </p>
         </div>
     </fieldset>
@@ -47,10 +47,10 @@
 export default {
   data () {
     return {
-      name: '',
-      folderPath: '',
+      name: null,
+      folderPath: null,
       timestampFormat: 'Auto-detect',
-      customTimestampFormat: '',
+      customTimestampFormat: null,
       timestampFormatOptions: ['Auto-detect', 'yyyymmdd-hhMM', 'yyyymmddThh:MM:SS', 'Custom']
     }
   },
@@ -61,6 +61,23 @@ export default {
     onFileChange (event) {
       const file = event.target.files[0]
       if (file) this.folderPath = file.path
+    }
+  },
+  computed: {
+    hasPassedValidation () {
+      if (this.name && this.folderPath) {
+        console.log('name, folder')
+        if (this.timestampFormat.toLowerCase() === 'custom' && this.customTimestampFormat) {
+          console.log('name, folder, timestamp, custom')
+          return true
+        } else if (this.timestampFormat.toLowerCase() !== 'custom') {
+          console.log('name, folder, timestamp')
+          return true
+        }
+        return false
+      }
+      console.log('!name, !folder')
+      return false
     }
   }
 }
