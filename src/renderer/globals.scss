@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+
+$brand-primary: #2FB04A;
+
+// Update Bulma's global variables
+$primary: $brand-primary;
+$family-sans-serif: "Open Sans", sans-serif;
+$link: $brand-primary;
+
+@import "~bulma/";

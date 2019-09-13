@@ -23,10 +23,7 @@
   }
 </script>
 
-<style>
-  @import url('https://fonts.googleapis.com/css?family=Open+Sans');
-
-  body { font-family: 'Open Sans', sans-serif; }
+<style lang="scss">
 
   .navbar {
       padding: 0 0.75rem;
@@ -94,7 +91,7 @@
   }
 
   .menu div.is-active {
-    border-left: 0.35em solid #2FB04A;
+    border-left: 0.35em solid $brand-primary;
     background-color: transparent;
     padding-left: 0.4em;
   }
