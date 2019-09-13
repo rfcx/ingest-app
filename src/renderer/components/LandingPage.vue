@@ -1,5 +1,5 @@
 <template>
-  <div id="wrapper">
+  <div id="wrapper" class="has-fixed-sidebar">
     <navigation></navigation>
     <section class="main-content columns is-mobile">
       <side-navigation></side-navigation>
@@ -25,12 +25,20 @@
 
 <style lang="scss">
 
+  html {
+    overflow: hidden;
+  }
+
+  html.has-navbar-fixed-top, body.has-navbar-fixed-top {
+    padding-top: $navbar-height;
+  }
+
   .navbar {
       padding: 0 0.75rem;
   }
 
   .navbar-brand span {
-    font-weight: 600;
+    font-weight: $title-font-weight;
   }
 
   .user-info-nav {
@@ -38,7 +46,7 @@
   }
 
   .user-info-nav .name {
-      font-weight: 600;
+      font-weight: $title-font-weight;
   }
 
   .user-info-name {
@@ -51,9 +59,17 @@
 
   #wrapper {
     background-color: #fdfdfd;
-    height: 100vh;
     padding: 0;
     width: 100vw;
+    height: 100vh;
+  }
+
+  #wrapper:hover {
+    overflow-y: auto;
+  }
+
+  #wrapper.has-fixed-sidebar:hover {
+    overflow-y: hidden;
   }
 
   .main-content {
@@ -61,11 +77,33 @@
     height: inherit;
   }
 
+  .column:hover {
+    overflow-y: auto;
+  }
+
   .side-menu {
     flex: none;
     width: 250px !important;
     padding: 0.75em 0;
     margin-right: 0.75em;
+    top: $navbar-height;
+    bottom: 0;
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: $grey-lighter;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: $grey-lighter;
   }
 
   .menu {
@@ -97,12 +135,11 @@
   }
 
   .menu div.is-active .stream-title {
-    font-weight: 600;
+    font-weight: $title-font-weight;
   }
 
   .menu .stream-title {
-    color: #000;
-    font-weight: 500;
+    color: $title-text-color;
   }
 
   .progress {
