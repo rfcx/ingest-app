@@ -6,7 +6,7 @@
         </div>
         <ul class="menu-list">
             <li v-for="item in items" :key="item.id">
-                <div class="menu-item" :class="item.isActive">
+                <div class="menu-item" v-on:click="selectItem(item)" :class="{ 'is-active': item.isActive }">
                     <div class="menu-container">
                         <span class="stream-title"> {{ item.id }} </span>
                         <img :src="getStateImgUrl(item.state)">
@@ -41,6 +41,13 @@
     methods: {
       getStateImgUrl (state) {
         return require(`../../assets/ic-state-${state}.svg`)
+      },
+      selectItem (item) {
+        this.items = this.items.map(function (item) {
+          item.isActive = false
+          return item
+        })
+        item.isActive = true
       }
     }
   }
