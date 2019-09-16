@@ -3,7 +3,7 @@
     <navigation></navigation>
     <section class="main-content columns is-mobile">
       <side-navigation></side-navigation>
-      <div class="column is-desktop">xx</div>
+      <div class="column content is-desktop">xx</div>
     </section>
   </div>
 </template>
@@ -34,7 +34,7 @@
   }
 
   .navbar {
-      padding: 0 0.75rem;
+      padding: 0 $default-padding-margin;
   }
 
   .navbar-brand span {
@@ -60,21 +60,29 @@
   #wrapper {
     background-color: #fdfdfd;
     padding: 0;
-    width: 100vw;
-    height: 100vh;
+    position: absolute;
+    top: $navbar-height;
+    bottom: 0;
+    left: 0;
+    right: 0;
+  }
+
+  #wrapper.has-fixed-sidebar {
+    overflow: hidden;
+    position: inherit;
   }
 
   #wrapper:hover {
+    overflow: auto;
     overflow-y: auto;
   }
 
   #wrapper.has-fixed-sidebar:hover {
-    overflow-y: hidden;
+    overflow: hidden;
   }
 
   .main-content {
-    padding: 0 0.75rem;
-    height: inherit;
+    padding: 0 $default-padding-margin;
   }
 
   .column:hover {
@@ -84,10 +92,19 @@
   .side-menu {
     flex: none;
     width: 250px !important;
-    padding: 0.75em 0;
-    margin-right: 0.75em;
+    padding: $default-padding-margin 0;
+    margin-right: $default-padding-margin;
     top: $navbar-height;
     bottom: 0;
+    position: absolute;
+  }
+
+  .content {
+    position: absolute;
+    top: $navbar-height;
+    bottom: 0;
+    left: 250px;
+    right: 0;
   }
 
   ::-webkit-scrollbar {
@@ -117,11 +134,11 @@
   }
 
   .side-menu-title {
-    padding: 0 0.75em;
+    padding: 0 $default-padding-margin;
   }
 
   .menu .menu-item {
-    padding: 0.75em;
+    padding: $default-padding-margin;
   }
 
   .menu .menu-item:hover {
