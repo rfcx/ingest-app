@@ -3,7 +3,9 @@
     <navigation></navigation>
     <section class="main-content columns is-mobile">
       <side-navigation></side-navigation>
-      <div class="column content is-desktop">xx</div>
+      <div class="column content is-desktop">
+        <empty-folder></empty-folder>
+      </div>
     </section>
   </div>
 </template>
@@ -11,10 +13,11 @@
 <script>
   import Navigation from './Navigation/Navigation'
   import SideNavigation from './SideNavigation/SideNavigation'
+  import EmptyFolder from './LandingPage/EmptyFolder'
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation },
+    components: { Navigation, SideNavigation, EmptyFolder },
     methods: {
       open (link) {
         this.$electron.shell.openExternal(link)
@@ -166,6 +169,10 @@
 
   .field {
     margin-bottom: 1rem !important;
+  }
+
+  .button {
+    font-weight: $title-font-weight;
   }
 
   @media screen and (min-width: 400px) {
