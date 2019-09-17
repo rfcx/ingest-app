@@ -14,10 +14,11 @@
   import Navigation from './Navigation/Navigation'
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyFolder from './LandingPage/EmptyFolder'
+  import EmptyStream from './LandingPage/EmptyStream'
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyFolder },
+    components: { Navigation, SideNavigation, EmptyFolder, EmptyStream },
     methods: {
       open (link) {
         this.$electron.shell.openExternal(link)
@@ -75,12 +76,12 @@
     position: inherit;
   }
 
-  #wrapper:hover {
+  #wrapper {
     overflow: auto;
     overflow-y: auto;
   }
 
-  #wrapper.has-fixed-sidebar:hover {
+  #wrapper.has-fixed-sidebar {
     overflow: hidden;
   }
 
@@ -88,7 +89,7 @@
     padding: 0 $default-padding-margin;
   }
 
-  .column:hover {
+  .column {
     overflow-y: auto;
   }
 
