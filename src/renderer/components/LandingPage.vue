@@ -172,7 +172,7 @@
     margin-bottom: 1rem !important;
   }
 
-  .button {
+  .button.is-primary {
     font-weight: $title-font-weight;
   }
 
