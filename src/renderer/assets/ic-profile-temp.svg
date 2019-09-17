@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="33px" height="33px" viewBox="0 0 33 33" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>Photo</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Add-stream---default" transform="translate(-747.000000, -18.000000)">
+            <g id="Header">
+                <g id="User" transform="translate(633.000000, 15.000000)">
+                    <g id="Photo" transform="translate(111.000000, 0.000000)">
+                        <path d="M19.5,3 C10.392,3 3,10.392 3,19.5 C3,28.608 10.392,36 19.5,36 C28.608,36 36,28.608 36,19.5 C36,10.392 28.608,3 19.5,3 L19.5,3 Z M20,8 C22.7666667,8 25,10.2333333 25,13 C25,15.7666667 22.7666667,18 20,18 C17.2333333,18 15,15.7666667 15,13 C15,10.2333333 17.2333333,8 20,8 L20,8 Z M20,31 C15.8333333,31 12.15,28.968254 10,25.8888889 C10.05,22.7301587 16.6666667,21 20,21 C23.3166667,21 29.95,22.7301587 30,25.8888889 C27.85,28.968254 24.1666667,31 20,31 L20,31 Z" id="Shape" fill="#9B9B9B"></path>
+                        <polygon id="Shape" points="0 0 40 0 40 40 0 40"></polygon>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

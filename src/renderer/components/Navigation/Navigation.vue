@@ -10,7 +10,7 @@
       <div class="navbar-item" v-if="login">
         <div class="navbar-item user-info-nav">
             <div class="user-info-name"><span><span class="name">Welcome, {{ name }}</span><br><span class="site-name">{{ siteName }}</span></span></div>
-            <div class="user-info-image"><img src="~@/assets/temp.png" alt="rfcx" width="30" height="30"></div>
+            <div class="user-info-image"><img src="~@/assets/ic-profile-temp.svg" alt="rfcx" width="30" height="30"></div>
         </div>
          <!-- <div class="navbar-item"> -->
             
