@@ -25,12 +25,14 @@
                     </select>
                 </div>
             </div>
+          <p class="help" v-if="!isCustomTimestampFormatSelected(timestampFormat)">{{ timestampPreview }} </p>
         </div>
         <div class="field" v-if="isCustomTimestampFormatSelected(timestampFormat)">
             <label for="customTimestampFormat" class="label">Custom timestamp format</label>
             <div class="control">
-                <input v-model="customTimestampFormat" class="input" type="text" placeholder="yyyymmdd-hh:MM:SS">
+                <input v-model="customTimestampFormat" class="input" type="text" placeholder="YYYYMMDD-HH:mm:ss">
             </div>
+            <p class="help" v-if="isCustomTimestampFormatSelected(timestampFormat)">{{ timestampPreview }} </p>
         </div>
         <div class="field is-grouped">
             <p class="control">
@@ -44,6 +46,8 @@
 </template>
 
 <script>
+import moment from 'moment'
+
 export default {
   data () {
     return {
@@ -51,7 +55,7 @@ export default {
       folderPath: null,
       timestampFormat: 'Auto-detect',
       customTimestampFormat: null,
-      timestampFormatOptions: ['Auto-detect', 'yyyymmdd-hhMM', 'yyyymmddThh:MM:SS', 'Custom']
+      timestampFormatOptions: ['Auto-detect', 'YYYYMMDD-HHmm', 'YYYYMMDDT?HH:mm:ss', 'Custom']
     }
   },
   methods: {
@@ -61,10 +65,23 @@ export default {
     onFileChange (event) {
       const file = event.target.files[0]
       if (file) this.folderPath = file.path
+      // TODO: check timestamp for auto-detect option
     }
   },
   computed: {
-    hasPassedValidation () {
+    selectedTimestampFormat: function () {
+      switch (this.timestampFormat) {
+        case 'Auto-detect': return null // TODO: Fix this
+        case 'Custom': return this.customTimestampFormat
+        default: return this.timestampFormat
+      }
+    },
+    timestampPreview: function () {
+      if (!this.selectedTimestampFormat) return null
+      console.log(this.selectedTimestampFormat)
+      return moment().format(this.selectedTimestampFormat)
+    },
+    hasPassedValidation: function () {
       if (this.name && this.folderPath) {
         console.log('name, folder')
         if (this.timestampFormat.toLowerCase() === 'custom' && this.customTimestampFormat) {
