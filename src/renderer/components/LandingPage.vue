@@ -5,6 +5,9 @@
       <side-navigation></side-navigation>
       <div class="column content is-desktop">
         <empty-folder></empty-folder>
+        <ul v-for="stream in getStreams()" :key="stream.id">
+          <li> {{ stream.id }} </li>
+        </ul>
       </div>
     </section>
   </div>
@@ -15,6 +18,7 @@
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyFolder from './LandingPage/EmptyFolder'
   import EmptyStream from './LandingPage/EmptyStream'
+  import db from '../../../utils/db'
 
   export default {
     name: 'landing-page',
@@ -22,6 +26,22 @@
     methods: {
       open (link) {
         this.$electron.shell.openExternal(link)
+      },
+      getStreams () {
+        return db.getStreams()
+      }
+    },
+    computed: {
+      streams: () => {
+        return db.getStreams()
+      }
+    },
+    mounted: () => {
+      const streams = db.getStreams()
+      console.log(streams)
+      if (streams == null) {
+        console.log('no stream')
+        db.setDefault()
       }
     }
   }
