@@ -27,8 +27,6 @@ module.exports = {
     if (!db.has('selectedStream').value()) {
       console.log('set selected stream')
       db.set('selectedStream', data).write()
-    } else {
-      console.log('didnt set selected stream')
     }
   },
   checkIfDuplicateStream: (streamName, folderPath) => {

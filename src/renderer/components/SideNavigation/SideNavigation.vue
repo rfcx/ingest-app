@@ -26,19 +26,18 @@
 
 <script>
   import db from '../../../../utils/db'
+  import { mapState } from 'vuex'
   export default {
     data () {
       return {
         menuTitle: 'Streams',
-        selectedStream: db.getSelectedStream()
+        streams: db.getStreams()
       }
     },
-    props: {
-      streams: {
-        type: Array,
-        required: true,
-        default: () => ([])
-      }
+    computed: {
+      ...mapState({
+        selectedStream: state => state.Stream.selectedStream
+      })
     },
     methods: {
       getStateImgUrl (state) {
@@ -46,7 +45,7 @@
       },
       selectItem (stream) {
         db.setSelectedStream(stream)
-        this.selectedStream = db.getSelectedStream()
+        this.$store.dispatch('SET_SELECTED_STREAM', stream)
       },
       isActive (stream) {
         return stream.name === this.selectedStream.name

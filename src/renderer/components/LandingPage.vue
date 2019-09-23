@@ -2,12 +2,9 @@
   <div id="wrapper" class="has-fixed-sidebar">
     <navigation></navigation>
     <section class="main-content columns is-mobile">
-      <side-navigation :streams="streams"></side-navigation>
+      <side-navigation></side-navigation>
       <div class="column content is-desktop">
         <empty-folder></empty-folder>
-        <ul v-for="stream in streams" :key="stream.name">
-          <li> {{ stream.name }} </li>
-        </ul>
       </div>
     </section>
   </div>
@@ -19,27 +16,21 @@
   import EmptyFolder from './LandingPage/EmptyFolder'
   import EmptyStream from './LandingPage/EmptyStream'
   import db from '../../../utils/db'
+  import { mapState } from 'vuex'
 
   export default {
     name: 'landing-page',
     components: { Navigation, SideNavigation, EmptyFolder, EmptyStream },
-    methods: {
-      open (link) {
-        this.$electron.shell.openExternal(link)
-      }
-    },
     computed: {
-      streams: () => {
-        return db.getStreams()
-      },
-      selectedStream: () => {
-        return db.getSelectedStream()
-      }
+      ...mapState({
+        selectedStream: state => state.Stream.selectedStream
+      })
     },
     mounted: () => {
+      console.log('mounted')
       const streams = db.getStreams()
       console.log(streams)
-      if (streams == null) {
+      if (streams === null) {
         console.log('no stream')
         db.setDefault()
       }
