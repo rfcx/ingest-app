@@ -74,7 +74,8 @@ export default {
         folderPath: this.folderPath,
         timestampFormat: this.selectedTimestampFormat,
         state: 'waiting',
-        progress: 0
+        progress: 0,
+        files: []
       }
       if (!db.checkIfDuplicateStream(stream.name, stream.folderPath)) {
         db.addNewStream(stream)

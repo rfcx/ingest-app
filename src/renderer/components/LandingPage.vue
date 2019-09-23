@@ -4,7 +4,9 @@
     <section class="main-content columns is-mobile">
       <side-navigation></side-navigation>
       <div class="column content is-desktop">
-        <empty-folder></empty-folder>
+        <empty-stream v-if="isEmptyStream()"></empty-stream>
+        <empty-folder v-else-if="isEmptyFolder()"></empty-folder>
+        <file-list v-else></file-list>
       </div>
     </section>
   </div>
@@ -15,12 +17,27 @@
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyFolder from './LandingPage/EmptyFolder'
   import EmptyStream from './LandingPage/EmptyStream'
+  import FileList from './LandingPage/FileList'
   import db from '../../../utils/db'
   import { mapState } from 'vuex'
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyFolder, EmptyStream },
+    components: { Navigation, SideNavigation, EmptyFolder, EmptyStream, FileList },
+    data () {
+      return {
+        streams: db.getStreams()
+      }
+    },
+    methods: {
+      isEmptyStream () {
+        return this.streams === undefined || this.streams.length === 0
+      },
+      isEmptyFolder () {
+        const selectedStream = this.selectedStream
+        return selectedStream.files === undefined || selectedStream.files.length === 0
+      }
+    },
     computed: {
       ...mapState({
         selectedStream: state => state.Stream.selectedStream

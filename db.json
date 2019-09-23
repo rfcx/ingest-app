@@ -1,33 +1,21 @@
 {
   "streams": [
     {
-      "name": "aaa",
-      "folderPath": "/Users/nui/Desktop/iglike-day2-starter/Pods",
-      "timestampFormat": null,
-      "state": "waiting",
-      "progress": 0
-    },
-    {
-      "name": "bbb",
+      "name": "aa",
       "folderPath": "/Users/nui/Desktop/iglike-day2-starter/iglike",
       "timestampFormat": null,
       "state": "waiting",
-      "progress": 0
-    },
-    {
-      "name": "ccc",
-      "folderPath": "/Users/nui/Desktop/iglike-day2-starter/Pods",
-      "timestampFormat": null,
-      "state": "waiting",
-      "progress": 0
+      "progress": 0,
+      "files": []
     }
   ],
   "user": {},
   "selectedStream": {
-    "name": "bbb",
+    "name": "aa",
     "folderPath": "/Users/nui/Desktop/iglike-day2-starter/iglike",
     "timestampFormat": null,
     "state": "waiting",
-    "progress": 0
+    "progress": 0,
+    "files": []
   }
 }
