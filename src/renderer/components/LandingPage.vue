@@ -2,11 +2,11 @@
   <div id="wrapper" class="has-fixed-sidebar">
     <navigation></navigation>
     <section class="main-content columns is-mobile">
-      <side-navigation></side-navigation>
+      <side-navigation :streams="streams"></side-navigation>
       <div class="column content is-desktop">
         <empty-folder></empty-folder>
-        <ul v-for="stream in getStreams()" :key="stream.id">
-          <li> {{ stream.id }} </li>
+        <ul v-for="stream in streams" :key="stream.name">
+          <li> {{ stream.name }} </li>
         </ul>
       </div>
     </section>
@@ -26,14 +26,14 @@
     methods: {
       open (link) {
         this.$electron.shell.openExternal(link)
-      },
-      getStreams () {
-        return db.getStreams()
       }
     },
     computed: {
       streams: () => {
         return db.getStreams()
+      },
+      selectedStream: () => {
+        return db.getSelectedStream()
       }
     },
     mounted: () => {

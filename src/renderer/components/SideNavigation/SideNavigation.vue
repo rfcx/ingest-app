@@ -5,17 +5,17 @@
             <router-link to="/add"><img src="~@/assets/ic-add.svg"></router-link>
         </div>
         <ul class="menu-list">
-            <li v-for="item in items" :key="item.id">
-                <div class="menu-item" v-on:click="selectItem(item)" :class="{ 'is-active': item.isActive }">
+            <li v-for="stream in streams" :key="stream.id">
+                <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) }">
                     <div class="menu-container">
-                        <span class="stream-title"> {{ item.id }} </span>
-                        <img :src="getStateImgUrl(item.state)">
+                        <span class="stream-title"> {{ stream.name }} </span>
+                        <img :src="getStateImgUrl(stream.state)">
                     </div>
-                    <div class="state-progress" v-if="item.notSynced">
-                        <progress class="progress is-primary" :value="item.progress" max="100"></progress>
+                    <div class="state-progress" v-if="!isSynced(stream)">
+                        <progress class="progress is-primary" :value="stream.progress" max="100"></progress>
                         <div class="menu-container">
-                            <span class="is-size-7">{{ item.state }}</span>
-                            <span class="is-size-7"> {{ item.additional }} </span>
+                            <span class="is-size-7">{{ stream.state }}</span>
+                            <span class="is-size-7"> {{ stream.additional }} </span>
                         </div>
                     </div>
                 </div>
@@ -25,29 +25,34 @@
 </template>
 
 <script>
+  import db from '../../../../utils/db'
   export default {
     data () {
       return {
         menuTitle: 'Streams',
-        siteName: 'Osa Conservation',
-        login: true,
-        items: [
-          { id: 'Jaguar 1', state: 'uploading', progress: 60, additional: '2/4 synced 1 error', notSynced: true, isActive: true },
-          { id: 'Pucho Tree', state: 'waiting', progress: 0, additional: '', notSynced: true, isActive: false },
-          { id: 'Jaguar 2', state: 'completed', progress: 100, additional: '', notSynced: false, isActive: false }
-        ]
+        selectedStream: db.getSelectedStream()
+      }
+    },
+    props: {
+      streams: {
+        type: Array,
+        required: true,
+        default: () => ([])
       }
     },
     methods: {
       getStateImgUrl (state) {
         return require(`../../assets/ic-state-${state}.svg`)
       },
-      selectItem (item) {
-        this.items = this.items.map(function (item) {
-          item.isActive = false
-          return item
-        })
-        item.isActive = true
+      selectItem (stream) {
+        db.setSelectedStream(stream)
+        this.selectedStream = db.getSelectedStream()
+      },
+      isActive (stream) {
+        return stream.name === this.selectedStream.name
+      },
+      isSynced (stream) {
+        return stream.state === 'completed'
       }
     }
   }
