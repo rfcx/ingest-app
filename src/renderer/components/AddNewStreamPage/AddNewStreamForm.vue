@@ -39,7 +39,7 @@
                 <router-link to="/"><a class="button is-rounded">Cancel</a></router-link>
             </p>
             <p class="control">
-                <a class="button is-rounded is-primary" :disabled="!hasPassedValidation">Create</a>
+                <a class="button is-rounded is-primary" :disabled="!hasPassedValidation" @click="createStream">Create</a>
             </p>
         </div>
     </fieldset>
@@ -47,6 +47,7 @@
 
 <script>
 import moment from 'moment'
+import db from '../../../../utils/db'
 
 export default {
   data () {
@@ -66,6 +67,22 @@ export default {
       const file = event.target.files[0]
       if (file) this.folderPath = file.path
       // TODO: check timestamp for auto-detect option
+    },
+    createStream () {
+      const stream = {
+        name: this.name,
+        folderPath: this.folderPath,
+        timestampFormat: this.selectedTimestampFormat,
+        state: 'waiting',
+        progress: 0
+      }
+      if (!db.checkIfDuplicateStream(stream.name, stream.folderPath)) {
+        db.addNewStream(stream)
+        this.$router.push('/')
+      } else {
+        // TODO: show error
+        console.log('duplicate name')
+      }
     }
   },
   computed: {
@@ -83,17 +100,13 @@ export default {
     },
     hasPassedValidation: function () {
       if (this.name && this.folderPath) {
-        console.log('name, folder')
         if (this.timestampFormat.toLowerCase() === 'custom' && this.customTimestampFormat) {
-          console.log('name, folder, timestamp, custom')
           return true
         } else if (this.timestampFormat.toLowerCase() !== 'custom') {
-          console.log('name, folder, timestamp')
           return true
         }
         return false
       }
-      console.log('!name, !folder')
       return false
     }
   }
