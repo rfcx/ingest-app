@@ -2,21 +2,21 @@
   "streams": [
     {
       "name": "aaa",
-      "folderPath": "/Users/nui/Downloads/my-icons-collection (17)",
+      "folderPath": "/Users/nui/Desktop/iglike-day2-starter/Pods",
       "timestampFormat": null,
       "state": "waiting",
       "progress": 0
     },
     {
       "name": "bbb",
-      "folderPath": "/Users/nui/Downloads/my-icons-collection (17)",
+      "folderPath": "/Users/nui/Desktop/iglike-day2-starter/iglike",
       "timestampFormat": null,
       "state": "waiting",
       "progress": 0
     },
     {
-      "name": "sss",
-      "folderPath": "/Users/nui/Downloads/firebaseui-web-master",
+      "name": "ccc",
+      "folderPath": "/Users/nui/Desktop/iglike-day2-starter/Pods",
       "timestampFormat": null,
       "state": "waiting",
       "progress": 0
@@ -25,7 +25,7 @@
   "user": {},
   "selectedStream": {
     "name": "bbb",
-    "folderPath": "/Users/nui/Downloads/my-icons-collection (17)",
+    "folderPath": "/Users/nui/Desktop/iglike-day2-starter/iglike",
     "timestampFormat": null,
     "state": "waiting",
     "progress": 0

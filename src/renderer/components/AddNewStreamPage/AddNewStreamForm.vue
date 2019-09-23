@@ -78,6 +78,7 @@ export default {
       }
       if (!db.checkIfDuplicateStream(stream.name, stream.folderPath)) {
         db.addNewStream(stream)
+        this.$store.dispatch('SET_SELECTED_STREAM', stream)
         this.$router.push('/')
       } else {
         // TODO: show error

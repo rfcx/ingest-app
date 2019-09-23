@@ -30,7 +30,7 @@
       console.log('mounted')
       const streams = db.getStreams()
       console.log(streams)
-      if (streams === null) {
+      if (streams == null) {
         console.log('no stream')
         db.setDefault()
       }
