@@ -1,21 +1,47 @@
 {
   "streams": [
     {
-      "name": "aa",
-      "folderPath": "/Users/nui/Desktop/iglike-day2-starter/iglike",
+      "name": "Empty",
+      "folderPath": "/Users/nui/Documents/untitled folder",
       "timestampFormat": null,
       "state": "waiting",
       "progress": 0,
       "files": []
+    },
+    {
+      "name": "3x",
+      "folderPath": "/Users/nui/Documents/3x",
+      "timestampFormat": null,
+      "state": "waiting",
+      "progress": 0,
+      "files": [
+        "discover-selected@3x.png",
+        "discover-unselected@3x.png",
+        "ic-close-bubble@3x.png",
+        "more-selected@3x.png",
+        "more-unselected@3x.png",
+        "nila-market-segment.png",
+        "pin-selected@3x.png",
+        "pin-unselected@3x.png"
+      ]
     }
   ],
   "user": {},
   "selectedStream": {
-    "name": "aa",
-    "folderPath": "/Users/nui/Desktop/iglike-day2-starter/iglike",
+    "name": "3x",
+    "folderPath": "/Users/nui/Documents/3x",
     "timestampFormat": null,
     "state": "waiting",
     "progress": 0,
-    "files": []
+    "files": [
+      "discover-selected@3x.png",
+      "discover-unselected@3x.png",
+      "ic-close-bubble@3x.png",
+      "more-selected@3x.png",
+      "more-unselected@3x.png",
+      "nila-market-segment.png",
+      "pin-selected@3x.png",
+      "pin-unselected@3x.png"
+    ]
   }
 }
