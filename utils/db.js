@@ -1,7 +1,7 @@
 const low = require('lowdb')
-const FileSync = require('lowdb/adapters/FileSync')
+const LocalStorage = require('lowdb/adapters/LocalStorage')
 
-const adapter = new FileSync('db.json')
+const adapter = new LocalStorage('db')
 const db = low(adapter)
 
 module.exports = {
