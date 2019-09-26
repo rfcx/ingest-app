@@ -55,9 +55,9 @@ export default {
     return {
       name: null,
       folderPath: null,
-      timestampFormat: 'Auto-detect',
+      timestampFormat: 'YYYYMMDD-HHmmss',
       customTimestampFormat: null,
-      timestampFormatOptions: ['Auto-detect', 'YYYYMMDD-HHmm', 'YYYYMMDDT?HH:mm:ss', 'Custom']
+      timestampFormatOptions: ['YYYYMMDD-HHmmss', 'YYYYMMDD?HH:mm:ss', 'Custom']
     }
   },
   methods: {
