@@ -48,7 +48,7 @@
 <script>
 import moment from 'moment'
 import db from '../../../../utils/db'
-import fs from 'fs'
+import fileHelper from '../../../../utils/fileHelper'
 
 export default {
   data () {
@@ -76,7 +76,7 @@ export default {
         timestampFormat: this.selectedTimestampFormat,
         state: 'waiting',
         progress: 0,
-        files: fs.readdirSync(this.folderPath) || []
+        files: fileHelper.getFilesFromPath(this.folderPath) || []
       }
       if (!db.checkIfDuplicateStream(stream.name, stream.folderPath)) {
         db.addNewStream(stream)

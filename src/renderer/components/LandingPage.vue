@@ -19,6 +19,7 @@
   import EmptyStream from './LandingPage/EmptyStream'
   import FileList from './LandingPage/FileList'
   import db from '../../../utils/db'
+  import fileHelper from '../../../utils/fileHelper'
   import { mapState } from 'vuex'
 
   export default {
@@ -35,7 +36,8 @@
       },
       isEmptyFolder () {
         const selectedStream = this.selectedStream
-        return selectedStream.files === undefined || selectedStream.files.length === 0
+        const files = fileHelper.getFilesFromPath(selectedStream.folderPath)
+        return files === undefined || files.length === 0
       }
     },
     computed: {
