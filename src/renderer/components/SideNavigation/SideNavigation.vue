@@ -45,7 +45,7 @@
       },
       selectItem (stream) {
         db.setSelectedStream(stream)
-        this.$store.dispatch('SET_SELECTED_STREAM', stream)
+        this.$store.dispatch('setSelectedStream', stream)
       },
       isActive (stream) {
         return stream.name === this.selectedStream.name
