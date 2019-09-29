@@ -3,13 +3,13 @@ const state = {
 }
 
 const mutations = {
-  addFile (state, file) {
+  ADD_FILE (state, file) {
     state.files.push(file)
   }
 }
 
 const actions = {
-  ADD_FILE ({ commit }, file) {
+  addFile ({ commit }, file) {
     commit('ADD_FILE', file)
   }
 }
