@@ -6,7 +6,7 @@ const db = low(adapter)
 
 module.exports = {
   setDefault: () => {
-    db.defaults({ streams: [], user: {} }).write()
+    db.defaults({ streams: [], files: [], user: {} }).write()
   },
   setUser: (key, value) => {
     db.set(key, value).write()
@@ -18,10 +18,10 @@ module.exports = {
     return db.get('selectedStream').value()
   },
   addNewStream: (data) => {
-    // const id = stream.name + stream.folderPath
-    // const data = {id: id, ...stream}
-    // console.log('stream => ' + JSON.stringify(stream))
-    // console.log('data => ' + JSON.stringify(data))
+    // save files
+    data.files.forEach((file) => {
+      db.get('files').push(file).write()
+    })
     db.get('streams').push(data).write()
     console.log(db.has('selectedStream').value())
     if (!db.has('selectedStream').value()) {
@@ -37,5 +37,8 @@ module.exports = {
   },
   setSelectedStream: (stream) => {
     db.set('selectedStream', stream).write()
+  },
+  addFile: (data) => {
+    db.get('files').push(data).write()
   }
 }

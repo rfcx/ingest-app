@@ -49,6 +49,7 @@
 import moment from 'moment'
 import db from '../../../../utils/db'
 import fileHelper from '../../../../utils/fileHelper'
+import dateHelper from '../../../../utils/dateHelper'
 
 export default {
   data () {
@@ -70,17 +71,30 @@ export default {
       // TODO: check timestamp for auto-detect option
     },
     createStream () {
+      const files = fileHelper.getFilesFromPath(this.folderPath).map(fileName => {
+        const isoDate = dateHelper.getDateTime(fileName, this.selectedTimestampFormat)
+        const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+        return {
+          name: fileName,
+          timestamp: momentDate,
+          state: 'waiting'
+        }
+      })
       const stream = {
         name: this.name,
         folderPath: this.folderPath,
         timestampFormat: this.selectedTimestampFormat,
         state: 'waiting',
         progress: 0,
-        files: fileHelper.getFilesFromPath(this.folderPath) || []
+        files: files
       }
+      files.forEach((file) => {
+        this.$store.dispatch('addFile', file)
+      })
       if (!db.checkIfDuplicateStream(stream.name, stream.folderPath)) {
         db.addNewStream(stream)
-        this.$store.dispatch('SET_SELECTED_STREAM', stream)
+        this.$store.dispatch('addStream', stream)
+        this.$store.dispatch('setSelectedStream', stream)
         this.$router.push('/')
       } else {
         // TODO: show error
