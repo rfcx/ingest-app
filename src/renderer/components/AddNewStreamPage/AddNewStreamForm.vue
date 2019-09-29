@@ -47,9 +47,9 @@
 
 <script>
 import moment from 'moment'
-import db from '../../../../utils/db'
 import fileHelper from '../../../../utils/fileHelper'
 import dateHelper from '../../../../utils/dateHelper'
+import Stream from '../../store/models/Stream'
 
 export default {
   data () {
@@ -62,6 +62,12 @@ export default {
     }
   },
   methods: {
+    checkIfDuplicateStream (name, folderPath) {
+      const streams = this.streams
+      console.log(streams)
+      if (!streams) return false
+      return (streams.filter(stream => stream.name === name).length > 0)
+    },
     isCustomTimestampFormatSelected (timestampFormat) {
       return timestampFormat.toLowerCase() === 'custom'
     },
@@ -73,10 +79,10 @@ export default {
     createStream () {
       const files = fileHelper.getFilesFromPath(this.folderPath).map(fileName => {
         const isoDate = dateHelper.getDateTime(fileName, this.selectedTimestampFormat)
-        const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+        // const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
         return {
           name: fileName,
-          timestamp: momentDate,
+          timestamp: isoDate,
           state: 'waiting'
         }
       })
@@ -88,13 +94,8 @@ export default {
         progress: 0,
         files: files
       }
-      files.forEach((file) => {
-        this.$store.dispatch('addFile', file)
-      })
-      if (!db.checkIfDuplicateStream(stream.name, stream.folderPath)) {
-        db.addNewStream(stream)
-        this.$store.dispatch('addStream', stream)
-        this.$store.dispatch('setSelectedStream', stream)
+      if (!this.checkIfDuplicateStream(stream.name, stream.folderPath)) {
+        Stream.insert({ data: stream })
         this.$router.push('/')
       } else {
         // TODO: show error
@@ -103,6 +104,9 @@ export default {
     }
   },
   computed: {
+    stream () {
+      return Stream.all()
+    },
     selectedTimestampFormat: function () {
       switch (this.timestampFormat) {
         case 'Auto-detect': return null // TODO: Fix this

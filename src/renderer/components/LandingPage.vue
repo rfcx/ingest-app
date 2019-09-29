@@ -18,18 +18,13 @@
   import EmptyFolder from './LandingPage/EmptyFolder'
   import EmptyStream from './LandingPage/EmptyStream'
   import FileList from './LandingPage/FileList'
-  import db from '../../../utils/db'
   import fileHelper from '../../../utils/fileHelper'
   import { mapState } from 'vuex'
+  import Stream from '../store/models/Stream'
 
   export default {
     name: 'landing-page',
     components: { Navigation, SideNavigation, EmptyFolder, EmptyStream, FileList },
-    data () {
-      return {
-        streams: db.getStreams()
-      }
-    },
     methods: {
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
@@ -43,16 +38,13 @@
     computed: {
       ...mapState({
         selectedStream: state => state.Stream.selectedStream
-      })
+      }),
+      streams () {
+        return Stream.all()
+      }
     },
     mounted: () => {
-      console.log('mounted')
-      const streams = db.getStreams()
-      console.log(streams)
-      if (streams == null) {
-        console.log('no stream')
-        db.setDefault()
-      }
+      console.log('view loaded')
     }
   }
 </script>
