@@ -2,7 +2,7 @@
   <div>
     <span> {{ selectedStream.folderPath }} </span>
     <ul v-for="file in getFiles()" :key="file.id">
-      <li :class="{ 'has-text-danger': !isValid(getTimestamp(file.name)) }"> {{ file.name }} | {{ getTimestamp(file.name) }} </li>
+      <li :class="{ 'has-text-danger': !isValid(getTimestamp(file.name)) }"> {{ file.name }} | {{ getTimestamp(file.name) }} | {{ file.state.id }} </li>
     </ul>
   </div>
 </template>
