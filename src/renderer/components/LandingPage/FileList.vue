@@ -2,7 +2,7 @@
   <div>
     <span> {{ selectedStream.folderPath }} </span>
     <ul v-for="file in getFiles()" :key="file.id">
-      <li :class="{ 'has-text-danger': !isValid(getTimestamp(file.name)) }"> {{ file.name }} | {{ getTimestamp(file.name) }} | {{ file.state.id }} </li>
+      <li :class="{ 'has-text-danger': !isValid(getTimestamp(file.name)) }"> {{ file.name }} | {{ getTimestamp(file.name) }} | {{ file.state.id }} ({{ file.state.message }}) </li>
     </ul>
   </div>
 </template>
@@ -12,6 +12,7 @@
   import fs from 'fs'
   import dateHelper from '../../../../utils/dateHelper'
   import File from '../../store/models/File'
+  import axios from 'axios'
 
   export default {
     props: {
@@ -22,7 +23,12 @@
         selectedStream: state => state.Stream.selectedStream
       }),
       files () {
-        return File.query().where('streamId', this.streamId).get()
+        const files = File.query().where('streamId', this.streamId).get()
+        const states = files.map((file) => {
+          return file.state.id
+        })
+        console.log(states)
+        return files
       }
     },
     methods: {
@@ -40,12 +46,53 @@
       isValid (date) {
         const momentDate = dateHelper.getMomentDateFromAppDate(date)
         return dateHelper.isValidDate(momentDate)
+      },
+      updateState (file, state) {
+        File.update({ where: file.name,
+          data: { state: state }
+        })
+      },
+      uploadFile (file) {
+        console.log('upload file')
+        /* API.uploadFile() */
+        const config = {
+          onUploadProgress: function (progressEvent) {
+            var percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+            console.log(percentCompleted)
+            File.update({ where: file.name,
+              data: {state: {id: 'uploading', message: '100'}}
+            })
+            // this.updateState(file, {id: 'uploading', message: '100'})
+          }
+        }
+
+        axios.post('https://jsonplaceholder.typicode.com/posts', {}, config).then(function (response) {
+          console.log(response)
+          File.update({ where: file.name,
+            data: {state: {id: 'completed', message: ''}}
+          })
+          // this.updateState(file, {id: 'completed', message: null})
+        }).catch(function (error) {
+          File.update({ where: file.name,
+            data: {state: {id: 'failed', message: 'error'}}
+          })
+          // this.updateState(file, {id: 'failed', message: 'error'})
+          console.log('request error')
+          console.log(error)
+        })
       }
     },
-    mounted () {
+    created () {
       // update file
       const fileList = fs.readdirSync(this.selectedStream.folderPath)
       console.log(fileList)
+      const unsyncFiles = File.query().where('state', 'waiting').get()
+      console.log(unsyncFiles)
+      this.files.forEach((file) => {
+        console.log(file)
+        // this.updateState(file, {id: 'uploading', message: '100'})
+        this.uploadFile(file)
+      })
     }
   }
 </script>
