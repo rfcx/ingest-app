@@ -4,13 +4,15 @@ import Stream from './Stream'
 export default class File extends Model {
   static entity = 'files'
 
+  static primaryKey = 'name'
+
   static fields () {
     return {
-      id: this.increment(),
       name: this.string(''),
-      timestamp: this.string(''),
-      state: this.string(''),
-      stream: this.belongsTo(Stream, 'stream_id')
+      timestamp: this.attr(null),
+      state: this.attr(null),
+      streamId: this.string(''),
+      stream: this.belongsTo(Stream, 'streamId')
     }
   }
 }

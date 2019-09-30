@@ -1,16 +1,18 @@
 import { Model } from '@vuex-orm/core'
 import File from './File'
 
-export default class User extends Model {
+export default class Stream extends Model {
   static entity = 'streams'
+
+  static primaryKey = 'id'
 
   static fields () {
     return {
-      id: this.increment(),
+      id: this.attr(null),
       name: this.string(''),
       timestampFormat: this.string(''),
       folderPath: this.string(''),
-      files: this.hasMany(File, 'file_id')
+      files: this.hasMany(File, 'fileId')
     }
   }
 }

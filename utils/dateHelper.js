@@ -2,7 +2,7 @@ const moment = require('moment')
 
 const appDate = 'YYYY-MM-DD HH:mm:ss'
 
-const debugLog = true
+const debugLog = false
 function print (any) {
   if (debugLog) console.log(any)
 }

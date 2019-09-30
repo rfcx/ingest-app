@@ -50,6 +50,8 @@ import moment from 'moment'
 import fileHelper from '../../../../utils/fileHelper'
 import dateHelper from '../../../../utils/dateHelper'
 import Stream from '../../store/models/Stream'
+// import File from '../../store/models/File'
+import cryptoJS from 'crypto-js'
 
 export default {
   data () {
@@ -64,7 +66,6 @@ export default {
   methods: {
     checkIfDuplicateStream (name, folderPath) {
       const streams = this.streams
-      console.log(streams)
       if (!streams) return false
       return (streams.filter(stream => stream.name === name).length > 0)
     },
@@ -77,25 +78,34 @@ export default {
       // TODO: check timestamp for auto-detect option
     },
     createStream () {
+      const streamId = cryptoJS.SHA1(this.name + this.folderPath).toString(cryptoJS.enc.Base64)
       const files = fileHelper.getFilesFromPath(this.folderPath).map(fileName => {
         const isoDate = dateHelper.getDateTime(fileName, this.selectedTimestampFormat)
-        // const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+        const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
         return {
           name: fileName,
-          timestamp: isoDate,
-          state: 'waiting'
+          timestamp: momentDate,
+          streamId: streamId,
+          state: {
+            id: 'waiting',
+            message: ''
+          }
         }
       })
       const stream = {
+        id: streamId,
         name: this.name,
         folderPath: this.folderPath,
         timestampFormat: this.selectedTimestampFormat,
-        state: 'waiting',
-        progress: 0,
         files: files
       }
+      console.log('create stream')
+      console.log(JSON.stringify(stream))
+      // File.deleteAll()
+      // Stream.deleteAll()
       if (!this.checkIfDuplicateStream(stream.name, stream.folderPath)) {
         Stream.insert({ data: stream })
+        this.$store.dispatch('setSelectedStream', stream)
         this.$router.push('/')
       } else {
         // TODO: show error
@@ -104,7 +114,7 @@ export default {
     }
   },
   computed: {
-    stream () {
+    streams () {
       return Stream.all()
     },
     selectedTimestampFormat: function () {

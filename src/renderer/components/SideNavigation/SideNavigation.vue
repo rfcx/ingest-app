@@ -50,7 +50,7 @@
         this.$store.dispatch('setSelectedStream', stream)
       },
       isActive (stream) {
-        return stream.name === this.selectedStream.name
+        return stream.id === this.selectedStream.id
       },
       isSynced (stream) {
         return stream.state === 'completed'

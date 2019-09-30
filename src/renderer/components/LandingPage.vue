@@ -6,7 +6,7 @@
       <div class="column content is-desktop">
         <empty-stream v-if="isEmptyStream()"></empty-stream>
         <empty-folder v-else-if="isEmptyFolder()"></empty-folder>
-        <file-list v-else></file-list>
+        <file-list :streamId="selectedStream.id" v-else></file-list>
       </div>
     </section>
   </div>
