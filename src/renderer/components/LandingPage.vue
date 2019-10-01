@@ -21,6 +21,8 @@
   import fileHelper from '../../../utils/fileHelper'
   import { mapState } from 'vuex'
   import Stream from '../store/models/Stream'
+  import File from '../store/models/File'
+  import API from '../../../utils/api'
 
   export default {
     name: 'landing-page',
@@ -33,6 +35,24 @@
         const selectedStream = this.selectedStream
         const files = fileHelper.getFilesFromPath(selectedStream.folderPath)
         return files === undefined || files.length === 0
+      },
+      uploadFile (file) {
+        API.uploadFile((progress) => {
+          console.log('uploadFile progress')
+          File.update({ where: file.name,
+            data: {state: {id: 'uploading', message: '100'}}
+          })
+        }, () => {
+          console.log('uploadFile success')
+          File.update({ where: file.name,
+            data: {state: {id: 'completed', message: ''}}
+          })
+        }, (error) => {
+          console.log('uploadFile error')
+          File.update({ where: file.name,
+            data: {state: {id: 'failed', message: error}}
+          })
+        })
       }
     },
     computed: {
@@ -43,8 +63,12 @@
         return Stream.all()
       }
     },
-    mounted: () => {
+    created () {
       console.log('view loaded')
+      const files = File.all()
+      files.forEach((file) => {
+        this.uploadFile(file)
+      })
     }
   }
 </script>

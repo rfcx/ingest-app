@@ -12,7 +12,6 @@
   import fs from 'fs'
   import dateHelper from '../../../../utils/dateHelper'
   import File from '../../store/models/File'
-  import API from '../../../../utils/api'
 
   export default {
     props: {
@@ -51,34 +50,12 @@
         File.update({ where: file.name,
           data: { state: state }
         })
-      },
-      uploadFile (file) {
-        API.uploadFile((progress) => {
-          File.update({ where: file.name,
-            data: {state: {id: 'uploading', message: '100'}}
-          })
-        }, () => {
-          File.update({ where: file.name,
-            data: {state: {id: 'completed', message: ''}}
-          })
-        }, (error) => {
-          File.update({ where: file.name,
-            data: {state: {id: 'failed', message: error}}
-          })
-        })
       }
     },
     created () {
       // update file
       const fileList = fs.readdirSync(this.selectedStream.folderPath)
       console.log(fileList)
-      const unsyncFiles = File.query().where('state', 'waiting').get()
-      console.log(unsyncFiles)
-      this.files.forEach((file) => {
-        console.log(file)
-        // this.updateState(file, {id: 'uploading', message: '100'})
-        this.uploadFile(file)
-      })
     }
   }
 </script>
