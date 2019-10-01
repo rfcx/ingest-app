@@ -12,7 +12,7 @@
   import fs from 'fs'
   import dateHelper from '../../../../utils/dateHelper'
   import File from '../../store/models/File'
-  import axios from 'axios'
+  import API from '../../../../utils/api'
 
   export default {
     props: {
@@ -53,32 +53,18 @@
         })
       },
       uploadFile (file) {
-        console.log('upload file')
-        /* API.uploadFile() */
-        const config = {
-          onUploadProgress: function (progressEvent) {
-            var percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            console.log(percentCompleted)
-            File.update({ where: file.name,
-              data: {state: {id: 'uploading', message: '100'}}
-            })
-            // this.updateState(file, {id: 'uploading', message: '100'})
-          }
-        }
-
-        axios.post('https://jsonplaceholder.typicode.com/posts', {}, config).then(function (response) {
-          console.log(response)
+        API.uploadFile((progress) => {
+          File.update({ where: file.name,
+            data: {state: {id: 'uploading', message: '100'}}
+          })
+        }, () => {
           File.update({ where: file.name,
             data: {state: {id: 'completed', message: ''}}
           })
-          // this.updateState(file, {id: 'completed', message: null})
-        }).catch(function (error) {
+        }, (error) => {
           File.update({ where: file.name,
-            data: {state: {id: 'failed', message: 'error'}}
+            data: {state: {id: 'failed', message: error}}
           })
-          // this.updateState(file, {id: 'failed', message: 'error'})
-          console.log('request error')
-          console.log(error)
         })
       }
     },
