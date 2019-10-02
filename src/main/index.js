@@ -2,7 +2,7 @@
 
 import { app, BrowserWindow, ipcMain } from 'electron'
 import '../renderer/store'
-import API from '../../utils/api'
+// import API from '../../utils/api'
 
 /**
  * Set `__static` path to static files in production
@@ -12,7 +12,7 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-let mainWindow
+let mainWindow, backgroundAPIWindow
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
@@ -38,11 +38,11 @@ function createWindow () {
     mainWindow = null
   })
 
-  let backgroundWindow = new BrowserWindow({
+  backgroundAPIWindow = new BrowserWindow({
     show: false,
     webPreferences: { nodeIntegration: true }
   })
-  backgroundWindow.loadURL(backgroundAPIURL)
+  backgroundAPIWindow.loadURL(backgroundAPIURL)
 }
 
 app.on('ready', createWindow)
@@ -58,6 +58,14 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+ipcMain.on('newStreamAdded', (event, data) => {
+  console.log('on newStreamAdded')
+  console.log(event)
+  console.log(data)
+  backgroundAPIWindow.webContents.send('hasNewStreamAdded', data)
+})
+
 /*
 ipcMain.on('queuedUnsyncFiles', (event, data) => {
   console.log('on queuedUnsyncFiles')

@@ -65,6 +65,8 @@
     },
     created () {
       console.log('view loaded')
+      // File.deleteAll()
+      // Stream.deleteAll()
     }
   }
 </script>

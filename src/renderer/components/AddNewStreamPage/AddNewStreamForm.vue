@@ -106,6 +106,7 @@ export default {
       if (!this.checkIfDuplicateStream(stream.folderPath)) {
         Stream.insert({ data: stream })
         this.$store.dispatch('setSelectedStream', stream)
+        this.$electron.ipcRenderer.send('newStreamAdded', stream)
         this.$router.push('/')
       } else {
         // TODO: show error

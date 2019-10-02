@@ -34,9 +34,18 @@
       console.log('view has created')
       const unsyncFiles = File.query().where('state', 'waiting').get()
       console.log(unsyncFiles)
-      const files = File.all()
+      const files = File.query().limit(5).get()
       files.forEach((file) => {
         this.uploadFile(file)
+      })
+      this.$electron.ipcRenderer.on('hasNewStreamAdded', (event, data) => {
+        console.log('on hasNewStreamAdded')
+        console.log(event)
+        console.log(data)
+        const files = File.query().where('streamId', data.id).limit(5).get()
+        files.forEach((file) => {
+          this.uploadFile(file)
+        })
       })
       // this.$electron.ipcRenderer.on('updateProgress', (event, data) => {
       //   console.log(event)
