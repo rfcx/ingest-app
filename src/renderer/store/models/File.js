@@ -9,6 +9,7 @@ export default class File extends Model {
   static fields () {
     return {
       name: this.string(''),
+      hash: this.attr(''),
       timestamp: this.attr(null),
       state: this.attr(null),
       streamId: this.string(''),
