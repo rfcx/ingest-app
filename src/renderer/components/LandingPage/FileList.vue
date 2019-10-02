@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span> {{ selectedStream.folderPath }} </span>
+    <span class="has-text-weight-semibold"> {{ selectedStream.folderPath }} | {{ selectedStream.timestampFormat }} </span>
     <ul v-for="file in getFiles()" :key="file.id">
       <li :class="{ 'has-text-danger': !isValid(getTimestamp(file.name)) }"> {{ file.name }} | {{ getTimestamp(file.name) }} | {{ file.state.id }} ({{ file.state.message }}) </li>
     </ul>
@@ -11,6 +11,7 @@
   import { mapState } from 'vuex'
   import fs from 'fs'
   import dateHelper from '../../../../utils/dateHelper'
+  import fileHelper from '../../../../utils/fileHelper'
   import File from '../../store/models/File'
 
   export default {
@@ -22,12 +23,7 @@
         selectedStream: state => state.Stream.selectedStream
       }),
       files () {
-        const files = File.query().where('streamId', this.streamId).get()
-        const states = files.map((file) => {
-          return file.state.id
-        })
-        console.log(states)
-        return files
+        return File.query().where('streamId', this.streamId).get()
       }
     },
     methods: {
@@ -36,7 +32,7 @@
         // return fs.readdirSync(this.selectedStream.folderPath)
       },
       getTimestamp (fileFullName) {
-        const fileName = fileFullName.split('.', 1)[0] || ''
+        const fileName = fileHelper.getFileName(fileFullName)
         const isoDate = dateHelper.getDateTime(fileName, this.selectedStream.timestampFormat)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
         const appDate = dateHelper.convertMomentDateToAppDate(momentDate)

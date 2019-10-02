@@ -64,10 +64,10 @@ export default {
     }
   },
   methods: {
-    checkIfDuplicateStream (name, folderPath) {
+    checkIfDuplicateStream (folderPath) {
       const streams = this.streams
       if (!streams) return false
-      return (streams.filter(stream => stream.name === name).length > 0)
+      return (streams.filter(stream => stream.folderPath === folderPath).length > 0)
     },
     isCustomTimestampFormatSelected (timestampFormat) {
       return timestampFormat.toLowerCase() === 'custom'
@@ -78,7 +78,7 @@ export default {
       // TODO: check timestamp for auto-detect option
     },
     createStream () {
-      const streamId = cryptoJS.SHA1(this.name + this.folderPath).toString(cryptoJS.enc.Base64)
+      const streamId = cryptoJS.MD5(this.folderPath).toString()
       const files = fileHelper.getFilesFromPath(this.folderPath).map(fileName => {
         const isoDate = dateHelper.getDateTime(fileName, this.selectedTimestampFormat)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
@@ -103,7 +103,7 @@ export default {
       console.log(JSON.stringify(stream))
       // File.deleteAll()
       // Stream.deleteAll()
-      if (!this.checkIfDuplicateStream(stream.name, stream.folderPath)) {
+      if (!this.checkIfDuplicateStream(stream.folderPath)) {
         Stream.insert({ data: stream })
         this.$store.dispatch('setSelectedStream', stream)
         this.$router.push('/')
