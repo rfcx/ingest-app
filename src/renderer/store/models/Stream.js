@@ -8,7 +8,7 @@ export default class Stream extends Model {
 
   static fields () {
     return {
-      id: this.attr(null),
+      id: this.string(''),
       name: this.string(''),
       timestampFormat: this.string(''),
       folderPath: this.string(''),

@@ -11,7 +11,7 @@ export default class File extends Model {
       name: this.string(''),
       hash: this.attr(''),
       timestamp: this.attr(null),
-      state: this.attr(null), // state: waiting, uploading, fail
+      state: this.string(''), // state: waiting, uploading, fail
       stateMessage: this.string(''),
       streamId: this.string(''),
       stream: this.belongsTo(Stream, 'streamId')
