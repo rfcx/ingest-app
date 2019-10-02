@@ -1,7 +1,8 @@
 'use strict'
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import '../renderer/store'
+import API from '../../utils/api'
 
 /**
  * Set `__static` path to static files in production
@@ -15,6 +16,10 @@ let mainWindow
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
+
+const backgroundAPIURL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:9080/#/service`
+  : `file://${__dirname}/#/service`
 
 function createWindow () {
   /**
@@ -32,6 +37,12 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
   })
+
+  let backgroundWindow = new BrowserWindow({
+    show: false,
+    webPreferences: { nodeIntegration: true }
+  })
+  backgroundWindow.loadURL(backgroundAPIURL)
 }
 
 app.on('ready', createWindow)
@@ -47,7 +58,32 @@ app.on('activate', () => {
     createWindow()
   }
 })
+/*
+ipcMain.on('queuedUnsyncFiles', (event, data) => {
+  console.log('on queuedUnsyncFiles')
+  console.log(event)
+  console.log(data)
+  data.forEach((file) => {
+    uploadFile(event, file)
+  })
+})
 
+function uploadFile (event, file) {
+  API.uploadFile((progress) => {
+    console.log('uploadFile progress')
+    const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
+    event.reply('updateProgress', updatedFile)
+  }, () => {
+    console.log('uploadFile success')
+    const updatedFile = {file: file, state: {id: 'completed', message: ''}}
+    event.reply('updateProgress', updatedFile)
+  }, (error) => {
+    console.log('uploadFile error')
+    const updatedFile = {file: file, state: {id: 'failed', message: error}}
+    event.reply('updateProgress', updatedFile)
+  })
+}
+*/
 /**
  * Auto Updater
  *

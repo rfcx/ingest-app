@@ -16,6 +16,11 @@ export default new Router({
       component: require('@/components/AddNewStreamPage').default
     },
     {
+      path: '/service',
+      name: 'service',
+      component: require('@/components/Service').default
+    },
+    {
       path: '*',
       redirect: '/'
     }

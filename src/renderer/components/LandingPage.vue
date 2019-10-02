@@ -65,10 +65,6 @@
     },
     created () {
       console.log('view loaded')
-      const files = File.all()
-      files.forEach((file) => {
-        this.uploadFile(file)
-      })
     }
   }
 </script>
