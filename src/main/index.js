@@ -19,7 +19,7 @@ const winURL = process.env.NODE_ENV === 'development'
 
 const backgroundAPIURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/service`
-  : `file://${__dirname}/#/service`
+  : `file://${__dirname}/index.html#/service`
 
 function createWindow () {
   /**
