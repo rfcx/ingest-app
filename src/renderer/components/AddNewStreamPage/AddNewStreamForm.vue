@@ -86,10 +86,8 @@ export default {
           name: fileName,
           timestamp: momentDate,
           streamId: streamId,
-          state: {
-            id: 'waiting',
-            message: ''
-          }
+          state: 'waiting',
+          stateMessage: ''
         }
       })
       const stream = {

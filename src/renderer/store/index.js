@@ -3,7 +3,6 @@ import Vuex from 'vuex'
 import VuexORM from '@vuex-orm/core'
 import Stream from './models/Stream'
 import File from './models/File'
-import State from './models/State'
 
 import { createPersistedState, createSharedMutations } from 'vuex-electron'
 
@@ -17,7 +16,6 @@ const database = new VuexORM.Database()
 // Register Models to the database.
 database.register(Stream)
 database.register(File)
-database.register(State)
 
 export default new Vuex.Store({
   modules,
