@@ -9,10 +9,10 @@
                 <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) }">
                     <div class="menu-container">
                         <span class="stream-title"> {{ stream.name }} </span>
-                        <!-- <img :src="getStateImgUrl(stream.state)"> -->
+                        <img :src="getStateImgUrl(getState(stream))">
                     </div>
                     <div class="state-progress" v-if="!isSynced(stream)">
-                        <progress class="progress is-primary" :value="stream.progress" max="100"></progress>
+                        <progress class="progress is-primary" :value="getProgress(stream)" max="100"></progress>
                         <div class="menu-container">
                             <span class="is-size-7">{{ stream.state }}</span>
                             <span class="is-size-7"> {{ stream.additional }} </span>
@@ -39,7 +39,7 @@
         selectedStream: state => state.Stream.selectedStream
       }),
       streams () {
-        return Stream.all()
+        return Stream.query().with('files').get()
       }
     },
     methods: {
@@ -53,7 +53,21 @@
         return stream.id === this.selectedStream.id
       },
       isSynced (stream) {
-        return stream.state === 'completed'
+        return this.getState(stream) === 'completed'
+      },
+      getState (stream) {
+        const isCompleted = stream.files.every(file => { return file.state === 'completed' })
+        const isWaiting = stream.files.every(file => { return file.state === 'waiting' })
+        if (isCompleted) return 'completed'
+        else if (isWaiting) return 'waiting'
+        return 'uploading'
+      },
+      getProgress (stream) {
+        const state = this.getState(stream)
+        if (state === 'completed') return 100
+        else if (state === 'waiting') return 0
+        const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
+        return completedFiles.length / stream.files.length * 100
       }
     }
   }
