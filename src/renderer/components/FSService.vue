@@ -20,8 +20,8 @@
             hash: hash
           }
         })
-        console.log(files)
-        this.$electron.ipcRenderer.send('readNewFilesSuccess', files)
+        const filesOnly = files.filter(file => { return file.hash !== '' })
+        this.$electron.ipcRenderer.send('readNewFilesSuccess', filesOnly)
       })
     }
   }
