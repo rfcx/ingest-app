@@ -13,17 +13,18 @@
   import dateHelper from '../../../../utils/dateHelper'
   import fileHelper from '../../../../utils/fileHelper'
   import File from '../../store/models/File'
+  import Stream from '../../store/models/Stream'
 
   export default {
-    props: {
-      streamId: { type: String, required: true }
-    },
     computed: {
       ...mapState({
-        selectedStream: state => state.Stream.selectedStream
+        selectedStreamId: state => state.Stream.selectedStreamId
       }),
+      selectedStream () {
+        return Stream.find(this.selectedStreamId)
+      },
       files () {
-        return File.query().where('streamId', this.streamId).get()
+        return File.query().where('streamId', this.selectedStreamId).get()
       }
     },
     methods: {

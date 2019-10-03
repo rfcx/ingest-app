@@ -7,11 +7,15 @@
 </template>
 <script>
   import { mapState } from 'vuex'
+  import Stream from '../../store/models/Stream'
   export default {
     computed: {
       ...mapState({
-        selectedStream: state => state.Stream.selectedStream
-      })
+        selectedStreamId: state => state.Stream.selectedStreamId
+      }),
+      selectedStream () {
+        return Stream.find(this.selectedStreamId)
+      }
     },
     methods: {
       openFolder (link) {

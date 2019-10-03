@@ -1,16 +1,16 @@
 const state = {
-  selectedStream: {}
+  selectedStreamId: ''
 }
 
 const mutations = {
-  SET_SELECTED_STREAM (state, stream) {
-    state.selectedStream = stream
+  SET_SELECTED_STREAM_ID (state, streamId) {
+    state.selectedStreamId = streamId
   }
 }
 
 const actions = {
-  setSelectedStream ({ commit }, stream) {
-    commit('SET_SELECTED_STREAM', stream)
+  setSelectedStreamId ({ commit }, streamId) {
+    commit('SET_SELECTED_STREAM_ID', streamId)
   }
 }
 

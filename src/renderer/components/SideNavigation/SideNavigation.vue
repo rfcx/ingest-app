@@ -8,7 +8,7 @@
             <li v-for="stream in streams" :key="stream.id">
                 <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) }">
                     <div class="menu-container">
-                        <span class="stream-title"> {{ stream.name }} </span>
+                        <span class="stream-title"> {{ stream.name }} ({{stream.files.length}}) </span>
                         <img :src="getStateImgUrl(getState(stream))">
                     </div>
                     <div class="state-progress" v-if="shouldShowProgress(stream)">
@@ -36,8 +36,11 @@
     },
     computed: {
       ...mapState({
-        selectedStream: state => state.Stream.selectedStream
+        selectedStreamId: state => state.Stream.selectedStreamId
       }),
+      selectedStream () {
+        return Stream.find(this.selectedStreamId)
+      },
       streams () {
         return Stream.query().with('files').get()
       }
@@ -47,8 +50,7 @@
         return require(`../../assets/ic-state-${state}.svg`)
       },
       selectItem (stream) {
-        stream['files'] = []
-        this.$store.dispatch('setSelectedStream', stream)
+        this.$store.dispatch('setSelectedStreamId', stream.id)
       },
       isActive (stream) {
         return stream.id === this.selectedStream.id
