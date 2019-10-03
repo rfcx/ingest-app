@@ -20,19 +20,19 @@
         API.uploadFile((progress) => {
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
-          File.update({ where: file.name,
+          File.update({ where: file.id,
             data: {state: 'uploading', stateMessage: '100'}
           })
         }, () => {
           // const updatedFile = {file: file, state: {id: 'completed', message: ''}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
-          File.update({ where: file.name,
+          File.update({ where: file.id,
             data: {state: 'completed', stateMessage: ''}
           })
         }, (error) => {
           // const updatedFile = {file: file, state: {id: 'failed', message: error}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
-          File.update({ where: file.name,
+          File.update({ where: file.id,
             data: {state: 'failed', stateMessage: error}
           })
         })

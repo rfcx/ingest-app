@@ -47,10 +47,8 @@
 
 <script>
 import moment from 'moment'
-import fileHelper from '../../../../utils/fileHelper'
 import dateHelper from '../../../../utils/dateHelper'
 import Stream from '../../store/models/Stream'
-// import File from '../../store/models/File'
 import cryptoJS from 'crypto-js'
 
 export default {
@@ -78,40 +76,41 @@ export default {
       // TODO: check timestamp for auto-detect option
     },
     createStream () {
-      const streamId = cryptoJS.MD5(this.folderPath).toString()
-      const files = fileHelper.getFilesFromPath(this.folderPath).map(fileName => {
-        const isoDate = dateHelper.getDateTime(fileName, this.selectedTimestampFormat)
-        const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-        const state = momentDate.isValid() ? 'waiting' : 'failed'
-        const stateMessage = momentDate.isValid() ? '' : 'Filename does not match with a timestamp format'
-        return {
-          name: fileName,
-          timestamp: momentDate,
-          streamId: streamId,
-          state: state,
-          stateMessage: stateMessage
-        }
-      })
-      const stream = {
-        id: streamId,
-        name: this.name,
-        folderPath: this.folderPath,
-        timestampFormat: this.selectedTimestampFormat,
-        files: files
+      if (this.checkIfDuplicateStream(this.folderPath)) {
+        console.log('duplicate name')
+        return
       }
-      console.log('create stream')
-      console.log(JSON.stringify(stream))
-      // File.deleteAll()
-      // Stream.deleteAll()
-      if (!this.checkIfDuplicateStream(stream.folderPath)) {
+      const streamId = cryptoJS.MD5(this.folderPath).toString()
+      this.$electron.ipcRenderer.on('hasReadNewFilesSuccess', (event, files) => {
+        console.log('on hasReadNewFilesSuccess files: ', files)
+        const allFiles = files.map(file => {
+          const isoDate = dateHelper.getDateTime(file.name, this.selectedTimestampFormat)
+          const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+          const state = momentDate.isValid() ? 'waiting' : 'failed'
+          const stateMessage = momentDate.isValid() ? '' : 'Filename does not match with a timestamp format'
+          return {
+            ...file,
+            timestamp: momentDate,
+            streamId: streamId,
+            state: state,
+            stateMessage: stateMessage
+          }
+        })
+        const stream = {
+          id: streamId,
+          name: this.name,
+          folderPath: this.folderPath,
+          timestampFormat: this.selectedTimestampFormat,
+          files: allFiles
+        }
+        console.log('create stream')
+        console.log(JSON.stringify(stream))
         Stream.insert({ data: stream, insert: ['files'] })
         this.$electron.ipcRenderer.send('newStreamAdded', stream)
         this.$store.dispatch('setSelectedStreamId', stream.id)
         this.$router.push('/')
-      } else {
-        // TODO: show error
-        console.log('duplicate name')
-      }
+      })
+      this.$electron.ipcRenderer.send('newFilesAdded', this.folderPath)
     }
   },
   computed: {

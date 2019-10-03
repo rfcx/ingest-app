@@ -4,10 +4,11 @@ import Stream from './Stream'
 export default class File extends Model {
   static entity = 'files'
 
-  static primaryKey = 'name'
+  static primaryKey = 'id'
 
   static fields () {
     return {
+      id: this.string(''),
       name: this.string(''),
       hash: this.attr(''),
       timestamp: this.attr(null),

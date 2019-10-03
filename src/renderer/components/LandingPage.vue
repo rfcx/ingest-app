@@ -34,7 +34,7 @@
       isEmptyFolder () {
         const selectedStream = this.selectedStream
         if (selectedStream === null) return false
-        const files = fileHelper.getFilesFromPath(selectedStream.folderPath)
+        const files = fileHelper.getFilesFromDirectoryPath(selectedStream.folderPath)
         return files === undefined || files.length === 0
       },
       uploadFile (file) {
