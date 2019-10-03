@@ -1,5 +1,5 @@
 <template>
-<div id="wrapper">Service</div>
+<div id="wrapper">API Service</div>
 </template>
 
 <script>
@@ -39,7 +39,7 @@
       }
     },
     created () {
-      console.log('view has created')
+      console.log('API Service')
       const unsyncFiles = this.allUnsyncFiles
       console.log('unsyncFiles =>', unsyncFiles)
       unsyncFiles.forEach((file) => {

@@ -12,14 +12,18 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-let mainWindow, backgroundAPIWindow
+let mainWindow, backgroundAPIWindow, backgroundFSWindow
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
 
 const backgroundAPIURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080/#/service`
-  : `file://${__dirname}/index.html#/service`
+  ? `http://localhost:9080/#/api-service`
+  : `file://${__dirname}/index.html#/api-service`
+
+const backgroundFSURL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:9080/#/fs-service`
+  : `file://${__dirname}/index.html#/fs-service`
 
 function createWindow () {
   /**
@@ -43,6 +47,12 @@ function createWindow () {
     webPreferences: { nodeIntegration: true }
   })
   backgroundAPIWindow.loadURL(backgroundAPIURL)
+
+  backgroundFSWindow = new BrowserWindow({
+    show: false,
+    webPreferences: { nodeIntegration: true }
+  })
+  backgroundFSWindow.loadURL(backgroundFSURL)
 }
 
 app.on('ready', createWindow)

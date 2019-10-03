@@ -16,9 +16,14 @@ export default new Router({
       component: require('@/components/AddNewStreamPage').default
     },
     {
-      path: '/service',
-      name: 'service',
-      component: require('@/components/Service').default
+      path: '/api-service',
+      name: 'api-service',
+      component: require('@/components/APIService').default
+    },
+    {
+      path: '/fs-service',
+      name: 'fs-service',
+      component: require('@/components/FSService').default
     },
     {
       path: '*',
