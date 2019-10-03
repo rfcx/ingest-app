@@ -53,6 +53,7 @@
         this.$store.dispatch('setSelectedStreamId', stream.id)
       },
       isActive (stream) {
+        if (this.selectedStream === null) return false
         return stream.id === this.selectedStream.id
       },
       shouldShowProgress (stream) {
