@@ -15,7 +15,7 @@
                         <progress class="progress is-primary" :value="getProgress(stream)" max="100"></progress>
                         <div class="menu-container">
                             <span class="is-size-7">{{ getState(stream) }}</span>
-                            <span class="is-size-7"> {{ stream.additional }} </span>
+                            <span class="is-size-7"> {{ getStateStatus(stream) }} </span>
                         </div>
                     </div>
                 </div>
@@ -74,6 +74,15 @@
         else if (state === 'waiting' || state === 'failed') return 0
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         return completedFiles.length / stream.files.length * 100
+      },
+      getStateStatus (stream) {
+        const state = this.getState(stream)
+        if (state === 'completed') return ''
+        else if (state === 'waiting' || state === 'failed') return ''
+        const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
+        const errorFiles = stream.files.filter(file => { return file.state === 'failed' })
+        if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} synced`
+        return `${completedFiles.length}/${stream.files.length} synced ${errorFiles.length} error`
       }
     }
   }
