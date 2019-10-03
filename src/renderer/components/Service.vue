@@ -7,7 +7,15 @@
   import API from '../../../utils/api'
   
   export default {
+    computed: {
+      allUnsyncFiles () {
+        return File.query().where('state', 'waiting').get()
+      }
+    },
     methods: {
+      getUnsyncFiles (stream) {
+        return File.query().where('streamId', stream.id).where('state', 'waiting').get()
+      },
       uploadFile (file) {
         API.uploadFile((progress) => {
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
@@ -32,14 +40,14 @@
     },
     created () {
       console.log('view has created')
-      const unsyncFiles = File.query().where('state', 'waiting').get()
+      const unsyncFiles = this.allUnsyncFiles
       console.log('unsyncFiles =>', unsyncFiles)
       unsyncFiles.forEach((file) => {
         this.uploadFile(file)
       })
-      this.$electron.ipcRenderer.on('hasNewStreamAdded', (event, data) => {
+      this.$electron.ipcRenderer.on('hasNewStreamAdded', (event, stream) => {
         console.log('on hasNewStreamAdded')
-        const unsyncFiles = File.query().where('streamId', data.id).where('state', 'waiting').get()
+        const unsyncFiles = this.getUnsyncFiles(stream)
         unsyncFiles.forEach((file) => {
           this.uploadFile(file)
         })

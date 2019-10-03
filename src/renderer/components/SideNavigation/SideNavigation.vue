@@ -11,10 +11,10 @@
                         <span class="stream-title"> {{ stream.name }} </span>
                         <img :src="getStateImgUrl(getState(stream))">
                     </div>
-                    <div class="state-progress" v-if="!isSynced(stream)">
+                    <div class="state-progress" v-if="shouldShowProgress(stream)">
                         <progress class="progress is-primary" :value="getProgress(stream)" max="100"></progress>
                         <div class="menu-container">
-                            <span class="is-size-7">{{ stream.state }}</span>
+                            <span class="is-size-7">{{ getState(stream) }}</span>
                             <span class="is-size-7"> {{ stream.additional }} </span>
                         </div>
                     </div>
@@ -47,25 +47,28 @@
         return require(`../../assets/ic-state-${state}.svg`)
       },
       selectItem (stream) {
+        stream['files'] = []
         this.$store.dispatch('setSelectedStream', stream)
       },
       isActive (stream) {
         return stream.id === this.selectedStream.id
       },
-      isSynced (stream) {
-        return this.getState(stream) === 'completed'
+      shouldShowProgress (stream) {
+        return this.getState(stream) === 'waiting' || this.getState(stream) === 'uploading'
       },
       getState (stream) {
         const isCompleted = stream.files.every(file => { return file.state === 'completed' })
         const isWaiting = stream.files.every(file => { return file.state === 'waiting' })
+        const isFailed = stream.files.every(file => { return file.state === 'failed' })
         if (isCompleted) return 'completed'
         else if (isWaiting) return 'waiting'
+        else if (isFailed) return 'failed'
         return 'uploading'
       },
       getProgress (stream) {
         const state = this.getState(stream)
         if (state === 'completed') return 100
-        else if (state === 'waiting') return 0
+        else if (state === 'waiting' || state === 'failed') return 0
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         return completedFiles.length / stream.files.length * 100
       }

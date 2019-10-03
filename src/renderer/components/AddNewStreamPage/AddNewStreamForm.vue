@@ -82,12 +82,14 @@ export default {
       const files = fileHelper.getFilesFromPath(this.folderPath).map(fileName => {
         const isoDate = dateHelper.getDateTime(fileName, this.selectedTimestampFormat)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+        const state = momentDate.isValid() ? 'waiting' : 'failed'
+        const stateMessage = momentDate.isValid() ? '' : 'Filename does not match with a timestamp format'
         return {
           name: fileName,
           timestamp: momentDate,
           streamId: streamId,
-          state: 'waiting',
-          stateMessage: ''
+          state: state,
+          stateMessage: stateMessage
         }
       })
       const stream = {
