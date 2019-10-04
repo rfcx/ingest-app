@@ -12,19 +12,20 @@
   export default {
     computed: {
       streams () {
-        return Stream.query().with('files').get()
+        return Stream.query().get()
       }
     },
     watch: {
-      streams: (val, oldVal) => {
-        console.log('streams changed')
-        console.log('from: ' + oldVal)
-        console.log('to: ' + val)
-        // TODO: subscribe for changes
+      streams (val, oldVal) {
+        const oldIds = oldVal.map((stream) => { return stream.id })
+        const newIds = val.map((stream) => { return stream.id })
+        if (JSON.stringify(oldIds) === JSON.stringify(newIds)) return // do nothing if the data is the same
+        this.subscribeForFileChanges()
       }
     },
     methods: {
       subscribeForFileChanges () {
+        console.log('subscribeForFileChanges')
         // TODO: subscribe for file changes
       },
       createFileObject (filePath, stream) {
