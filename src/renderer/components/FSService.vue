@@ -83,7 +83,7 @@
       this.subscribeForFileChanges()
       this.$electron.ipcRenderer.on('hasNewStreamAdded', (event, stream) => {
         const folderPath = stream.folderPath
-        console.log('on hasNewFilesAdded path: ', folderPath)
+        console.log('on hasNewStreamAdded path: ', folderPath)
         const files = fileHelper.getFilesFromDirectoryPath(folderPath).map(fileName => {
           const filePath = fileHelper.getFilePath(folderPath, fileName)
           return this.createFileObject(filePath, stream)
@@ -93,7 +93,6 @@
         filesOnly.forEach((file) => {
           this.insertFile(file)
         })
-        // this.$electron.ipcRenderer.send('readNewFilesSuccess', filesOnly)
       })
     }
   }

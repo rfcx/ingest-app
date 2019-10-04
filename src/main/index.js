@@ -75,16 +75,6 @@ ipcMain.on('newStreamAdded', (event, data) => {
   backgroundFSWindow.webContents.send('hasNewStreamAdded', data)
 })
 
-ipcMain.on('newFilesAdded', (event, data) => {
-  console.log('on newFilesAdded')
-  backgroundFSWindow.webContents.send('hasNewFilesAdded', data)
-})
-
-ipcMain.on('readNewFilesSuccess', (event, data) => {
-  console.log('on readNewFilesSuccess')
-  mainWindow.webContents.send('hasReadNewFilesSuccess', data)
-})
-
 /*
 ipcMain.on('queuedUnsyncFiles', (event, data) => {
   console.log('on queuedUnsyncFiles')
