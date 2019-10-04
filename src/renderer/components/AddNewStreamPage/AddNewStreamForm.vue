@@ -36,10 +36,10 @@
         </div>
         <div class="field is-grouped">
             <p class="control">
-                <router-link to="/"><a class="button is-rounded">Cancel</a></router-link>
+                <router-link to="/"><button class="button is-rounded">Cancel</button></router-link>
             </p>
             <p class="control">
-                <a class="button is-rounded is-primary" :disabled="!hasPassedValidation" @click="createStream">Create</a>
+                <button class="button is-rounded is-primary" :disabled="!hasPassedValidation" @click.prevent="createStream">Create</button>
             </p>
         </div>
     </fieldset>
@@ -78,7 +78,7 @@ export default {
     createStream () {
       if (this.checkIfDuplicateStream(this.folderPath)) {
         console.log('duplicate name')
-        return
+        return false
       }
       const streamId = cryptoJS.MD5(this.folderPath).toString()
       this.$electron.ipcRenderer.on('hasReadNewFilesSuccess', (event, files) => {
