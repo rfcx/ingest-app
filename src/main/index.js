@@ -72,6 +72,7 @@ app.on('activate', () => {
 ipcMain.on('newStreamAdded', (event, data) => {
   console.log('on newStreamAdded')
   backgroundAPIWindow.webContents.send('hasNewStreamAdded', data)
+  backgroundFSWindow.webContents.send('hasNewStreamAdded', data)
 })
 
 ipcMain.on('newFilesAdded', (event, data) => {

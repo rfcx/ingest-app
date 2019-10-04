@@ -22,15 +22,19 @@ module.exports = {
   getFilesFromDirectoryPath: (directoryPath) => {
     return fs.readdirSync(directoryPath)
   },
-  readFile: (directoryPath, fileName) => {
-    const filePath = getFilePath(directoryPath, fileName)
+  readFile: (filePath) => {
     return readFile(filePath)
   },
-  getMD5Hash: (directoryPath, fileName) => {
-    const filePath = getFilePath(directoryPath, fileName)
+  getMD5Hash: (filePath) => {
     if (!isFile(filePath)) return ''
     const fileData = readFile(filePath)
     return cryptoJS.MD5(fileData).toString()
+  },
+  getFilePath (directoryPath, fileName) {
+    return getFilePath(directoryPath, fileName)
+  },
+  getFileNameFromFilePath (filePath) {
+    return path.parse(filePath).base
   },
   getFileName: (fileName) => {
     const ext = '.' + getExtension(fileName) // FIXME: call getExtension function

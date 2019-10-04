@@ -47,7 +47,6 @@
 
 <script>
 import moment from 'moment'
-import dateHelper from '../../../../utils/dateHelper'
 import Stream from '../../store/models/Stream'
 import cryptoJS from 'crypto-js'
 
@@ -80,37 +79,20 @@ export default {
         console.log('duplicate name')
         return false
       }
+
       const streamId = cryptoJS.MD5(this.folderPath).toString()
-      this.$electron.ipcRenderer.on('hasReadNewFilesSuccess', (event, files) => {
-        console.log('on hasReadNewFilesSuccess files: ', files)
-        const allFiles = files.map(file => {
-          const isoDate = dateHelper.getDateTime(file.name, this.selectedTimestampFormat)
-          const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-          const state = momentDate.isValid() ? 'waiting' : 'failed'
-          const stateMessage = momentDate.isValid() ? '' : 'Filename does not match with a timestamp format'
-          return {
-            ...file,
-            timestamp: momentDate,
-            streamId: streamId,
-            state: state,
-            stateMessage: stateMessage
-          }
-        })
-        const stream = {
-          id: streamId,
-          name: this.name,
-          folderPath: this.folderPath,
-          timestampFormat: this.selectedTimestampFormat,
-          files: allFiles
-        }
-        console.log('create stream')
-        console.log(JSON.stringify(stream))
-        Stream.insert({ data: stream, insert: ['files'] })
-        this.$electron.ipcRenderer.send('newStreamAdded', stream)
-        this.$store.dispatch('setSelectedStreamId', stream.id)
-        this.$router.push('/')
-      })
-      this.$electron.ipcRenderer.send('newFilesAdded', this.folderPath)
+      const stream = {
+        id: streamId,
+        name: this.name,
+        folderPath: this.folderPath,
+        timestampFormat: this.selectedTimestampFormat
+      }
+      console.log('create stream')
+      console.log(JSON.stringify(stream))
+      Stream.insert({ data: stream, insert: ['files'] })
+      this.$electron.ipcRenderer.send('newStreamAdded', stream)
+      this.$store.dispatch('setSelectedStreamId', stream.id)
+      this.$router.push('/')
     }
   },
   computed: {
