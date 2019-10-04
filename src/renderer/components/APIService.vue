@@ -12,11 +12,23 @@
         return File.query().where('state', 'waiting').get()
       }
     },
+    watch: {
+      allUnsyncFiles (val, oldVal) {
+        console.log('allUnsyncFiles changed')
+        const oldIds = oldVal.map((file) => { return file.id })
+        const newIds = val.map((file) => { return file.id })
+        if (JSON.stringify(oldIds) === JSON.stringify(newIds)) return // do nothing if the data is the same
+        val.forEach(file => {
+          this.uploadFile(file)
+        })
+      }
+    },
     methods: {
       getUnsyncFiles (stream) {
         return File.query().where('streamId', stream.id).where('state', 'waiting').get()
       },
       uploadFile (file) {
+        console.log('uploadFile')
         API.uploadFile((progress) => {
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
