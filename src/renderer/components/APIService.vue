@@ -14,7 +14,7 @@
     },
     watch: {
       allUnsyncFiles (val, oldVal) {
-        console.log('allUnsyncFiles changed')
+        console.log('allUnsyncFiles changed', val)
         const oldIds = oldVal.map((file) => { return file.id })
         const newIds = val.map((file) => { return file.id })
         if (JSON.stringify(oldIds) === JSON.stringify(newIds)) return // do nothing if the data is the same
@@ -28,12 +28,12 @@
         return File.query().where('streamId', stream.id).where('state', 'waiting').get()
       },
       uploadFile (file) {
-        console.log('uploadFile')
+        console.log('uploadFile: ', file)
         API.uploadFile((progress) => {
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
           File.update({ where: file.id,
-            data: {state: 'uploading', stateMessage: '100'}
+            data: {state: 'uploading', stateMessage: progress}
           })
         }, () => {
           // const updatedFile = {file: file, state: {id: 'completed', message: ''}}
@@ -56,13 +56,6 @@
       console.log('unsyncFiles =>', unsyncFiles)
       unsyncFiles.forEach((file) => {
         this.uploadFile(file)
-      })
-      this.$electron.ipcRenderer.on('hasNewStreamAdded', (event, stream) => {
-        console.log('on hasNewStreamAdded')
-        const unsyncFiles = this.getUnsyncFiles(stream)
-        unsyncFiles.forEach((file) => {
-          this.uploadFile(file)
-        })
       })
     }
   }

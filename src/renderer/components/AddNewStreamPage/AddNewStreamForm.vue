@@ -90,7 +90,6 @@ export default {
       console.log('create stream')
       console.log(JSON.stringify(stream))
       Stream.insert({ data: stream, insert: ['files'] })
-      this.$electron.ipcRenderer.send('newStreamAdded', stream)
       this.$store.dispatch('setSelectedStreamId', stream.id)
       this.$router.push('/')
     }

@@ -81,6 +81,7 @@
     created () {
       console.log('FS Service')
       this.subscribeForFileChanges()
+      /*
       this.$electron.ipcRenderer.on('hasNewStreamAdded', (event, stream) => {
         const folderPath = stream.folderPath
         console.log('on hasNewStreamAdded path: ', folderPath)
@@ -94,6 +95,7 @@
           this.insertFile(file)
         })
       })
+      */
     }
   }
 </script>

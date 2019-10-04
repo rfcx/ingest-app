@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import '../renderer/store'
 // import API from '../../utils/api'
 
@@ -67,12 +67,6 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
   }
-})
-
-ipcMain.on('newStreamAdded', (event, data) => {
-  console.log('on newStreamAdded')
-  backgroundAPIWindow.webContents.send('hasNewStreamAdded', data)
-  backgroundFSWindow.webContents.send('hasNewStreamAdded', data)
 })
 
 /*
