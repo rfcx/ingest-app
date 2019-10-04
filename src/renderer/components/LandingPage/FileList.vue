@@ -24,7 +24,7 @@
         return Stream.find(this.selectedStreamId)
       },
       files () {
-        return File.query().where('streamId', this.selectedStreamId).get()
+        return File.query().where('streamId', this.selectedStreamId).orderBy('name').get()
       }
     },
     methods: {

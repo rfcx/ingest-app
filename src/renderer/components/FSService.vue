@@ -4,6 +4,7 @@
 
 <script>
   import fileHelper from '../../../utils/fileHelper'
+  import fileWatcher from '../../../utils/fileWatcher'
   import dateHelper from '../../../utils/dateHelper'
   import cryptoJS from 'crypto-js'
   import Stream from '../store/models/Stream'
@@ -27,6 +28,17 @@
       subscribeForFileChanges () {
         console.log('subscribeForFileChanges')
         // TODO: subscribe for file changes
+        this.streams.forEach(stream => {
+          fileWatcher.watch(stream.folderPath, (newFilePath) => {
+            // add callback
+            if (this.fileIsExist(newFilePath)) return
+            const file = this.createFileObject(newFilePath, stream)
+            this.insertFile(file)
+            this.insertFilesToStream([file], stream)
+          }, (removedFilePath) => {
+            this.deleteFile(this.getFileId(removedFilePath))
+          })
+        })
       },
       createFileObject (filePath, stream) {
         const fileName = fileHelper.getFileNameFromFilePath(filePath)
@@ -36,7 +48,7 @@
         const state = momentDate.isValid() ? 'waiting' : 'failed'
         const stateMessage = momentDate.isValid() ? '' : 'Filename does not match with a timestamp format'
         return {
-          id: cryptoJS.MD5(filePath).toString(),
+          id: this.getFileId(filePath),
           name: fileName,
           hash: hash,
           timestamp: momentDate,
@@ -45,19 +57,30 @@
           stateMessage: stateMessage
         }
       },
+      getFileId (filePath) {
+        return cryptoJS.MD5(filePath).toString()
+      },
       insertFile (file) {
         console.log('insert file: ', file)
         File.insert({ data: file })
+      },
+      deleteFile (fileId) {
+        console.log('remove file: ', fileId)
+        File.delete(fileId)
       },
       insertFilesToStream (files, stream) {
         Stream.update({ where: stream.id,
           data: { files: files },
           insert: ['files']
         })
+      },
+      fileIsExist (filePath) {
+        return !!File.find(this.getFileId(filePath))
       }
     },
     created () {
       console.log('FS Service')
+      this.subscribeForFileChanges()
       this.$electron.ipcRenderer.on('hasNewStreamAdded', (event, stream) => {
         const folderPath = stream.folderPath
         console.log('on hasNewFilesAdded path: ', folderPath)
