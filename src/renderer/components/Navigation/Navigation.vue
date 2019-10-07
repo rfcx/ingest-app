@@ -4,7 +4,7 @@
     <div class="navbar-item">
       <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx"></router-link>
     </div>
-    <span class="navbar-item">RFCx Ingestion</span>
+    <span class="navbar-item">RFCx Ingest</span>
   </div>
   <div class="navbar-end">
       <div class="navbar-item" v-if="login">
