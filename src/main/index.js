@@ -1,7 +1,9 @@
 'use strict'
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import '../renderer/store'
+import Stream from '../renderer/store/models/Stream'
+import File from '../renderer/store/models/File'
 // import API from '../../utils/api'
 
 /**
@@ -53,6 +55,25 @@ function createWindow () {
     webPreferences: { nodeIntegration: true }
   })
   backgroundFSWindow.loadURL(backgroundFSURL)
+
+  /* MENU */
+  const template = [
+    {
+      label: 'File',
+      submenu: [
+        { label: 'Clear data',
+          click: async () => {
+            console.log('clear data')
+            File.deleteAll()
+            Stream.deleteAll()
+          }
+        },
+        { role: 'quit' }
+      ]
+    }
+  ]
+  const menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
 }
 
 app.on('ready', createWindow)
