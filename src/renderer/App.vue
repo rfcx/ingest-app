@@ -6,7 +6,7 @@
 
 <script>
   export default {
-    name: 'RFCx Ingest'
+    name: 'ingest-app'
   }
 </script>
 
