@@ -51,6 +51,7 @@
           id: this.getFileId(filePath),
           name: fileName,
           hash: hash,
+          path: filePath,
           timestamp: momentDate,
           streamId: stream.id,
           state: state,

@@ -11,6 +11,7 @@ export default class File extends Model {
       id: this.string(''),
       name: this.string(''),
       hash: this.attr(''),
+      path: this.string(''),
       timestamp: this.attr(null),
       state: this.string(''), // state: waiting, uploading, fail
       stateMessage: this.string(''),
