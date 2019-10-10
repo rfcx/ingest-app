@@ -20,7 +20,10 @@ function getExtension (fileName) {
 
 module.exports = {
   getFilesFromDirectoryPath: (directoryPath) => {
-    return fs.readdirSync(directoryPath)
+    if (fs.existsSync(directoryPath)) {
+      return fs.readdirSync(directoryPath)
+    }
+    return undefined
   },
   readFile: (filePath) => {
     return readFile(filePath)
