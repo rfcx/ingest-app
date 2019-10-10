@@ -1,12 +1,20 @@
 <template>
-<div id="wrapper">API Service</div>
+  <div id="wrapper">API Service</div>
 </template>
 
 <script>
   import File from '../store/models/File'
   import API from '../../../utils/api'
   
+  const workerTimeoutMaximum = 60000
+  const workerTimeoutMinimum = 1000
+
   export default {
+    data: () => {
+      return {
+        workerTimeout: workerTimeoutMinimum
+      }
+    },
     computed: {
       allUnsyncFiles () {
         return File.query().where('state', 'waiting').get()
@@ -48,10 +56,29 @@
             data: {state: 'failed', stateMessage: error}
           })
         })
+      },
+      doWork () {
+        return new Promise((resolve, reject) => {
+          console.log('work')
+          reject(new Error('unknown'))
+        })
+      },
+      tick () {
+        this.doWork().then(() => {
+          console.log('job success')
+          this.workerTimeout = workerTimeoutMinimum
+          setTimeout(() => { this.tick() }, this.workerTimeout)
+        }).catch((err) => {
+          console.log(err)
+          this.workerTimeout = Math.min(2 * this.workerTimeout, workerTimeoutMaximum)
+          console.log('job fail, retrying in', this.workerTimeout)
+          setTimeout(() => { this.tick() }, this.workerTimeout)
+        })
       }
     },
     created () {
       console.log('API Service')
+      this.tick()
       const unsyncFiles = this.allUnsyncFiles
       console.log('unsyncFiles =>', unsyncFiles)
       unsyncFiles.forEach((file) => {
