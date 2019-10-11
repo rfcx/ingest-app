@@ -1,23 +1,38 @@
-# ingest-app
+# RFCx Ingest App
 
 > Desktop application for ingesting audio to RFCx platform
 
-#### Build Setup
+## Getting started
+
+### Requirements
+
+- Node 8.11.0+
+
+### Start development environment
+
+1. Install dependencies
+
+    ``` bash
+    npm install
+    ```
+
+2. Start the electron browser/app with hot reload (auto restarts app on file changes)
+
+    ``` bash
+    npm run dev
+    ```
+
+### Build
+
+Build electron application for production
 
 ``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:9080
-npm run dev
-
-# build electron application for production
 npm run build
+```
 
-
-# lint all JS/Vue component files in `src/`
+Lint all JS/Vue component files in `src/`
+``` bash
 npm run lint
-
 ```
 
 ---
