@@ -1,6 +1,9 @@
 // https://jsonplaceholder.typicode.com/posts
 
 const axios = require('axios')
+const fileStreamAxios = axios.create({
+  adapter: require('./axios-http-adapter').default
+})
 
 const apiUrl = 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
 
@@ -29,20 +32,17 @@ const fs = require('fs')
 
 const upload = (signedUrl, filePath, progressCallback) => {
   const readStream = fs.createReadStream(filePath)
-  console.log('filePath: ', filePath)
-  console.log('readStream', readStream)
   const options = {
     headers: {
       'Content-Type': 'audio/wav'
     },
-    maxContentLength: 52428890,
     onUploadProgress: function (progressEvent) {
       const progress = parseInt(Math.round((progressEvent.loaded * 100) / progressEvent.total))
       console.log('onUploadProgress', progress)
       progressCallback(progress)
     }
   }
-  return axios.put(signedUrl, readStream, options)
+  return fileStreamAxios.put(signedUrl, readStream, options)
 }
 
 export default {

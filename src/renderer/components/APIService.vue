@@ -4,7 +4,7 @@
 
 <script>
   import File from '../store/models/File'
-  import API from '../../../utils/api'
+  import api from '../../../utils/api'
   
   const workerTimeoutMaximum = 60000
   const workerTimeoutMinimum = 1000
@@ -22,22 +22,29 @@
     },
     watch: {
       allUnsyncFiles (val, oldVal) {
-        console.log('allUnsyncFiles changed', val)
-        const oldIds = oldVal.map((file) => { return file.id })
-        const newIds = val.map((file) => { return file.id })
-        if (JSON.stringify(oldIds) === JSON.stringify(newIds)) return // do nothing if the data is the same
-        val.forEach(file => {
-          this.uploadFile(file)
-        })
+        // console.log('allUnsyncFiles changed', val)
+        // const oldIds = oldVal.map((file) => { return file.id })
+        // const newIds = val.map((file) => { return file.id })
+        // if (JSON.stringify(oldIds) === JSON.stringify(newIds)) return // do nothing if the data is the same
+        // val.forEach(file => {
+        //   this.uploadFile(file)
+        // })
       }
     },
     methods: {
-      getUnsyncFiles (stream) {
-        return File.query().where('streamId', stream.id).where('state', 'waiting').get()
+      getUnsyncedFile () {
+        return new Promise((resolve, reject) => {
+          const file = File.query().where('state', 'waiting').orderBy('timestamp').first()
+          if (file != null) {
+            resolve(file)
+          } else {
+            reject(new Error('No waiting files'))
+          }
+        })
       },
       uploadFile (file) {
         console.log('uploadFile: ', file)
-        return API.uploadFile(file.path, (progress) => {
+        return api.uploadFile(file.path, (progress) => {
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
           File.update({ where: file.id,
@@ -46,21 +53,20 @@
         }).then(() => {
           // const updatedFile = {file: file, state: {id: 'completed', message: ''}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
-          File.update({ where: file.id,
+          return File.update({ where: file.id,
             data: {state: 'completed', stateMessage: ''}
           })
         }).catch((error) => {
           // const updatedFile = {file: file, state: {id: 'failed', message: error}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
-          File.update({ where: file.id,
+          return File.update({ where: file.id,
             data: {state: 'failed', stateMessage: error}
           })
         })
       },
       doWork () {
-        return new Promise((resolve, reject) => {
-          console.log('work')
-          reject(new Error('unknown'))
+        return this.getUnsyncedFile().then((file) => {
+          return this.uploadFile(file)
         })
       },
       tick () {
@@ -79,11 +85,6 @@
     created () {
       console.log('API Service')
       this.tick()
-      const unsyncFiles = this.allUnsyncFiles
-      console.log('unsyncFiles =>', unsyncFiles)
-      unsyncFiles.forEach((file) => {
-        this.uploadFile(file)
-      })
     }
   }
 </script>
