@@ -6,7 +6,7 @@
   import File from '../store/models/File'
   import api from '../../../utils/api'
   
-  const workerTimeoutMaximum = 60000
+  const workerTimeoutMaximum = 10000
   const workerTimeoutMinimum = 1000
 
   export default {
