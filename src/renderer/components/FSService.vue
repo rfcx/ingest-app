@@ -42,20 +42,32 @@
       },
       createFileObject (filePath, stream) {
         const fileName = fileHelper.getFileNameFromFilePath(filePath)
+        const fileExt = fileHelper.getExtension(fileName)
         const hash = fileHelper.getMD5Hash(filePath)
         const isoDate = dateHelper.getDateTime(fileName, stream.timestampFormat)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-        const state = momentDate.isValid() ? 'waiting' : 'failed'
-        const stateMessage = momentDate.isValid() ? '' : 'Filename does not match with a timestamp format'
+        const state = this.getState(momentDate, fileExt)
         return {
           id: this.getFileId(filePath),
           name: fileName,
           hash: hash,
           path: filePath,
+          extension: fileExt,
           timestamp: momentDate,
           streamId: stream.id,
-          state: state,
-          stateMessage: stateMessage
+          state: state.state,
+          stateMessage: state.message
+        }
+      },
+      getState (momentDate, fileExt) {
+        if (!momentDate.isValid()) {
+          console.log('Filename does not match with a timestamp format')
+          return {state: 'failed', message: 'Filename does not match with a timestamp format'}
+        } else if (!fileHelper.isSupportedFileExtension(fileExt)) {
+          console.log('File extension is not supported')
+          return {state: 'failed', message: 'File extension is not supported'}
+        } else {
+          return {state: 'waiting', message: ''}
         }
       },
       getFileId (filePath) {

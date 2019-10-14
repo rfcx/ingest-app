@@ -45,5 +45,8 @@ module.exports = {
   },
   getExtension: (fileName) => {
     return getExtension(fileName)
+  },
+  isSupportedFileExtension: (fileExtension) => {
+    return fileExtension === 'wav' || fileExtension === 'mp3' || fileExtension === 'opus'
   }
 }

@@ -43,8 +43,7 @@
         })
       },
       uploadFile (file) {
-        console.log('uploadFile: ', file)
-        return api.uploadFile(file.path, (progress) => {
+        return api.uploadFile(file.path, file.extension, (progress) => {
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
           File.update({ where: file.id,
@@ -60,7 +59,7 @@
           // const updatedFile = {file: file, state: {id: 'failed', message: error}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
           return File.update({ where: file.id,
-            data: {state: 'failed', stateMessage: error}
+            data: {state: 'failed', stateMessage: error.message}
           })
         })
       },

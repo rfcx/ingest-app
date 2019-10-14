@@ -7,9 +7,10 @@ const fileStreamAxios = axios.create({
 
 const apiUrl = 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
 
-const uploadFile = (filePath, progressCallback) => {
+const uploadFile = (filePath, fileExt, progressCallback) => {
+  console.log(`path: ${filePath} ext: ${fileExt}`)
   return requestUploadUrl().then((url) => {
-    return upload(url, filePath, progressCallback)
+    return upload(url, filePath, fileExt, progressCallback)
   })
 }
 
@@ -30,11 +31,11 @@ const requestUploadUrl = () => {
 
 const fs = require('fs')
 
-const upload = (signedUrl, filePath, progressCallback) => {
+const upload = (signedUrl, filePath, fileExt, progressCallback) => {
   const readStream = fs.createReadStream(filePath)
   const options = {
     headers: {
-      'Content-Type': 'audio/wav'
+      'Content-Type': `audio/${fileExt}`
     },
     onUploadProgress: function (progressEvent) {
       const progress = parseInt(Math.round((progressEvent.loaded * 100) / progressEvent.total))
