@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow, Menu } from 'electron'
+import { app, BrowserWindow, Menu, Tray, nativeImage } from 'electron'
 import '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
@@ -16,7 +16,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 let mainWindow, backgroundAPIWindow, backgroundFSWindow
-let menu
+let menu, tray
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
@@ -33,6 +33,8 @@ function createWindow () {
   /**
    * Initial window options
    */
+  createMenu()
+  createTray()
   mainWindow = new BrowserWindow({
     show: !app.getLoginItemSettings().wasOpenedAsHidden,
     useContentSize: true,
@@ -58,7 +60,9 @@ function createWindow () {
     webPreferences: { nodeIntegration: true }
   })
   backgroundFSWindow.loadURL(backgroundFSURL)
+}
 
+function createMenu () {
   /* MENU */
   const template = [
     {
@@ -89,6 +93,29 @@ function createWindow () {
   ]
   menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
+}
+
+function createTray () {
+  const iconPath = path.join(__static, 'rfcx-logo.png')
+  var trayIcon = nativeImage.createFromPath(iconPath)
+  trayIcon = trayIcon.resize({ width: 16, height: 16 })
+  tray = new Tray(trayIcon)
+  const trayMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show App',
+      click: function () {
+        mainWindow.show()
+      }
+    },
+    {
+      label: 'Quit',
+      click: function () {
+        app.isQuiting = true
+        app.quit()
+      }
+    }
+  ])
+  tray.setContextMenu(trayMenu)
 }
 
 const appFolder = path.dirname(process.execPath)
