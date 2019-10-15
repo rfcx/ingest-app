@@ -43,7 +43,7 @@
         })
       },
       uploadFile (file) {
-        return api.uploadFile(file.path, file.extension, (progress) => {
+        return api.uploadFile(file.name, file.path, file.extension, 'test', (progress) => { // TODO: fix stream id
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
           File.update({ where: file.id,
