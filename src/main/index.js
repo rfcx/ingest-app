@@ -4,6 +4,7 @@ import { app, BrowserWindow, Menu } from 'electron'
 import '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
+import path from 'path'
 // import API from '../../utils/api'
 
 /**
@@ -15,6 +16,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 let mainWindow, backgroundAPIWindow, backgroundFSWindow
+let menu
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
@@ -32,6 +34,7 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
+    show: !app.getLoginItemSettings().wasOpenedAsHidden,
     useContentSize: true,
     width: 1000,
     height: 563,
@@ -84,9 +87,23 @@ function createWindow () {
       ]
     }
   ]
-  const menu = Menu.buildFromTemplate(template)
+  menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
 }
+
+const appFolder = path.dirname(process.execPath)
+const updateExe = path.resolve(appFolder, '..', 'Update.exe')
+const exeName = path.basename(process.execPath)
+
+app.setLoginItemSettings({
+  openAtLogin: true,
+  openAsHidden: true,
+  path: updateExe,
+  args: [
+    '--processStart', `"${exeName}"`,
+    '--process-start-args', `"--hidden"`
+  ]
+})
 
 app.on('ready', createWindow)
 
@@ -99,35 +116,11 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
+  } else {
+    mainWindow.show()
   }
 })
 
-/*
-ipcMain.on('queuedUnsyncFiles', (event, data) => {
-  console.log('on queuedUnsyncFiles')
-  console.log(event)
-  console.log(data)
-  data.forEach((file) => {
-    uploadFile(event, file)
-  })
-})
-
-function uploadFile (event, file) {
-  API.uploadFile((progress) => {
-    console.log('uploadFile progress')
-    const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
-    event.reply('updateProgress', updatedFile)
-  }, () => {
-    console.log('uploadFile success')
-    const updatedFile = {file: file, state: {id: 'completed', message: ''}}
-    event.reply('updateProgress', updatedFile)
-  }, (error) => {
-    console.log('uploadFile error')
-    const updatedFile = {file: file, state: {id: 'failed', message: error}}
-    event.reply('updateProgress', updatedFile)
-  })
-}
-*/
 /**
  * Auto Updater
  *
