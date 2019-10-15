@@ -19,7 +19,7 @@
     "postinstall": "npm run lint:fix"
   },
   "build": {
-    "productName": "ingest-app",
+    "productName": "RFCx Ingest",
     "appId": "org.rfcx.ingest",
     "directories": {
       "output": "build"
