@@ -1,7 +1,12 @@
 <template>
   <div>
+    <div v-show="isEmptyFolder()" class="container-box empty has-text-centered">
+        <img src="~@/assets/ic-folder-empty.svg" style="margin-bottom: 0.75em"><br>
+        <span>Your synced folder is empty</span><br>
+        <a class="button is-rounded is-primary" style="margin-top: 0.75em" @click="openFolder(selectedStream.folderPath)">Open Folder</a>
+    </div>
     <!-- <span class="has-text-weight-semibold"> {{ selectedStream.folderPath }} | {{ selectedStream.timestampFormat }} </span> -->
-    <table class="table is-hoverable">
+    <table v-show="!isEmptyFolder()" class="table is-hoverable">
       <thead>
         <tr>
           <td></td>
@@ -69,6 +74,9 @@
       },
       isError (state) {
         return state === 'failed'
+      },
+      isEmptyFolder () {
+        return this.files.length === 0
       }
     }
   }

@@ -5,7 +5,6 @@
       <side-navigation></side-navigation>
       <div class="column content is-desktop">
         <empty-stream v-if="isEmptyStream()"></empty-stream>
-        <empty-folder v-else-if="isEmptyFolder()"></empty-folder>
         <file-list v-else></file-list>
         <a class="button is-circle is-primary" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-open.svg"></a>
       </div>
@@ -16,25 +15,17 @@
 <script>
   import Navigation from './Navigation/Navigation'
   import SideNavigation from './SideNavigation/SideNavigation'
-  import EmptyFolder from './LandingPage/EmptyFolder'
   import EmptyStream from './LandingPage/EmptyStream'
   import FileList from './LandingPage/FileList'
-  import fileHelper from '../../../utils/fileHelper'
   import { mapState } from 'vuex'
   import Stream from '../store/models/Stream'
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyFolder, EmptyStream, FileList },
+    components: { Navigation, SideNavigation, EmptyStream, FileList },
     methods: {
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
-      },
-      isEmptyFolder () {
-        const selectedStream = this.selectedStream
-        if (selectedStream === null) return false
-        const files = fileHelper.getFilesFromDirectoryPath(selectedStream.folderPath)
-        return files === undefined || files.length === 0
       },
       openFolder (link) {
         this.$electron.shell.openItem(link)

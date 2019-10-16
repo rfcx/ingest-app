@@ -78,7 +78,7 @@ export default {
       const file = event.target.files[0]
       if (file) this.folderPath = file.path
       this.error = null
-      // TODO: check timestamp for auto-detect option
+      // FIXME: check timestamp for auto-detect option
     },
     onCloseAlert () {
       this.error = null
@@ -110,12 +110,12 @@ export default {
     },
     selectedTimestampFormat: function () {
       switch (this.timestampFormat) {
-        case 'Auto-detect': return null // TODO: Fix this
+        case 'Auto-detect': return null // FIXME: Fix this
         case 'Custom': return this.customTimestampFormat
         default: return this.timestampFormat
       }
     },
-    timestampPreview: function () {
+    timestampPreview: function () { // FIXME: fix this
       if (!this.selectedTimestampFormat) return null
       console.log(this.selectedTimestampFormat)
       return moment().format(this.selectedTimestampFormat)
