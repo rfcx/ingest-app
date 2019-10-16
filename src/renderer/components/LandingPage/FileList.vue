@@ -27,7 +27,6 @@
 
 <script>
   import { mapState } from 'vuex'
-  import fs from 'fs'
   import dateHelper from '../../../../utils/dateHelper'
   import fileHelper from '../../../../utils/fileHelper'
   import File from '../../store/models/File'
@@ -72,11 +71,6 @@
       isError (state) {
         return state === 'failed'
       }
-    },
-    created () {
-      // update file
-      const fileList = fs.readdirSync(this.selectedStream.folderPath)
-      console.log(fileList)
     }
   }
 </script>
