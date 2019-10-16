@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>outline-open_in_new-24px@1.5x</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Apps/Maps/_/Floating-Button" transform="translate(-18.000000, -18.000000)">
+            <g id="outline-open_in_new-24px" transform="translate(16.000000, 16.000000)">
+                <polygon id="Shape" points="0 0 24 0 24 24 0 24"></polygon>
+                <path d="M19.7777778,19.7777778 L4.22222222,19.7777778 L4.22222222,4.22222222 L12,4.22222222 L12,2 L4.22222222,2 C2.98888889,2 2,3 2,4.22222222 L2,19.7777778 C2,21 2.98888889,22 4.22222222,22 L19.7777778,22 C21,22 22,21 22,19.7777778 L22,12 L19.7777778,12 L19.7777778,19.7777778 Z M14.0694864,2 L14.0694864,4.26586103 L18.1367069,4.26586103 L7,15.402568 L8.59743202,17 L19.734139,5.86329305 L19.734139,9.9305136 L22,9.9305136 L22,2 L14.0694864,2 Z" id="Shape" fill="#FFFFFF" fill-rule="nonzero"></path>
+            </g>
+        </g>
+    </g>
+</svg>

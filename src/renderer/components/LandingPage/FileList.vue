@@ -18,7 +18,6 @@
           <td v-show="!isError(file.state)">{{ file.fileSize }}</td>
           <td class="is-error" v-show="isError(file.state)">{{ file.stateMessage }}</td>
           <td v-show="isError(file.state)"></td>
-
         </tr>
       </tbody>
     </table>

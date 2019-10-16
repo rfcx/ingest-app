@@ -7,6 +7,7 @@
         <empty-stream v-if="isEmptyStream()"></empty-stream>
         <empty-folder v-else-if="isEmptyFolder()"></empty-folder>
         <file-list v-else></file-list>
+        <a class="button is-circle is-primary" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-open.svg"></a>
       </div>
     </section>
   </div>
@@ -21,8 +22,6 @@
   import fileHelper from '../../../utils/fileHelper'
   import { mapState } from 'vuex'
   import Stream from '../store/models/Stream'
-  import File from '../store/models/File'
-  import API from '../../../utils/api'
 
   export default {
     name: 'landing-page',
@@ -37,23 +36,8 @@
         const files = fileHelper.getFilesFromDirectoryPath(selectedStream.folderPath)
         return files === undefined || files.length === 0
       },
-      uploadFile (file) {
-        API.uploadFile((progress) => {
-          console.log('uploadFile progress')
-          File.update({ where: file.name,
-            data: {state: {id: 'uploading', message: '100'}}
-          })
-        }, () => {
-          console.log('uploadFile success')
-          File.update({ where: file.name,
-            data: {state: {id: 'completed', message: ''}}
-          })
-        }, (error) => {
-          console.log('uploadFile error')
-          File.update({ where: file.name,
-            data: {state: {id: 'failed', message: error}}
-          })
-        })
+      openFolder (link) {
+        this.$electron.shell.openItem(link)
       }
     },
     computed: {
@@ -218,6 +202,18 @@
 
   .state-progress span {
     color: $body-text-color;
+  }
+
+  a.is-circle {
+    height: 60px;
+    width: 60px;
+    background-color: $brand-primary;
+    border-radius: 50%;
+    margin: auto;
+    text-align:center;
+    position: fixed;
+    right: 2em;
+    bottom: 2em;
   }
 
   .field {
