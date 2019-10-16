@@ -6,7 +6,6 @@
       <div class="column content is-desktop">
         <empty-stream v-if="isEmptyStream()"></empty-stream>
         <file-list v-else></file-list>
-        <a class="button is-circle is-primary" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-open.svg"></a>
       </div>
     </section>
   </div>
