@@ -9,8 +9,14 @@ const apiUrl = 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
 
 const uploadFile = (fileName, filePath, fileExt, streamId, progressCallback) => {
   console.log(`path: ${filePath} ext: ${fileExt}`)
-  return requestUploadUrl(fileName, streamId).then((url) => {
-    return upload(url, filePath, fileExt, progressCallback)
+  return requestUploadUrl(fileName, streamId).then((data) => {
+    return upload(data.url, filePath, fileExt, progressCallback)
+      .then(() => {
+        return Promise.resolve(data.uploadId)
+      })
+      .catch((error) => {
+        return Promise.reject(error)
+      })
   })
 }
 
@@ -23,7 +29,7 @@ const requestUploadUrl = (originalFilename, streamId) => {
       const url = response.data.url
       const uploadId = response.data.uploadId
       console.log('uploadId = ' + uploadId)
-      return url
+      return { url, uploadId }
     })
 }
 
@@ -46,6 +52,17 @@ const upload = (signedUrl, filePath, fileExt, progressCallback) => {
   return fileStreamAxios.put(signedUrl, readStream, options)
 }
 
+// Part 3: Get ingest status
+
+const checkStatus = (uploadId) => {
+  return axios.get(apiUrl + '/uploads/' + uploadId)
+    .then(function (response) {
+      const status = response.data.status
+      return status
+    })
+}
+
 export default {
-  uploadFile
+  uploadFile,
+  checkStatus
 }

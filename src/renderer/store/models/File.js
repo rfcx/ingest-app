@@ -15,10 +15,12 @@ export default class File extends Model {
       sizeInByte: this.number(0),
       extension: this.string(''),
       timestamp: this.attr(null),
-      state: this.string(''), // state: waiting, uploading, fail
+      state: this.string(''), // state: waiting, uploading, ingesting, completed, fail
       stateMessage: this.string(''),
       streamId: this.string(''),
-      stream: this.belongsTo(Stream, 'streamId')
+      stream: this.belongsTo(Stream, 'streamId'),
+      uploadId: this.string(''),
+      progress: this.number(0)
     }
   }
 
