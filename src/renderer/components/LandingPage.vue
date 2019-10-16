@@ -26,9 +26,6 @@
     methods: {
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
-      },
-      openFolder (link) {
-        this.$electron.shell.openItem(link)
       }
     },
     computed: {

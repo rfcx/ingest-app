@@ -77,6 +77,9 @@
       },
       isEmptyFolder () {
         return this.files.length === 0
+      },
+      openFolder (link) {
+        this.$electron.shell.openItem(link)
       }
     }
   }
