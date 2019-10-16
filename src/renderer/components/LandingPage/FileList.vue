@@ -1,9 +1,24 @@
 <template>
   <div>
     <span class="has-text-weight-semibold"> {{ selectedStream.folderPath }} | {{ selectedStream.timestampFormat }} </span>
-    <ul v-for="file in getFiles()" :key="file.id">
-      <li :class="{ 'has-text-danger': !isValid(getTimestamp(file.name)) }"> {{ file.name }} | {{ getTimestamp(file.name) }} | {{ file.state }} ({{ file.stateMessage }}) </li>
-    </ul>
+    <table>
+      <thead>
+        <tr>
+          <td></td>
+          <td>Name</td>
+          <td>Timestamp</td>
+          <td>File size</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="file in getFiles()" :key="file.id">
+          <td></td>
+          <td>{{ file.name }}</td>
+          <td>{{ getTimestamp(file.name) }}</td>
+          <td>{{ file.state }} ({{ file.stateMessage }}) </td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
