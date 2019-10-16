@@ -14,8 +14,10 @@
         <tr v-for="file in getFiles()" :key="file.id">
           <td><img :src="getStateImgUrl(file.state)"></td>
           <td>{{ file.name }}</td>
-          <td>{{ getTimestamp(file.name) }}</td>
-          <td>{{ file.fileSize }}</td>
+          <td v-show="!isError(file.state)">{{ getTimestamp(file.name) }}</td>
+          <td v-show="!isError(file.state)">{{ file.fileSize }}</td>
+          <td v-show="isError(file.state)">{{ file.stateMessage }}</td>
+          <td v-show="isError(file.state)"></td>
         </tr>
       </tbody>
     </table>
@@ -65,6 +67,9 @@
         File.update({ where: file.name,
           data: { state: state }
         })
+      },
+      isError (state) {
+        return state === 'failed'
       }
     },
     created () {
