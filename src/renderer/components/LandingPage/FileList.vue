@@ -13,11 +13,12 @@
       <tbody>
         <tr v-for="file in getFiles()" :key="file.id">
           <td><img :src="getStateImgUrl(file.state)"></td>
-          <td>{{ file.name }}</td>
+          <td :class="{ 'is-error': isError(file.state) }" >{{ file.name }}</td>
           <td v-show="!isError(file.state)">{{ getTimestamp(file.name) }}</td>
           <td v-show="!isError(file.state)">{{ file.fileSize }}</td>
-          <td v-show="isError(file.state)">{{ file.stateMessage }}</td>
+          <td class="is-error" v-show="isError(file.state)">{{ file.stateMessage }}</td>
           <td v-show="isError(file.state)"></td>
+
         </tr>
       </tbody>
     </table>
@@ -79,3 +80,20 @@
     }
   }
 </script>
+
+<style lang="scss">
+
+  thead {
+    text-transform: uppercase;
+    font-weight: $title-font-weight;
+  }
+
+  thead td, thead th {
+    color: $body-text-color !important;
+  }
+
+  td.is-error {
+    color: $body-text-color;
+  }
+
+</style>

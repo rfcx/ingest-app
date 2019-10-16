@@ -216,6 +216,10 @@
     height: 0.5rem;
   }
 
+  .state-progress span {
+    color: $body-text-color;
+  }
+
   .field {
     margin-bottom: 1rem !important;
   }
