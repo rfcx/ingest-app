@@ -12,7 +12,7 @@
       </thead>
       <tbody>
         <tr v-for="file in getFiles()" :key="file.id">
-          <td></td>
+          <td><img :src="getStateImgUrl(file.state)"></td>
           <td>{{ file.name }}</td>
           <td>{{ getTimestamp(file.name) }}</td>
           <td>{{ file.state }} ({{ file.stateMessage }}) </td>
@@ -46,6 +46,9 @@
       getFiles () {
         return this.files
         // return fs.readdirSync(this.selectedStream.folderPath)
+      },
+      getStateImgUrl (state) {
+        return require(`../../assets/ic-file-state-${state}.svg`)
       },
       getTimestamp (fileFullName) {
         const fileName = fileHelper.getFileName(fileFullName)
