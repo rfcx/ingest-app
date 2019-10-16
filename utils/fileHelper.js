@@ -46,6 +46,10 @@ module.exports = {
   getExtension: (fileName) => {
     return getExtension(fileName)
   },
+  getFileSize: (filePath) => {
+    const stats = fs.statSync(filePath)
+    return stats.size
+  },
   isSupportedFileExtension: (fileExtension) => {
     return fileExtension === 'wav' || fileExtension === 'mp3' || fileExtension === 'opus'
   }

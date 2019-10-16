@@ -44,6 +44,7 @@
         const fileName = fileHelper.getFileNameFromFilePath(filePath)
         const fileExt = fileHelper.getExtension(fileName)
         const hash = fileHelper.getMD5Hash(filePath)
+        const size = fileHelper.getFileSize(filePath)
         const isoDate = dateHelper.getDateTime(fileName, stream.timestampFormat)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
         const state = this.getState(momentDate, fileExt)
@@ -53,6 +54,7 @@
           hash: hash,
           path: filePath,
           extension: fileExt,
+          sizeInByte: size,
           timestamp: momentDate,
           streamId: stream.id,
           state: state.state,

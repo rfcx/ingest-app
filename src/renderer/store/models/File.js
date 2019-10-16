@@ -12,6 +12,7 @@ export default class File extends Model {
       name: this.string(''),
       hash: this.attr(''),
       path: this.string(''),
+      sizeInByte: this.number(0),
       extension: this.string(''),
       timestamp: this.attr(null),
       state: this.string(''), // state: waiting, uploading, fail
@@ -19,5 +20,13 @@ export default class File extends Model {
       streamId: this.string(''),
       stream: this.belongsTo(Stream, 'streamId')
     }
+  }
+
+  get fileSize () {
+    const bytes = this.sizeInByte
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+    if (bytes === 0) return '0 Byte'
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
+    return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i]
   }
 }
