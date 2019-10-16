@@ -1,5 +1,9 @@
 <template>
     <fieldset>
+        <div class="notification" v-show="error">
+          <button class="delete" @click="onCloseAlert()"></button>
+          {{ error }}
+        </div>
         <div class="field">
             <label for="name" class="label">Name</label>
             <div class="control">
@@ -57,7 +61,8 @@ export default {
       folderPath: null,
       timestampFormat: 'YYYYMMDD-HHmmss',
       customTimestampFormat: null,
-      timestampFormatOptions: ['YYYYMMDD-HHmmss', 'YYYYMMDD?HH:mm:ss', 'Custom']
+      timestampFormatOptions: ['YYYYMMDD-HHmmss', 'YYYYMMDD?HH:mm:ss', 'Custom'],
+      error: null
     }
   },
   methods: {
@@ -72,11 +77,16 @@ export default {
     onFileChange (event) {
       const file = event.target.files[0]
       if (file) this.folderPath = file.path
+      this.error = null
       // TODO: check timestamp for auto-detect option
+    },
+    onCloseAlert () {
+      this.error = null
     },
     createStream () {
       if (this.checkIfDuplicateStream(this.folderPath)) {
         console.log('duplicate name')
+        this.error = 'You have already linked to this folder. Please select a different folder.'
         return false
       }
 
