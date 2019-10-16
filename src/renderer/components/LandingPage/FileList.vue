@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span class="has-text-weight-semibold"> {{ selectedStream.folderPath }} | {{ selectedStream.timestampFormat }} </span>
+    <!-- <span class="has-text-weight-semibold"> {{ selectedStream.folderPath }} | {{ selectedStream.timestampFormat }} </span> -->
     <table class="table is-hoverable">
       <thead>
         <tr>
