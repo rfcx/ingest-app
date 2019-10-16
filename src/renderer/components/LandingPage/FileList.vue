@@ -1,7 +1,7 @@
 <template>
   <div>
     <span class="has-text-weight-semibold"> {{ selectedStream.folderPath }} | {{ selectedStream.timestampFormat }} </span>
-    <table>
+    <table class="table is-hoverable">
       <thead>
         <tr>
           <td></td>
@@ -15,7 +15,7 @@
           <td><img :src="getStateImgUrl(file.state)"></td>
           <td>{{ file.name }}</td>
           <td>{{ getTimestamp(file.name) }}</td>
-          <td>{{ file.state }} ({{ file.stateMessage }}) </td>
+          <td>{{ file.fileSize }}</td>
         </tr>
       </tbody>
     </table>
