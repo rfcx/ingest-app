@@ -16,8 +16,12 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="file in getFiles()" :key="file.id">
-          <td><img :src="getStateImgUrl(file.state)"></td>
+        <tr v-for="file in files" :key="file.id">
+          <td v-show="!shouldShowProgress(file.state)"><img :src="getStateImgUrl(file.state)"></td>
+          <td v-show="shouldShowProgress(file.state)">
+            <vue-circle ref="files" :progress="file.progress" :size="14" line-cap="round" :fill="fill" :thickness="2" :show-percent="false" @vue-circle-progress="progress" @vue-circle-end="progress_end">
+            </vue-circle>
+          </td>
           <td :class="{ 'is-error': isError(file.state) }" >{{ file.name }}</td>
           <td v-show="!isError(file.state)">{{ getTimestamp(file.name) }}</td>
           <td v-show="!isError(file.state)">{{ file.fileSize }}</td>
@@ -36,8 +40,17 @@
   import fileHelper from '../../../../utils/fileHelper'
   import File from '../../store/models/File'
   import Stream from '../../store/models/Stream'
+  import VueCircle from 'vue2-circle-progress'
 
   export default {
+    components: {
+      VueCircle
+    },
+    data () {
+      return {
+        fill: { color: ['#2FB04A'] }
+      }
+    },
     computed: {
       ...mapState({
         selectedStreamId: state => state.Stream.selectedStreamId
@@ -73,6 +86,9 @@
           data: { state: state }
         })
       },
+      shouldShowProgress (state) {
+        return state === 'uploading' || state === 'ingesting' || state === 'waiting'
+      },
       isError (state) {
         return state === 'failed'
       },
@@ -81,6 +97,23 @@
       },
       openFolder (link) {
         this.$electron.shell.openItem(link)
+      },
+      progress (event, progress, stepValue) {
+        // console.log(stepValue)
+      },
+      progress_end (event) {
+        // console.log('circle end')
+      }
+    },
+    watch: {
+      files (newValue) {
+        newValue.forEach((file, index) => {
+          console.log('file: ' + file.name + ' ' + file.progress + ' index: ' + index)
+          const filesRef = this.$refs.files
+          if (filesRef === undefined) return
+          const progress = filesRef[index]
+          if (progress !== undefined) progress.updateProgress(file.progress)
+        })
       }
     }
   }
