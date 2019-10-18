@@ -98,7 +98,7 @@ function createMenu () {
 function createTray () {
   const iconPath = path.join(__static, 'rfcx-logo.png')
   var trayIcon = nativeImage.createFromPath(iconPath)
-  trayIcon = trayIcon.resize({ width: 16, height: 16 })
+  trayIcon = trayIcon.resize({ width: 12, height: 17 })
   tray = new Tray(trayIcon)
   const trayMenu = Menu.buildFromTemplate([
     {
