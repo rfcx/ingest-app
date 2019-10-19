@@ -20,6 +20,16 @@ const uploadFile = (fileName, filePath, fileExt, streamId, progressCallback) => 
   })
 }
 
+// Part 0: Create stream
+const createStream = (streamName) => {
+  console.log('create stream api:', streamName)
+  return axios.post(apiUrl + '/streams', { name: streamName })
+    .then(function (response) {
+      const streamId = response.data.id
+      return streamId
+    })
+}
+
 // Part 1: Get signed url
 
 const requestUploadUrl = (originalFilename, streamId) => {
@@ -64,6 +74,7 @@ const checkStatus = (uploadId) => {
 }
 
 export default {
+  createStream,
   uploadFile,
   checkStatus
 }

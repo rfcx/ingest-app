@@ -43,7 +43,7 @@
                 <router-link to="/"><button class="button is-rounded">Cancel</button></router-link>
             </p>
             <p class="control">
-                <button class="button is-rounded is-primary" :disabled="!hasPassedValidation" @click.prevent="createStream">Create</button>
+                <button class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!hasPassedValidation" @click.prevent="createStream">Create</button>
             </p>
         </div>
     </fieldset>
@@ -52,7 +52,7 @@
 <script>
 import moment from 'moment'
 import Stream from '../../store/models/Stream'
-import cryptoJS from 'crypto-js'
+import api from '../../../../utils/api'
 
 export default {
   data () {
@@ -62,7 +62,8 @@ export default {
       timestampFormat: 'YYYYMMDD-HHmmss',
       customTimestampFormat: null,
       timestampFormatOptions: ['YYYYMMDD-HHmmss', 'YYYYMMDD?HH:mm:ss', 'Custom'],
-      error: null
+      error: null,
+      isLoading: false
     }
   },
   methods: {
@@ -89,19 +90,25 @@ export default {
         this.error = 'You have already linked to this folder. Please select a different folder.'
         return false
       }
-
-      const streamId = cryptoJS.MD5(this.folderPath).toString()
-      const stream = {
-        id: streamId,
-        name: this.name,
-        folderPath: this.folderPath,
-        timestampFormat: this.selectedTimestampFormat
-      }
-      console.log('create stream')
-      console.log(JSON.stringify(stream))
-      Stream.insert({ data: stream, insert: ['files'] })
-      this.$store.dispatch('setSelectedStreamId', stream.id)
-      this.$router.push('/')
+      this.isLoading = true
+      api.createStream(this.name).then(streamId => {
+        this.isLoading = false
+        const stream = {
+          id: streamId,
+          name: this.name,
+          folderPath: this.folderPath,
+          timestampFormat: this.selectedTimestampFormat
+        }
+        console.log('create stream')
+        console.log(JSON.stringify(stream))
+        Stream.insert({ data: stream, insert: ['files'] })
+        this.$store.dispatch('setSelectedStreamId', stream.id)
+        this.$router.push('/')
+      }).catch(error => {
+        console.log(error)
+        this.isLoading = false
+        this.error = error.message
+      })
     }
   },
   computed: {
