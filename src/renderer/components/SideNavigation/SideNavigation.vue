@@ -8,7 +8,7 @@
             <li v-for="stream in streams" :key="stream.id">
                 <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) }">
                     <div class="menu-container">
-                        <span class="stream-title"> {{ stream.name }} ({{stream.files.length}}) </span>
+                        <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
                         <img :src="getStateImgUrl(getState(stream))">
                     </div>
                     <div class="state-progress" v-if="shouldShowProgress(stream)">
