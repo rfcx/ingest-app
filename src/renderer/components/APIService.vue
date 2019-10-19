@@ -60,7 +60,7 @@
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
           File.update({ where: file.id,
-            data: {state: 'uploading', stateMessage: progress, progress: 1}
+            data: {state: 'uploading', stateMessage: progress, progress: progress}
           })
         }).then((uploadId) => {
           // const updatedFile = {file: file, state: {id: 'completed', message: ''}}
@@ -85,9 +85,9 @@
             console.log('Ingest status = ' + status)
             if (status === 10) {
               return File.update({ where: file.id,
-                data: {state: 'ingesting', stateMessage: '', progress: 1}
+                data: {state: 'ingesting', stateMessage: '', progress: 100}
               })
-            } else if (status === 20) { // FIXME: change to 20
+            } else if (status === 20) {
               return File.update({ where: file.id,
                 data: {state: 'completed', stateMessage: '', progress: 100}
               })
