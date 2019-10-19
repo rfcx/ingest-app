@@ -58,7 +58,8 @@ const checkStatus = (uploadId) => {
   return axios.get(apiUrl + '/uploads/' + uploadId)
     .then(function (response) {
       const status = response.data.status
-      return status
+      const failureMessage = response.data.failureMessage
+      return { status: status, failureMessage: failureMessage }
     })
 }
 

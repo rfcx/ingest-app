@@ -79,7 +79,9 @@
       },
       checkStatus (file) {
         return api.checkStatus(file.uploadId)
-          .then((status) => {
+          .then((data) => {
+            const status = data.status
+            const failureMessage = data.failureMessage
             console.log('Ingest status = ' + status)
             if (status === 10) {
               return File.update({ where: file.id,
@@ -91,7 +93,7 @@
               })
             } else if (status === 30) {
               return File.update({ where: file.id,
-                data: {state: 'failed', stateMessage: ''}
+                data: {state: 'failed', stateMessage: failureMessage}
               })
             }
           }).catch((error) => {
