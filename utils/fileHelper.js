@@ -51,6 +51,6 @@ module.exports = {
     return stats.size
   },
   isSupportedFileExtension: (fileExtension) => {
-    return fileExtension === 'wav' || fileExtension === 'mp3' || fileExtension === 'opus'
+    return fileExtension === 'wav' || fileExtension === 'mp3' || fileExtension === 'opus' || fileExtension === 'flac'
   }
 }

@@ -53,6 +53,7 @@ const upload = (signedUrl, filePath, fileExt, progressCallback) => {
     headers: {
       'Content-Type': `audio/${fileExt}`
     },
+    maxContentLength: 209715200,
     onUploadProgress: function (progressEvent) {
       const progress = parseInt(Math.round((progressEvent.loaded * 100) / progressEvent.total))
       console.log('onUploadProgress', progress)
