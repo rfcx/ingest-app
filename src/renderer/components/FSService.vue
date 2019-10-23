@@ -55,7 +55,7 @@
           path: filePath,
           extension: fileExt,
           sizeInByte: size,
-          timestamp: momentDate,
+          timestamp: isoDate,
           streamId: stream.id,
           state: state.state,
           stateMessage: state.message

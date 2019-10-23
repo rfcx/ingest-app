@@ -7,9 +7,9 @@ const fileStreamAxios = axios.create({
 
 const apiUrl = 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
 
-const uploadFile = (fileName, filePath, fileExt, streamId, progressCallback) => {
+const uploadFile = (fileName, filePath, fileExt, streamId, timestamp, progressCallback) => {
   console.log(`path: ${filePath} ext: ${fileExt}`)
-  return requestUploadUrl(fileName, streamId).then((data) => {
+  return requestUploadUrl(fileName, streamId, timestamp).then((data) => {
     return upload(data.url, filePath, fileExt, progressCallback)
       .then(() => {
         return Promise.resolve(data.uploadId)
@@ -32,9 +32,11 @@ const createStream = (streamName) => {
 
 // Part 1: Get signed url
 
-const requestUploadUrl = (originalFilename, streamId) => {
+const requestUploadUrl = (originalFilename, streamId, timestamp) => {
   // Make a request for a user with a given ID
-  return axios.post(apiUrl + '/uploads', { filename: originalFilename, stream: streamId })
+  const params = { filename: originalFilename, stream: streamId, timestamp: timestamp }
+  console.log('requestUploadUrl with params', params)
+  return axios.post(apiUrl + '/uploads', params)
     .then(function (response) {
       const url = response.data.url
       const uploadId = response.data.uploadId
