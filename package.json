@@ -43,7 +43,8 @@
       ]
     },
     "mac": {
-      "icon": "build/icons/icon.icns"
+      "icon": "build/icons/icon.icns",
+      "provisioningProfile": "Ingest.provisionprofile"
     },
     "win": {
       "icon": "build/icons/icon.ico"
