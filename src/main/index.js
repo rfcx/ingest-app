@@ -29,14 +29,14 @@ const backgroundFSURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/fs-service`
   : `file://${__dirname}/index.html#/fs-service`
 
-function createWindow () {
+function createWindow (openedAsHidden) {
   /**
    * Initial window options
    */
   createMenu()
   createTray()
   mainWindow = new BrowserWindow({
-    show: !app.getLoginItemSettings().wasOpenedAsHidden,
+    show: !openedAsHidden,
     useContentSize: true,
     width: 1000,
     height: 563,
@@ -132,7 +132,13 @@ app.setLoginItemSettings({
   ]
 })
 
-app.on('ready', createWindow)
+app.on('ready', () => {
+  let openedAsHidden
+  if (process.platform === 'darwin') openedAsHidden = app.getLoginItemSettings().wasOpenedAsHidden
+  else openedAsHidden = (process.argv || []).indexOf('--hidden') !== -1
+  console.log('open as hidden', openedAsHidden)
+  createWindow(openedAsHidden)
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
