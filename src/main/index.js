@@ -121,16 +121,16 @@ function createTray () {
   tray.setContextMenu(trayMenu)
 }
 
-const appFolder = path.dirname(process.execPath)
-const updateExe = path.resolve(appFolder, '..', 'Update.exe')
-const exeName = path.basename(process.execPath)
+// const appFolder = path.dirname(process.execPath)
+// const updateExe = path.resolve(appFolder, '..', 'Update.exe')
+// const exeName = path.basename(process.execPath)
 
 app.setLoginItemSettings({
   openAtLogin: true,
   openAsHidden: true,
-  path: updateExe,
+  // path: updateExe,
   args: [
-    '--processStart', `"${exeName}"`,
+    // '--processStart', `"${exeName}"`,
     '--process-start-args', `"--hidden"`
   ]
 })
