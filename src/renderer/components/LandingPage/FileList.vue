@@ -1,5 +1,27 @@
 <template>
   <div>
+    <div class="stream-info-container">
+      <div class="title-container">
+        <span>{{ selectedStream.name }}</span>
+        <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()">
+          <div class="dropdown-trigger">
+            <img src="~@/assets/ic-menu.svg" aria-haspopup="true" aria-controls="dropdown-menu">
+          </div>
+          <div class="dropdown-menu" id="dropdown-menu" role="menu">
+            <div class="dropdown-content">
+              <!-- <a href="#" class="dropdown-item">Rename</a>
+              <a class="dropdown-item">Change filename format</a>
+              <hr class="dropdown-divider"> -->
+              <a href="#" class="dropdown-item has-text-danger" @click="showConfirmToDeleteStreamModal()">Delete</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="subtitle-container">
+        <img src="~@/assets/ic-pin.svg"><span>Osa Conservation</span> 
+        <img src="~@/assets/ic-timestamp.svg"><span>{{ selectedStream.timestampFormat }}</span>
+      </div>
+    </div>
     <div v-show="isEmptyFolder()" class="container-box empty has-text-centered">
         <img src="~@/assets/ic-folder-empty.svg" style="margin-bottom: 0.75em"><br>
         <span>Your synced folder is empty</span><br>
@@ -31,6 +53,34 @@
       </tbody>
     </table>
     <a v-show="!isEmptyFolder()" class="button is-circle is-primary" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-open.svg"></a>
+    <!-- <div class="modal" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
+      <div class="modal-background"></div>
+      <div class="modal-content">
+        <div>
+
+        </div>
+        <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
+        <button class="button is-primary" @click="deleteStream()">Sure!</button>
+      </div>
+      <button class="modal-close is-large" aria-label="close"></button>
+    </div> -->
+    
+    <div class="modal" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Are you sure to delete this stream?</p>
+          <button class="delete" aria-label="close" @click="hideConfirmToDeleteStreamModal()"></button>
+        </header>
+        <!-- <section class="modal-card-body">
+          Are you sure?
+        </section> -->
+        <footer class="modal-card-foot">
+          <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
+          <button class="button is-danger" @click="deleteStream()">Delete</button>
+        </footer>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -48,7 +98,9 @@
     },
     data () {
       return {
-        fill: { color: ['#2FB04A'] }
+        fill: { color: ['#2FB04A'] },
+        shouldShowDropDown: false,
+        shouldShowConfirmToDeleteModal: false
       }
     },
     computed: {
@@ -103,6 +155,27 @@
       },
       progress_end (event) {
         // console.log('circle end')
+      },
+      toggleDropDown () {
+        console.log('showDropDown')
+        this.shouldShowDropDown = !this.shouldShowDropDown
+      },
+      showConfirmToDeleteStreamModal () {
+        this.shouldShowConfirmToDeleteModal = true
+      },
+      hideConfirmToDeleteStreamModal () {
+        this.shouldShowConfirmToDeleteModal = false
+      },
+      deleteStream () {
+        // select a new stream
+        const stream = Stream.query().first()
+        this.$store.dispatch('setSelectedStreamId', stream.id)
+        // delete files from current stream
+        this.files.forEach(file => {
+          File.delete(file.id)
+        })
+        // delete current stream
+        Stream.delete(this.selectedStreamId)
       }
     },
     watch: {
@@ -132,6 +205,47 @@
 
   td.is-error {
     color: $body-text-color;
+  }
+
+  .stream-info-container {
+    padding-left: $default-padding-margin; 
+    padding-right: $default-padding-margin; 
+    padding-bottom: $default-padding-margin;
+  }
+
+  .stream-info-container .title-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .stream-info-container .title-container span {
+    font-weight: $title-font-weight;
+  }
+
+  .stream-info-container .title-container .dropdown {
+    padding-left: $default-padding-margin; 
+    padding-right: $default-padding-margin;
+  }
+
+  .stream-info-container .subtitle-container img {
+    width: 1em;
+    height: 1em;
+    padding-right: 0.25em;
+  }
+
+  .modal-card-head, .modal-card-foot {
+    border: 0px !important;
+    background-color: white !important;
+  }
+
+  .modal-card-foot {
+    padding-top: 0px !important;
+  }
+
+  .modal-card-title {
+    margin-bottom: 0px !important;
+    font-size: $default-font-size !important;
   }
 
 </style>
