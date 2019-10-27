@@ -34,7 +34,7 @@
         <div class="field" v-if="isCustomTimestampFormatSelected(timestampFormat)">
             <label for="customTimestampFormat" class="label">Custom filename format</label>
             <div class="control">
-                <input v-model="customTimestampFormat" class="input" type="text" placeholder="YYYYMMDD-HH:mm:ss">
+                <input v-model="customTimestampFormat" class="input" type="text" placeholder="%YYYY%MM%DD-%HH%mm%ss">
             </div>
             <p class="help" v-if="isCustomTimestampFormatSelected(timestampFormat)">{{ timestampPreview }} </p>
             <div class="field is-grouped is-grouped-multiline">
@@ -61,24 +61,26 @@
 import moment from 'moment'
 import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
+// import dateHelper from '../../../../utils/dateHelper'
 
 export default {
   data () {
     return {
       name: null,
       folderPath: null,
-      timestampFormat: 'YYYYMMDD-HHmmss',
+      timestampFormat: '%YYYY%MM%DD-%HH%mm%ss',
       customTimestampFormat: '',
-      timestampFormatOptions: ['YYYYMMDD-HHmmss', 'YYYYMMDD?HH:mm:ss', 'Custom'],
+      timestampFormatOptions: ['%YYYY%MM%DD-%HH%mm%ss', '%YYYY%MM%DD?%HH:%mm:%ss', 'Custom'],
       error: null,
       isLoading: false,
       customTimestampFormatOptions: [
-        { title: 'Year (YYYY)', format: 'YYYY', isSelected: false },
-        { title: 'Month (MM)', format: 'MM', isSelected: false },
-        { title: 'Day (DD)', format: 'DD', isSelected: false },
-        { title: 'Hour (HH)', format: 'HH', isSelected: false },
-        { title: 'Minute (mm)', format: 'mm', isSelected: false },
-        { title: 'Second (ss)', format: 'ss', isSelected: false }
+        { title: 'Year (%YYYY)', format: '%YYYY', isSelected: false },
+        { title: 'Year (%yy)', format: '%yy', isSelected: false },
+        { title: 'Month (%MM)', format: '%MM', isSelected: false },
+        { title: 'Day (%DD)', format: '%DD', isSelected: false },
+        { title: 'Hour (%HH)', format: '%HH', isSelected: false },
+        { title: 'Minute (%mm)', format: '%mm', isSelected: false },
+        { title: 'Second (%ss)', format: '%ss', isSelected: false }
       ]
     }
   },
@@ -150,8 +152,15 @@ export default {
     },
     timestampPreview: function () { // FIXME: fix this
       if (!this.selectedTimestampFormat) return null
-      console.log(this.selectedTimestampFormat)
-      return moment().format(this.selectedTimestampFormat)
+      const now = moment()
+      var text = this.selectedTimestampFormat.replace('%YYYY', now.year())
+      text = text.replace('%yy', `${now.year()}`.substring(2, 4))
+      text = text.replace('%MM', now.month() + 1)
+      text = text.replace('%DD', now.date())
+      text = text.replace('%HH', now.hour())
+      text = text.replace('%mm', now.minute())
+      text = text.replace('%ss', now.second())
+      return text
     },
     hasPassedValidation: function () {
       if (this.name && this.folderPath) {
