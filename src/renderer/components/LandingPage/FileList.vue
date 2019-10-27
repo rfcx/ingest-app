@@ -53,18 +53,7 @@
       </tbody>
     </table>
     <a v-show="!isEmptyFolder()" class="button is-circle is-primary" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-open.svg"></a>
-    <!-- <div class="modal" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
-      <div class="modal-background"></div>
-      <div class="modal-content">
-        <div>
-
-        </div>
-        <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
-        <button class="button is-primary" @click="deleteStream()">Sure!</button>
-      </div>
-      <button class="modal-close is-large" aria-label="close"></button>
-    </div> -->
-    
+    <!-- Modal -->
     <div class="modal" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
       <div class="modal-background"></div>
       <div class="modal-card">
@@ -72,9 +61,6 @@
           <p class="modal-card-title">Are you sure to delete this stream?</p>
           <button class="delete" aria-label="close" @click="hideConfirmToDeleteStreamModal()"></button>
         </header>
-        <!-- <section class="modal-card-body">
-          Are you sure?
-        </section> -->
         <footer class="modal-card-foot">
           <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
           <button class="button is-danger" @click="deleteStream()">Delete</button>
