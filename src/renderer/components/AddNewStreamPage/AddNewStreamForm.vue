@@ -21,7 +21,7 @@
             </label>
         </div>
         <div class="field">
-            <label for="timestampFormat" class="label">Timestamp format</label>
+            <label for="timestampFormat" class="label">File name format</label>
             <div class="control">
                 <div class="select is-fullwidth">
                     <select v-model="timestampFormat">
@@ -32,7 +32,7 @@
           <p class="help" v-if="!isCustomTimestampFormatSelected(timestampFormat)">{{ timestampPreview }} </p>
         </div>
         <div class="field" v-if="isCustomTimestampFormatSelected(timestampFormat)">
-            <label for="customTimestampFormat" class="label">Custom timestamp format</label>
+            <label for="customTimestampFormat" class="label">Custom file name format</label>
             <div class="control">
                 <input v-model="customTimestampFormat" class="input" type="text" placeholder="YYYYMMDD-HH:mm:ss">
             </div>
