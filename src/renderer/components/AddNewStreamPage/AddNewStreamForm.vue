@@ -21,7 +21,7 @@
             </label>
         </div>
         <div class="field">
-            <label for="timestampFormat" class="label">File name format</label>
+            <label for="timestampFormat" class="label">Filename format</label>
             <div class="control">
                 <div class="select is-fullwidth">
                     <select v-model="timestampFormat">
@@ -32,11 +32,19 @@
           <p class="help" v-if="!isCustomTimestampFormatSelected(timestampFormat)">{{ timestampPreview }} </p>
         </div>
         <div class="field" v-if="isCustomTimestampFormatSelected(timestampFormat)">
-            <label for="customTimestampFormat" class="label">Custom file name format</label>
+            <label for="customTimestampFormat" class="label">Custom filename format</label>
             <div class="control">
                 <input v-model="customTimestampFormat" class="input" type="text" placeholder="YYYYMMDD-HH:mm:ss">
             </div>
             <p class="help" v-if="isCustomTimestampFormatSelected(timestampFormat)">{{ timestampPreview }} </p>
+            <div class="field is-grouped is-grouped-multiline">
+              <div class="control" v-for="option in customTimestampFormatOptions" :key="option.title">
+                <div class="tags has-addons">
+                  <a class="tag" @click="selectTag(option)">{{ option.title }}</a>
+                  <a class="tag is-delete" @click="removeTag(option)" v-show="option.isSelected"></a>
+                </div>
+              </div>
+            </div>
         </div>
         <div class="field is-grouped">
             <p class="control">
@@ -60,10 +68,18 @@ export default {
       name: null,
       folderPath: null,
       timestampFormat: 'YYYYMMDD-HHmmss',
-      customTimestampFormat: null,
+      customTimestampFormat: '',
       timestampFormatOptions: ['YYYYMMDD-HHmmss', 'YYYYMMDD?HH:mm:ss', 'Custom'],
       error: null,
-      isLoading: false
+      isLoading: false,
+      customTimestampFormatOptions: [
+        { title: 'Year (YYYY)', format: 'YYYY', isSelected: false },
+        { title: 'Month (MM)', format: 'MM', isSelected: false },
+        { title: 'Day (DD)', format: 'DD', isSelected: false },
+        { title: 'Hour (HH)', format: 'HH', isSelected: false },
+        { title: 'Minute (mm)', format: 'mm', isSelected: false },
+        { title: 'Second (ss)', format: 'ss', isSelected: false }
+      ]
     }
   },
   methods: {
@@ -83,6 +99,16 @@ export default {
     },
     onCloseAlert () {
       this.error = null
+    },
+    selectTag (option) {
+      if (option.isSelected) return // check if selected already
+      // change text in filename format input
+      if (this.customTimestampFormat === null) this.customTimestampFormat = option.format
+      this.customTimestampFormat = this.customTimestampFormat + option.format
+    },
+    removeTag (option) {
+      // change text in filename format input
+      this.customTimestampFormat = this.customTimestampFormat.replace(option.format, '')
     },
     createStream () {
       if (this.checkIfDuplicateStream(this.folderPath)) {
@@ -138,6 +164,14 @@ export default {
       }
       return false
     }
+  },
+  watch: {
+    customTimestampFormat () {
+      // if there is a format exist in the input, then set option's isSelected to be true
+      this.customTimestampFormatOptions.forEach(option => {
+        option.isSelected = this.customTimestampFormat.includes(option.format)
+      })
+    }
   }
 }
 </script>
@@ -152,3 +186,4 @@ export default {
         max-width: 23.5em !important;
     }
 </style>
+'
