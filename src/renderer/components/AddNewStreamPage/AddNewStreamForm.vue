@@ -186,4 +186,3 @@ export default {
         max-width: 23.5em !important;
     }
 </style>
-'
