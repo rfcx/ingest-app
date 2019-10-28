@@ -40,7 +40,7 @@
             <div class="field is-grouped is-grouped-multiline">
               <div class="control" v-for="option in customTimestampFormatOptions" :key="option.title">
                 <div class="tags has-addons">
-                  <a class="tag" @click="selectTag(option)">{{ option.title }}</a>
+                  <a class="tag" :class="{ 'is-disabled': option.isDisabled }" @click="selectTag(option)">{{ option.title }}</a>
                   <a class="tag is-delete" @click="removeTag(option)" v-show="option.isSelected"></a>
                 </div>
               </div>
@@ -74,13 +74,13 @@ export default {
       error: null,
       isLoading: false,
       customTimestampFormatOptions: [
-        { title: 'Year (%YYYY)', format: '%YYYY', isSelected: false },
-        { title: 'Year (%yy)', format: '%yy', isSelected: false },
-        { title: 'Month (%MM)', format: '%MM', isSelected: false },
-        { title: 'Day (%DD)', format: '%DD', isSelected: false },
-        { title: 'Hour (%HH)', format: '%HH', isSelected: false },
-        { title: 'Minute (%mm)', format: '%mm', isSelected: false },
-        { title: 'Second (%ss)', format: '%ss', isSelected: false }
+        { title: 'Year (%YYYY)', format: '%YYYY', isSelected: false, isDisabled: false },
+        { title: 'Year (%yy)', format: '%yy', isSelected: false, isDisabled: false },
+        { title: 'Month (%MM)', format: '%MM', isSelected: false, isDisabled: false },
+        { title: 'Day (%DD)', format: '%DD', isSelected: false, isDisabled: false },
+        { title: 'Hour (%HH)', format: '%HH', isSelected: false, isDisabled: false },
+        { title: 'Minute (%mm)', format: '%mm', isSelected: false, isDisabled: false },
+        { title: 'Second (%ss)', format: '%ss', isSelected: false, isDisabled: false }
       ]
     }
   },
@@ -103,12 +103,22 @@ export default {
       this.error = null
     },
     selectTag (option) {
-      if (option.isSelected) return // check if selected already
+      if (option.isSelected || option.isDisabled) return // check if selected already
+      // disable year
+      if (option.format === '%YYYY') {
+        this.customTimestampFormatOptions[1].isDisabled = true
+      } else if (option.format === '%YY') {
+        this.customTimestampFormatOptions[0].isDisabled = true
+      }
       // change text in filename format input
       if (this.customTimestampFormat === null) this.customTimestampFormat = option.format
       this.customTimestampFormat = this.customTimestampFormat + option.format
     },
     removeTag (option) {
+      if (option.format === '%YYYY' || option.format === '%yy') {
+        this.customTimestampFormatOptions[0].isDisabled = false
+        this.customTimestampFormatOptions[1].isDisabled = false
+      }
       // change text in filename format input
       this.customTimestampFormat = this.customTimestampFormat.replace(option.format, '')
     },
@@ -153,13 +163,14 @@ export default {
     timestampPreview: function () { // FIXME: fix this
       if (!this.selectedTimestampFormat) return null
       const now = moment()
-      var text = this.selectedTimestampFormat.replace('%YYYY', now.year())
-      text = text.replace('%yy', `${now.year()}`.substring(2, 4))
-      text = text.replace('%MM', now.month() + 1)
-      text = text.replace('%DD', now.date())
-      text = text.replace('%HH', now.hour())
-      text = text.replace('%mm', now.minute())
-      text = text.replace('%ss', now.second())
+      // console.log(`now.minute: ${now.minute} now.format ${now.format('mm')}`)
+      var text = this.selectedTimestampFormat.replace('%YYYY', now.format('YYYY'))
+      text = text.replace('%yy', now.format('YY'))
+      text = text.replace('%MM', now.format('MM'))
+      text = text.replace('%DD', now.format('DD'))
+      text = text.replace('%HH', now.format('HH'))
+      text = text.replace('%mm', now.format('mm'))
+      text = text.replace('%ss', now.format('ss'))
       return text
     },
     hasPassedValidation: function () {
@@ -176,6 +187,16 @@ export default {
   },
   watch: {
     customTimestampFormat () {
+      // disable year
+      // FIXME: refactor this
+      if (this.customTimestampFormat.includes('%YYYY')) {
+        this.customTimestampFormatOptions[1].isDisabled = true
+      } else if (this.customTimestampFormat.includes('%yy')) {
+        this.customTimestampFormatOptions[0].isDisabled = true
+      } else {
+        this.customTimestampFormatOptions[0].isDisabled = false
+        this.customTimestampFormatOptions[1].isDisabled = false
+      }
       // if there is a format exist in the input, then set option's isSelected to be true
       this.customTimestampFormatOptions.forEach(option => {
         option.isSelected = this.customTimestampFormat.includes(option.format)
@@ -193,5 +214,9 @@ export default {
 
     .file.is-fullwidth .file-name {
         max-width: 23.5em !important;
+    }
+
+    .tag.is-disabled {
+      color: gray;
     }
 </style>
