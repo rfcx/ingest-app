@@ -9,9 +9,9 @@ function log (any) {
 module.exports = {
   appDate: appDate,
   getDateTime: (fileName, timeStampFormat) => {
-    print('timestamp format: ' + timeStampFormat)
+    log('timestamp format: ' + timeStampFormat)
     timeStampFormat = timeStampFormat.replace(/%/g, '')
-    print('filename: ' + fileName + ' timestamp format: ' + timeStampFormat)
+    log('filename: ' + fileName + ' timestamp format: ' + timeStampFormat)
     const stringOffsetYear4Digits = timeStampFormat.search(/Y/)
     const stringOffsetYear2Digits = timeStampFormat.search(/y/)
     const stringOffsetMonth = timeStampFormat.search(/M/)
