@@ -106,7 +106,7 @@
         // return fs.readdirSync(this.selectedStream.folderPath)
       },
       getStateImgUrl (state) {
-        return require(`../../assets/ic-file-state-${state}.svg`)
+        return require(`../../assets/ic-state-${state}.svg`)
       },
       getTimestamp (fileFullName) {
         const fileName = fileHelper.getFileName(fileFullName)
@@ -125,7 +125,8 @@
         })
       },
       shouldShowProgress (state) {
-        return state === 'uploading' || state === 'ingesting' || state === 'waiting'
+        return false
+        // return state === 'uploading' || state === 'ingesting' || state === 'waiting'
       },
       isError (state) {
         return state === 'failed'

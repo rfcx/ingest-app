@@ -56,6 +56,9 @@
         })
       },
       uploadFile (file) {
+        File.update({ where: file.id,
+          data: {state: 'uploading', stateMessage: '0', progress: 0}
+        })
         return api.uploadFile(file.name, file.path, file.extension, file.streamId, file.timestamp, (progress) => { // TODO: fix stream id
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
@@ -83,18 +86,24 @@
             const status = data.status
             const failureMessage = data.failureMessage
             console.log('Ingest status = ' + status)
-            if (status === 10) {
-              return File.update({ where: file.id,
-                data: {state: 'ingesting', stateMessage: '', progress: 100}
-              })
-            } else if (status === 20) {
-              return File.update({ where: file.id,
-                data: {state: 'completed', stateMessage: '', progress: 100}
-              })
-            } else if (status === 30) {
-              return File.update({ where: file.id,
-                data: {state: 'failed', stateMessage: failureMessage}
-              })
+            switch (status) {
+              case 10:
+                return File.update({ where: file.id,
+                  data: {state: 'ingesting', stateMessage: '', progress: 100}
+                })
+              case 19:
+                return File.update({ where: file.id,
+                  data: {state: 'ingesting', stateMessage: '', progress: 100}
+                })
+              case 20:
+                return File.update({ where: file.id,
+                  data: {state: 'completed', stateMessage: '', progress: 100}
+                })
+              case 30:
+                return File.update({ where: file.id,
+                  data: {state: 'failed', stateMessage: failureMessage}
+                })
+              default: break
             }
           }).catch((error) => {
             console.log(error)
