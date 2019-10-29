@@ -39,7 +39,8 @@ function createWindow (openedAsHidden = false) {
     useContentSize: true,
     width: 1000,
     height: 563,
-    minWidth: 400
+    minWidth: 400,
+    webPreferences: { nodeIntegration: true }
   })
 
   mainWindow.loadURL(winURL)
@@ -136,6 +137,7 @@ app.setLoginItemSettings({
 })
 
 app.on('ready', () => {
+  process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
   let openedAsHidden = false
   if (process.platform === 'darwin') openedAsHidden = app.getLoginItemSettings().wasOpenedAsHidden
   else openedAsHidden = (process.argv || []).indexOf('--hidden') !== -1
