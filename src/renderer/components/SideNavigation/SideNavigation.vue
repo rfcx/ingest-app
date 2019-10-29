@@ -57,15 +57,17 @@
         return stream.id === this.selectedStream.id
       },
       shouldShowProgress (stream) {
-        return this.getState(stream) === 'waiting' || this.getState(stream) === 'uploading'
+        return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed'
       },
       getState (stream) {
         const isCompleted = stream.files.every(file => { return file.state === 'completed' })
         const isWaiting = stream.files.every(file => { return file.state === 'waiting' })
         const isFailed = stream.files.every(file => { return file.state === 'failed' })
+        const isIngesting = stream.files.every(file => { return file.state === 'completed' || file.state === 'ingesting' || file.state === 'failed' })
         if (isCompleted) return 'completed'
         else if (isWaiting) return 'waiting'
         else if (isFailed) return 'failed'
+        else if (isIngesting) return 'ingesting'
         return 'uploading'
       },
       getProgress (stream) {
@@ -73,16 +75,20 @@
         if (state === 'completed') return 100
         else if (state === 'waiting' || state === 'failed') return 0
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
-        return completedFiles.length / stream.files.length * 100
+        const uploadedFiles = stream.files.filter(file => { return file.state === 'ingesting' || file.state === 'completed' })
+        const completedPercentage = completedFiles.length / (stream.files.length * 2) * 100
+        const uploadedPercentage = uploadedFiles.length / (stream.files.length * 2) * 100
+        console.log(`completed files ${completedFiles.length} = ${completedPercentage}% | completed files ${uploadedFiles.length} = ${uploadedPercentage}%`)
+        return completedPercentage + uploadedPercentage
       },
       getStateStatus (stream) {
         const state = this.getState(stream)
-        if (state === 'completed') return ''
-        else if (state === 'waiting' || state === 'failed') return ''
+        if (state === 'completed' || state === 'failed') return ''
+        else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? ' files' : ' file')
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         const errorFiles = stream.files.filter(file => { return file.state === 'failed' })
-        if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} synced`
-        return `${completedFiles.length}/${stream.files.length} synced ${errorFiles.length} error`
+        if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
+        return `${completedFiles.length}/${stream.files.length} ingested | ${errorFiles.length} ${errorFiles.length > 1 ? 'errors' : 'error'}`
       }
     }
   }
