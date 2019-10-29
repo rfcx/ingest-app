@@ -45,7 +45,7 @@
             </vue-circle>
           </td>
           <td :class="{ 'is-error': isError(file.state) }" >{{ file.name }}</td>
-          <td v-show="!isError(file.state)">{{ getTimestamp(file.name) }}</td>
+          <td v-show="!isError(file.state)">{{ getTimestamp(file) }}</td>
           <td v-show="!isError(file.state)">{{ file.fileSize }}</td>
           <td class="is-error" v-show="isError(file.state)">{{ file.stateMessage }}</td>
           <td v-show="isError(file.state)"></td>
@@ -73,7 +73,6 @@
 <script>
   import { mapState } from 'vuex'
   import dateHelper from '../../../../utils/dateHelper'
-  import fileHelper from '../../../../utils/fileHelper'
   import File from '../../store/models/File'
   import Stream from '../../store/models/Stream'
   import VueCircle from 'vue2-circle-progress'
@@ -108,14 +107,8 @@
       getStateImgUrl (state) {
         return require(`../../assets/ic-state-${state}.svg`)
       },
-      getTimestamp (fileFullName) {
-        const fileName = fileHelper.getFileName(fileFullName)
-        var isoDate
-        if (this.selectedStream.timestampFormat === 'Auto-detect') {
-          isoDate = dateHelper.parseTimestampAuto(fileName)
-        } else {
-          isoDate = dateHelper.parseTimestamp(fileName, this.selectedStream.timestampFormat)
-        }
+      getTimestamp (file) {
+        const isoDate = file.timestamp
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
         const appDate = dateHelper.convertMomentDateToAppDate(momentDate)
         return appDate
