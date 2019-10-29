@@ -154,6 +154,8 @@
         this.shouldShowConfirmToDeleteModal = false
       },
       deleteStream () {
+        // hide confirm modal
+        this.hideConfirmToDeleteStreamModal()
         // select a new stream
         const stream = Stream.query().first()
         this.$store.dispatch('setSelectedStreamId', stream.id)
