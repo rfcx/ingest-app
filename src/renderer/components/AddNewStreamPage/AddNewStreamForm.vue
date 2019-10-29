@@ -68,19 +68,19 @@ export default {
     return {
       name: null,
       folderPath: null,
-      timestampFormat: '%YYYY%MM%DD-%HH%mm%ss',
+      timestampFormat: '%Y%M%D-%H%m%s',
       customTimestampFormat: '',
-      timestampFormatOptions: ['%YYYY%MM%DD-%HH%mm%ss', '%YYYY%MM%DD?%HH:%mm:%ss', 'Custom'],
+      timestampFormatOptions: ['%Y%M%D-%H%m%s', '%Y%M%D?%H:%m:%s', 'Custom'],
       error: null,
       isLoading: false,
       customTimestampFormatOptions: [
-        { title: 'Year (%YYYY)', format: '%YYYY', isSelected: false, isDisabled: false },
-        { title: 'Year (%yy)', format: '%yy', isSelected: false, isDisabled: false },
-        { title: 'Month (%MM)', format: '%MM', isSelected: false, isDisabled: false },
-        { title: 'Day (%DD)', format: '%DD', isSelected: false, isDisabled: false },
-        { title: 'Hour (%HH)', format: '%HH', isSelected: false, isDisabled: false },
-        { title: 'Minute (%mm)', format: '%mm', isSelected: false, isDisabled: false },
-        { title: 'Second (%ss)', format: '%ss', isSelected: false, isDisabled: false }
+        { title: 'Year 4 digits (%Y)', format: '%Y', isSelected: false, isDisabled: false },
+        { title: 'Year 2 digits (%y)', format: '%y', isSelected: false, isDisabled: false },
+        { title: 'Month (%M)', format: '%M', isSelected: false, isDisabled: false },
+        { title: 'Day (%D)', format: '%D', isSelected: false, isDisabled: false },
+        { title: 'Hour (%H)', format: '%H', isSelected: false, isDisabled: false },
+        { title: 'Minute (%m)', format: '%m', isSelected: false, isDisabled: false },
+        { title: 'Second (%s)', format: '%s', isSelected: false, isDisabled: false }
       ]
     }
   },
@@ -105,9 +105,9 @@ export default {
     selectTag (option) {
       if (option.isSelected || option.isDisabled) return // check if selected already
       // disable year
-      if (option.format === '%YYYY') {
+      if (option.format === '%Y') {
         this.customTimestampFormatOptions[1].isDisabled = true
-      } else if (option.format === '%YY') {
+      } else if (option.format === '%y') {
         this.customTimestampFormatOptions[0].isDisabled = true
       }
       // change text in filename format input
@@ -115,7 +115,7 @@ export default {
       this.customTimestampFormat = this.customTimestampFormat + option.format
     },
     removeTag (option) {
-      if (option.format === '%YYYY' || option.format === '%yy') {
+      if (option.format === '%Y' || option.format === '%y') {
         this.customTimestampFormatOptions[0].isDisabled = false
         this.customTimestampFormatOptions[1].isDisabled = false
       }
@@ -164,13 +164,13 @@ export default {
       if (!this.selectedTimestampFormat) return null
       const now = moment()
       // console.log(`now.minute: ${now.minute} now.format ${now.format('mm')}`)
-      var text = this.selectedTimestampFormat.replace('%YYYY', now.format('YYYY'))
-      text = text.replace('%yy', now.format('YY'))
-      text = text.replace('%MM', now.format('MM'))
-      text = text.replace('%DD', now.format('DD'))
-      text = text.replace('%HH', now.format('HH'))
-      text = text.replace('%mm', now.format('mm'))
-      text = text.replace('%ss', now.format('ss'))
+      var text = this.selectedTimestampFormat.replace('%Y', now.format('YYYY'))
+      text = text.replace('%y', now.format('YY'))
+      text = text.replace('%M', now.format('MM'))
+      text = text.replace('%D', now.format('DD'))
+      text = text.replace('%H', now.format('HH'))
+      text = text.replace('%m', now.format('mm'))
+      text = text.replace('%s', now.format('ss'))
       return text
     },
     hasPassedValidation: function () {
@@ -189,9 +189,9 @@ export default {
     customTimestampFormat () {
       // disable year
       // FIXME: refactor this
-      if (this.customTimestampFormat.includes('%YYYY')) {
+      if (this.customTimestampFormat.includes('%Y')) {
         this.customTimestampFormatOptions[1].isDisabled = true
-      } else if (this.customTimestampFormat.includes('%yy')) {
+      } else if (this.customTimestampFormat.includes('%y')) {
         this.customTimestampFormatOptions[0].isDisabled = true
       } else {
         this.customTimestampFormatOptions[0].isDisabled = false

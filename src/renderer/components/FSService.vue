@@ -45,7 +45,7 @@
         const fileExt = fileHelper.getExtension(fileName)
         const hash = fileHelper.getMD5Hash(filePath)
         const size = fileHelper.getFileSize(filePath)
-        const isoDate = dateHelper.getDateTime(fileName, stream.timestampFormat)
+        const isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
         const state = this.getState(momentDate, fileExt)
         return {
