@@ -33,6 +33,25 @@ const parseTimestamp = (fileName, timestampFormat) => {
   return `${result.year}-${result.month}-${result.day}T${result.hour}:${result.minute}:${result.second}Z`
 }
 
+const parseTimestampAuto = (input) => {
+  // Test "year month day" then "day month year"
+  const test1 = '(?<year>(19|20)[0-9][0-9])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])'
+  const test2 = '(?<day>0[1-9]|[12][0-9]|3[01])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<year>(19|20)[0-9][0-9]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])'
+  const regExp1 = new RegExp(test1, 'g')
+  var result = regExp1.exec(input)
+  if (result == null) {
+    const regExp2 = new RegExp(test2, 'g')
+    result = regExp2.exec(input)
+    if (result == null) {
+      return undefined
+    }
+  }
+  result = result.groups
+  // Fix 2 character years
+  if (result.year.length === 2) result.year = '20' + result.year
+  return `${result.year}-${result.month}-${result.day}T${result.hour}:${result.minute}:${result.second}Z`
+}
+
 const getMomentDateFromISODate = (date) => {
   return moment.utc(date, moment.ISO_8601)
 }
@@ -52,6 +71,7 @@ const isValidDate = (date) => {
 export default {
   appDate,
   parseTimestamp,
+  parseTimestampAuto,
   getMomentDateFromISODate,
   getMomentDateFromAppDate,
   convertMomentDateToAppDate,

@@ -110,7 +110,12 @@
       },
       getTimestamp (fileFullName) {
         const fileName = fileHelper.getFileName(fileFullName)
-        const isoDate = dateHelper.parseTimestamp(fileName, this.selectedStream.timestampFormat)
+        var isoDate
+        if (this.selectedStream.timestampFormat === 'Auto-detect') {
+          isoDate = dateHelper.parseTimestampAuto(fileName)
+        } else {
+          isoDate = dateHelper.parseTimestamp(fileName, this.selectedStream.timestampFormat)
+        }
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
         const appDate = dateHelper.convertMomentDateToAppDate(momentDate)
         return appDate

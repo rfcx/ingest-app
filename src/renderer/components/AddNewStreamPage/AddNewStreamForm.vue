@@ -68,9 +68,9 @@ export default {
     return {
       name: null,
       folderPath: null,
-      timestampFormat: '%Y%M%D-%H%m%s',
+      timestampFormat: 'Auto-detect',
       customTimestampFormat: '',
-      timestampFormatOptions: ['%Y%M%D-%H%m%s', '%Y%M%D?%H:%m:%s', 'Custom'],
+      timestampFormatOptions: ['Auto-detect', '%Y%M%D-%H%m%s', '%Y%M%D?%H:%m:%s', 'Custom'],
       error: null,
       isLoading: false,
       customTimestampFormatOptions: [
@@ -155,13 +155,14 @@ export default {
     },
     selectedTimestampFormat: function () {
       switch (this.timestampFormat) {
-        case 'Auto-detect': return null // FIXME: Fix this
+        case 'Auto-detect': return 'Auto-detect'
         case 'Custom': return this.customTimestampFormat
         default: return this.timestampFormat
       }
     },
     timestampPreview: function () { // FIXME: fix this
       if (!this.selectedTimestampFormat) return null
+      else if (this.selectedTimestampFormat === 'Auto-detect') return null
       const now = moment()
       // console.log(`now.minute: ${now.minute} now.format ${now.format('mm')}`)
       var text = this.selectedTimestampFormat.replace('%Y', now.format('YYYY'))

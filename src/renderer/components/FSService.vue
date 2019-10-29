@@ -45,7 +45,13 @@
         const fileExt = fileHelper.getExtension(fileName)
         const hash = fileHelper.getMD5Hash(filePath)
         const size = fileHelper.getFileSize(filePath)
-        const isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
+        var isoDate
+        if (stream.timestampFormat === 'Auto-detect') {
+          isoDate = dateHelper.parseTimestampAuto(fileName)
+        } else {
+          isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
+        }
+        console.log(isoDate)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
         const state = this.getState(momentDate, fileExt)
         return {
