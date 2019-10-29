@@ -2,7 +2,7 @@
   <div>
     <div class="stream-info-container">
       <div class="title-container">
-        <span>{{ selectedStream.name }}</span>
+        <span>{{ selectedStream.name }} (_{{ selectedStream.id.substring(0, 4) }}) </span>
         <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()">
           <div class="dropdown-trigger">
             <img src="~@/assets/ic-menu.svg" aria-haspopup="true" aria-controls="dropdown-menu">
