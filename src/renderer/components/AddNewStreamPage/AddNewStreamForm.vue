@@ -34,7 +34,7 @@
         <div class="field" v-if="isCustomTimestampFormatSelected(timestampFormat)">
             <label for="customTimestampFormat" class="label">Custom filename format</label>
             <div class="control">
-                <input v-model="customTimestampFormat" class="input" type="text" placeholder="%YYYY%MM%DD-%HH%mm%ss">
+                <input v-model="customTimestampFormat" class="input" type="text" placeholder="%Y%M%D-%H%m%s">
             </div>
             <p class="help" v-if="isCustomTimestampFormatSelected(timestampFormat)">{{ timestampPreview }} </p>
             <div class="field is-grouped is-grouped-multiline">
