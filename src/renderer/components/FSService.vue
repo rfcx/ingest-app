@@ -69,10 +69,8 @@
       },
       getState (momentDate, fileExt) {
         if (!momentDate.isValid()) {
-          console.log('Filename does not match with a timestamp format')
-          return {state: 'failed', message: 'Filename does not match with a timestamp format'}
+          return {state: 'failed', message: 'Filename does not match with a filename format'}
         } else if (!fileHelper.isSupportedFileExtension(fileExt)) {
-          console.log('File extension is not supported')
           return {state: 'failed', message: 'File extension is not supported'}
         } else {
           return {state: 'waiting', message: ''}
