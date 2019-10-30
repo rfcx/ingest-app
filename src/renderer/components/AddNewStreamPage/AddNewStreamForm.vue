@@ -95,7 +95,8 @@ export default {
     },
     onFileChange (event) {
       const file = event.target.files[0]
-      if (file) this.folderPath = file.path.replace(file.name, '').slice(0, -1)
+      if (file) this.folderPath = file.path
+      console.log(file)
       this.error = null
       // FIXME: check timestamp for auto-detect option
     },
