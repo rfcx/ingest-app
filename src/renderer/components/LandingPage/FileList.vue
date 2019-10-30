@@ -154,15 +154,17 @@
       deleteStream () {
         // hide confirm modal
         this.hideConfirmToDeleteStreamModal()
-        // select a new stream
-        const stream = Stream.query().first()
-        this.$store.dispatch('setSelectedStreamId', stream.id)
         // delete files from current stream
         this.files.forEach(file => {
           File.delete(file.id)
         })
         // delete current stream
         Stream.delete(this.selectedStreamId)
+        // select a new stream
+        const stream = Stream.query().where((stream) => {
+          return stream.id !== this.selectedStreamId
+        }).first()
+        this.$store.dispatch('setSelectedStreamId', stream.id)
       }
     },
     watch: {
