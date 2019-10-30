@@ -51,7 +51,6 @@
         } else {
           isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
         }
-        console.log(isoDate)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
         const state = this.getState(momentDate, fileExt)
         return {

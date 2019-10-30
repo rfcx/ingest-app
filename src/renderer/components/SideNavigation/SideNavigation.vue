@@ -78,7 +78,6 @@
         const uploadedFiles = stream.files.filter(file => { return file.state === 'ingesting' || file.state === 'completed' })
         const completedPercentage = completedFiles.length / (stream.files.length * 2) * 100
         const uploadedPercentage = uploadedFiles.length / (stream.files.length * 2) * 100
-        console.log(`completed files ${completedFiles.length} = ${completedPercentage}% | completed files ${uploadedFiles.length} = ${uploadedPercentage}%`)
         return completedPercentage + uploadedPercentage
       },
       getStateStatus (stream) {

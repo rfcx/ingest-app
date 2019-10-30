@@ -170,7 +170,6 @@
     watch: {
       files (newValue) {
         newValue.forEach((file, index) => {
-          console.log('file: ' + file.name + ' ' + file.progress + ' index: ' + index)
           const filesRef = this.$refs.files
           if (filesRef === undefined) return
           const progress = filesRef[index]
