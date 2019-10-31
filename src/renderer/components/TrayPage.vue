@@ -25,7 +25,7 @@
       </div>
     </aside>
     <footer class="card-footer">
-    <a href="#" class="card-footer-item">Open Application</a>
+    <a href="#" class="card-footer-item" @click="openApp()">Open Application</a>
   </footer>
   </div>
 </template>
@@ -91,6 +91,9 @@
         const errorFiles = stream.files.filter(file => { return file.state === 'failed' })
         if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
         return `${completedFiles.length}/${stream.files.length} ingested | ${errorFiles.length} ${errorFiles.length > 1 ? 'errors' : 'error'}`
+      },
+      openApp () {
+        this.$electron.ipcRenderer.send('openMainWindow')
       }
     },
     created () {

@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow, Menu, Tray, nativeImage } from 'electron'
+import { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain } from 'electron'
 import '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
@@ -165,6 +165,14 @@ const getWindowPosition = () => {
   return {x: x, y: y}
 }
 
+function showMainWindow () {
+  if (mainWindow === null) {
+    createWindow()
+  } else {
+    mainWindow.show()
+  }
+}
+
 // const appFolder = path.dirname(process.execPath)
 // const updateExe = path.resolve(appFolder, '..', 'Update.exe')
 // const exeName = path.basename(process.execPath)
@@ -196,11 +204,11 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
-  if (mainWindow === null) {
-    createWindow()
-  } else {
-    mainWindow.show()
-  }
+  showMainWindow()
+})
+
+ipcMain.on('openMainWindow', (event, data) => {
+  showMainWindow()
 })
 
 /**
