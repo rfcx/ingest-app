@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-let mainWindow, backgroundAPIWindow, backgroundFSWindow
+let mainWindow, backgroundAPIWindow, backgroundFSWindow, trayWindow
 let menu, tray
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
@@ -28,6 +28,10 @@ const backgroundAPIURL = process.env.NODE_ENV === 'development'
 const backgroundFSURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/fs-service`
   : `file://${__dirname}/index.html#/fs-service`
+
+const trayURL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:9080/#/tray`
+  : `file://${__dirname}/index.html#/tray`
 
 function createWindow (openedAsHidden = false) {
   /**
@@ -60,6 +64,25 @@ function createWindow (openedAsHidden = false) {
     webPreferences: { nodeIntegration: true }
   })
   backgroundFSWindow.loadURL(backgroundFSURL)
+
+  trayWindow = new BrowserWindow({
+    width: 300,
+    height: 350,
+    show: false,
+    frame: false,
+    fullscreenable: false,
+    resizable: false,
+    transparent: true,
+    useContentSize: true,
+    webPreferences: { nodeIntegration: true }
+  })
+  trayWindow.loadURL(trayURL)
+
+  trayWindow.on('blur', () => {
+    if (!trayWindow.webContents.isDevToolsOpened()) {
+      trayWindow.hide()
+    }
+  })
 }
 
 function createMenu () {
@@ -100,26 +123,46 @@ function createTray () {
   var trayIcon = nativeImage.createFromPath(iconPath)
   trayIcon = trayIcon.resize({ width: 12, height: 17 })
   tray = new Tray(trayIcon)
-  const trayMenu = Menu.buildFromTemplate([
-    {
-      label: 'Show App',
-      click: function () {
-        if (mainWindow === null) {
-          createWindow()
-        } else {
-          mainWindow.show()
-        }
-      }
-    },
-    {
-      label: 'Quit',
-      click: function () {
-        app.isQuiting = true
-        app.quit()
-      }
-    }
-  ])
-  tray.setContextMenu(trayMenu)
+  // const trayMenu = Menu.buildFromTemplate([
+  //   {
+  //     label: 'Show App',
+  //     click: function () {
+  //       if (mainWindow === null) {
+  //         createWindow()
+  //       } else {
+  //         mainWindow.show()
+  //       }
+  //     }
+  //   },
+  //   {
+  //     label: 'Quit',
+  //     click: function () {
+  //       app.isQuiting = true
+  //       app.quit()
+  //     }
+  //   }
+  // ])
+  // tray.setContextMenu(trayMenu)
+  tray.on('click', function (event) {
+    trayWindow.isVisible() ? trayWindow.hide() : showWindow()
+  })
+}
+
+const showWindow = () => {
+  const position = getWindowPosition()
+  trayWindow.setPosition(position.x, position.y, false)
+  trayWindow.show()
+}
+
+const getWindowPosition = () => {
+  const windowBounds = trayWindow.getBounds()
+  const trayBounds = tray.getBounds()
+
+  // Center window horizontally below the tray icon
+  const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2))
+  // Position window 4 pixels vertically below the tray icon
+  const y = Math.round(trayBounds.y + trayBounds.height + 4)
+  return {x: x, y: y}
 }
 
 // const appFolder = path.dirname(process.execPath)

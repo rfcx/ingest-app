@@ -57,7 +57,7 @@
   }
 
   .navbar {
-      padding: 0 $default-padding-margin;
+    padding: 0 $default-padding-margin;
   }
 
   .navbar-brand span {
@@ -69,7 +69,7 @@
   }
 
   .user-info-nav .name {
-      font-weight: $title-font-weight;
+    font-weight: $title-font-weight;
   }
 
   .user-info-name {
@@ -209,6 +209,14 @@
 
   .button.is-primary {
     font-weight: $title-font-weight;
+  }
+
+  .tray-container {
+    height: 300px;
+  }
+
+  .tray-menu {
+    height: 300px;
   }
 
   @media screen and (min-width: 400px) {
