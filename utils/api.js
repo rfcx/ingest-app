@@ -1,15 +1,16 @@
-// https://jsonplaceholder.typicode.com/posts
-
 const axios = require('axios')
 const fileStreamAxios = axios.create({
   adapter: require('./axios-http-adapter').default
 })
 
-const apiUrl = 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
+const apiUrl = (proEnvironment) => {
+  if (proEnvironment) return 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
+  return 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
+}
 
-const uploadFile = (fileName, filePath, fileExt, streamId, timestamp, progressCallback) => {
+const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, progressCallback) => {
   console.log(`path: ${filePath} ext: ${fileExt}`)
-  return requestUploadUrl(fileName, streamId, timestamp).then((data) => {
+  return requestUploadUrl(env, fileName, streamId, timestamp).then((data) => {
     return upload(data.url, filePath, fileExt, progressCallback)
       .then(() => {
         return Promise.resolve(data.uploadId)
@@ -21,9 +22,9 @@ const uploadFile = (fileName, filePath, fileExt, streamId, timestamp, progressCa
 }
 
 // Part 0: Create stream
-const createStream = (streamName) => {
+const createStream = (env, streamName) => {
   console.log('create stream api:', streamName)
-  return axios.post(apiUrl + '/streams', { name: streamName })
+  return axios.post(apiUrl(env) + '/streams', { name: streamName })
     .then(function (response) {
       const streamId = response.data.id
       return streamId
@@ -32,11 +33,11 @@ const createStream = (streamName) => {
 
 // Part 1: Get signed url
 
-const requestUploadUrl = (originalFilename, streamId, timestamp) => {
+const requestUploadUrl = (env, originalFilename, streamId, timestamp) => {
   // Make a request for a user with a given ID
   const params = { filename: originalFilename, stream: streamId, timestamp: timestamp }
   console.log('requestUploadUrl with params', params)
-  return axios.post(apiUrl + '/uploads', params)
+  return axios.post(apiUrl(env) + '/uploads', params)
     .then(function (response) {
       const url = response.data.url
       const uploadId = response.data.uploadId
@@ -67,8 +68,8 @@ const upload = (signedUrl, filePath, fileExt, progressCallback) => {
 
 // Part 3: Get ingest status
 
-const checkStatus = (uploadId) => {
-  return axios.get(apiUrl + '/uploads/' + uploadId)
+const checkStatus = (env, uploadId) => {
+  return axios.get(apiUrl(env) + '/uploads/' + uploadId)
     .then(function (response) {
       const status = response.data.status
       const failureMessage = response.data.failureMessage

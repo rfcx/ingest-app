@@ -20,7 +20,8 @@
     computed: {
       ...mapState({
         selectedStreamId: state => state.Stream.selectedStreamId,
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
+        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess,
+        productionEnv: state => state.Settings.productionEnvironment
       }),
       allUnsyncFiles () {
         return File.query().where('state', 'waiting').get()
@@ -72,7 +73,7 @@
         File.update({ where: file.id,
           data: {state: 'uploading', stateMessage: '0', progress: 0}
         })
-        return api.uploadFile(file.name, file.path, file.extension, file.streamId, file.timestamp, (progress) => { // TODO: fix stream id
+        return api.uploadFile(this.productionEnv, file.name, file.path, file.extension, file.streamId, file.timestamp, (progress) => { // TODO: fix stream id
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
           File.update({ where: file.id,
@@ -94,7 +95,7 @@
         })
       },
       checkStatus (file) {
-        return api.checkStatus(file.uploadId)
+        return api.checkStatus(this.productionEnv, file.uploadId)
           .then((data) => {
             const status = data.status
             const failureMessage = data.failureMessage

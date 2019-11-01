@@ -54,13 +54,12 @@
     </table>
     <a v-show="!isEmptyFolder()" class="button is-circle is-primary" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-open.svg"></a>
     <!-- Modal -->
-    <div class="modal" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
+    <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
       <div class="modal-background"></div>
       <div class="modal-card">
-        <header class="modal-card-head">
+        <div class="modal-card-body">
           <p class="modal-card-title">Are you sure to delete this stream?</p>
-          <button class="delete" aria-label="close" @click="hideConfirmToDeleteStreamModal()"></button>
-        </header>
+        </div>
         <footer class="modal-card-foot">
           <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
           <button class="button is-danger" @click="deleteStream()">Delete</button>

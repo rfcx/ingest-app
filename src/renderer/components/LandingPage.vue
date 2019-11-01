@@ -84,6 +84,10 @@
     font-weight: $title-font-weight;
   }
 
+  .navbar-item.tag {
+    margin: auto 0 !important;
+  }
+
   .user-info-nav {
     text-align: right;
   }
@@ -248,6 +252,11 @@
     text-align: center;
     background-color: $progress-bar-background-color;
     font-size: 0.75rem;
+  }
+
+  .alert .modal-card-body {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
   }
 
   @media screen and (min-width: 400px) {
