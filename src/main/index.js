@@ -144,11 +144,11 @@ function createTray () {
   // ])
   // tray.setContextMenu(trayMenu)
   tray.on('click', function (event) {
-    trayWindow.isVisible() ? trayWindow.hide() : showWindow()
+    trayWindow.isVisible() ? trayWindow.hide() : showTrayWindow()
   })
 }
 
-const showWindow = () => {
+const showTrayWindow = () => {
   const position = getWindowPosition()
   trayWindow.setPosition(position.x, position.y, false)
   trayWindow.show()
@@ -209,6 +209,7 @@ app.on('activate', () => {
 
 ipcMain.on('openMainWindow', (event, data) => {
   showMainWindow()
+  trayWindow.hide()
 })
 
 /**

@@ -2,7 +2,10 @@
     <aside class="column menu side-menu">
         <div class="menu-container side-menu-title">
             <p class="menu-label"> {{ menuTitle }} </p>
-            <router-link to="/add"><img src="~@/assets/ic-add.svg"></router-link>
+            <div>
+              <a href="#" @click="toggleUploadingProcess()"><img :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
+              <router-link to="/add"><img src="~@/assets/ic-add.svg"></router-link>
+            </div>
         </div>
         <ul class="menu-list">
             <li v-for="stream in streams" :key="stream.id">
@@ -36,16 +39,23 @@
     },
     computed: {
       ...mapState({
-        selectedStreamId: state => state.Stream.selectedStreamId
+        selectedStreamId: state => state.Stream.selectedStreamId,
+        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
       }),
       selectedStream () {
         return Stream.find(this.selectedStreamId)
       },
       streams () {
-        return Stream.query().with('files').get()
+        return Stream.query().with('files').get().sort((streamA, streamB) => {
+          return this.getStatePriority(streamA) - this.getStatePriority(streamB)
+        })
       }
     },
     methods: {
+      getUploadingProcessIcon (enabled) {
+        const state = enabled ? 'pause' : 'play'
+        return require(`../../assets/ic-uploading-${state}.svg`)
+      },
       getStateImgUrl (state) {
         return require(`../../assets/ic-state-${state}.svg`)
       },
@@ -70,6 +80,16 @@
         else if (isIngesting) return 'ingesting'
         return 'uploading'
       },
+      getStatePriority (stream) {
+        const state = this.getState(stream)
+        switch (state) {
+          case 'uploading': return 0
+          case 'ingesting': return 1
+          case 'waiting': return 2
+          case 'failed': return 3
+          case 'completed': return 4
+        }
+      },
       getProgress (stream) {
         const state = this.getState(stream)
         if (state === 'completed') return 100
@@ -88,6 +108,9 @@
         const errorFiles = stream.files.filter(file => { return file.state === 'failed' })
         if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
         return `${completedFiles.length}/${stream.files.length} ingested | ${errorFiles.length} ${errorFiles.length > 1 ? 'errors' : 'error'}`
+      },
+      toggleUploadingProcess () {
+        this.$store.dispatch('setUploadingProcess', !this.isUploadingProcessEnabled)
       }
     }
   }

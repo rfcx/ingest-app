@@ -4,10 +4,11 @@
       <div class="tray-container">
         <div class="menu-container side-menu-title">
           <p class="menu-label"> {{ menuTitle }} </p>
+          <a href="#" @click="toggleUploadingProcess()"><img :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
         </div>
         <ul class="tray-menu-list menu-list">
           <li v-for="stream in streams" :key="stream.id">
-            <div class="menu-item">
+            <div class="menu-item" v-on:click="selectItem(stream)">
               <div class="menu-container">
                 <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
                 <img :src="getStateImgUrl(getState(stream))">
@@ -42,22 +43,29 @@
     },
     computed: {
       ...mapState({
-        selectedStreamId: state => state.Stream.selectedStreamId
+        selectedStreamId: state => state.Stream.selectedStreamId,
+        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
       }),
       selectedStream () {
         return Stream.find(this.selectedStreamId)
       },
       streams () {
-        const allStreams = Stream.query().with('files').get()
-        const inProgressStreams = allStreams.filter((stream) => {
-          return this.getState(stream) === 'uploading' || this.getState(stream) === 'ingesting'
+        return Stream.query().with('files').get().sort((streamA, streamB) => {
+          return this.getStatePriority(streamA) - this.getStatePriority(streamB)
         })
-        return inProgressStreams
       }
     },
     methods: {
+      getUploadingProcessIcon (enabled) {
+        const state = enabled ? 'pause' : 'play'
+        return require(`../assets/ic-uploading-${state}.svg`)
+      },
       getStateImgUrl (state) {
         return require(`../assets/ic-state-${state}.svg`)
+      },
+      selectItem (stream) {
+        this.$store.dispatch('setSelectedStreamId', stream.id)
+        this.openApp()
       },
       shouldShowProgress (stream) {
         return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed'
@@ -72,6 +80,16 @@
         else if (isFailed) return 'failed'
         else if (isIngesting) return 'ingesting'
         return 'uploading'
+      },
+      getStatePriority (stream) {
+        const state = this.getState(stream)
+        switch (state) {
+          case 'uploading': return 0
+          case 'ingesting': return 1
+          case 'waiting': return 2
+          case 'failed': return 3
+          case 'completed': return 4
+        }
       },
       getProgress (stream) {
         const state = this.getState(stream)
@@ -94,6 +112,9 @@
       },
       openApp () {
         this.$electron.ipcRenderer.send('openMainWindow')
+      },
+      toggleUploadingProcess () {
+        this.$store.dispatch('setUploadingProcess', !this.isUploadingProcessEnabled)
       }
     },
     created () {

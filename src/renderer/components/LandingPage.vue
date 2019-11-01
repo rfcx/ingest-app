@@ -8,6 +8,14 @@
         <file-list v-else></file-list>
       </div>
     </section>
+    <footer class="uploading-process-status" v-if="!isUploadingProcessEnabled"
+      @mouseover="uploadingProcessText = 'Tap here to resume the uploading process'" 
+      @mouseleave="uploadingProcessText = 'The uploading process has been paused'"
+      @click="resumeUploadingProcess()">
+      <span>
+        {{ uploadingProcessText }}
+      </span>
+    </footer>
   </div>
 </template>
 
@@ -22,14 +30,26 @@
   export default {
     name: 'landing-page',
     components: { Navigation, SideNavigation, EmptyStream, FileList },
+    data () {
+      return {
+        uploadingProcessText: 'The uploading process has been paused'
+      }
+    },
     methods: {
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
+      },
+      pauseUploadingProcess () {
+        this.$store.dispatch('setUploadingProcess', false)
+      },
+      resumeUploadingProcess () {
+        this.$store.dispatch('setUploadingProcess', true)
       }
     },
     computed: {
       ...mapState({
-        selectedStreamId: state => state.Stream.selectedStreamId
+        selectedStreamId: state => state.Stream.selectedStreamId,
+        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
       }),
       streams () {
         return Stream.all()
@@ -217,6 +237,17 @@
 
   .tray-menu {
     height: 300px;
+  }
+
+  .uploading-process-status {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    text-align: center;
+    background-color: $progress-bar-background-color;
+    font-size: 0.75rem;
   }
 
   @media screen and (min-width: 400px) {

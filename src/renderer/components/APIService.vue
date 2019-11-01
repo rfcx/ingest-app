@@ -3,6 +3,7 @@
 </template>
 
 <script>
+  import { mapState } from 'vuex'
   import File from '../store/models/File'
   import api from '../../../utils/api'
   
@@ -17,6 +18,10 @@
       }
     },
     computed: {
+      ...mapState({
+        selectedStreamId: state => state.Stream.selectedStreamId,
+        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
+      }),
       allUnsyncFiles () {
         return File.query().where('state', 'waiting').get()
       }
@@ -30,6 +35,14 @@
         // val.forEach(file => {
         //   this.uploadFile(file)
         // })
+      },
+      isUploadingProcessEnabled (val, oldVal) {
+        console.log('isUploadingProcessEnabled', val, oldVal)
+        if (val === oldVal) return
+        this.uploadWorkerTimeout = workerTimeoutMinimum
+        this.checkStatusWorkerTimeout = workerTimeoutMinimum
+        this.tickUpload()
+        this.tickCheckStatus()
       }
     },
     methods: {
@@ -123,6 +136,7 @@
         })
       },
       tickUpload () {
+        if (!this.isUploadingProcessEnabled) return
         this.queueFileToUpload().then(() => {
           console.log('job success')
           this.uploadWorkerTimeout = workerTimeoutMinimum
@@ -135,6 +149,7 @@
         })
       },
       tickCheckStatus () {
+        if (!this.isUploadingProcessEnabled) return
         this.queueJobToCheckStatus().then(() => {
           console.log('job success')
           this.checkStatusWorkerTimeout = workerTimeoutMinimum
