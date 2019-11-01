@@ -5,6 +5,7 @@ import '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
 import path from 'path'
+import trayContainer from 'electron-tray-window'
 // import API from '../../utils/api'
 
 /**
@@ -118,7 +119,7 @@ function createMenu () {
   Menu.setApplicationMenu(menu)
 }
 
-function createTray () {
+function createTray (platform) {
   const iconPath = path.join(__static, 'rfcx-logo.png')
   var trayIcon = nativeImage.createFromPath(iconPath)
   trayIcon = trayIcon.resize({ width: 12, height: 17 })
@@ -143,27 +144,31 @@ function createTray () {
   //   }
   // ])
   // tray.setContextMenu(trayMenu)
-  tray.on('click', function (event) {
-    trayWindow.isVisible() ? trayWindow.hide() : showTrayWindow()
-  })
+  trayContainer.setOptions({tray: tray, window: trayWindow})
+  // tray.on('click', function (event) {
+  //   trayWindow.isVisible() ? trayWindow.hide() : showTrayWindow(platform)
+  // })
 }
 
-const showTrayWindow = () => {
-  const position = getWindowPosition()
-  trayWindow.setPosition(position.x, position.y, false)
-  trayWindow.show()
-}
+// const showTrayWindow = (platform) => {
+//   const position = getWindowPosition(platform)
+//   trayWindow.setPosition(position.x, position.y, false)
+//   trayWindow.show()
+// }
 
-const getWindowPosition = () => {
-  const windowBounds = trayWindow.getBounds()
-  const trayBounds = tray.getBounds()
+// const getWindowPosition = (platform) => {
+//   const windowBounds = trayWindow.getBounds()
+//   const trayBounds = tray.getBounds()
 
-  // Center window horizontally below the tray icon
-  const x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2))
-  // Position window 4 pixels vertically below the tray icon
-  const y = Math.round(trayBounds.y + trayBounds.height + 4)
-  return {x: x, y: y}
-}
+//   let x, y
+//   if (platform === 'darwin') {
+//     // Center window horizontally below the tray icon
+//     x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2))
+//     // Position window 4 pixels vertically below the tray icon
+//     y = Math.round(trayBounds.y + trayBounds.height + 4)
+//   }
+//   return {x: x, y: y}
+// }
 
 function showMainWindow () {
   if (mainWindow === null) {
@@ -193,8 +198,8 @@ app.on('ready', () => {
   if (process.platform === 'darwin') openedAsHidden = app.getLoginItemSettings().wasOpenedAsHidden
   else openedAsHidden = (process.argv || []).indexOf('--hidden') !== -1
   console.log('open as hidden', openedAsHidden)
-  createTray()
   createWindow(openedAsHidden)
+  createTray(process.platform)
 })
 
 app.on('window-all-closed', () => {
