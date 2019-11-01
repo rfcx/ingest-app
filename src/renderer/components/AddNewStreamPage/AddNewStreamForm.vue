@@ -11,9 +11,15 @@
             </div>
         </div>
         <label for="folderPath" class="label">Folder path</label>
-        <div class="field file has-name is-right is-fullwidth">
+        <div class="field has-addons">
+          <div class="control is-expanded">
+            <input v-model="folderPath" class="input" type="text" placeholder="">
+          </div>
+          <div class="control"><a class="button is-light" @click="$refs.file.click()">Browse</a></div>
+        </div>
+        <div class="field file has-name is-right is-fullwidth" style="display: none">
             <label class="file-label">
-                <input class="file-input" type="file" name="resume" v-on:change="onFileChange($event)" webkitdirectory directory multiple/>
+                <input class="file-input" type="file" ref="file" name="resume" v-on:change="onFileChange($event)" webkitdirectory directory multiple/>
                 <span class="file-cta">
                     <span class="file-label">Browse</span>
                 </span>
@@ -62,7 +68,7 @@ import { mapState } from 'vuex'
 import moment from 'moment'
 import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
-// import dateHelper from '../../../../utils/dateHelper'
+import fileHelper from '../../../../utils/fileHelper'
 
 export default {
   data () {
@@ -90,6 +96,9 @@ export default {
       const streams = this.streams
       if (!streams) return false
       return (streams.filter(stream => stream.folderPath === folderPath).length > 0)
+    },
+    checkIfDirectoryIsExist (folderPath) {
+      return fileHelper.isExist(folderPath)
     },
     isCustomTimestampFormatSelected (timestampFormat) {
       return timestampFormat.toLowerCase() === 'custom'
@@ -128,6 +137,10 @@ export default {
       if (this.checkIfDuplicateStream(this.folderPath)) {
         console.log('duplicate name')
         this.error = 'You have already linked to this folder. Please select a different folder.'
+        return false
+      }
+      if (!this.checkIfDirectoryIsExist(this.folderPath)) {
+        this.error = 'The directory is not exist.'
         return false
       }
       this.isLoading = true
@@ -207,6 +220,9 @@ export default {
       this.customTimestampFormatOptions.forEach(option => {
         option.isSelected = this.customTimestampFormat.includes(option.format)
       })
+    },
+    folderPath () {
+      this.error = null
     }
   }
 }

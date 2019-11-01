@@ -6,6 +6,10 @@ const getFilePath = (directoryPath, fileName) => {
   return path.join(directoryPath, fileName)
 }
 
+const isExist = (path) => {
+  return fs.existsSync(path)
+}
+
 const isFile = (filePath) => {
   return fs.lstatSync(filePath).isFile()
 }
@@ -52,6 +56,7 @@ const isSupportedFileExtension = (fileExtension) => {
 export default {
   getFilesFromDirectoryPath,
   readFile,
+  isExist,
   getMD5Hash,
   getFilePath,
   getFileNameFromFilePath,
