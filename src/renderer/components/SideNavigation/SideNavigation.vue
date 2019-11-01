@@ -3,7 +3,7 @@
         <div class="menu-container side-menu-title">
             <p class="menu-label"> {{ menuTitle }} </p>
             <div>
-              <a href="#" @click="toggleUploadingProcess()"><img :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
+              <a href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
               <router-link to="/add"><img src="~@/assets/ic-add.svg"></router-link>
             </div>
         </div>
