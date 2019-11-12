@@ -3,14 +3,14 @@
         <div class="menu-container side-menu-title">
             <p class="menu-label"> {{ menuTitle }} </p>
             <div class="side-menu-controls-wrapper">
-              <a v-if="selectedStream && !shouldShowPause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
-              <router-link to="/add"><img class="side-menu-controls-btn" src="~@/assets/ic-add-btn.svg"></router-link>
+              <a :title="isUploadingProcessEnabled? 'Pause' : 'Play'" v-if="selectedStream && !shouldShowPause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
+              <router-link title="Add a stream" to="/add"><img class="side-menu-controls-btn" src="~@/assets/ic-add-btn.svg"></router-link>
             </div>
         </div>
         <ul class="menu-list">
             <li v-for="stream in streams" :key="stream.id">
                 <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) }">
-                    <div class="menu-container">
+                    <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed' }">
                         <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
                         <img :src="getStateImgUrl(getState(stream))">
                     </div>
@@ -83,7 +83,7 @@
       shouldShowPause (streams) {
         let count = 0
         streams.forEach(stream => {
-          if (this.getState(stream) === 'completed') {
+          if (this.getState(stream) === 'completed' || this.getState(stream) === 'failed') {
             count++
           }
         })

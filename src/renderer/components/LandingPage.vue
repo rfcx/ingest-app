@@ -180,12 +180,21 @@
     justify-content: space-between;
   }
 
+  .menu-container-failed {
+    margin-right: 4px;
+  }
+
+  .menu-container-failed img {
+    width: 16px;
+    height: 16px;
+  }
+
   .side-menu-title {
     padding: 0 $default-padding-margin;
   }
 
   .side-menu-controls-wrapper {
-    margin-right: 5px;
+    margin-right: 4px;
   }
 
   .side-menu-controls-btn {

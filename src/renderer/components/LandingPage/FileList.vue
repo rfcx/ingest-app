@@ -52,7 +52,7 @@
         </tr>
       </tbody>
     </table>
-    <a v-show="!isEmptyFolder() && !isAllFilesWithError()" class="button is-circle" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-folder-open.svg"></a>
+    <a title="Open selected folder" v-show="!isEmptyFolder() && !isAllFilesWithError()" class="button is-circle" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-folder-open.svg"></a>
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
       <div class="modal-background"></div>
