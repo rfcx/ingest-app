@@ -2,7 +2,7 @@
     <aside class="column menu side-menu">
         <div class="menu-container side-menu-title">
             <p class="menu-label"> {{ menuTitle }} </p>
-            <div>
+            <div class="side-menu-controls-wrapper">
               <a v-if="selectedStream && !shouldShowPause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
               <router-link to="/add"><img class="side-menu-controls-btn" src="~@/assets/ic-add-btn.svg"></router-link>
             </div>

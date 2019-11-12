@@ -152,7 +152,7 @@ export default {
           folderPath: this.folderPath,
           timestampFormat: this.selectedTimestampFormat
         }
-        console.log('create stream')
+        console.log('creating stream')
         console.log(JSON.stringify(stream))
         Stream.insert({ data: stream, insert: ['files'] })
         this.$store.dispatch('setSelectedStreamId', stream.id)

@@ -184,6 +184,10 @@
     padding: 0 $default-padding-margin;
   }
 
+  .side-menu-controls-wrapper {
+    margin-right: 5px;
+  }
+
   .side-menu-controls-btn {
     width: 17px;
     height: 17px;
