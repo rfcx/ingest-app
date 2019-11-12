@@ -3,8 +3,8 @@
         <div class="menu-container side-menu-title">
             <p class="menu-label"> {{ menuTitle }} </p>
             <div>
-              <a href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
-              <router-link to="/add"><img src="~@/assets/ic-add.svg"></router-link>
+              <a v-if="selectedStream && !shouldShowPause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
+              <router-link to="/add"><img class="side-menu-controls-btn" src="~@/assets/ic-add-btn.svg"></router-link>
             </div>
         </div>
         <ul class="menu-list">
@@ -54,7 +54,7 @@
     methods: {
       getUploadingProcessIcon (enabled) {
         const state = enabled ? 'pause' : 'play'
-        return require(`../../assets/ic-uploading-${state}.svg`)
+        return require(`../../assets/ic-uploading-${state}-green.svg`)
       },
       getStateImgUrl (state) {
         return require(`../../assets/ic-state-${state}.svg`)
@@ -79,6 +79,15 @@
         else if (isFailed) return 'failed'
         else if (isIngesting) return 'ingesting'
         return 'uploading'
+      },
+      shouldShowPause (streams) {
+        let count = 0
+        streams.forEach(stream => {
+          if (this.getState(stream) === 'completed') {
+            count++
+          }
+        })
+        if (count === streams.length) return true
       },
       getStatePriority (stream) {
         const state = this.getState(stream)

@@ -9,7 +9,7 @@
       </div>
     </section>
     <footer class="uploading-process-status" v-if="!isUploadingProcessEnabled"
-      @mouseover="uploadingProcessText = 'Tap here to resume the uploading process'" 
+      @mouseover="uploadingProcessText = 'Tap here to resume the uploading process'"
       @mouseleave="uploadingProcessText = 'The uploading process has been paused'"
       @click="resumeUploadingProcess()">
       <span>
@@ -184,6 +184,11 @@
     padding: 0 $default-padding-margin;
   }
 
+  .side-menu-controls-btn {
+    width: 17px;
+    height: 17px;
+  }
+
   .menu .menu-item {
     padding: $default-padding-margin;
   }
@@ -260,7 +265,7 @@
   }
 
   @media screen and (min-width: 400px) {
-    
+
     .navbar-end {
       justify-content: flex-end;
       margin-left: auto;
