@@ -20,6 +20,7 @@
     methods: {
       openFolder (link) {
         console.log(link)
+
         this.$electron.shell.openItem(link)
       }
     }

@@ -18,7 +18,7 @@
         </div>
       </div>
       <div class="subtitle-container">
-        <img src="~@/assets/ic-pin.svg"><span>Osa Conservation</span> 
+        <img src="~@/assets/ic-pin.svg"><span>Osa Conservation</span>
         <img src="~@/assets/ic-timestamp.svg"><span>{{ selectedStream.timestampFormat }}</span>
       </div>
     </div>
@@ -52,7 +52,7 @@
         </tr>
       </tbody>
     </table>
-    <a v-show="!isEmptyFolder()" class="button is-circle is-primary" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-open.svg"></a>
+    <a v-show="!isEmptyFolder() && !isAllFilesWithError()" class="button is-circle" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-folder-open.svg"></a>
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
       <div class="modal-background"></div>
@@ -128,6 +128,15 @@
       isError (state) {
         return state === 'failed'
       },
+      isAllFilesWithError () {
+        let count = 0
+        this.files.forEach(file => {
+          if (file.state === 'failed') {
+            count++
+          }
+        })
+        if (count === this.files.length) return true
+      },
       isEmptyFolder () {
         return this.files.length === 0
       },
@@ -195,8 +204,8 @@
   }
 
   .stream-info-container {
-    padding-left: $default-padding-margin; 
-    padding-right: $default-padding-margin; 
+    padding-left: $default-padding-margin;
+    padding-right: $default-padding-margin;
     padding-bottom: $default-padding-margin;
   }
 
@@ -211,7 +220,7 @@
   }
 
   .stream-info-container .title-container .dropdown {
-    padding-left: $default-padding-margin; 
+    padding-left: $default-padding-margin;
     padding-right: $default-padding-margin;
   }
 

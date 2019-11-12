@@ -9,7 +9,7 @@
       </div>
     </section>
     <footer class="uploading-process-status" v-if="!isUploadingProcessEnabled"
-      @mouseover="uploadingProcessText = 'Tap here to resume the uploading process'" 
+      @mouseover="uploadingProcessText = 'Tap here to resume the uploading process'"
       @mouseleave="uploadingProcessText = 'The uploading process has been paused'"
       @click="resumeUploadingProcess()">
       <span>
@@ -218,13 +218,19 @@
   a.is-circle {
     height: 60px;
     width: 60px;
-    background-color: $brand-primary;
+    background-color: #fff;
+    border-color: #fff;
     border-radius: 50%;
     margin: auto;
     text-align:center;
     position: fixed;
     right: 2em;
     bottom: 2em;
+    &:active,
+    &:hover,
+    &:focus {
+      border-color: #fff;
+    }
   }
 
   .field {
@@ -260,7 +266,7 @@
   }
 
   @media screen and (min-width: 400px) {
-    
+
     .navbar-end {
       justify-content: flex-end;
       margin-left: auto;
