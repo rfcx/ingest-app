@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="54px" height="51px" viewBox="0 0 54 51" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 59.1 (86144) - https://sketch.com -->
+    <title>play-btn</title>
+    <desc>Created with Sketch.</desc>
+    <g id="ic-uploading-play" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="play-btn">
+            <ellipse id="Oval" fill="#2FB04A" cx="27" cy="25.5" rx="27" ry="25.5"></ellipse>
+            <polygon id="Triangle" fill="#FFFFFF" transform="translate(30.499467, 25.561083) rotate(91.000000) translate(-30.499467, -25.561083) " points="30.4994669 14.5610834 41.4994669 36.5610834 19.4994669 36.5610834"></polygon>
+        </g>
+    </g>
+</svg>

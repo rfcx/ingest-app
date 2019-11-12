@@ -23,7 +23,7 @@ const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, progr
 
 // Part 0: Create stream
 const createStream = (env, streamName) => {
-  console.log('create stream api:', streamName)
+  console.log('creating stream api:', streamName)
   return axios.post(apiUrl(env) + '/streams', { name: streamName })
     .then(function (response) {
       const streamId = response.data.id

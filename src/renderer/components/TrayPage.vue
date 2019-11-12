@@ -58,7 +58,7 @@
     methods: {
       getUploadingProcessIcon (enabled) {
         const state = enabled ? 'pause' : 'play'
-        return require(`../assets/ic-uploading-${state}.svg`)
+        return require(`../assets/ic-uploading-${state}-white.svg`)
       },
       getStateImgUrl (state) {
         return require(`../assets/ic-state-${state}.svg`)
