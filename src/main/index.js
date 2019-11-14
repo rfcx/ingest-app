@@ -18,6 +18,7 @@ if (process.env.NODE_ENV !== 'development') {
 
 let mainWindow, backgroundAPIWindow, backgroundFSWindow, trayWindow
 let menu, tray
+let willQuitApp = false
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
@@ -52,6 +53,26 @@ function createWindow (openedAsHidden = false) {
 
   mainWindow.on('closed', () => {
     mainWindow = null
+    menu = null
+  })
+
+  mainWindow.on('close', (e) => {
+    if (willQuitApp) {
+      console.log('mainWindow exit')
+      menu = null
+      mainWindow = null
+      if (backgroundAPIWindow) {
+        backgroundAPIWindow = null
+      }
+      if (backgroundAPIWindow) {
+        backgroundFSWindow = null
+      }
+      app.exit()
+    } else {
+      console.log('mainWindow close')
+      e.preventDefault()
+      mainWindow.hide()
+    }
   })
 
   backgroundAPIWindow = new BrowserWindow({
@@ -83,6 +104,18 @@ function createWindow (openedAsHidden = false) {
     if (!trayWindow.webContents.isDevToolsOpened()) {
       trayWindow.hide()
     }
+  })
+
+  trayWindow.on('close', () => {
+    console.log('tray close')
+    trayWindow = null
+    tray = null
+  })
+
+  trayWindow.on('closed', () => {
+    console.log('tray closed')
+    trayWindow = null
+    tray = null
   })
 }
 
@@ -204,8 +237,14 @@ app.on('ready', () => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    console.log('window-all-closed')
     app.quit()
   }
+})
+
+app.on('before-quit', () => {
+  console.log('before-quit')
+  willQuitApp = true
 })
 
 app.on('activate', () => {

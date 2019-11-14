@@ -4,6 +4,7 @@ const path = require('path')
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
+let willQuitApp = false
 
 function createWindow () {
   console.log(__dirname)
@@ -21,6 +22,17 @@ function createWindow () {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools()
+
+  mainWindow.on('close', (e) => {
+    if (willQuitApp) {
+      mainWindow = null
+      app.exit()
+    }
+    else {
+      e.preventDefault()
+      mainWindow.hide()
+    }
+  })
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -47,6 +59,11 @@ app.on('activate', function () {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createWindow()
+})
+
+// Emitted when Electron receives the signal to exit and wants to start closing windows
+app.on('before-quit', () => {
+  willQuitApp = true
 })
 
 // In this file you can include the rest of your app's specific main process
