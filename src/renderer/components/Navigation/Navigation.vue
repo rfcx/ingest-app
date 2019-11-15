@@ -42,6 +42,7 @@
 <script>
   import { mapState } from 'vuex'
   import File from '../../store/models/File'
+  import settings from 'electron-settings'
 
   export default {
     data () {
@@ -49,14 +50,14 @@
         name: 'Awesome',
         siteName: 'Osa Conservation',
         login: true,
-        shouldShowAlert: false
+        shouldShowAlert: false,
+        productionEnv: this.isProductionEnv
       }
     },
     computed: {
       ...mapState({
         selectedStreamId: state => state.Stream.selectedStreamId,
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess,
-        productionEnv: state => state.Settings.productionEnvironment
+        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
       }),
       getUnsyncedFiles () {
         return File.query().where('state', 'waiting').orderBy('timestamp').get()
@@ -76,7 +77,11 @@
           this.shouldShowAlert = true
           return
         }
-        this.$store.dispatch('setEnvironment', !this.productionEnv)
+        settings.set('settings.production_env', !this.isProductionEnv())
+        this.productionEnv = this.isProductionEnv()
+      },
+      isProductionEnv () {
+        return settings.get('settings.production_env')
       },
       hideAlert () {
         this.shouldShowAlert = false

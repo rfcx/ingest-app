@@ -6,6 +6,7 @@
   import { mapState } from 'vuex'
   import File from '../store/models/File'
   import api from '../../../utils/api'
+  import settings from 'electron-settings'
   
   const workerTimeoutMaximum = 10000
   const workerTimeoutMinimum = 1000
@@ -20,11 +21,13 @@
     computed: {
       ...mapState({
         selectedStreamId: state => state.Stream.selectedStreamId,
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess,
-        productionEnv: state => state.Settings.productionEnvironment
+        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
       }),
       allUnsyncFiles () {
         return File.query().where('state', 'waiting').get()
+      },
+      isProductionEnv () {
+        return settings.get('settings.production_env')
       }
     },
     watch: {
@@ -73,7 +76,7 @@
         File.update({ where: file.id,
           data: {state: 'uploading', stateMessage: '0', progress: 0}
         })
-        return api.uploadFile(this.productionEnv, file.name, file.path, file.extension, file.streamId, file.timestamp, (progress) => { // TODO: fix stream id
+        return api.uploadFile(this.isProductionEnv(), file.name, file.path, file.extension, file.streamId, file.timestamp, (progress) => { // TODO: fix stream id
           // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
           // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
           File.update({ where: file.id,
@@ -95,7 +98,7 @@
         })
       },
       checkStatus (file) {
-        return api.checkStatus(this.productionEnv, file.uploadId)
+        return api.checkStatus(this.isProductionEnv(), file.uploadId)
           .then((data) => {
             const status = data.status
             const failureMessage = data.failureMessage

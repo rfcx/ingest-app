@@ -64,11 +64,11 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import moment from 'moment'
 import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
 import fileHelper from '../../../../utils/fileHelper'
+import settings from 'electron-settings'
 
 export default {
   data () {
@@ -144,7 +144,7 @@ export default {
         return false
       }
       this.isLoading = true
-      api.createStream(this.productionEnv, this.name).then(streamId => {
+      api.createStream(this.isProductionEnv(), this.name).then(streamId => {
         this.isLoading = false
         const stream = {
           id: streamId,
@@ -162,12 +162,12 @@ export default {
         this.isLoading = false
         this.error = error.message
       })
+    },
+    isProductionEnv () {
+      return settings.get('settings.production_env')
     }
   },
   computed: {
-    ...mapState({
-      productionEnv: state => state.Settings.productionEnvironment
-    }),
     streams () {
       return Stream.all()
     },

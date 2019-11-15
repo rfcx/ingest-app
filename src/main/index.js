@@ -240,7 +240,8 @@ function setLoginItem (openAtLogin) {
 function initialSettings () {
   if (settings.get('settings') === undefined) {
     settings.set('settings', {
-      auto_start: false
+      auto_start: false,
+      production_env: false
     })
   }
   setLoginItem(settings.get('settings.auto_start'))
