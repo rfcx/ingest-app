@@ -3,7 +3,7 @@
         <div class="menu-container side-menu-title">
             <p class="menu-label"> {{ menuTitle }} </p>
             <div class="side-menu-controls-wrapper">
-              <a :title="isUploadingProcessEnabled? 'Pause' : 'Continue'" v-if="selectedStream && !shouldShowPause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
+              <a :title="isUploadingProcessEnabled? 'Pause' : 'Continue'" v-if="selectedStream && !hidePause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
               <router-link title="Add a stream" to="/add"><img class="side-menu-controls-btn" src="~@/assets/ic-add-btn.svg"></router-link>
             </div>
         </div>
@@ -34,7 +34,8 @@
   export default {
     data () {
       return {
-        menuTitle: 'Streams'
+        menuTitle: 'Streams',
+        uploadingStreams: {}
       }
     },
     computed: {
@@ -69,18 +70,44 @@
       shouldShowProgress (stream) {
         return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed'
       },
+      sendNotification (status) {
+        let notificationCompleted = {
+          title: 'Ingest App',
+          body: 'Stream uploaded successfully'
+        }
+        if (status === 'completed') {
+          let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
+          myNotificationCompleted.onshow = () => {
+            console.log('show notification')
+          }
+        }
+      },
       getState (stream) {
         const isCompleted = stream.files.every(file => { return file.state === 'completed' })
         const isWaiting = stream.files.every(file => { return file.state === 'waiting' })
         const isFailed = stream.files.every(file => { return file.state === 'failed' })
         const isIngesting = stream.files.every(file => { return file.state === 'completed' || file.state === 'ingesting' || file.state === 'failed' })
-        if (isCompleted) return 'completed'
-        else if (isWaiting) return 'waiting'
-        else if (isFailed) return 'failed'
-        else if (isIngesting) return 'ingesting'
-        return 'uploading'
+        if (isCompleted) {
+          if (!!this.uploadingStreams[stream.id] && this.uploadingStreams[stream.id] !== 'completed') {
+            this.sendNotification('completed')
+          }
+          this.uploadingStreams[stream.id] = 'completed'
+          return 'completed'
+        } else if (isWaiting) {
+          this.uploadingStreams[stream.id] = 'waiting'
+          return 'waiting'
+        } else if (isFailed) {
+          this.uploadingStreams[stream.id] = 'failed'
+          return 'failed'
+        } else if (isIngesting) {
+          this.uploadingStreams[stream.id] = 'ingesting'
+          return 'ingesting'
+        } else {
+          this.uploadingStreams[stream.id] = 'uploading'
+          return 'uploading'
+        }
       },
-      shouldShowPause (streams) {
+      hidePause (streams) {
         let count = 0
         streams.forEach(stream => {
           if (this.getState(stream) === 'completed' || this.getState(stream) === 'failed') {
