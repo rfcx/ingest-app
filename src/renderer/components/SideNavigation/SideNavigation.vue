@@ -83,10 +83,10 @@
         }
       },
       getState (stream) {
-        const isCompleted = stream.files.every(file => { return file.state === 'completed' })
-        const isWaiting = stream.files.every(file => { return file.state === 'waiting' })
-        const isFailed = stream.files.every(file => { return file.state === 'failed' })
-        const isIngesting = stream.files.every(file => { return file.state === 'completed' || file.state === 'ingesting' || file.state === 'failed' })
+        const isCompleted = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'completed' })
+        const isWaiting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'waiting' })
+        const isFailed = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'failed' })
+        const isIngesting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'completed' || file.state === 'ingesting' || file.state === 'failed' })
         if (isCompleted) {
           if (!!this.uploadingStreams[stream.id] && this.uploadingStreams[stream.id] !== 'completed') {
             this.sendNotification('completed')
