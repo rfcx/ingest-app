@@ -51,7 +51,7 @@
         siteName: 'Osa Conservation',
         login: true,
         shouldShowAlert: false,
-        productionEnv: this.isProductionEnv
+        productionEnv: this.isProductionEnv()
       }
     },
     computed: {

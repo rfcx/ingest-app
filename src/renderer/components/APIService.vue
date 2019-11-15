@@ -25,9 +25,6 @@
       }),
       allUnsyncFiles () {
         return File.query().where('state', 'waiting').get()
-      },
-      isProductionEnv () {
-        return settings.get('settings.production_env')
       }
     },
     watch: {
@@ -164,6 +161,9 @@
           console.log('job fail, retrying in', this.checkStatusWorkerTimeout)
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
+      },
+      isProductionEnv () {
+        return settings.get('settings.production_env')
       }
     },
     created () {
