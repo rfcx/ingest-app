@@ -6,6 +6,7 @@ import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
 import path from 'path'
 import trayContainer from 'electron-tray-window'
+import settings from 'electron-settings'
 // import API from '../../utils/api'
 
 /**
@@ -132,6 +133,16 @@ function createMenu () {
             Stream.deleteAll()
           }
         },
+        { label: 'Auto start',
+          type: 'checkbox',
+          checked: settings.get('settings.auto_start'),
+          click: async (item) => {
+            const existingSettings = settings.get('settings')
+            existingSettings['auto_start'] = item.checked
+            settings.set('settings', existingSettings)
+            setLoginItem(item.checked)
+          }
+        },
         { role: 'quit' }
       ]
     },
@@ -215,15 +226,25 @@ function showMainWindow () {
 // const updateExe = path.resolve(appFolder, '..', 'Update.exe')
 // const exeName = path.basename(process.execPath)
 
-app.setLoginItemSettings({
-  openAtLogin: true,
-  openAsHidden: true,
-  // path: updateExe,
-  args: [
-    // '--processStart', `"${exeName}"`,
-    '--process-start-args', `"--hidden"`
-  ]
-})
+function setLoginItem (openAtLogin) {
+  console.log('setLoginItem', openAtLogin)
+  const args = openAtLogin ? ['--process-start-args', `"--hidden"`] : []
+  app.setLoginItemSettings({
+    openAtLogin: openAtLogin,
+    openAsHidden: openAtLogin,
+    // path: updateExe,
+    args: args
+  })
+}
+
+function initialSettings () {
+  if (settings.get('settings') === undefined) {
+    settings.set('settings', {
+      auto_start: false
+    })
+  }
+  setLoginItem(settings.get('settings.auto_start'))
+}
 
 app.on('ready', () => {
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
@@ -231,6 +252,7 @@ app.on('ready', () => {
   if (process.platform === 'darwin') openedAsHidden = app.getLoginItemSettings().wasOpenedAsHidden
   else openedAsHidden = (process.argv || []).indexOf('--hidden') !== -1
   console.log('open as hidden', openedAsHidden)
+  initialSettings()
   createWindow(openedAsHidden)
   createTray(process.platform)
 })
