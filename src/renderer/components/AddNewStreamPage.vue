@@ -1,5 +1,5 @@
 <template>
-  <div id="wrapper">
+  <div id="wrapper-add-new-stream-page">
     <navigation></navigation>
     <div class="container-box is-fullhd">
         <div class="box-title">
@@ -39,7 +39,7 @@
     margin-bottom: 1rem;
 }
 
-#wrapper {
+#wrapper-add-new-stream-page {
     background-color: #fff;
   }
 

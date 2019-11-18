@@ -1,5 +1,5 @@
 <template>
-  <div id="wrapper">API Service</div>
+  <div id="wrapper-api-service">API Service</div>
 </template>
 
 <script>
@@ -7,7 +7,7 @@
   import File from '../store/models/File'
   import api from '../../../utils/api'
   import settings from 'electron-settings'
-  
+
   const workerTimeoutMaximum = 10000
   const workerTimeoutMinimum = 1000
 

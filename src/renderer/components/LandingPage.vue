@@ -1,5 +1,5 @@
 <template>
-  <div id="wrapper" class="has-fixed-sidebar">
+  <div id="wrapper-landing-page" class="has-fixed-sidebar">
     <navigation></navigation>
     <section class="main-content columns is-mobile">
       <side-navigation></side-navigation>
@@ -102,7 +102,7 @@
     margin: auto;
   }
 
-  #wrapper {
+  #wrapper-landing-page {
     background-color: #fdfdfd;
     padding: 0;
     position: absolute;
@@ -112,17 +112,17 @@
     right: 0;
   }
 
-  #wrapper.has-fixed-sidebar {
+  #wrapper-landing-page.has-fixed-sidebar {
     overflow: hidden;
     position: inherit;
   }
 
-  #wrapper {
+  #wrapper-landing-page {
     overflow: auto;
     overflow-y: auto;
   }
 
-  #wrapper.has-fixed-sidebar {
+  #wrapper-landing-page.has-fixed-sidebar {
     overflow: hidden;
   }
 

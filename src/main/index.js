@@ -7,6 +7,8 @@ import File from '../renderer/store/models/File'
 import path from 'path'
 import trayContainer from 'electron-tray-window'
 import settings from 'electron-settings'
+import createAuthWindow from './services/auth-process'
+import authService from './services/auth-service'
 // import API from '../../utils/api'
 
 /**
@@ -20,6 +22,7 @@ if (process.env.NODE_ENV !== 'development') {
 let mainWindow, backgroundAPIWindow, backgroundFSWindow, trayWindow
 let menu, tray
 let willQuitApp = false
+let isLogOut = false
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
@@ -69,6 +72,10 @@ function createWindow (openedAsHidden = false) {
         backgroundFSWindow = null
       }
       app.exit()
+    } else if (isLogOut) {
+      console.log('mainWindow logout')
+      createAuthWindow()
+      isLogOut = false
     } else {
       console.log('mainWindow close')
       e.preventDefault()
@@ -118,6 +125,8 @@ function createWindow (openedAsHidden = false) {
     trayWindow = null
     tray = null
   })
+
+  createTray(process.platform)
 }
 
 function createMenu () {
@@ -141,6 +150,24 @@ function createMenu () {
             existingSettings['auto_start'] = item.checked
             settings.set('settings', existingSettings)
             setLoginItem(item.checked)
+          }
+        },
+        { label: 'Log out',
+          type: 'checkbox',
+          click: async () => {
+            await authService.logout()
+            if (mainWindow) {
+              isLogOut = true
+              mainWindow.close()
+            }
+            if (tray) {
+              tray.destroy()
+              tray = null
+            }
+            if (trayWindow) {
+              trayWindow.destroy()
+              trayWindow = null
+            }
           }
         },
         { role: 'quit' }
@@ -247,6 +274,17 @@ function initialSettings () {
   setLoginItem(settings.get('settings.auto_start'))
 }
 
+async function createAppWindow (openedAsHidden) {
+  try {
+    // An Entry for users who has already existing token
+    await authService.refreshTokens()
+    createWindow(openedAsHidden)
+  } catch (err) {
+    // An Entry for new users
+    createAuthWindow()
+  }
+}
+
 app.on('ready', () => {
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
   let openedAsHidden = false
@@ -254,8 +292,7 @@ app.on('ready', () => {
   else openedAsHidden = (process.argv || []).indexOf('--hidden') !== -1
   console.log('open as hidden', openedAsHidden)
   initialSettings()
-  createWindow(openedAsHidden)
-  createTray(process.platform)
+  createAppWindow(openedAsHidden)
 })
 
 app.on('window-all-closed', () => {
@@ -276,7 +313,9 @@ app.on('activate', () => {
 
 ipcMain.on('openMainWindow', (event, data) => {
   showMainWindow()
-  trayWindow.hide()
+  if (trayWindow) {
+    trayWindow.hide()
+  }
 })
 
 /**
@@ -298,3 +337,5 @@ app.on('ready', () => {
   if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
 })
  */
+
+export default createWindow

@@ -1,5 +1,5 @@
 <template>
-<div id="wrapper">FS Service</div>
+<div id="wrapper-fs-service">FS Service</div>
 </template>
 
 <script>
@@ -9,7 +9,7 @@
   import cryptoJS from 'crypto-js'
   import Stream from '../store/models/Stream'
   import File from '../store/models/File'
-  
+
   export default {
     computed: {
       streams () {
