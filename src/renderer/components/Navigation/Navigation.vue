@@ -5,8 +5,8 @@
       <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx"></router-link>
     </div>
     <span class="navbar-item">RFCx Ingest</span>
-    <span class="navbar-item tag" 
-    :class="{ 'is-primary': productionEnv, 'is-dark': !productionEnv }" 
+    <span class="navbar-item tag"
+    :class="{ 'is-primary': productionEnv, 'is-dark': !productionEnv }"
     @click="switchEnvironment()">
       {{ productionEnv ? 'production' : 'staging' }}
     </span>
@@ -18,7 +18,7 @@
             <div class="user-info-image"><img src="~@/assets/ic-profile-temp.svg" alt="rfcx" width="30" height="30"></div>
         </div>
          <!-- <div class="navbar-item"> -->
-            
+
         <!-- </div> -->
       </div>
       <div class="navbar-item" v-else>
@@ -43,11 +43,12 @@
   import { mapState } from 'vuex'
   import File from '../../store/models/File'
   import settings from 'electron-settings'
+  const { remote } = window.require('electron')
 
   export default {
     data () {
       return {
-        name: 'Awesome',
+        name: this.getUserData(),
         siteName: 'Osa Conservation',
         login: true,
         shouldShowAlert: false,
@@ -82,6 +83,12 @@
       },
       isProductionEnv () {
         return settings.get('settings.production_env')
+      },
+      getUserData () {
+        let userName = remote.getGlobal('firstname')
+        console.log('userName', userName)
+        if (userName) return userName
+        else return 'Awesome'
       },
       hideAlert () {
         this.shouldShowAlert = false

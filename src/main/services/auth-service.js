@@ -53,7 +53,6 @@ async function refreshTokens () {
         logout()
         return reject(new Error(error))
       }
-
       accessToken = body.access_token
       profile = jwtDecode(body.id_token)
       global.accessToken = accessToken
@@ -96,7 +95,9 @@ function loadTokens (callbackURL) {
       profile = jwtDecode(responseBody.id_token)
       refreshToken = responseBody.refresh_token
       keytar.setPassword(keytarService, keytarAccount, refreshToken)
-
+      if (profile && profile.given_name) {
+        global.firstname = profile.given_name
+      }
       resolve()
     })
   })
