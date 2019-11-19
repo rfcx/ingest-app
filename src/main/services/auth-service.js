@@ -56,7 +56,9 @@ async function refreshTokens () {
       accessToken = body.access_token
       profile = jwtDecode(body.id_token)
       global.accessToken = accessToken
-
+      if (profile && profile.given_name) {
+        global.firstname = profile.given_name
+      }
       resolve()
     })
   })
