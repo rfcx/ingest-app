@@ -20,18 +20,18 @@
       streams (val, oldVal) {
         const oldIds = oldVal.map((stream) => { return stream.id })
         const newIds = val.map((stream) => { return stream.id })
-        if (JSON.stringify(oldIds) === JSON.stringify(newIds)) return // do nothing if the data is the same
+        if (JSON.stringify(oldIds) === JSON.stringify(newIds)) return
         this.subscribeForFileChanges()
       }
     },
     methods: {
       subscribeForFileChanges () {
         console.log('subscribeForFileChanges')
-        // TODO: subscribe for file changes
+        // Subscribe for file changes.
         this.streams.forEach(stream => {
-          fileWatcher.watch(stream.folderPath, (newFilePath) => {
-            // add callback
+          fileWatcher.createWatcher(stream.folderPath, (newFilePath) => {
             if (this.fileIsExist(newFilePath)) return
+            console.log('New file for uploading: ', newFilePath)
             const file = this.createFileObject(newFilePath, stream)
             this.insertFile(file)
             this.insertFilesToStream([file], stream)
@@ -45,7 +45,7 @@
         const fileExt = fileHelper.getExtension(fileName)
         const hash = fileHelper.getMD5Hash(filePath)
         const size = fileHelper.getFileSize(filePath)
-        var isoDate
+        let isoDate
         if (stream.timestampFormat === 'Auto-detect') {
           isoDate = dateHelper.parseTimestampAuto(fileName)
         } else {
@@ -93,6 +93,7 @@
         })
       },
       fileIsExist (filePath) {
+        console.log('fileIsExist: ', this.getFileId(filePath))
         return !!File.find(this.getFileId(filePath))
       }
     },

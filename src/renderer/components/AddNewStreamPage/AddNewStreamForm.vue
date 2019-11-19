@@ -152,13 +152,12 @@ export default {
           folderPath: this.folderPath,
           timestampFormat: this.selectedTimestampFormat
         }
-        console.log('creating stream')
-        console.log(JSON.stringify(stream))
+        console.log('creating stream', JSON.stringify(stream))
         Stream.insert({ data: stream, insert: ['files'] })
         this.$store.dispatch('setSelectedStreamId', stream.id)
         this.$router.push('/')
       }).catch(error => {
-        console.log(error)
+        console.log('error while creating stream', error)
         this.isLoading = false
         this.error = error.message
       })

@@ -137,6 +137,7 @@
         })
       },
       tickUpload () {
+        console.log('tickUpload', this.isUploadingProcessEnabled)
         if (!this.isUploadingProcessEnabled) return
         this.queueFileToUpload().then(() => {
           console.log('job success')

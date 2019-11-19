@@ -83,9 +83,12 @@
         }
       },
       getState (stream) {
+        if (stream.files && !stream.files.length) {
+          return
+        }
         const isCompleted = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'completed' })
         const isWaiting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'waiting' })
-        const isFailed = (stream.files && !stream.files.length) || (stream.files && stream.files.every(file => { return file.state === 'failed' }))
+        const isFailed = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'failed' })
         const isIngesting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'completed' || file.state === 'ingesting' || file.state === 'failed' })
         if (isCompleted) {
           if (!!this.uploadingStreams[stream.id] && this.uploadingStreams[stream.id] !== 'completed') {

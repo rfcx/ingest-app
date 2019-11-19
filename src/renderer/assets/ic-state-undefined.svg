@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>State/stream/cloud-waiting@1.5x</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="State/stream/cloud-waiting" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="bounds" x="0" y="0" width="24" height="24"></rect>
+        <g id="outline-cloud-24px" transform="translate(3.000000, 3.000000)">
+            <polygon id="Shape" points="0 0 18 0 18 18 0 18"></polygon>
+            <path d="M9,4.5 C10.965,4.5 12.66,5.895 13.0425,7.8225 L13.2675,8.9475 L14.415,9.03 C15.585,9.105 16.5,10.0875 16.5,11.25 C16.5,12.4875 15.4875,13.5 14.25,13.5 L4.5,13.5 C2.8425,13.5 1.5,12.1575 1.5,10.5 C1.5,8.9625 2.6475,7.68 4.17,7.5225 L4.9725,7.44 L5.3475,6.7275 C6.06,5.355 7.455,4.5 9,4.5 Z M9,3 C6.8325,3 4.95,4.23 4.0125,6.03 C1.755,6.27 0,8.1825 0,10.5 C0,12.9825 2.0175,15 4.5,15 L14.25,15 C16.32,15 18,13.32 18,11.25 C18,9.27 16.4625,7.665 14.5125,7.53 C14.0025,4.9425 11.73,3 9,3 Z" id="Shape" fill="#6D6F72" fill-rule="nonzero"></path>
+        </g>
+    </g>
+</svg>

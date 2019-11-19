@@ -1,18 +1,20 @@
 const chokidar = require('chokidar')
 
-let watcher
-
-const watch = (path, addCallback, removeCallback) => {
-  console.log('--> ', path)
-  watcher = chokidar.watch(path, {
+const createWatcher = (path, addCallback, removeCallback) => {
+  console.log('watcher path', path)
+  const watcher = chokidar.watch(path, {
     ignored: /(^|[/\\])\../, // ignore dotfiles
     persistent: true,
     awaitWriteFinish: true
   })
   watcher
-    .on('add', path => addCallback(path))
-    .on('unlink', path => removeCallback(path))
+    .on('add', (path) => {
+      console.log(`File ${path} has been added`)
+      return addCallback(path)
+    })
+    .on('unlink', (path) => {
+      console.log(`File ${path} has been removed`)
+      return removeCallback(path)
+    })
 }
-export default {
-  watch
-}
+export default { createWatcher }

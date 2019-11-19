@@ -2,7 +2,7 @@
   <div>
     <div class="stream-info-container">
       <div class="title-container">
-        <span>{{ selectedStream.name }} (_{{ selectedStream.id.substring(0, 4) }}) </span>
+        <span v-if="selectedStream">{{ selectedStream.name }} (_{{ selectedStream.id.substring(0, 4) }}) </span>
         <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()">
           <div class="dropdown-trigger">
             <img src="~@/assets/ic-menu.svg" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -19,13 +19,13 @@
       </div>
       <div class="subtitle-container">
         <img src="~@/assets/ic-pin.svg"><span>Osa Conservation</span>
-        <img src="~@/assets/ic-timestamp.svg"><span>{{ selectedStream.timestampFormat }}</span>
+        <img src="~@/assets/ic-timestamp.svg"><span v-if="selectedStream">{{ selectedStream.timestampFormat }}</span>
       </div>
     </div>
     <div v-show="isEmptyFolder()" class="container-box empty has-text-centered">
         <img src="~@/assets/ic-folder-empty.svg" style="margin-bottom: 0.75em"><br>
         <span>Your synced folder is empty</span><br>
-        <a class="button is-rounded is-primary" style="margin-top: 0.75em" @click="openFolder(selectedStream.folderPath)">Open Folder</a>
+        <a v-if="selectedStream" class="button is-rounded is-primary" style="margin-top: 0.75em" @click="openFolder(selectedStream.folderPath)">Open Folder</a>
     </div>
     <!-- <span class="has-text-weight-semibold"> {{ selectedStream.folderPath }} | {{ selectedStream.timestampFormat }} </span> -->
     <table v-show="!isEmptyFolder()" class="table is-hoverable">
@@ -92,6 +92,7 @@
         selectedStreamId: state => state.Stream.selectedStreamId
       }),
       selectedStream () {
+        console.log('FileList selectedStream', this.selectedStreamId)
         return Stream.find(this.selectedStreamId)
       },
       files () {
@@ -150,7 +151,7 @@
         // console.log('circle end')
       },
       toggleDropDown () {
-        console.log('showDropDown')
+        console.log('toggleDropDown')
         this.shouldShowDropDown = !this.shouldShowDropDown
       },
       showConfirmToDeleteStreamModal () {
@@ -230,12 +231,18 @@
     padding-right: 0.25em;
   }
 
+  .modal-card {
+    text-align: center;
+  }
+
   .modal-card-head, .modal-card-foot {
     border: 0px !important;
     background-color: white !important;
   }
 
   .modal-card-foot {
+    justify-content: center !important;
+    text-align: center;
     padding-top: 0px !important;
   }
 
