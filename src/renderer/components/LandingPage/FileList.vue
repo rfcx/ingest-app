@@ -40,10 +40,10 @@
       <tbody>
         <tr v-for="file in files" :key="file.id">
           <td v-show="!shouldShowProgress(file.state)"><img :src="getStateImgUrl(file.state)"></td>
-          <td v-show="shouldShowProgress(file.state)">
+          <!-- <td v-show="shouldShowProgress(file.state)">
             <vue-circle ref="files" :progress="file.progress" :size="14" line-cap="round" :fill="fill" :thickness="2" :show-percent="false" @vue-circle-progress="progress" @vue-circle-end="progress_end">
             </vue-circle>
-          </td>
+          </td> -->
           <td :class="{ 'is-error': isError(file.state) }" >{{ file.name }}</td>
           <td v-show="!isError(file.state)">{{ getTimestamp(file) }}</td>
           <td v-show="!isError(file.state)">{{ file.fileSize }}</td>
@@ -74,11 +74,11 @@
   import dateHelper from '../../../../utils/dateHelper'
   import File from '../../store/models/File'
   import Stream from '../../store/models/Stream'
-  import VueCircle from 'vue2-circle-progress'
+  // import VueCircle from 'vue2-circle-progress'
 
   export default {
     components: {
-      VueCircle
+      // VueCircle
     },
     data () {
       return {

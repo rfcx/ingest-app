@@ -84,7 +84,10 @@
       },
       getState (stream) {
         if (stream.files && !stream.files.length) {
-          return
+          return 'waiting'
+        }
+        if (stream.completed === true) {
+          return 'completed'
         }
         const isCompleted = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'completed' })
         const isWaiting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'waiting' })
@@ -95,18 +98,23 @@
             this.sendNotification('completed')
           }
           this.uploadingStreams[stream.id] = 'completed'
+          stream.completed = true
           return 'completed'
         } else if (isWaiting) {
           this.uploadingStreams[stream.id] = 'waiting'
+          stream.completed = false
           return 'waiting'
         } else if (isFailed) {
           this.uploadingStreams[stream.id] = 'failed'
+          stream.completed = false
           return 'failed'
         } else if (isIngesting) {
           this.uploadingStreams[stream.id] = 'ingesting'
+          stream.completed = false
           return 'ingesting'
         } else {
           this.uploadingStreams[stream.id] = 'uploading'
+          stream.completed = false
           return 'uploading'
         }
       },

@@ -9,7 +9,7 @@
   import settings from 'electron-settings'
 
   const workerTimeoutMaximum = 10000
-  const workerTimeoutMinimum = 1000
+  const workerTimeoutMinimum = 3000
 
   export default {
     data: () => {
@@ -139,27 +139,29 @@
       tickUpload () {
         console.log('tickUpload', this.isUploadingProcessEnabled)
         if (!this.isUploadingProcessEnabled) return
+        // Get all files with a status waiting and upload them.
         this.queueFileToUpload().then(() => {
-          console.log('job success')
+          console.log('uploading job success')
           this.uploadWorkerTimeout = workerTimeoutMinimum
           setTimeout(() => { this.tickUpload() }, this.uploadWorkerTimeout)
         }).catch((err) => {
           console.log(err)
           this.uploadWorkerTimeout = Math.min(2 * this.uploadWorkerTimeout, workerTimeoutMaximum)
-          console.log('job fail, retrying in', this.uploadWorkerTimeout)
+          console.log('uploading job fail, retrying in', this.uploadWorkerTimeout)
           setTimeout(() => { this.tickUpload() }, this.uploadWorkerTimeout)
         })
       },
       tickCheckStatus () {
+        console.log('tickCheckStatus', this.isUploadingProcessEnabled)
         if (!this.isUploadingProcessEnabled) return
         this.queueJobToCheckStatus().then(() => {
-          console.log('job success')
+          console.log('ingesting job success')
           this.checkStatusWorkerTimeout = workerTimeoutMinimum
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         }).catch((err) => {
           console.log(err)
           this.checkStatusWorkerTimeout = Math.min(2 * this.checkStatusWorkerTimeout, workerTimeoutMaximum)
-          console.log('job fail, retrying in', this.checkStatusWorkerTimeout)
+          console.log('ingesting job fail, retrying in', this.checkStatusWorkerTimeout)
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
       },
