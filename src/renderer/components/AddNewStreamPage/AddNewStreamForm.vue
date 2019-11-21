@@ -376,7 +376,7 @@ export default {
 
   .dropdown-toggle {
     background-color: white;
-    border-color: #dbdbdb;
+    border: 1px solid #dbdbdb;
     border-radius: 4px;
     color: #363636;
     display: block;
@@ -393,6 +393,7 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
     cursor: pointer;
+    box-shadow: none;
   }
 
   .dropdown-toggle:hover {
