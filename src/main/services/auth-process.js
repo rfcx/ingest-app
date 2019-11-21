@@ -23,6 +23,11 @@ function createAuthWindow () {
     await authService.loadTokens(url)
     destroyAuthWin()
   })
+  win.webContents.on('did-finish-load', () => {
+    let code = `if (document.getElementById('btn-login-passwordless'))
+                { document.getElementById('btn-login-passwordless').style.display = 'none' }`
+    win.webContents.executeJavaScript(code)
+  })
   win.on('closed', () => {
     win = null
     console.log('auth window closed')
