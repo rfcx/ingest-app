@@ -18,7 +18,7 @@
         </div>
       </div>
       <div class="subtitle-container">
-        <img src="~@/assets/ic-pin.svg"><span>Osa Conservation</span>
+        <img src="~@/assets/ic-pin.svg"><span v-if="selectedStream">{{ selectedStream.siteGuid }}</span>
         <img src="~@/assets/ic-timestamp.svg"><span v-if="selectedStream">{{ selectedStream.timestampFormat }}</span>
       </div>
     </div>
@@ -173,7 +173,9 @@
         const stream = Stream.query().where((stream) => {
           return stream.id !== this.selectedStreamId
         }).first()
-        this.$store.dispatch('setSelectedStreamId', stream.id)
+        if (stream) {
+          this.$store.dispatch('setSelectedStreamId', stream.id)
+        }
       }
     },
     watch: {

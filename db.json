@@ -6,6 +6,7 @@
       "timestampFormat": null,
       "state": "waiting",
       "progress": 0,
+      "siteGuid": null,
       "files": []
     },
     {
@@ -14,6 +15,7 @@
       "timestampFormat": null,
       "state": "waiting",
       "progress": 0,
+      "siteGuid": null,
       "files": [
         "discover-selected@3x.png",
         "discover-unselected@3x.png",
@@ -33,6 +35,7 @@
     "timestampFormat": null,
     "state": "waiting",
     "progress": 0,
+    "siteGuid": null,
     "files": [
       "discover-selected@3x.png",
       "discover-unselected@3x.png",

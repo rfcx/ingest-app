@@ -4,12 +4,6 @@
           <button class="delete" @click="onCloseAlert()"></button>
           {{ error }}
         </div>
-        <div class="field">
-            <label for="name" class="label">Name</label>
-            <div class="control">
-                <input v-model="name" class="input" type="text" placeholder="Jaguar 1">
-            </div>
-        </div>
         <label for="folderPath" class="label">Folder path</label>
         <div class="field has-addons">
           <div class="control is-expanded">
@@ -25,6 +19,29 @@
                 </span>
                 <span class="file-name">{{folderPath}}</span>
             </label>
+        </div>
+        <div class="field">
+            <label for="name" class="label">Stream name</label>
+            <div class="control">
+                <input v-model="name" class="input" type="text" placeholder="Jaguar 1">
+            </div>
+        </div>
+        <div class="field">
+          <label class="label">Site</label>
+          <div class="control" v-click-outside="outside">
+            <div class="dropdown-wrapper" :class="{ 'opened': isShow }">
+              <button class="dropdown-toggle" type="button" v-on:click="toggleDropdown">
+                <span class="dropdown-input">{{ sites && sites.length ? (currentSite ? currentSite.label : 'Choose Site') : 'No sites' }}</span>
+                <span class="dropdown-icon" v-show="!isShow"><font-awesome-icon :icon="iconDown"></font-awesome-icon></span>
+                <span class="dropdown-icon" v-show="isShow"><font-awesome-icon :icon="iconUp"></font-awesome-icon></span>
+              </button>
+              <div class="dropdown-list" v-show="isShow">
+                <div v-for="site in sites" :key="site.label" class="dropdown-row">
+                  <a class="dropdown-link" href="#" v-on:click="changeValue(site)" :title="site.label">{{ site.label }}</a>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div class="field">
             <label for="timestampFormat" class="label">Filename format</label>
@@ -69,17 +86,24 @@ import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
 import fileHelper from '../../../../utils/fileHelper'
 import settings from 'electron-settings'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons'
+const { remote } = window.require('electron')
 
 export default {
   data () {
     return {
+      iconUp: faChevronUp,
+      iconDown: faChevronDown,
       name: null,
       folderPath: null,
       timestampFormat: 'Auto-detect',
       customTimestampFormat: '',
       timestampFormatOptions: ['Auto-detect', '%Y%M%D-%H%m%s', '%Y%M%D?%H:%m:%s', 'Custom'],
       error: null,
+      isShow: false,
       isLoading: false,
+      currentSite: null,
       customTimestampFormatOptions: [
         { title: 'Year 4 digits (%Y)', format: '%Y', isSelected: false, isDisabled: false },
         { title: 'Year 2 digits (%y)', format: '%y', isSelected: false, isDisabled: false },
@@ -90,6 +114,9 @@ export default {
         { title: 'Second (%s)', format: '%s', isSelected: false, isDisabled: false }
       ]
     }
+  },
+  components: {
+    FontAwesomeIcon
   },
   methods: {
     checkIfDuplicateStream (folderPath) {
@@ -107,6 +134,10 @@ export default {
       const file = event.target.files[0]
       if (file) this.folderPath = file.path
       console.log(file)
+      let streamName = fileHelper.getFileNameFromFilePath(this.folderPath)
+      if (streamName) {
+        this.name = streamName
+      }
       this.error = null
       // FIXME: check timestamp for auto-detect option
     },
@@ -144,13 +175,14 @@ export default {
         return false
       }
       this.isLoading = true
-      api.createStream(this.isProductionEnv(), this.name).then(streamId => {
+      api.createStream(this.isProductionEnv(), this.name, this.currentSite.value).then(streamId => {
         this.isLoading = false
         const stream = {
           id: streamId,
           name: this.name,
           folderPath: this.folderPath,
-          timestampFormat: this.selectedTimestampFormat
+          timestampFormat: this.selectedTimestampFormat,
+          siteGuid: this.currentSite.value
         }
         console.log('creating stream', JSON.stringify(stream))
         Stream.insert({ data: stream, insert: ['files'] })
@@ -164,9 +196,66 @@ export default {
     },
     isProductionEnv () {
       return settings.get('settings.production_env')
+    },
+    changeValue (item) {
+      this.unselectAllValues()
+      item.selected = true
+      this.currentSite = item
+      console.log('currentSite', this.currentSite)
+      this.isShow = false
+    },
+    // onKeyDown (event) {
+    // TODO: chose a site by a key
+    //   if (event.keyCode === 13) {
+    //     let item = this.items.find((item) => {
+    //       return item.selected === true
+    //     })
+    //     this.changeValue(item)
+    //   }
+    // },
+    toggleDropdown () {
+      this.isShow = !this.isShow
+    },
+    unselectAllValues () {
+      this.sites.forEach((item) => {
+        item.selected = false
+      })
+    },
+    outside: function (e) {
+      this.isShow = false
+    },
+    getSites () {
+      let accessibleSites = remote.getGlobal('accessibleSites')
+      let defaultSite = remote.getGlobal('defaultSite')
+      console.log('accessibleSites', accessibleSites, 'defaultSite', defaultSite)
+      if (defaultSite && accessibleSites) {
+        if (accessibleSites.includes(defaultSite)) {
+          let sites = accessibleSites.map((item) => {
+            let obj = {
+              label: item,
+              value: item,
+              selected: item === defaultSite
+            }
+            return obj
+          })
+          this.getCurrentSite(sites)
+          return sites
+        }
+      } else return defaultSite
+    },
+    getCurrentSite (sites) {
+      let selectedSite = sites.filter((item) => {
+        return item.selected === true
+      })
+      if (selectedSite && selectedSite.length === 1) {
+        this.currentSite = selectedSite[0]
+      }
     }
   },
   computed: {
+    sites () {
+      return this.getSites()
+    },
     streams () {
       return Stream.all()
     },
@@ -229,15 +318,107 @@ export default {
 
 <style>
 
-    .has-addons .input-control {
-        width: -webkit-fill-available;
-    }
+  .has-addons .input-control {
+      width: -webkit-fill-available;
+  }
 
-    .file.is-fullwidth .file-name {
-        max-width: 23.5em !important;
-    }
+  .file.is-fullwidth .file-name {
+      max-width: 23.5em !important;
+  }
 
-    .tag.is-disabled {
-      color: gray;
-    }
+  .tag.is-disabled {
+    color: gray;
+  }
+
+  .dropdown-wrapper {
+    display: block;
+    max-width: 100%;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .opened .dropdown-toggle {
+    border-color: #2FB04A !important;
+  }
+
+  .dropdown-link {
+    white-space: nowrap;
+    font-size: 1rem;
+    color: #363636;
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 10px;
+  }
+
+  .dropdown-link:hover {
+    background-color: rgb(233, 230, 230);
+  }
+
+  .dropdown-row {
+    padding: 3px 0;
+  }
+
+  .dropdown-list {
+    max-height: 117px;
+    overflow: auto;
+    width: 100%;
+    position: absolute;
+    display: block;
+    background-color: white;
+    padding: 8px 0;
+    margin: 5px 0;
+    box-shadow: 0 0 8px 0 rgba(0,0,0,.2);
+    border: 0.1px solid #CACACA;
+    z-index: 1000;
+    cursor: pointer;
+  }
+
+  .dropdown-toggle {
+    background-color: white;
+    border-color: #dbdbdb;
+    border-radius: 4px;
+    color: #363636;
+    display: block;
+    width: 100%;
+    height: 36px;
+    font-size: 1rem;
+    text-align: left;
+    outline: none !important;
+    position: relative;
+    padding-bottom: calc(0.375em - 1px);
+    padding-left: calc(0.625em - 1px);
+    padding-right: calc(0.625em - 1px);
+    padding-top: calc(0.375em - 1px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+  }
+
+  .dropdown-toggle:hover {
+    border-color: rgb(175, 177, 180);
+  }
+
+  .dropdown-input {
+    width: 78%;
+    vertical-align: middle;
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .dropdown-icon {
+    width: 20%;
+    font-size: 1rem;
+    vertical-align: middle;
+    display: inline-block;
+    color: #2FB04A;
+    text-align: right;
+    cursor: pointer;
+  }
+
+  .dropdown-icon:hover {
+    color: #6D6F72;
+  }
+
 </style>

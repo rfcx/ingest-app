@@ -21,9 +21,9 @@
 
         <!-- </div> -->
       </div>
-      <div class="navbar-item" v-else>
+      <!-- <div class="navbar-item" v-else>
         <a class="button is-primary">Log in</a>
-      </div>
+      </div> -->
     </div>
     <div class="modal alert" :class="{ 'is-active': shouldShowAlert }">
       <div class="modal-background"></div>
@@ -48,8 +48,8 @@
   export default {
     data () {
       return {
-        name: this.getUserData(),
-        siteName: 'Osa Conservation',
+        name: this.getUserName(),
+        siteName: this.getSite(),
         login: true,
         shouldShowAlert: false,
         productionEnv: this.isProductionEnv()
@@ -84,11 +84,15 @@
       isProductionEnv () {
         return settings.get('settings.production_env')
       },
-      getUserData () {
+      getUserName () {
         let userName = remote.getGlobal('firstname')
-        console.log('userName', userName)
         if (userName) return userName
         else return 'Awesome'
+      },
+      getSite () {
+        let defaultSite = remote.getGlobal('defaultSite')
+        if (defaultSite) return defaultSite
+        else return 'RFCx Lab'
       },
       hideAlert () {
         this.shouldShowAlert = false

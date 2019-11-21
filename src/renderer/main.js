@@ -6,9 +6,42 @@ import App from './App'
 import router from './router'
 import store from './store'
 
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+library.add(faChevronUp, faChevronDown)
+
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
+Vue.component('font-awesome-icon', FontAwesomeIcon)
+Vue.directive('click-outside', {
+  bind: function (el, binding, vNode) {
+    // Provided expression must evaluate to a function.
+    if (typeof binding.value !== 'function') {
+      const compName = vNode.context.name
+      let warn = `[Vue-click-outside:] provided expression '${binding.expression}' is not a function, but has to be`
+      if (compName) { warn += `Found in component '${compName}'` }
+      console.warn(warn)
+    }
+    // Define Handler and cache it on the element.
+    const bubble = binding.modifiers.bubble
+    const hand = (e) => {
+      if (bubble || (!el.contains(e.target) && el !== e.target)) {
+        binding.value(e)
+      }
+    }
+    el.__vueClickOutside__ = hand
+    // add Event Listeners.
+    document.addEventListener('click', hand)
+  },
+  unbind: function (el, binding) {
+    // Remove Event Listeners.
+    document.removeEventListener('click', el.__vueClickOutside__)
+    el.__vueClickOutside__ = null
+  }
+})
 
 /* eslint-disable no-new */
 new Vue({

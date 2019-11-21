@@ -59,6 +59,10 @@ async function refreshTokens () {
       if (profile && profile.given_name) {
         global.firstname = profile.given_name
       }
+      if (profile && profile['https://rfcx.org/app_metadata']) {
+        global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
+        global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
+      }
       resolve()
     })
   })
@@ -99,6 +103,11 @@ function loadTokens (callbackURL) {
       keytar.setPassword(keytarService, keytarAccount, refreshToken)
       if (profile && profile.given_name) {
         global.firstname = profile.given_name
+      }
+      if (profile && profile['https://rfcx.org/app_metadata']) {
+        console.log('profile.accessibleSites___loadTokens', profile['https://rfcx.org/app_metadata'].accessibleSites)
+        global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
+        global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
       }
       resolve()
     })
