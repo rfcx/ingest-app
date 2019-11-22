@@ -9,7 +9,7 @@
           <div class="control is-expanded">
             <input v-model="folderPath" class="input" type="text" placeholder="">
           </div>
-          <div class="control"><a class="button is-light" @click="$refs.file.click()">Browse</a></div>
+          <div class="control"><a class="button is-light" @click="$refs.file.click(); focusWindow()">Browse</a></div>
         </div>
         <div class="field file has-name is-right is-fullwidth" style="display: none">
             <label class="file-label">
@@ -130,7 +130,12 @@ export default {
     isCustomTimestampFormatSelected (timestampFormat) {
       return timestampFormat.toLowerCase() === 'custom'
     },
+    focusWindow () {
+      console.log('focusWindow', this.$refs.file)
+      this.$refs.file.focus()
+    },
     onFileChange (event) {
+      console.log('onFileChange', event)
       const file = event.target.files[0]
       if (file) this.folderPath = file.path
       console.log(file)
