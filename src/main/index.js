@@ -77,6 +77,7 @@ function createWindow (openedAsHidden = false) {
       }
       resetTimers()
       app.exit()
+      app.quit()
     } else if (isLogOut) {
       console.log('mainWindow logout')
       resetTimers()
@@ -329,6 +330,8 @@ async function getUserInfo () {
     let profile = jwtDecode(idToken)
     if (profile && profile.given_name) {
       global.firstname = profile.given_name
+    } else if (profile && profile.user_metadata && profile.user_metadata.given_name) {
+      global.firstname = profile.user_metadata.given_name
     }
     if (profile && profile['https://rfcx.org/app_metadata']) {
       global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
