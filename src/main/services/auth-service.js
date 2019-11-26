@@ -9,19 +9,26 @@ const { apiIdentifier, auth0Domain, clientId } = envVariables
 
 const redirectUri = `file:///callback`
 
-const keytarService = 'https://rfcx.org'
 const keytarAccount = os.userInfo().username
 
 let accessToken = null
 let profile = null
 let refreshToken = null
 
-function getAccessToken () {
-  return accessToken
+async function getAccessToken () {
+  return new Promise(async (resolve, reject) => {
+    const access = await keytar.getPassword('ingest-app-access-token', keytarAccount)
+    if (!access) return reject(new Error('no access token available'))
+    resolve(access)
+  })
 }
 
-function getProfile () {
-  return profile
+async function getIdToken () {
+  return new Promise(async (resolve, reject) => {
+    const idToken = await keytar.getPassword('ingest-app-id-token', keytarAccount)
+    if (!idToken) return reject(new Error('no id token available'))
+    resolve(idToken)
+  })
 }
 
 function getAuthenticationURL () {
@@ -33,7 +40,7 @@ function getAuthenticationURL () {
 
 async function refreshTokens () {
   return new Promise(async (resolve, reject) => {
-    const refreshToken = await keytar.getPassword(keytarService, keytarAccount)
+    const refreshToken = await keytar.getPassword('ingest-app-refresh-token', keytarAccount)
     if (!refreshToken) return reject(new Error('no refresh token available'))
 
     const refreshOptions = {
@@ -53,16 +60,7 @@ async function refreshTokens () {
         logout()
         return reject(new Error(error))
       }
-      accessToken = body.access_token
-      profile = jwtDecode(body.id_token)
-      global.accessToken = accessToken
-      if (profile && profile.given_name) {
-        global.firstname = profile.given_name
-      }
-      if (profile && profile['https://rfcx.org/app_metadata']) {
-        global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
-        global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
-      }
+      parseTokens(body)
       resolve()
     })
   })
@@ -96,26 +94,32 @@ function loadTokens (callbackURL) {
       }
 
       const responseBody = JSON.parse(body)
-      accessToken = responseBody.access_token
-      global.accessToken = accessToken
-      profile = jwtDecode(responseBody.id_token)
+      parseTokens(responseBody)
       refreshToken = responseBody.refresh_token
-      keytar.setPassword(keytarService, keytarAccount, refreshToken)
-      if (profile && profile.given_name) {
-        global.firstname = profile.given_name
-      }
-      if (profile && profile['https://rfcx.org/app_metadata']) {
-        console.log('profile.accessibleSites___loadTokens', profile['https://rfcx.org/app_metadata'].accessibleSites)
-        global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
-        global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
-      }
+      keytar.setPassword('ingest-app-refresh-token', keytarAccount, refreshToken)
       resolve()
     })
   })
 }
 
+function parseTokens (responseBody) {
+  accessToken = responseBody.access_token
+  keytar.setPassword('ingest-app-access-token', keytarAccount, accessToken)
+  profile = jwtDecode(responseBody.id_token)
+  keytar.setPassword('ingest-app-id-token', keytarAccount, responseBody.id_token)
+  if (profile && profile.given_name) {
+    global.firstname = profile.given_name
+  }
+  if (profile && profile['https://rfcx.org/app_metadata']) {
+    global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
+    global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
+  }
+}
+
 async function logout () {
-  await keytar.deletePassword(keytarService, keytarAccount)
+  await keytar.deletePassword('ingest-app-refresh-token', keytarAccount)
+  await keytar.deletePassword('ingest-app-access-token', keytarAccount)
+  await keytar.deletePassword('ingest-app-id-token', keytarAccount)
   accessToken = null
   profile = null
   refreshToken = null
@@ -124,7 +128,7 @@ async function logout () {
 export default {
   getAccessToken,
   getAuthenticationURL,
-  getProfile,
+  getIdToken,
   loadTokens,
   logout,
   refreshTokens

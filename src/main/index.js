@@ -9,7 +9,7 @@ import trayContainer from 'electron-tray-window'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
-// import API from '../../utils/api'
+const jwtDecode = require('jwt-decode')
 
 /**
  * Set `__static` path to static files in production
@@ -21,8 +21,10 @@ if (process.env.NODE_ENV !== 'development') {
 
 let mainWindow, backgroundAPIWindow, backgroundFSWindow, trayWindow
 let menu, tray
+let refreshIntervalTimeout, expires
 let willQuitApp = false
 let isLogOut = false
+let dayInMs = 60 * 60 * 24 * 1000
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
@@ -40,6 +42,7 @@ const trayURL = process.env.NODE_ENV === 'development'
   : `file://${__dirname}/index.html#/tray`
 
 function createWindow (openedAsHidden = false) {
+  createRefreshInterval()
   /**
    * Initial window options
    */
@@ -56,6 +59,7 @@ function createWindow (openedAsHidden = false) {
   mainWindow.loadURL(winURL)
 
   mainWindow.on('closed', () => {
+    resetTimers()
     mainWindow = null
     menu = null
   })
@@ -71,10 +75,16 @@ function createWindow (openedAsHidden = false) {
       if (backgroundAPIWindow) {
         backgroundFSWindow = null
       }
+      resetTimers()
       app.exit()
     } else if (isLogOut) {
       console.log('mainWindow logout')
+      resetTimers()
       createAuthWindow()
+      if (mainWindow) {
+        mainWindow.destroy()
+        mainWindow = null
+      }
       isLogOut = false
     } else {
       console.log('mainWindow close')
@@ -170,7 +180,13 @@ function createMenu () {
             }
           }
         },
-        { role: 'quit' }
+        // { role: 'quit' }
+        { label: 'Quit',
+          click: function () {
+            app.exit()
+            app.quit()
+          }
+        }
       ]
     },
     {
@@ -277,12 +293,83 @@ function initialSettings () {
 async function createAppWindow (openedAsHidden) {
   try {
     // An Entry for users who has already existing token
-    await authService.refreshTokens()
+    await authService.getIdToken()
+    await checkToken()
+    await getUserInfo()
     createWindow(openedAsHidden)
   } catch (err) {
     // An Entry for new users
     createAuthWindow()
   }
+}
+
+async function checkToken () {
+  return new Promise(async (resolve, reject) => {
+    const now = Date.now()
+    let idToken = await authService.getIdToken()
+    if (!idToken) return reject(new Error('no id token available'))
+    let profile = jwtDecode(idToken)
+    if (profile) {
+      expires = profile.exp * 1000
+      if (now > expires) {
+        logOut()
+        return resolve()
+      } else if ((expires - now) <= dayInMs) {
+        refreshTokens()
+      }
+    }
+    resolve()
+  })
+}
+
+async function getUserInfo () {
+  return new Promise(async (resolve, reject) => {
+    let idToken = await authService.getIdToken()
+    if (!idToken) return reject(new Error('no id token available'))
+    let profile = jwtDecode(idToken)
+    if (profile && profile.given_name) {
+      global.firstname = profile.given_name
+    }
+    if (profile && profile['https://rfcx.org/app_metadata']) {
+      global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
+      global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
+    }
+    resolve()
+  })
+}
+
+async function refreshTokens () {
+  try {
+    await authService.refreshTokens()
+  } catch (err) {
+    logOut()
+  }
+}
+
+async function logOut () {
+  await authService.logout()
+  if (mainWindow) {
+    isLogOut = true
+    mainWindow.close()
+  }
+  if (tray) {
+    tray.destroy()
+    tray = null
+  }
+  if (trayWindow) {
+    trayWindow.destroy()
+    trayWindow = null
+  }
+}
+
+async function createRefreshInterval () {
+  refreshIntervalTimeout = setInterval(() => {
+    checkToken()
+  }, dayInMs)
+}
+
+function resetTimers () {
+  clearInterval(refreshIntervalTimeout)
 }
 
 app.on('ready', () => {
