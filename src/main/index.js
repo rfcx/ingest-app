@@ -25,6 +25,7 @@ let refreshIntervalTimeout, expires
 let willQuitApp = false
 let isLogOut = false
 let dayInMs = 60 * 60 * 24 * 1000
+const gotTheLock = app.requestSingleInstanceLock()
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
@@ -89,6 +90,14 @@ function createWindow (openedAsHidden = false) {
       isLogOut = false
     } else {
       console.log('mainWindow close')
+      if (process.platform === 'win32' || process.platform === 'win64') {
+        menu = null
+        mainWindow = null
+        resetTimers()
+        app.exit()
+        app.quit()
+        return
+      }
       e.preventDefault()
       mainWindow.hide()
     }
@@ -374,7 +383,18 @@ async function createRefreshInterval () {
 function resetTimers () {
   clearInterval(refreshIntervalTimeout)
 }
-
+if (!gotTheLock) {
+  app.exit()
+  app.quit()
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // When run a second instance.
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore()
+      mainWindow.focus()
+    }
+  })
+}
 app.on('ready', () => {
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
   let openedAsHidden = false
