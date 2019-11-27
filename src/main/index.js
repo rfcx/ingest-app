@@ -20,7 +20,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 let mainWindow, backgroundAPIWindow, backgroundFSWindow, trayWindow
-let menu, tray
+let menu, tray, idToken
 let refreshIntervalTimeout, expires
 let willQuitApp = false
 let isLogOut = false
@@ -87,6 +87,7 @@ function createWindow (openedAsHidden = false) {
         mainWindow.destroy()
         mainWindow = null
       }
+      idToken = null
       isLogOut = false
     } else {
       console.log('mainWindow close')
@@ -188,6 +189,7 @@ function createMenu () {
               trayWindow.destroy()
               trayWindow = null
             }
+            idToken = null
           }
         },
         // { role: 'quit' }
@@ -268,6 +270,7 @@ function createTray (platform) {
 // }
 
 function showMainWindow () {
+  console.log('showMainWindow')
   if (mainWindow === null) {
     createWindow()
   } else {
@@ -309,14 +312,16 @@ async function createAppWindow (openedAsHidden) {
     createWindow(openedAsHidden)
   } catch (err) {
     // An Entry for new users
+    console.log('createAuthWindow')
     createAuthWindow()
   }
 }
 
 async function checkToken () {
   return new Promise(async (resolve, reject) => {
+    idToken = null
     const now = Date.now()
-    let idToken = await authService.getIdToken()
+    idToken = await authService.getIdToken()
     if (!idToken) return reject(new Error('no id token available'))
     let profile = jwtDecode(idToken)
     if (profile) {
@@ -334,8 +339,10 @@ async function checkToken () {
 
 async function getUserInfo () {
   return new Promise(async (resolve, reject) => {
-    let idToken = await authService.getIdToken()
-    if (!idToken) return reject(new Error('no id token available'))
+    if (!idToken) {
+      idToken = await authService.getIdToken()
+      if (!idToken) return reject(new Error('no id token available'))
+    }
     let profile = jwtDecode(idToken)
     if (profile && profile.given_name) {
       global.firstname = profile.given_name
@@ -372,6 +379,7 @@ async function logOut () {
     trayWindow.destroy()
     trayWindow = null
   }
+  idToken = null
 }
 
 async function createRefreshInterval () {
@@ -418,7 +426,10 @@ app.on('before-quit', () => {
 })
 
 app.on('activate', () => {
-  showMainWindow()
+  console.log('activate')
+  if (mainWindow && idToken) {
+    showMainWindow()
+  } else app.focus()
 })
 
 ipcMain.on('openMainWindow', (event, data) => {

@@ -21,7 +21,9 @@ function createAuthWindow () {
   win.loadURL(authService.getAuthenticationURL())
   webRequest.onBeforeRequest(filter, async ({ url }) => {
     await authService.loadTokens(url)
-    destroyAuthWin()
+    await destroyAuthWin()
+    console.log('create main window from auth0 process')
+    createWindow(false)
   })
   win.webContents.on('did-finish-load', () => {
     let code = `if (document.getElementById('btn-login-passwordless'))
@@ -31,13 +33,15 @@ function createAuthWindow () {
   win.on('closed', () => {
     win = null
     console.log('auth window closed')
-    createWindow(false)
   })
 }
 
 function destroyAuthWin () {
-  if (!win) return
-  win.close()
+  return new Promise((resolve, reject) => {
+    if (!win) return resolve()
+    win.close()
+    resolve()
+  })
 }
 
 export default createAuthWindow
