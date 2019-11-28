@@ -39,16 +39,16 @@
       </thead>
       <tbody>
         <tr v-for="file in files" :key="file.id">
-          <td v-show="!shouldShowProgress(file.state)"><img :src="getStateImgUrl(file.state)"></td>
+          <td class="file-status" :class="{ 'failed': file.state === 'failed' }" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
           <!-- <td v-show="shouldShowProgress(file.state)">
             <vue-circle ref="files" :progress="file.progress" :size="14" line-cap="round" :fill="fill" :thickness="2" :show-percent="false" @vue-circle-progress="progress" @vue-circle-end="progress_end">
             </vue-circle>
           </td> -->
-          <td :class="{ 'is-error': isError(file.state) }" >{{ file.name }}</td>
-          <td v-show="!isError(file.state)">{{ getTimestamp(file) }}</td>
-          <td v-show="!isError(file.state)">{{ file.fileSize }}</td>
-          <td class="is-error" v-show="isError(file.state)">{{ file.stateMessage }}</td>
-          <td v-show="isError(file.state)"></td>
+          <td class="file-row" :class="{ 'is-error': isError(file.state) }" >{{ file.name }}</td>
+          <td class="file-row" v-show="!isError(file.state)">{{ getTimestamp(file) }}</td>
+          <td class="file-row" v-show="!isError(file.state)">{{ file.fileSize }}</td>
+          <td class="is-error file-row" v-show="isError(file.state)">{{ file.stateMessage }}</td>
+          <td class="file-row" v-show="isError(file.state)"></td>
         </tr>
       </tbody>
     </table>
@@ -176,6 +176,8 @@
         if (stream) {
           this.$store.dispatch('setSelectedStreamId', stream.id)
         }
+        // If a stream deleted when the uploading process was paused.
+        this.$store.dispatch('setUploadingProcess', true)
       }
     },
     watch: {
@@ -225,6 +227,7 @@
   .stream-info-container .title-container .dropdown {
     padding-left: $default-padding-margin;
     padding-right: $default-padding-margin;
+    cursor: pointer;
   }
 
   .stream-info-container .subtitle-container img {
@@ -251,6 +254,35 @@
   .modal-card-title {
     margin-bottom: 0px !important;
     font-size: $default-font-size !important;
+  }
+
+  .file-status-state {
+    display: block;
+    font-size: 8px;
+    height: auto;
+    line-height: 1 !important;
+  }
+
+  .file-status {
+    text-align: center !important;
+    padding: 0.4rem 0.75rem 0.7rem 0 !important;
+  }
+
+  .file-status img {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .failed {
+    padding-left: 0.7rem !important;
+  }
+
+  .file-failed {
+    margin: 7px auto 5px !important;
+  }
+
+  .file-row {
+    vertical-align: middle !important;
   }
 
 </style>
