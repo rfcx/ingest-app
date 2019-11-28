@@ -21,6 +21,12 @@ function createAuthWindow () {
   win.loadURL(authService.getAuthenticationURL())
   webRequest.onBeforeRequest(filter, async ({ url }) => {
     await authService.loadTokens(url)
+    if (process.platform === 'win32' || process.platform === 'win64') {
+      console.log('create main window from auth0 process from Windows')
+      createWindow(false)
+      await destroyAuthWin()
+      return
+    }
     await destroyAuthWin()
     console.log('create main window from auth0 process')
     createWindow(false)

@@ -106,7 +106,6 @@ function parseTokens (responseBody) {
   accessToken = responseBody.access_token
   keytar.setPassword('ingest-app-access-token', keytarAccount, accessToken)
   profile = jwtDecode(responseBody.id_token)
-  console.log('PROFILE', profile)
   keytar.setPassword('ingest-app-id-token', keytarAccount, responseBody.id_token)
   if (profile && profile.given_name) {
     global.firstname = profile.given_name
