@@ -1,6 +1,6 @@
 import { BrowserWindow } from 'electron'
 import authService from './auth-service'
-import createWindow from '../index'
+import index from '../index'
 
 const filter = {
   urls: ['file:///callback*']
@@ -21,15 +21,16 @@ function createAuthWindow () {
   win.loadURL(authService.getAuthenticationURL())
   webRequest.onBeforeRequest(filter, async ({ url }) => {
     await authService.loadTokens(url)
+    await index.hasAccessToApp()
     if (process.platform === 'win32' || process.platform === 'win64') {
       console.log('create main window from auth0 process from Windows')
-      createWindow(false)
+      index.createWindow(false)
       await destroyAuthWin()
       return
     }
     await destroyAuthWin()
     console.log('create main window from auth0 process')
-    createWindow(false)
+    index.createWindow(false)
   })
   win.webContents.on('did-finish-load', () => {
     let code = `if (document.getElementById('btn-login-passwordless'))

@@ -25,7 +25,7 @@ async function getAccessToken () {
 
 async function getIdToken () {
   return new Promise(async (resolve, reject) => {
-    const idToken = await keytar.getPassword('ingest-app-id-token', keytarAccount)
+    let idToken = await keytar.getPassword('ingest-app-id-token', keytarAccount)
     if (!idToken) return reject(new Error('no id token available'))
     resolve(idToken)
   })
@@ -33,7 +33,7 @@ async function getIdToken () {
 
 function getAuthenticationURL () {
   return (
-    `https://${auth0Domain}/authorize?audience=${apiIdentifier}&scope=openid profile offline_access&response_type=code&` +
+    `https://${auth0Domain}/authorize?audience=${apiIdentifier}&scope=openid email profile offline_access&response_type=code&` +
     `client_id=${clientId}&redirect_uri=${redirectUri}`
   )
 }

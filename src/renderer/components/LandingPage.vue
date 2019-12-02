@@ -1,21 +1,23 @@
 <template>
   <div id="wrapper-landing-page" class="has-fixed-sidebar">
-    <navigation></navigation>
-    <section class="main-content columns is-mobile">
-      <side-navigation></side-navigation>
-      <div class="column content is-desktop">
-        <empty-stream v-if="isEmptyStream()"></empty-stream>
-        <file-list v-else></file-list>
-      </div>
-    </section>
-    <footer class="uploading-process-status" v-if="!isUploadingProcessEnabled"
-      @mouseover="uploadingProcessText = 'Tap here to resume the uploading process'"
-      @mouseleave="uploadingProcessText = 'The uploading process has been paused'"
-      @click="resumeUploadingProcess()">
-      <span>
-        {{ uploadingProcessText }}
-      </span>
-    </footer>
+    <div v-if="hasAccessToApp()">
+      <navigation></navigation>
+      <section class="main-content columns is-mobile">
+        <side-navigation></side-navigation>
+        <div class="column content is-desktop">
+          <empty-stream v-if="isEmptyStream()"></empty-stream>
+          <file-list v-else></file-list>
+        </div>
+      </section>
+      <footer class="uploading-process-status" v-if="!isUploadingProcessEnabled"
+        @mouseover="uploadingProcessText = 'Tap here to resume the uploading process'"
+        @mouseleave="uploadingProcessText = 'The uploading process has been paused'"
+        @click="resumeUploadingProcess()">
+        <span>
+          {{ uploadingProcessText }}
+        </span>
+      </footer>
+    </div>
   </div>
 </template>
 
@@ -26,6 +28,7 @@
   import FileList from './LandingPage/FileList'
   import { mapState } from 'vuex'
   import Stream from '../store/models/Stream'
+  const { remote } = window.require('electron')
 
   export default {
     name: 'landing-page',
@@ -44,6 +47,18 @@
       },
       resumeUploadingProcess () {
         this.$store.dispatch('setUploadingProcess', true)
+      },
+      hasAccessToApp () {
+        let hasAccessToApp = remote.getGlobal('hasAccessToApp')
+        console.log('hasAccessToApp', hasAccessToApp)
+        if (hasAccessToApp) {
+          this.$store.dispatch('setUploadingProcess', true)
+          return true
+        } else {
+          this.$router.push('/access-denied-page')
+          this.$electron.ipcRenderer.send('removeTray')
+          this.$store.dispatch('setUploadingProcess', false)
+        }
       }
     },
     computed: {

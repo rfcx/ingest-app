@@ -309,6 +309,8 @@ async function createAppWindow (openedAsHidden) {
     await authService.getIdToken()
     await checkToken()
     await getUserInfo()
+    await hasAccessToApp()
+    console.log('create main window')
     createWindow(openedAsHidden)
   } catch (err) {
     // An Entry for new users
@@ -335,6 +337,28 @@ async function checkToken () {
     }
     resolve()
   })
+}
+
+async function checkUserRole () {
+  console.log('checkUserRole')
+  return new Promise(async (resolve, reject) => {
+    if (!idToken) {
+      idToken = await authService.getIdToken()
+      if (!idToken) return resolve(false)
+    }
+    let profile = jwtDecode(idToken)
+    console.log('roles', profile.roles)
+    if (profile && profile.roles && (profile.roles || []).includes('rfcxUser')) {
+      return resolve(true)
+    } else if (profile && profile['https://rfcx.org/app_metadata'] && profile['https://rfcx.org/app_metadata'].authorization &&
+      (profile['https://rfcx.org/app_metadata'].authorization.roles || []).includes('rfcxUser')) {
+      return resolve(true)
+    } else return resolve(false)
+  })
+}
+
+async function hasAccessToApp () {
+  global.hasAccessToApp = await checkUserRole()
 }
 
 async function getUserInfo () {
@@ -380,6 +404,17 @@ async function logOut () {
     trayWindow = null
   }
   idToken = null
+}
+
+function removeTray () {
+  if (tray) {
+    tray.destroy()
+    tray = null
+  }
+  if (trayWindow) {
+    trayWindow.destroy()
+    trayWindow = null
+  }
 }
 
 async function createRefreshInterval () {
@@ -439,6 +474,16 @@ ipcMain.on('openMainWindow', (event, data) => {
   }
 })
 
+ipcMain.on('logOut', (event, data) => {
+  console.log('logOut')
+  logOut()
+})
+
+ipcMain.on('removeTray', (event, data) => {
+  console.log('removeTray')
+  removeTray()
+})
+
 /**
  * Auto Updater
  *
@@ -459,4 +504,7 @@ app.on('ready', () => {
 })
  */
 
-export default createWindow
+export default {
+  createWindow,
+  hasAccessToApp
+}

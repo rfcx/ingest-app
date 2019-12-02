@@ -31,6 +31,11 @@ export default new Router({
       component: require('@/components/TrayPage').default
     },
     {
+      path: '/access-denied-page',
+      name: 'access-denied-page',
+      component: require('@/components/AccessDeniedPage').default
+    },
+    {
       path: '*',
       redirect: '/'
     }
