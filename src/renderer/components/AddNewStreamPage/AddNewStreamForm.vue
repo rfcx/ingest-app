@@ -179,26 +179,33 @@ export default {
         this.error = 'The directory is not exist.'
         return false
       }
+      let listener = (event, arg) => {
+        this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+        let idToken = null
+        idToken = arg
+        api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, idToken).then(streamId => {
+          this.isLoading = false
+          const stream = {
+            id: streamId,
+            name: this.name,
+            folderPath: this.folderPath,
+            timestampFormat: this.selectedTimestampFormat,
+            siteGuid: this.currentSite.value
+          }
+          console.log('creating stream', JSON.stringify(stream))
+          Stream.insert({ data: stream, insert: ['files'] })
+          this.$store.dispatch('setSelectedStreamId', stream.id)
+          this.$store.dispatch('setUploadingProcess', true)
+          this.$router.push('/')
+        }).catch(error => {
+          console.log('error while creating stream', error)
+          this.isLoading = false
+          this.error = error.message
+        })
+      }
       this.isLoading = true
-      api.createStream(this.isProductionEnv(), this.name, this.currentSite.value).then(streamId => {
-        this.isLoading = false
-        const stream = {
-          id: streamId,
-          name: this.name,
-          folderPath: this.folderPath,
-          timestampFormat: this.selectedTimestampFormat,
-          siteGuid: this.currentSite.value
-        }
-        console.log('creating stream', JSON.stringify(stream))
-        Stream.insert({ data: stream, insert: ['files'] })
-        this.$store.dispatch('setSelectedStreamId', stream.id)
-        this.$store.dispatch('setUploadingProcess', true)
-        this.$router.push('/')
-      }).catch(error => {
-        console.log('error while creating stream', error)
-        this.isLoading = false
-        this.error = error.message
-      })
+      this.$electron.ipcRenderer.send('getIdToken')
+      this.$electron.ipcRenderer.on('sendIdToken', listener)
     },
     isProductionEnv () {
       return settings.get('settings.production_env')

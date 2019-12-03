@@ -484,6 +484,12 @@ ipcMain.on('removeTray', (event, data) => {
   removeTray()
 })
 
+let listener = (event, args) => {
+  event.sender.send('sendIdToken', idToken)
+}
+
+ipcMain.on('getIdToken', listener)
+
 /**
  * Auto Updater
  *

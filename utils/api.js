@@ -8,10 +8,10 @@ const apiUrl = (proEnvironment) => {
   return 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
 }
 
-const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, progressCallback) => {
+const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, idToken, progressCallback) => {
   console.log(`path: ${filePath} ext: ${fileExt}`)
-  return requestUploadUrl(env, fileName, streamId, timestamp).then((data) => {
-    return upload(data.url, filePath, fileExt, progressCallback)
+  return requestUploadUrl(env, fileName, streamId, timestamp, idToken).then((data) => {
+    return upload(data.url, filePath, fileExt, idToken, progressCallback)
       .then(() => {
         return Promise.resolve(data.uploadId)
       })
@@ -22,9 +22,9 @@ const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, progr
 }
 
 // Part 0: Create stream
-const createStream = (env, streamName, siteGuid) => {
+const createStream = (env, streamName, siteGuid, idToken) => {
   console.log('creating stream api:', streamName, 'site:', siteGuid)
-  return axios.post(apiUrl(env) + '/streams', { name: streamName, site: siteGuid })
+  return axios.post(apiUrl(env) + '/streams', { name: streamName, site: siteGuid }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const streamId = response.data.id
       return streamId
@@ -33,11 +33,11 @@ const createStream = (env, streamName, siteGuid) => {
 
 // Part 1: Get signed url
 
-const requestUploadUrl = (env, originalFilename, streamId, timestamp) => {
+const requestUploadUrl = (env, originalFilename, streamId, timestamp, idToken) => {
   // Make a request for a user with a given ID
   const params = { filename: originalFilename, stream: streamId, timestamp: timestamp }
   console.log('requestUploadUrl with params', params)
-  return axios.post(apiUrl(env) + '/uploads', params)
+  return axios.post(apiUrl(env) + '/uploads', params, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const url = response.data.url
       const uploadId = response.data.uploadId
@@ -50,11 +50,12 @@ const requestUploadUrl = (env, originalFilename, streamId, timestamp) => {
 
 const fs = require('fs')
 
-const upload = (signedUrl, filePath, fileExt, progressCallback) => {
+const upload = (signedUrl, filePath, fileExt, idToken, progressCallback) => {
   const readStream = fs.createReadStream(filePath)
   const options = {
     headers: {
-      'Content-Type': `audio/${fileExt}`
+      'Content-Type': `audio/${fileExt}`,
+      'Authorization': 'Bearer ' + idToken
     },
     maxContentLength: 209715200,
     onUploadProgress: function (progressEvent) {
@@ -68,8 +69,8 @@ const upload = (signedUrl, filePath, fileExt, progressCallback) => {
 
 // Part 3: Get ingest status
 
-const checkStatus = (env, uploadId) => {
-  return axios.get(apiUrl(env) + '/uploads/' + uploadId)
+const checkStatus = (env, uploadId, idToken) => {
+  return axios.get(apiUrl(env) + '/uploads/' + uploadId, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const status = response.data.status
       const failureMessage = response.data.failureMessage
