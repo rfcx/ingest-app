@@ -7,10 +7,10 @@ import router from './router'
 import store from './store'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons'
+import { faChevronUp, faChevronDown, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-library.add(faChevronUp, faChevronDown)
+library.add(faChevronUp, faChevronDown, faPencilAlt)
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios

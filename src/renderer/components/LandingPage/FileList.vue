@@ -2,7 +2,17 @@
   <div>
     <div class="stream-info-container">
       <div class="title-container">
-        <span v-if="selectedStream">{{ selectedStream.name }} (_{{ selectedStream.id.substring(0, 4) }}) </span>
+        <div class="title-container-text" v-if="selectedStream && !isRenaming">
+        <span>{{ selectedStream.name }} (_{{ selectedStream.id.substring(0, 4) }})</span>
+        <span v-if="!isSelectedStreamFailed" class="title-container-edit" title="Rename the stream"><font-awesome-icon :icon="iconPencil" @click="renameStream()"></font-awesome-icon></span>
+        </div>
+        <div class="edit-container" v-if="isRenaming">
+          <input class="input edit-container-item-input" v-model="newStreamName" type="text" placeholder="">
+          <div class="edit-container-item-control">
+            <button class="button is-rounded btn" @click="cancel()">Cancel</button>
+            <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!isNewStreamNameValid && (newStreamName && newStreamName.length > 0)" @click="saveStream()">Save</button>
+          </div>
+        </div>
         <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()">
           <div class="dropdown-trigger">
             <img src="~@/assets/ic-menu.svg" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -39,7 +49,7 @@
       </thead>
       <tbody>
         <tr v-for="file in files" :key="file.id">
-          <td class="file-status" :class="{ 'failed': file.state === 'failed' }" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
+          <td class="file-status" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
           <!-- <td v-show="shouldShowProgress(file.state)">
             <vue-circle ref="files" :progress="file.progress" :size="14" line-cap="round" :fill="fill" :thickness="2" :show-percent="false" @vue-circle-progress="progress" @vue-circle-end="progress_end">
             </vue-circle>
@@ -74,17 +84,26 @@
   import dateHelper from '../../../../utils/dateHelper'
   import File from '../../store/models/File'
   import Stream from '../../store/models/Stream'
+  import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+  import { faPencilAlt } from '@fortawesome/free-solid-svg-icons'
+  import settings from 'electron-settings'
+  import api from '../../../../utils/api'
   // import VueCircle from 'vue2-circle-progress'
 
   export default {
     components: {
+      FontAwesomeIcon
       // VueCircle
     },
     data () {
       return {
+        iconPencil: faPencilAlt,
         fill: { color: ['#2FB04A'] },
         shouldShowDropDown: false,
-        shouldShowConfirmToDeleteModal: false
+        shouldShowConfirmToDeleteModal: false,
+        isRenaming: false,
+        isLoading: false,
+        newStreamName: ''
       }
     },
     computed: {
@@ -95,11 +114,56 @@
         console.log('FileList selectedStream', this.selectedStreamId)
         return Stream.find(this.selectedStreamId)
       },
+      isNewStreamNameValid: function () {
+        return this.newStreamName.trim().length && this.newStreamName.trim().length >= 3 && this.newStreamName.trim().length <= 40
+      },
+      isSelectedStreamFailed () {
+        let stream = Stream.query().with('files').where('$id', this.selectedStreamId).get()
+        let count = 0
+        if (stream) {
+          stream[0].files.forEach(file => {
+            if (file.state === 'failed') {
+              count++
+            }
+          })
+          if (count === stream[0].files.length) return true
+        }
+      },
       files () {
         return File.query().where('streamId', this.selectedStreamId).orderBy('name').get()
       }
     },
     methods: {
+      renameStream () {
+        this.isRenaming = true
+        this.newStreamName = this.selectedStream.name
+      },
+      saveStream () {
+        this.isLoading = true
+        let listener = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          let idToken = null
+          idToken = arg
+          api.renameStream(this.isProductionEnv(), this.selectedStream.id, this.newStreamName, this.selectedStream.siteGuid, idToken).then(data => {
+            console.log('stream is updated')
+            Stream.update({ where: this.selectedStream.id,
+              data: { name: this.newStreamName }
+            })
+            this.isLoading = false
+            this.isRenaming = false
+          }).catch(error => {
+            console.log('error while updating stream', error)
+            this.isLoading = false
+          })
+        }
+        this.isLoading = true
+        this.$electron.ipcRenderer.send('getIdToken')
+        this.$electron.ipcRenderer.on('sendIdToken', listener)
+      },
+      cancel () {
+        this.isRenaming = false
+        this.newStreamName = null
+      },
       getFiles () {
         return this.files
         // return fs.readdirSync(this.selectedStream.folderPath)
@@ -178,6 +242,9 @@
         }
         // If a stream deleted when the uploading process was paused.
         this.$store.dispatch('setUploadingProcess', true)
+      },
+      isProductionEnv () {
+        return settings.get('settings.production_env')
       }
     },
     watch: {
@@ -266,15 +333,12 @@
   .file-status {
     text-align: center !important;
     padding: 0.4rem 0.75rem 0.7rem 0 !important;
+    width: 73px !important;
   }
 
   .file-status img {
     display: block;
     margin: 0 auto;
-  }
-
-  .failed {
-    padding-left: 0.7rem !important;
   }
 
   .file-failed {
@@ -283,6 +347,44 @@
 
   .file-row {
     vertical-align: middle !important;
+  }
+
+  .edit-container {
+    vertical-align: middle !important;
+    width: 500px !important;
+  }
+
+  .edit-container-item-input {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    width: 40% !important;
+    margin-right: 10px !important;
+    font-size: 12px !important;
+  }
+
+  .edit-container-item-control {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    width: 56% !important;
+  }
+
+  .title-container-edit {
+    margin-left: 10px !important;
+    color: grey;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .btn {
+    width: 90px !important;
+    height: 30px !important;
+    line-height: 1 !important;
+    margin-right: 8px !important;
+    font-size: 12px !important;
+  }
+
+  .title-container-text {
+    margin-bottom: 6px !important;
   }
 
 </style>
