@@ -2,17 +2,22 @@ const axios = require('axios')
 const fileStreamAxios = axios.create({
   adapter: require('./axios-http-adapter').default
 })
+const platform = 'google' // || 'amazon'
 
 const apiUrl = (proEnvironment) => {
-  if (proEnvironment) return 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
-  return 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
+  if (proEnvironment) {
+    return platform === 'amazon' ? 'https://ingest-service.rfcx.org' : 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
+  }
+  return platform === 'amazon' ? 'https://staging-ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
+  // local staging for s3 'http://localhost:3030'
 }
 
 const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, idToken, progressCallback) => {
   console.log(`path: ${filePath} ext: ${fileExt}`)
   return requestUploadUrl(env, fileName, streamId, timestamp, idToken).then((data) => {
-    return upload(data.url, filePath, fileExt, idToken, progressCallback)
+    return (platform === 'amazon' ? uploadToS3(data.url, filePath, fileExt, progressCallback) : uploadToGoogleCloud(data.url, filePath, fileExt, progressCallback))
       .then(() => {
+        console.log('uploadId', data.uploadId)
         return Promise.resolve(data.uploadId)
       })
       .catch((error) => {
@@ -50,12 +55,38 @@ const requestUploadUrl = (env, originalFilename, streamId, timestamp, idToken) =
 
 const fs = require('fs')
 
-const upload = (signedUrl, filePath, fileExt, idToken, progressCallback) => {
+function readFileAsync (path) {
+  return new Promise(function (resolve, reject) {
+    fs.readFile(path, function (error, result) {
+      if (error || !result) {
+        reject(error)
+      } else {
+        resolve(result)
+      }
+    })
+  })
+}
+
+async function uploadToS3 (signedUrl, filePath, fileExt, progressCallback) {
+  try {
+    const contents = await readFileAsync(filePath)
+    if (contents) {
+      return axios.put(signedUrl, contents, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const uploadToGoogleCloud = (signedUrl, filePath, fileExt, progressCallback) => {
   const readStream = fs.createReadStream(filePath)
   const options = {
     headers: {
-      'Content-Type': `audio/${fileExt}`,
-      'Authorization': 'Bearer ' + idToken
+      'Content-Type': `audio/${fileExt}`
     },
     maxContentLength: 209715200,
     onUploadProgress: function (progressEvent) {
