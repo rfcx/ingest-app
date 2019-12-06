@@ -59,6 +59,12 @@ function createWindow (openedAsHidden = false) {
 
   mainWindow.loadURL(winURL)
 
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('did-finish-load')
+    backgroundAPIWindow.loadURL(backgroundAPIURL)
+    backgroundFSWindow.loadURL(backgroundFSURL)
+  })
+
   mainWindow.on('closed', () => {
     resetTimers()
     mainWindow = null
@@ -108,13 +114,11 @@ function createWindow (openedAsHidden = false) {
     show: false,
     webPreferences: { nodeIntegration: true }
   })
-  backgroundAPIWindow.loadURL(backgroundAPIURL)
 
   backgroundFSWindow = new BrowserWindow({
     show: false,
     webPreferences: { nodeIntegration: true }
   })
-  backgroundFSWindow.loadURL(backgroundFSURL)
 
   trayWindow = new BrowserWindow({
     width: 300,

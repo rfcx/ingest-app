@@ -131,7 +131,6 @@ export default {
       return timestampFormat.toLowerCase() === 'custom'
     },
     focusWindow () {
-      console.log('focusWindow', this.$refs.file)
       this.$refs.file.focus()
     },
     onFileChange (event) {
