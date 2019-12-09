@@ -354,6 +354,9 @@ async function checkUserRole () {
       if (!idToken) return resolve(false)
     }
     let profile = jwtDecode(idToken)
+    if (profile) {
+      global.idToken = idToken
+    }
     console.log('roles', profile.roles)
     if (profile && profile.roles && (profile.roles || []).includes('rfcxUser')) {
       return resolve(true)
@@ -492,11 +495,11 @@ ipcMain.on('removeTray', (event, data) => {
   removeTray()
 })
 
-let listener = (event, args) => {
-  event.sender.send('sendIdToken', idToken)
-}
+// let listener = (event, args) => {
+// event.sender.send('sendIdToken', idToken)
+// }
 
-ipcMain.on('getIdToken', listener)
+// ipcMain.on('getIdToken', listener)
 
 /**
  * Auto Updater

@@ -7,6 +7,7 @@
   import File from '../store/models/File'
   import api from '../../../utils/api'
   import settings from 'electron-settings'
+  const { remote } = window.require('electron')
 
   const workerTimeoutMaximum = 10000
   const workerTimeoutMinimum = 3000
@@ -73,10 +74,12 @@
         File.update({ where: file.id,
           data: {state: 'uploading', stateMessage: '0', progress: 0}
         })
-        let listener = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-          let idToken = null
-          idToken = arg
+        let idToken = remote.getGlobal('idToken')
+        if (idToken) {
+        // let listener = (event, arg) => {
+        // this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+        // let idToken = null
+        // idToken = arg
           return api.uploadFile(this.isProductionEnv(), file.name, file.path, file.extension, file.streamId, file.timestamp, idToken, (progress) => { // TODO: fix stream id
             // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
             // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
@@ -99,14 +102,16 @@
             })
           })
         }
-        this.$electron.ipcRenderer.send('getIdToken')
-        this.$electron.ipcRenderer.on('sendIdToken', listener)
+        // this.$electron.ipcRenderer.send('getIdToken')
+        // this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       checkStatus (file) {
-        let listener = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-          let idToken = null
-          idToken = arg
+        let idToken = remote.getGlobal('idToken')
+        if (idToken) {
+        // let listener = (event, arg) => {
+        // this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+        // let idToken = null
+        // idToken = arg
           return api.checkStatus(this.isProductionEnv(), file.uploadId, idToken)
             .then((data) => {
               const status = data.status
@@ -138,8 +143,8 @@
               })
             })
         }
-        this.$electron.ipcRenderer.send('getIdToken')
-        this.$electron.ipcRenderer.on('sendIdToken', listener)
+        // this.$electron.ipcRenderer.send('getIdToken')
+        // this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       queueFileToUpload () {
         return this.getUnsyncedFile().then((file) => {

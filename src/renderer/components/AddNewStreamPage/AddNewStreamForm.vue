@@ -178,10 +178,12 @@ export default {
         this.error = 'The directory is not exist.'
         return false
       }
-      let listener = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-        let idToken = null
-        idToken = arg
+      let idToken = remote.getGlobal('idToken')
+      if (idToken) {
+      // let listener = (event, arg) => {
+      // this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+      // let idToken = null
+      // idToken = arg
         api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, idToken).then(streamId => {
           this.isLoading = false
           const stream = {
@@ -203,8 +205,8 @@ export default {
         })
       }
       this.isLoading = true
-      this.$electron.ipcRenderer.send('getIdToken')
-      this.$electron.ipcRenderer.on('sendIdToken', listener)
+      // this.$electron.ipcRenderer.send('getIdToken')
+      // this.$electron.ipcRenderer.on('sendIdToken', listener)
     },
     isProductionEnv () {
       return settings.get('settings.production_env')
