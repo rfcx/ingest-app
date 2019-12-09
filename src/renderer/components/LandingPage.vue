@@ -35,7 +35,8 @@
     components: { Navigation, SideNavigation, EmptyStream, FileList },
     data () {
       return {
-        uploadingProcessText: 'The uploading process has been paused'
+        uploadingProcessText: 'The uploading process has been paused',
+        executed: false
       }
     },
     methods: {
@@ -50,11 +51,17 @@
       },
       hasAccessToApp () {
         let hasAccessToApp = remote.getGlobal('hasAccessToApp')
-        console.log('hasAccessToApp', hasAccessToApp)
-        if (hasAccessToApp) {
+        if (hasAccessToApp && !this.executed) {
+          // For the first enter to the app for continue the uploading process
+          console.log('hasAccessToApp on the first enter', hasAccessToApp)
+          this.executed = true
           this.$store.dispatch('setUploadingProcess', true)
           return true
+        } else if (hasAccessToApp && this.executed) {
+          console.log('hasAccessToApp', hasAccessToApp)
+          return true
         } else {
+          console.log('hasAccessToApp', hasAccessToApp)
           this.$router.push('/access-denied-page')
           this.$electron.ipcRenderer.send('removeTray')
           this.$store.dispatch('setUploadingProcess', false)

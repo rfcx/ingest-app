@@ -57,7 +57,7 @@ function createWindow (openedAsHidden = false) {
     webPreferences: { nodeIntegration: true }
   })
 
-  mainWindow.loadURL(winURL)
+  mainWindow.webContents.once('dom-ready', () => mainWindow.webContents.openDevTools())
 
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('did-finish-load')
@@ -109,6 +109,8 @@ function createWindow (openedAsHidden = false) {
       mainWindow.hide()
     }
   })
+
+  mainWindow.loadURL(winURL)
 
   backgroundAPIWindow = new BrowserWindow({
     show: false,
@@ -324,6 +326,7 @@ async function createAppWindow (openedAsHidden) {
 }
 
 async function checkToken () {
+  console.log('checkToken')
   return new Promise(async (resolve, reject) => {
     idToken = null
     const now = Date.now()
@@ -366,6 +369,7 @@ async function hasAccessToApp () {
 }
 
 async function getUserInfo () {
+  console.log('getUserInfo')
   return new Promise(async (resolve, reject) => {
     if (!idToken) {
       idToken = await authService.getIdToken()

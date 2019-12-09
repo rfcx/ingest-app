@@ -24,11 +24,7 @@ async function getAccessToken () {
 }
 
 async function getIdToken () {
-  return new Promise(async (resolve, reject) => {
-    let idToken = await keytar.getPassword('ingest-app-id-token', keytarAccount)
-    if (!idToken) return reject(new Error('no id token available'))
-    resolve(idToken)
-  })
+  return keytar.getPassword('ingest-app-id-token', keytarAccount)
 }
 
 function getAuthenticationURL () {
@@ -55,18 +51,19 @@ async function refreshTokens () {
       json: true
     }
 
-    request(refreshOptions, function (error, response, body) {
+    request(refreshOptions, async (error, response, body) => {
       if (error) {
         logout()
         return reject(new Error(error))
       }
-      parseTokens(body)
+      await parseTokens(body)
       resolve()
     })
   })
 }
 
-function loadTokens (callbackURL) {
+async function loadTokens (callbackURL) {
+  console.log('loadTokens')
   return new Promise((resolve, reject) => {
     const urlParts = url.parse(callbackURL, true)
     const query = urlParts.query
@@ -87,26 +84,26 @@ function loadTokens (callbackURL) {
       body: JSON.stringify(exchangeOptions)
     }
 
-    request(options, (error, resp, body) => {
+    request(options, async (error, resp, body) => {
       if (error) {
         logout()
         return reject(error)
       }
 
       const responseBody = JSON.parse(body)
-      parseTokens(responseBody)
+      await parseTokens(responseBody)
       refreshToken = responseBody.refresh_token
-      keytar.setPassword('ingest-app-refresh-token', keytarAccount, refreshToken)
+      await keytar.setPassword('ingest-app-refresh-token', keytarAccount, refreshToken)
       resolve()
     })
   })
 }
 
-function parseTokens (responseBody) {
+async function parseTokens (responseBody) {
   accessToken = responseBody.access_token
-  keytar.setPassword('ingest-app-access-token', keytarAccount, accessToken)
+  await keytar.setPassword('ingest-app-access-token', keytarAccount, accessToken)
   profile = jwtDecode(responseBody.id_token)
-  keytar.setPassword('ingest-app-id-token', keytarAccount, responseBody.id_token)
+  await keytar.setPassword('ingest-app-id-token', keytarAccount, responseBody.id_token)
   if (profile && profile.given_name) {
     global.firstname = profile.given_name
   } else if (profile && profile.user_metadata && profile.user_metadata.given_name) {
@@ -116,6 +113,7 @@ function parseTokens (responseBody) {
     global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
     global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
   }
+  console.log('parse tokens finished')
 }
 
 async function logout () {
