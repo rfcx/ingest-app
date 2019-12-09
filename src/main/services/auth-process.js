@@ -24,18 +24,10 @@ function createAuthWindow () {
     console.log('authWindow onBeforeRequest')
     await authService.loadTokens(url)
     await index.hasAccessToApp()
-    if (process.platform === 'win32' || process.platform === 'win64') {
-      console.log('create main window from auth0 process for Windows')
-      index.createWindow(false)
-      await destroyAuthWin()
-      return
-    }
     index.createWindow(false)
     await destroyAuthWin()
-    // console.log('create main window from auth0 process')
-    // index.createWindow(false)
   })
-  win.webContents.once('dom-ready', () => win.webContents.openDevTools())
+  // win.webContents.once('dom-ready', () => win.webContents.openDevTools())
   win.webContents.on('did-finish-load', () => {
     let code = `if (document.getElementById('btn-login-passwordless'))
                 { document.getElementById('btn-login-passwordless').style.display = 'none' }`

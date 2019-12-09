@@ -57,7 +57,7 @@ function createWindow (openedAsHidden = false) {
     webPreferences: { nodeIntegration: true }
   })
 
-  mainWindow.webContents.once('dom-ready', () => mainWindow.webContents.openDevTools())
+  // mainWindow.webContents.once('dom-ready', () => mainWindow.webContents.openDevTools())
 
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('did-finish-load')
@@ -113,12 +113,12 @@ function createWindow (openedAsHidden = false) {
   mainWindow.loadURL(winURL)
 
   backgroundAPIWindow = new BrowserWindow({
-    show: true,
+    show: false,
     webPreferences: { nodeIntegration: true }
   })
 
   backgroundFSWindow = new BrowserWindow({
-    show: true,
+    show: false,
     webPreferences: { nodeIntegration: true }
   })
 
