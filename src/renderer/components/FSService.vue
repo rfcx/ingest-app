@@ -9,13 +9,13 @@
   import cryptoJS from 'crypto-js'
   import Stream from '../store/models/Stream'
   import File from '../store/models/File'
-  import { mapState } from 'vuex'
+  // import { mapState } from 'vuex'
 
   export default {
     computed: {
-      ...mapState({
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
-      }),
+      // ...mapState({
+      //   isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
+      // }),
       streams () {
         return Stream.query().get()
       }
@@ -32,7 +32,7 @@
       subscribeForFileChanges () {
         console.log('subscribeForFileChanges')
         // Subscribe for file changes.
-        if (!this.isUploadingProcessEnabled) return
+        // if (!this.isUploadingProcessEnabled) return
         this.streams.forEach(stream => {
           fileWatcher.createWatcher(stream.folderPath, (newFilePath) => {
             if (this.fileIsExist(newFilePath)) return

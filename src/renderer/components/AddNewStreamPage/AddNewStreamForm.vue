@@ -194,7 +194,7 @@ export default {
           console.log('creating stream', JSON.stringify(stream))
           Stream.insert({ data: stream, insert: ['files'] })
           this.$store.dispatch('setSelectedStreamId', stream.id)
-          this.$store.dispatch('setUploadingProcess', true)
+          // this.$store.dispatch('setUploadingProcess', true)
           this.$router.push('/')
         }).catch(error => {
           console.log('error while creating stream', error)

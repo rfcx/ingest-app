@@ -135,6 +135,7 @@
     },
     methods: {
       renameStream () {
+        this.newStreamName = null
         this.isRenaming = true
         this.newStreamName = this.selectedStream.name
       },
