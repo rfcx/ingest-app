@@ -104,9 +104,6 @@ async function parseTokens (responseBody) {
   await keytar.setPassword('ingest-app-access-token', keytarAccount, accessToken)
   profile = jwtDecode(responseBody.id_token)
   await keytar.setPassword('ingest-app-id-token', keytarAccount, responseBody.id_token)
-  if (profile) {
-    global.idToken = responseBody.id_token
-  }
   if (profile && profile.given_name) {
     global.firstname = profile.given_name
   } else if (profile && profile.user_metadata && profile.user_metadata.given_name) {
