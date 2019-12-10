@@ -498,6 +498,14 @@ let listener = (event, args) => {
 
 ipcMain.on('getIdToken', listener)
 
+async function listen (event, args) {
+  await refreshTokens()
+  global.hasAccessToApp = true
+  event.sender.send('sendRefreshToken')
+}
+
+ipcMain.on('getRefreshToken', listen)
+
 /**
  * Auto Updater
  *

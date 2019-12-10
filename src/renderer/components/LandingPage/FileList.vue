@@ -62,7 +62,7 @@
         </tr>
       </tbody>
     </table>
-    <a title="Open selected folder" v-show="!isEmptyFolder() && !isAllFilesWithError()" class="button is-circle" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-folder-open.svg"></a>
+    <a title="Open selected folder" ref="files" v-show="!isEmptyFolder()" class="button is-circle" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-folder-open.svg"></a>
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
       <div class="modal-background"></div>
@@ -194,19 +194,20 @@
       isError (state) {
         return state === 'failed'
       },
-      isAllFilesWithError () {
-        let count = 0
-        this.files.forEach(file => {
-          if (file.state === 'failed') {
-            count++
-          }
-        })
-        if (count === this.files.length) return true
-      },
+      // isAllFilesWithError () {
+      // let count = 0
+      // this.files.forEach(file => {
+      // if (file.state === 'failed') {
+      // count++
+      // }
+      // })
+      // if (count === this.files.length) return true
+      // },
       isEmptyFolder () {
         return this.files.length === 0
       },
       openFolder (link) {
+        this.$refs.files.focus()
         this.$electron.shell.openItem(link)
       },
       progress (event, progress, stepValue) {

@@ -35,6 +35,7 @@ function getAuthenticationURL () {
 }
 
 async function refreshTokens () {
+  console.log('refreshTokens')
   return new Promise(async (resolve, reject) => {
     const refreshToken = await keytar.getPassword('ingest-app-refresh-token', keytarAccount)
     if (!refreshToken) return reject(new Error('no refresh token available'))
