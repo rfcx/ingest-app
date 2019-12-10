@@ -10,6 +10,7 @@ import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
 const jwtDecode = require('jwt-decode')
+const { shell } = require('electron')
 
 /**
  * Set `__static` path to static files in production
@@ -505,6 +506,11 @@ async function listen (event, args) {
 }
 
 ipcMain.on('getRefreshToken', listen)
+
+ipcMain.on('focusFolder', (event, data) => {
+  console.log('focusFolder')
+  shell.openItem(data)
+})
 
 /**
  * Auto Updater
