@@ -40,9 +40,12 @@
     },
     computed: {
       ...mapState({
-        selectedStreamId: state => state.Stream.selectedStreamId,
+        // selectedStreamId: state => state.Stream.selectedStreamId,
         isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
       }),
+      selectedStreamId () {
+        return this.$store.state.Stream.selectedStreamId
+      },
       selectedStream () {
         return Stream.find(this.selectedStreamId)
       },

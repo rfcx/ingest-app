@@ -20,7 +20,6 @@
     },
     computed: {
       ...mapState({
-        selectedStreamId: state => state.Stream.selectedStreamId,
         isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
       }),
       allUnsyncFiles () {

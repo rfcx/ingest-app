@@ -70,14 +70,10 @@
     },
     computed: {
       ...mapState({
-        selectedStreamId: state => state.Stream.selectedStreamId,
         isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
       }),
       streams () {
         return Stream.all()
-      },
-      selectedStream () {
-        return Stream.find(this.selectedStreamId)
       }
     },
     created () {

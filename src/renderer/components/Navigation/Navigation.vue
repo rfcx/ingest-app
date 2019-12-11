@@ -40,7 +40,6 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
   import File from '../../store/models/File'
   import settings from 'electron-settings'
   const { remote } = window.require('electron')
@@ -56,10 +55,6 @@
       }
     },
     computed: {
-      ...mapState({
-        selectedStreamId: state => state.Stream.selectedStreamId,
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
-      }),
       getUnsyncedFiles () {
         return File.query().where('state', 'waiting').orderBy('timestamp').get()
       },

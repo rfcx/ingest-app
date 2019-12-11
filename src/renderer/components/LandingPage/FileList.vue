@@ -108,8 +108,11 @@
     },
     computed: {
       ...mapState({
-        selectedStreamId: state => state.Stream.selectedStreamId
+        // selectedStreamId: state => state.Stream.selectedStreamId
       }),
+      selectedStreamId () {
+        return this.$store.state.Stream.selectedStreamId
+      },
       selectedStream () {
         console.log('FileList selectedStream', this.selectedStreamId)
         return Stream.find(this.selectedStreamId)
