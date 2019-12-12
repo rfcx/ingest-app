@@ -117,14 +117,14 @@ const renameStream = (env, streamId, streamName, streamSite, idToken) => {
 }
 
 const touchApi = (env, idToken) => {
-  return axios.get(env + `/users/touchapi`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return axios.get(apiUrl(env) + `/users/touchapi`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     })
 }
 
 const sendInviteCode = (env, code, idToken) => {
-  return axios.post(env + `/users/code`, { code: code }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return axios.post(apiUrl(env) + `/users/code`, { code: code }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     })
