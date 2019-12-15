@@ -2,11 +2,11 @@ const axios = require('axios')
 const fileStreamAxios = axios.create({
   adapter: require('./axios-http-adapter').default
 })
-const platform = 'google' // || 'amazon'
+const platform = 'amazon' // || 'google'
 
 const apiUrl = (proEnvironment) => {
   if (proEnvironment) {
-    return platform === 'amazon' ? 'https://ingest-service.rfcx.org' : 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
+    return platform === 'amazon' ? 'https://ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
   }
   return platform === 'amazon' ? 'https://staging-ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
   // local staging for s3 'http://localhost:3030'
