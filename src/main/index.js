@@ -114,12 +114,12 @@ function createWindow (openedAsHidden = false) {
   mainWindow.loadURL(winURL)
 
   backgroundAPIWindow = new BrowserWindow({
-    show: true,
+    show: false,
     webPreferences: { nodeIntegration: true }
   })
 
   backgroundFSWindow = new BrowserWindow({
-    show: true,
+    show: false,
     webPreferences: { nodeIntegration: true }
   })
 
