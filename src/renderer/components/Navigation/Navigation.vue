@@ -1,29 +1,32 @@
 <template>
   <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
-  <div class="navbar-brand">
-    <div class="navbar-item">
-      <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx"></router-link>
-    </div>
-    <span class="navbar-item">RFCx Ingest</span>
-    <span class="navbar-item tag"
-    :class="{ 'is-primary': productionEnv, 'is-dark': !productionEnv }"
-    @click="switchEnvironment()">
-      {{ productionEnv ? 'production' : 'staging' }}
-    </span>
-  </div>
-  <div class="navbar-end">
-      <div class="navbar-item" v-if="login">
-        <div class="navbar-item user-info-nav">
-            <div class="user-info-name"><span><span class="name">Hello, {{name}}!</span><br><span class="site-name">{{ siteName }}</span></span></div>
-            <div class="user-info-image"><img src="~@/assets/ic-profile-temp.svg" alt="rfcx" width="30" height="30"></div>
-        </div>
-         <!-- <div class="navbar-item"> -->
-
-        <!-- </div> -->
+    <div class="navbar-brand">
+      <div class="navbar-item">
+        <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx"></router-link>
       </div>
-      <!-- <div class="navbar-item" v-else>
-        <a class="button is-primary">Log in</a>
-      </div> -->
+      <span class="navbar-item">RFCx Ingest</span>
+      <span class="navbar-item tag"
+      :class="{ 'is-primary': productionEnv, 'is-dark': !productionEnv }"
+      @click="switchEnvironment()">
+        {{ productionEnv ? 'production' : 'staging' }}
+      </span>
+    </div>
+    <div class="navbar-end">
+      <div class="navbar-item">
+        <div class="navbar-item user-info-nav">
+          <div class="user-info-name"><span><span class="name">Hello, {{name}}!</span><br><span class="site-name">{{ siteName }}</span></span></div>
+          <div class="dropdown is-right dropdown-nav" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()">
+            <div class="dropdown-trigger">
+              <div class="user-info-image" aria-haspopup="true" aria-controls="dropdown-menu-nav"><img src="~@/assets/ic-profile-temp.svg" alt="rfcx" width="30" height="30"></div>
+            </div>
+            <div class="dropdown-menu" id="dropdown-menu-nav" role="menu">
+              <div class="dropdown-content">
+                <a href="" class="dropdown-item has-text-danger" title="Menu" @click="logOut()">Log out</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="modal alert" :class="{ 'is-active': shouldShowAlert }">
       <div class="modal-background"></div>
@@ -49,8 +52,8 @@
       return {
         name: this.getUserName(),
         siteName: this.getSite(),
-        login: true,
         shouldShowAlert: false,
+        shouldShowDropDown: false,
         productionEnv: this.isProductionEnv()
       }
     },
@@ -89,9 +92,29 @@
         if (defaultSite) return defaultSite
         else return 'RFCx Lab'
       },
+      toggleDropDown () {
+        this.shouldShowDropDown = !this.shouldShowDropDown
+      },
+      logOut () {
+        console.log('Log out')
+        this.$electron.ipcRenderer.send('logOut')
+      },
       hideAlert () {
         this.shouldShowAlert = false
       }
     }
   }
 </script>
+
+<style>
+
+  .dropdown-nav {
+    vertical-align: middle !important;
+    align-items: center !important;
+  }
+
+  .dropdown-menu-nav {
+    top: 76% !important;
+  }
+
+</style>
