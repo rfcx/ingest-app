@@ -19,10 +19,9 @@
           </div>
           <div class="dropdown-menu" id="dropdown-menu" role="menu">
             <div class="dropdown-content">
-              <!-- <a href="#" class="dropdown-item">Rename</a>
-              <a class="dropdown-item">Change filename format</a>
-              <hr class="dropdown-divider"> -->
-              <a href="#" class="dropdown-item has-text-danger" @click="showConfirmToDeleteStreamModal()">Delete</a>
+              <a href="#" title="Rename the stream" class="dropdown-item" @click="renameStream()">Rename</a>
+              <!-- <hr class="dropdown-divider"> -->
+              <a href="#" title="Delete the stream" class="dropdown-item has-text-danger" @click="showConfirmToDeleteStreamModal()">Delete</a>
             </div>
           </div>
         </div>

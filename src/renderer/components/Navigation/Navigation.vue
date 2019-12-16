@@ -17,11 +17,11 @@
           <div class="user-info-name"><span><span class="name">Hello, {{name}}!</span><br><span class="site-name">{{ siteName }}</span></span></div>
           <div class="dropdown is-right dropdown-nav" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()">
             <div class="dropdown-trigger">
-              <div class="user-info-image" aria-haspopup="true" aria-controls="dropdown-menu-nav"><img src="~@/assets/ic-profile-temp.svg" alt="rfcx" width="30" height="30"></div>
+              <div class="user-info-image" aria-haspopup="true" aria-controls="dropdown-menu-nav"><img title="Menu" src="~@/assets/ic-profile-temp.svg" alt="rfcx" width="30" height="30"></div>
             </div>
-            <div class="dropdown-menu" id="dropdown-menu-nav" role="menu">
+            <div class="dropdown-menu dropdown-menu-navigation" id="dropdown-menu-nav" role="menu">
               <div class="dropdown-content">
-                <a href="" class="dropdown-item has-text-danger" title="Menu" @click="logOut()">Log out</a>
+                <a href="" class="dropdown-item has-text-danger" @click="logOut()">Log out</a>
               </div>
             </div>
           </div>
@@ -111,9 +111,10 @@
   .dropdown-nav {
     vertical-align: middle !important;
     align-items: center !important;
+    cursor: pointer;
   }
 
-  .dropdown-menu-nav {
+  .dropdown-menu-navigation {
     top: 76% !important;
   }
 
