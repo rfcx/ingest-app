@@ -4,7 +4,11 @@
       <navigation></navigation>
       <section class="main-content columns is-mobile">
         <side-navigation></side-navigation>
-        <div class="column content is-desktop">
+        <div class="column content is-desktop" v-if="streams && streams.length > 0">
+          <empty-stream v-if="isEmptyStream()"></empty-stream>
+          <file-list v-else></file-list>
+        </div>
+        <div class="column content is-desktop" v-else @drop.prevent="handleDrop" @dragover.prevent>
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
         </div>
@@ -28,6 +32,7 @@
   import FileList from './LandingPage/FileList'
   import { mapState } from 'vuex'
   import Stream from '../store/models/Stream'
+  import fileHelper from '../../../utils/fileHelper'
   const { remote } = window.require('electron')
 
   export default {
@@ -40,6 +45,34 @@
       }
     },
     methods: {
+      handleDrop (e) {
+        console.log('e', e)
+        let dt = e.dataTransfer
+        let files = dt.files
+        this.handleFiles(files)
+      },
+      handleFiles (files) {
+        let arrPath = []
+        this.isDragging = false
+        if (files && files.length === 1) {
+          ([...files]).forEach((file) => {
+            if (fileHelper.isFolder(file.path)) {
+              console.log('file', file)
+              this.$router.push({ path: '/add', query: { folderPath: file.path, name: fileHelper.getFileNameFromFilePath(file.path) } })
+            }
+          })
+        } else if (files && files.length > 1) {
+          ([...files]).forEach((file) => {
+            if (fileHelper.isFolder(file.path)) {
+              console.log('file', file)
+              arrPath.push(file.path)
+            }
+          })
+          if (arrPath && arrPath.length) {
+            this.$router.push({ path: '/add', query: { folderPaths: arrPath } })
+          }
+        }
+      },
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
       },

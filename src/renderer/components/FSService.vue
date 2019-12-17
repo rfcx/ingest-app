@@ -98,7 +98,6 @@
         })
       },
       fileIsExist (filePath) {
-        console.log('fileIsExist: ', this.getFileId(filePath))
         return !!File.find(this.getFileId(filePath))
       }
     },

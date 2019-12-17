@@ -14,6 +14,10 @@ const isFile = (filePath) => {
   return fs.lstatSync(filePath).isFile()
 }
 
+const isFolder = (filePath) => {
+  return fs.lstatSync(filePath).isDirectory()
+}
+
 const readFile = (filePath) => {
   return fs.readFileSync(filePath)
 }
@@ -63,5 +67,6 @@ export default {
   getFileName,
   getExtension,
   getFileSize,
-  isSupportedFileExtension
+  isSupportedFileExtension,
+  isFolder
 }

@@ -1,17 +1,17 @@
 <template>
-    <fieldset>
+    <fieldset class="fieldset-wrap" :class="{ 'spinner': isLoading && isMultipleUpload, 'disabled': isLoading && isMultipleUpload }">
         <div class="notification" v-show="error">
           <button class="delete" @click="onCloseAlert()"></button>
           {{ error }}
         </div>
-        <label for="folderPath" class="label">Folder path</label>
-        <div class="field has-addons">
+        <label for="folderPath" class="label" v-if="!isMultipleUpload">Folder path</label>
+        <div class="field has-addons" v-if="!isMultipleUpload">
           <div class="control is-expanded">
             <input v-model="folderPath" class="input" type="text" placeholder="">
           </div>
           <div class="control"><a class="button is-light" @click="$refs.file.click(); focusWindow()">Browse</a></div>
         </div>
-        <div class="field file has-name is-right is-fullwidth" style="display: none">
+        <div class="field file has-name is-right is-fullwidth" style="display: none" v-if="!isMultipleUpload">
             <label class="file-label">
                 <input class="file-input" type="file" ref="file" name="resume" v-on:change="onFileChange($event)" webkitdirectory directory multiple/>
                 <span class="file-cta">
@@ -20,7 +20,7 @@
                 <span class="file-name">{{folderPath}}</span>
             </label>
         </div>
-        <div class="field">
+        <div class="field" v-if="!isMultipleUpload">
             <label for="name" class="label">Stream name</label>
             <div class="control">
                 <input v-model="name" class="input" type="text" placeholder="Jaguar 1">
@@ -74,7 +74,7 @@
                 <router-link to="/"><button class="button is-rounded">Cancel</button></router-link>
             </p>
             <p class="control">
-                <button class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!hasPassedValidation" @click.prevent="createStream">Create</button>
+                <button class="button is-rounded is-primary" :class="{ 'is-loading': isLoading && !isMultipleUpload}" :disabled="!hasPassedValidation && !isMultipleUpload" @click.prevent="createStream">Create</button>
             </p>
         </div>
     </fieldset>
@@ -103,7 +103,10 @@ export default {
       error: null,
       isShow: false,
       isLoading: false,
+      isMultipleUpload: false,
       currentSite: null,
+      idToken: null,
+      newStreamsPaths: [],
       customTimestampFormatOptions: [
         { title: 'Year 4 digits (%Y)', format: '%Y', isSelected: false, isDisabled: false },
         { title: 'Year 2 digits (%y)', format: '%y', isSelected: false, isDisabled: false },
@@ -168,43 +171,102 @@ export default {
       // change text in filename format input
       this.customTimestampFormat = this.customTimestampFormat.replace(option.format, '')
     },
-    createStream () {
-      if (this.checkIfDuplicateStream(this.folderPath)) {
-        console.log('duplicate name')
-        this.error = 'You have already linked to this folder. Please select a different folder.'
-        return false
-      }
-      if (!this.checkIfDirectoryIsExist(this.folderPath)) {
-        this.error = 'The directory is not exist.'
-        return false
-      }
+    getIdToken () {
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-        let idToken = null
-        idToken = arg
-        api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, idToken).then(streamId => {
-          this.isLoading = false
-          const stream = {
-            id: streamId,
-            name: this.name,
-            folderPath: this.folderPath,
-            timestampFormat: this.selectedTimestampFormat,
-            siteGuid: this.currentSite.value
-          }
-          console.log('creating stream', JSON.stringify(stream))
-          Stream.insert({ data: stream, insert: ['files'] })
-          this.$store.dispatch('setSelectedStreamId', stream.id)
-          // this.$store.dispatch('setUploadingProcess', true)
-          this.$router.push('/')
-        }).catch(error => {
-          console.log('error while creating stream', error)
-          this.isLoading = false
-          this.error = error.message
-        })
+        this.idToken = null
+        this.idToken = arg
       }
-      this.isLoading = true
       this.$electron.ipcRenderer.send('getIdToken')
       this.$electron.ipcRenderer.on('sendIdToken', listener)
+    },
+    async createStream () {
+      if (!this.isMultipleUpload) {
+        if (this.checkIfDuplicateStream(this.folderPath)) {
+          console.log('duplicate name')
+          this.error = 'You have already linked to this folder. Please select a different folder.'
+          return false
+        }
+        if (!this.checkIfDirectoryIsExist(this.folderPath)) {
+          this.error = 'The directory is not exist.'
+          return false
+        }
+        let listener = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          let idToken = null
+          idToken = arg
+          api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, idToken).then(streamId => {
+            this.isLoading = false
+            const stream = {
+              id: streamId,
+              name: this.name,
+              folderPath: this.folderPath,
+              timestampFormat: this.selectedTimestampFormat,
+              siteGuid: this.currentSite.value
+            }
+            console.log('creating stream', JSON.stringify(stream))
+            Stream.insert({ data: stream, insert: ['files'] })
+            this.$store.dispatch('setSelectedStreamId', stream.id)
+            // this.$store.dispatch('setUploadingProcess', true)
+            this.$router.push('/')
+          }).catch(error => {
+            console.log('error while creating stream', error)
+            this.isLoading = false
+            this.error = error.message
+          })
+        }
+        this.isLoading = true
+        this.$electron.ipcRenderer.send('getIdToken')
+        this.$electron.ipcRenderer.on('sendIdToken', listener)
+      } else if (this.isMultipleUpload) {
+        for (let i = 0; i < this.newStreamsPaths.length; i++) {
+          let path = this.newStreamsPaths[i]
+          this.isLoading = true
+          this.folderPath = null
+          this.name = null
+          this.folderPath = path
+          this.name = fileHelper.getFileNameFromFilePath(path)
+          if (this.checkIfDuplicateStream(this.folderPath)) {
+            console.log('duplicate name')
+            this.error = 'You have already linked to this folder. Please select a different folder.'
+            setTimeout(() => {
+              return this.$router.push('/')
+            }, 2000)
+          }
+          if (!this.checkIfDirectoryIsExist(this.folderPath)) {
+            this.error = 'The directory is not exist.'
+            setTimeout(() => {
+              return this.$router.push('/')
+            }, 2000)
+          }
+          let count = 0
+          const createStreamsAsync = async () => {
+            return api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, this.idToken).then(streamId => {
+              const stream = {
+                id: streamId,
+                name: this.name,
+                folderPath: this.folderPath,
+                timestampFormat: this.selectedTimestampFormat,
+                siteGuid: this.currentSite.value
+              }
+              console.log('creating stream', JSON.stringify(stream))
+              Stream.insert({ data: stream, insert: ['files'] })
+              this.$store.dispatch('setSelectedStreamId', stream.id)
+              // For the last stream.
+              if (this.newStreamsPaths[this.newStreamsPaths.length - 1] === path && count === 0) {
+                count++
+                this.isLoading = false
+                this.$router.push('/')
+              }
+            }).catch(error => {
+              console.log('error while creating stream', error)
+              this.isLoading = false
+              this.error = error.message
+            })
+          }
+          await createStreamsAsync()
+        }
+      }
     },
     isProductionEnv () {
       return settings.get('settings.production_env')
@@ -324,6 +386,18 @@ export default {
     folderPath () {
       this.error = null
     }
+  },
+  created () {
+    console.log('query', this.$route.query)
+    if (this.$route.query && this.$route.query.folderPath) {
+      this.folderPath = this.$route.query.folderPath
+      this.name = this.$route.query.name
+    } else if (this.$route.query && this.$route.query.folderPaths) {
+      this.newStreamsPaths = this.$route.query.folderPaths
+      this.isMultipleUpload = true
+      this.getIdToken()
+      console.log('newStreamsPaths', this.newStreamsPaths)
+    }
   }
 }
 </script>
@@ -431,6 +505,29 @@ export default {
 
   .dropdown-icon:hover {
     color: #6D6F72;
+  }
+
+  .fieldset-wrap.spinner::after {
+    -webkit-animation: spinAround 500ms infinite linear;
+    animation: spinAround 500ms infinite linear;
+    border: 3px solid #dbdbdb;
+    border-radius: 290486px;
+    border-right-color: transparent;
+    border-top-color: transparent;
+    content: "";
+    display: block;
+    height: 4em;
+    position: relative;
+    width: 4em;
+    left: calc(50% - (1em / 2));
+    top: calc(50% - (1em / 2));
+    position: absolute !important;
+  }
+
+  .disabled {
+    color: transparent !important;
+    pointer-events: none;
+    opacity: 0.3 !important;
   }
 
 </style>

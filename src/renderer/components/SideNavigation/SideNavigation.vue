@@ -1,41 +1,43 @@
 <template>
-    <aside class="column menu side-menu">
-        <div class="menu-container side-menu-title">
-            <p class="menu-label"> {{ menuTitle }} </p>
-            <div class="side-menu-controls-wrapper">
-              <a :title="isUploadingProcessEnabled? 'Pause' : 'Continue'" v-if="selectedStream && !hidePause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
-              <router-link title="Add a stream" to="/add"><img class="side-menu-controls-btn" src="~@/assets/ic-add-btn.svg"></router-link>
+  <aside class="column menu side-menu" :class="{ 'active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop" @dragover.prevent>
+    <div class="menu-container side-menu-title">
+      <p class="menu-label"> {{ menuTitle }} </p>
+      <div class="side-menu-controls-wrapper">
+        <a :title="isUploadingProcessEnabled? 'Pause' : 'Continue'" v-if="selectedStream && !hidePause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
+        <router-link title="Add a stream" to="/add"><img class="side-menu-controls-btn" src="~@/assets/ic-add-btn.svg"></router-link>
+      </div>
+    </div>
+    <ul class="menu-list">
+      <li v-for="stream in streams" :key="stream.id">
+        <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) , 'drop-hover': isDragging}">
+          <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed' }">
+            <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
+            <img :src="getStateImgUrl(getState(stream))">
+          </div>
+          <div class="state-progress" v-if="shouldShowProgress(stream)">
+            <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream) }" :value="getProgress(stream)" max="100"></progress>
+            <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) }">
+              <span v-if="!checkWarningLoad(stream)" class="is-size-7">{{ getState(stream) }}</span>
+              <span class="is-size-7"> {{ getStateStatus(stream) }} </span>
             </div>
+          </div>
         </div>
-        <ul class="menu-list">
-            <li v-for="stream in streams" :key="stream.id">
-                <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) }">
-                    <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed' }">
-                        <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
-                        <img :src="getStateImgUrl(getState(stream))">
-                    </div>
-                    <div class="state-progress" v-if="shouldShowProgress(stream)">
-                        <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream) }" :value="getProgress(stream)" max="100"></progress>
-                        <div class="menu-container">
-                            <span class="is-size-7">{{ getState(stream) }}</span>
-                            <span class="is-size-7"> {{ getStateStatus(stream) }} </span>
-                        </div>
-                    </div>
-                </div>
-            </li>
-        </ul>
-    </aside>
+      </li>
+    </ul>
+  </aside>
 </template>
 
 <script>
   import { mapState } from 'vuex'
   import Stream from '../../store/models/Stream'
+  import fileHelper from '../../../../utils/fileHelper'
 
   export default {
     data () {
       return {
         menuTitle: 'Streams',
-        uploadingStreams: {}
+        uploadingStreams: {},
+        isDragging: false
       }
     },
     computed: {
@@ -56,6 +58,37 @@
       }
     },
     methods: {
+      handleDrag (e) {
+        this.isDragging = true
+      },
+      handleDrop (e) {
+        console.log('e', e)
+        let dt = e.dataTransfer
+        let files = dt.files
+        this.handleFiles(files)
+      },
+      handleFiles (files) {
+        let arrPath = []
+        this.isDragging = false
+        if (files && files.length === 1) {
+          ([...files]).forEach((file) => {
+            if (fileHelper.isFolder(file.path)) {
+              console.log('file', file)
+              this.$router.push({ path: '/add', query: { folderPath: file.path, name: fileHelper.getFileNameFromFilePath(file.path) } })
+            }
+          })
+        } else if (files && files.length > 1) {
+          ([...files]).forEach((file) => {
+            if (fileHelper.isFolder(file.path)) {
+              console.log('file', file)
+              arrPath.push(file.path)
+            }
+          })
+          if (arrPath && arrPath.length) {
+            this.$router.push({ path: '/add', query: { folderPaths: arrPath } })
+          }
+        }
+      },
       getUploadingProcessIcon (enabled) {
         const state = enabled ? 'pause' : 'play'
         return require(`../../assets/ic-uploading-${state}-green.svg`)
@@ -180,3 +213,28 @@
     }
   }
 </script>
+
+<style >
+
+  .active {
+    border: 4px solid #cac5c5 !important;
+    background-color: #cac5c5 !important;
+    opacity: 0.3 !important;
+  }
+
+  .drop-hover {
+    background-color: transparent !important;
+  }
+
+  .right {
+    text-align: right !important;
+    justify-content: flex-end !important;
+  }
+
+  .iconRedo {
+    color: grey;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+</style>
