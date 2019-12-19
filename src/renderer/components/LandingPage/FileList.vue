@@ -198,7 +198,7 @@
         // return state === 'uploading' || state === 'ingesting' || state === 'waiting'
       },
       isError (state) {
-        return state === 'failed'
+        return state === 'failed' || state === 'duplicated'
       },
       isEmptyFolder () {
         return this.files.length === 0
