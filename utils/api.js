@@ -57,6 +57,12 @@ const fs = require('fs')
 
 function readFileAsync (path) {
   return new Promise(function (resolve, reject) {
+    const maxContentLength = 209715200
+    const stats = fs.statSync(path)
+    const fileSizeInBytes = stats.size
+    if (fileSizeInBytes > maxContentLength) {
+      return reject(new Error('File size exceeds maximum.'))
+    }
     fs.readFile(path, function (error, result) {
       if (error || !result) {
         reject(error)
@@ -74,6 +80,11 @@ async function uploadToS3 (signedUrl, filePath, fileExt, progressCallback) {
       return axios.put(signedUrl, contents, {
         headers: {
           'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: function (progressEvent) {
+          const progress = parseInt(Math.round((progressEvent.loaded * 100) / progressEvent.total))
+          console.log('onUploadProgress', progress)
+          progressCallback(progress)
         }
       })
     }

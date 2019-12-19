@@ -9,19 +9,16 @@
   import cryptoJS from 'crypto-js'
   import Stream from '../store/models/Stream'
   import File from '../store/models/File'
-  // import { mapState } from 'vuex'
 
   export default {
     computed: {
-      // ...mapState({
-      //   isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
-      // }),
       streams () {
         return Stream.query().get()
       }
     },
     watch: {
       streams (val, oldVal) {
+        console.log('watch streams changes')
         const oldIds = oldVal.map((stream) => { return stream.id })
         const newIds = val.map((stream) => { return stream.id })
         if (JSON.stringify(oldIds) === JSON.stringify(newIds)) return
@@ -32,11 +29,10 @@
       subscribeForFileChanges () {
         console.log('subscribeForFileChanges')
         // Subscribe for file changes.
-        // if (!this.isUploadingProcessEnabled) return
         this.streams.forEach(stream => {
           fileWatcher.createWatcher(stream.folderPath, (newFilePath) => {
             if (this.fileIsExist(newFilePath)) return
-            console.log('New file for uploading: ', newFilePath)
+            console.log('New file for uploading', newFilePath)
             const file = this.createFileObject(newFilePath, stream)
             this.insertFile(file)
             this.insertFilesToStream([file], stream)
@@ -104,21 +100,6 @@
     created () {
       console.log('FS Service')
       this.subscribeForFileChanges()
-      /*
-      this.$electron.ipcRenderer.on('hasNewStreamAdded', (event, stream) => {
-        const folderPath = stream.folderPath
-        console.log('on hasNewStreamAdded path: ', folderPath)
-        const files = fileHelper.getFilesFromDirectoryPath(folderPath).map(fileName => {
-          const filePath = fileHelper.getFilePath(folderPath, fileName)
-          return this.createFileObject(filePath, stream)
-        })
-        const filesOnly = files.filter(file => { return file.hash !== '' })
-        this.insertFilesToStream(filesOnly, stream)
-        filesOnly.forEach((file) => {
-          this.insertFile(file)
-        })
-      })
-      */
     }
   }
 </script>

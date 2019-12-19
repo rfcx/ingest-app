@@ -76,21 +76,7 @@
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           let idToken = null
           idToken = arg
-          return api.uploadFile(this.isProductionEnv(), file.name, file.path, file.extension, file.streamId, file.timestamp, idToken, (progress) => { // TODO: fix stream id
-            File.update({ where: file.id,
-              data: {state: 'uploading', stateMessage: progress, progress: progress}
-            })
-          }).then((uploadId) => {
-            console.log('uploadFile success', uploadId)
-            return File.update({ where: file.id,
-              data: {state: 'ingesting', stateMessage: '', uploadId: uploadId, progress: 100}
-            })
-          }).catch((error) => {
-            console.log(error)
-            return File.update({ where: file.id,
-              data: {state: 'failed', stateMessage: error.message}
-            })
-          })
+          return this.$file.uploadFile(file, idToken)
         }
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)

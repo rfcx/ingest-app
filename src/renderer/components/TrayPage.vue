@@ -71,6 +71,9 @@
         return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed' && this.getState(stream) !== 'duplicated'
       },
       getState (stream) {
+        if (stream.files && !stream.files.length) {
+          return 'waiting'
+        }
         const isCompleted = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'completed' })
         const isWaiting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'waiting' })
         const isFailed = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'failed' })

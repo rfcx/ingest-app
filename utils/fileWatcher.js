@@ -1,7 +1,6 @@
 const chokidar = require('chokidar')
 
 const createWatcher = (path, addCallback, removeCallback) => {
-  console.log('watcher path', path)
   const watcher = chokidar.watch(path, {
     ignored: /(^|[/\\])\../, // ignore dotfiles
     persistent: true,

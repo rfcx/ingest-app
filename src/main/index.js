@@ -4,11 +4,11 @@ import { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain } from 'electron'
 import '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
-import path from 'path'
 import trayContainer from 'electron-tray-window'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
+const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
 
@@ -17,7 +17,7 @@ const { shell } = require('electron')
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
 if (process.env.NODE_ENV !== 'development') {
-  global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
+  global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
 let mainWindow, backgroundAPIWindow, backgroundFSWindow, trayWindow
