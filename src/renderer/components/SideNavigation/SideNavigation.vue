@@ -10,8 +10,9 @@
     <ul class="menu-list">
       <li v-for="stream in streams" :key="stream.id">
         <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) , 'drop-hover': isDragging}">
-          <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed' }">
+          <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed'  || getState(stream) === 'dublicated'}">
             <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
+            <font-awesome-icon class="iconRedo" v-if="(getState(stream) === 'failed' || checkWarningLoad(stream)) && !isDublicated && getState(stream) !== 'dublicated'" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
             <img :src="getStateImgUrl(getState(stream))">
           </div>
           <div class="state-progress" v-if="shouldShowProgress(stream)">
@@ -30,15 +31,22 @@
 <script>
   import { mapState } from 'vuex'
   import Stream from '../../store/models/Stream'
+  import File from '../../store/models/File'
   import fileHelper from '../../../../utils/fileHelper'
+  import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+  import { faRedo } from '@fortawesome/free-solid-svg-icons'
 
   export default {
     data () {
       return {
+        iconRedo: faRedo,
         menuTitle: 'Streams',
         uploadingStreams: {},
         isDragging: false
       }
+    },
+    components: {
+      FontAwesomeIcon
     },
     computed: {
       ...mapState({
@@ -55,6 +63,18 @@
         return Stream.query().with('files').get().sort((streamA, streamB) => {
           return this.getStatePriority(streamA) - this.getStatePriority(streamB)
         })
+      },
+      files () {
+        return File.query().where('streamId', this.selectedStreamId).orderBy('name').get()
+      },
+      isDublicated () {
+        let count = 0
+        this.files.forEach(file => {
+          if (file.state === 'complited' || file.state === 'dublicated') {
+            count++
+          }
+        })
+        if (count === this.files.length) return true
       }
     },
     methods: {
@@ -128,6 +148,7 @@
         const isCompleted = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'completed' })
         const isWaiting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'waiting' })
         const isFailed = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'failed' })
+        const isDublicated = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'dublicated' })
         const isIngesting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'ingesting' })
         if (isCompleted) {
           if (!!this.uploadingStreams[stream.id] && this.uploadingStreams[stream.id] !== 'completed') {
@@ -144,6 +165,10 @@
           this.uploadingStreams[stream.id] = 'failed'
           stream.completed = false
           return 'failed'
+        } else if (isDublicated) {
+          this.uploadingStreams[stream.id] = 'dublicated'
+          stream.completed = false
+          return 'dublicated'
         } else if (isIngesting) {
           this.uploadingStreams[stream.id] = 'ingesting'
           stream.completed = false
@@ -157,7 +182,7 @@
       hidePause (streams) {
         let count = 0
         streams.forEach(stream => {
-          if (this.getState(stream) === 'completed' || this.getState(stream) === 'failed') {
+          if (this.getState(stream) === 'completed' || this.getState(stream) === 'failed' || this.getState(stream) === 'dublicated') {
             count++
           } else if (this.getState(stream) === 'uploading' && this.checkWarningLoad(stream)) {
             count++
@@ -169,7 +194,7 @@
         let countFailed = 0
         let countComplited = 0
         stream.files.forEach((file) => {
-          if (file.state === 'failed') {
+          if (file.state === 'failed' || file.state === 'dublicated') {
             countFailed++
           } else if (file.state === 'completed') {
             countComplited++
@@ -185,12 +210,13 @@
           case 'waiting': return 2
           case 'failed': return 3
           case 'completed': return 4
+          case 'dublicated': return 5
         }
       },
       getProgress (stream) {
         const state = this.getState(stream)
         if (state === 'completed') return 100
-        else if (state === 'waiting' || state === 'failed') return 0
+        else if (state === 'waiting' || state === 'failed' || state === 'dublicated') return 0
         else if (this.checkWarningLoad(stream)) return 100
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         const uploadedFiles = stream.files.filter(file => { return file.state === 'ingesting' || file.state === 'completed' })
@@ -200,15 +226,42 @@
       },
       getStateStatus (stream) {
         const state = this.getState(stream)
-        if (state === 'completed' || state === 'failed') return ''
+        if (state === 'completed' || state === 'failed' || state === 'dublicated') return ''
         else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? ' files' : ' file')
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
-        const errorFiles = stream.files.filter(file => { return file.state === 'failed' })
+        const errorFiles = stream.files.filter(file => { return file.state === 'failed' || file.state === 'dublicated' })
         if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
         return `${completedFiles.length}/${stream.files.length} ingested | ${errorFiles.length} ${errorFiles.length > 1 ? 'errors' : 'error'}`
       },
       toggleUploadingProcess () {
         this.$store.dispatch('setUploadingProcess', !this.isUploadingProcessEnabled)
+      },
+      getFailedFiles (streamId) {
+        return new Promise((resolve, reject) => {
+          const files = File.query().where((file) => {
+            return file.state === 'failed' && file.streamId === streamId
+          }).get()
+          if (files != null) {
+            resolve(files)
+          } else {
+            reject(new Error('No failed files'))
+          }
+        })
+      },
+      repeatUploading (streamId) {
+        let listener = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          let idToken = null
+          idToken = arg
+          return this.getFailedFiles(streamId).then((files) => {
+            console.log('files', files)
+            for (let i = 0; i < files.length; i++) {
+              this.$file.uploadFile(files[i], idToken)
+            }
+          })
+        }
+        this.$electron.ipcRenderer.send('getIdToken')
+        this.$electron.ipcRenderer.on('sendIdToken', listener)
       }
     }
   }
@@ -233,7 +286,7 @@
 
   .iconRedo {
     color: grey;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
   }
 

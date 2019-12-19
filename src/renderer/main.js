@@ -5,12 +5,13 @@ import 'bulma/css/bulma.css'
 import App from './App'
 import router from './router'
 import store from './store'
+import file from './services/file'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faChevronUp, faChevronDown, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
+import { faChevronUp, faChevronDown, faPencilAlt, faRedo } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-library.add(faChevronUp, faChevronDown, faPencilAlt)
+library.add(faChevronUp, faChevronDown, faPencilAlt, faRedo)
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
@@ -43,10 +44,19 @@ Vue.directive('click-outside', {
   }
 })
 
+Vue.$file = file
+
+Object.defineProperty(Vue.prototype, '$file', {
+  get () {
+    return file
+  }
+})
+
 /* eslint-disable no-new */
 new Vue({
   components: { App },
   router,
   store,
+  file,
   template: '<App/>'
 }).$mount('#app')

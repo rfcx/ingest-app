@@ -227,6 +227,12 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
+  }
+
+  .menu-container svg {
+    margin-left: auto;
+    margin-right: 3px;
   }
 
   .menu-container-failed {
@@ -236,6 +242,7 @@
   .menu-container-failed img {
     width: 16px;
     height: 16px;
+    margin-left: 5px;
   }
 
   .side-menu-title {
@@ -285,8 +292,8 @@
   a.is-circle {
     height: 60px;
     width: 60px;
-    background-color: #fff;
-    border-color: #fff;
+    background-color: transparent;
+    border-color: transparent;
     border-radius: 50%;
     margin: auto;
     text-align:center;

@@ -77,22 +77,16 @@
           let idToken = null
           idToken = arg
           return api.uploadFile(this.isProductionEnv(), file.name, file.path, file.extension, file.streamId, file.timestamp, idToken, (progress) => { // TODO: fix stream id
-            // const updatedFile = {file: file, state: {id: 'uploading', message: progress}}
-            // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
             File.update({ where: file.id,
               data: {state: 'uploading', stateMessage: progress, progress: progress}
             })
           }).then((uploadId) => {
-            // const updatedFile = {file: file, state: {id: 'completed', message: ''}}
-            // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
-            console.log('==== uploadFile succes', uploadId)
+            console.log('uploadFile success', uploadId)
             return File.update({ where: file.id,
               data: {state: 'ingesting', stateMessage: '', uploadId: uploadId, progress: 100}
             })
           }).catch((error) => {
             console.log(error)
-            // const updatedFile = {file: file, state: {id: 'failed', message: error}}
-            // this.$electron.ipcRenderer.send('updateProgress', updatedFile)
             return File.update({ where: file.id,
               data: {state: 'failed', stateMessage: error.message}
             })
@@ -127,6 +121,10 @@
                 case 30:
                   return File.update({ where: file.id,
                     data: {state: 'failed', stateMessage: failureMessage}
+                  })
+                case 31:
+                  return File.update({ where: file.id,
+                    data: {state: 'dublicated', stateMessage: failureMessage}
                   })
                 default: break
               }

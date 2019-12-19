@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :class="{ 'spinner': files && files.length && isFilesReading }">
     <div class="stream-info-container">
       <div class="title-container">
         <div class="title-container-text" v-if="selectedStream && !isRenaming">
@@ -37,7 +37,7 @@
         <a v-if="selectedStream" class="button is-rounded is-primary" style="margin-top: 0.75em" @click="openFolder(selectedStream.folderPath)">Open Folder</a>
     </div>
     <!-- <span class="has-text-weight-semibold"> {{ selectedStream.folderPath }} | {{ selectedStream.timestampFormat }} </span> -->
-    <table v-show="!isEmptyFolder()" class="table is-hoverable">
+    <table v-show="!isEmptyFolder()" class="table is-hoverable" :class="{ 'lowerOpacity': files && files.length && isFilesReading }">
       <thead>
         <tr>
           <td></td>
@@ -48,7 +48,7 @@
       </thead>
       <tbody>
         <tr v-for="file in files" :key="file.id">
-          <td class="file-status" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
+          <td class="file-status" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' || file.state === 'dublicated' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
           <!-- <td v-show="shouldShowProgress(file.state)">
             <vue-circle ref="files" :progress="file.progress" :size="14" line-cap="round" :fill="fill" :thickness="2" :show-percent="false" @vue-circle-progress="progress" @vue-circle-end="progress_end">
             </vue-circle>
@@ -79,7 +79,6 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
   import dateHelper from '../../../../utils/dateHelper'
   import File from '../../store/models/File'
   import Stream from '../../store/models/Stream'
@@ -106,14 +105,10 @@
       }
     },
     computed: {
-      ...mapState({
-        // selectedStreamId: state => state.Stream.selectedStreamId
-      }),
       selectedStreamId () {
         return this.$store.state.Stream.selectedStreamId
       },
       selectedStream () {
-        console.log('FileList selectedStream', this.selectedStreamId)
         return Stream.find(this.selectedStreamId)
       },
       isNewStreamNameValid: function () {
@@ -124,7 +119,7 @@
         let count = 0
         if (stream) {
           stream[0].files.forEach(file => {
-            if (file.state === 'failed') {
+            if (file.state === 'failed' || file.state === 'dublicated') {
               count++
             }
           })
@@ -133,6 +128,15 @@
       },
       files () {
         return File.query().where('streamId', this.selectedStreamId).orderBy('name').get()
+      },
+      isFilesReading () {
+        let count = 0
+        this.files.forEach(file => {
+          if (file.state === 'waiting' || file.state === undefined) {
+            count++
+          }
+        })
+        if (count === this.files.length) return true
       }
     },
     methods: {
@@ -383,6 +387,27 @@
 
   .btn-open {
     cursor: pointer;
+  }
+
+  .spinner::after {
+    -webkit-animation: spinAround 500ms infinite linear;
+    animation: spinAround 500ms infinite linear;
+    border: 3px solid #dbdbdb;
+    border-radius: 290486px;
+    border-right-color: transparent;
+    border-top-color: transparent;
+    content: "";
+    display: block;
+    height: 3em;
+    position: relative;
+    width: 3em;
+    left: calc(40% - (1em / 2));
+    top: calc(50% - (1em / 2));
+    position: absolute !important;
+  }
+
+  .lowerOpacity {
+    opacity: 0.3;
   }
 
 </style>
