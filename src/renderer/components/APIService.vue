@@ -124,7 +124,7 @@
                   })
                 case 31:
                   return File.update({ where: file.id,
-                    data: {state: 'dublicated', stateMessage: failureMessage}
+                    data: {state: 'duplicated', stateMessage: failureMessage}
                   })
                 default: break
               }

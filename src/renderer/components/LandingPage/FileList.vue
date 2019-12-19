@@ -48,7 +48,7 @@
       </thead>
       <tbody>
         <tr v-for="file in files" :key="file.id">
-          <td class="file-status" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' || file.state === 'dublicated' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
+          <td class="file-status" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' || file.state === 'duplicated' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
           <!-- <td v-show="shouldShowProgress(file.state)">
             <vue-circle ref="files" :progress="file.progress" :size="14" line-cap="round" :fill="fill" :thickness="2" :show-percent="false" @vue-circle-progress="progress" @vue-circle-end="progress_end">
             </vue-circle>
@@ -119,7 +119,7 @@
         let count = 0
         if (stream) {
           stream[0].files.forEach(file => {
-            if (file.state === 'failed' || file.state === 'dublicated') {
+            if (file.state === 'failed' || file.state === 'duplicated') {
               count++
             }
           })

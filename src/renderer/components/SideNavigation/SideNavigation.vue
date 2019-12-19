@@ -10,9 +10,9 @@
     <ul class="menu-list">
       <li v-for="stream in streams" :key="stream.id">
         <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) , 'drop-hover': isDragging}">
-          <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed'  || getState(stream) === 'dublicated'}">
+          <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed'  || getState(stream) === 'duplicated'}">
             <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
-            <font-awesome-icon class="iconRedo" v-if="(getState(stream) === 'failed' || checkWarningLoad(stream)) && !isDublicated && getState(stream) !== 'dublicated'" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
+            <font-awesome-icon class="iconRedo" v-if="(getState(stream) === 'failed' || checkWarningLoad(stream)) && !isDuplicated && getState(stream) !== 'duplicated'" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
             <img :src="getStateImgUrl(getState(stream))">
           </div>
           <div class="state-progress" v-if="shouldShowProgress(stream)">
@@ -67,10 +67,10 @@
       files () {
         return File.query().where('streamId', this.selectedStreamId).orderBy('name').get()
       },
-      isDublicated () {
+      isDuplicated () {
         let count = 0
         this.files.forEach(file => {
-          if (file.state === 'complited' || file.state === 'dublicated') {
+          if (file.state === 'complited' || file.state === 'duplicated') {
             count++
           }
         })
@@ -124,7 +124,7 @@
         return stream.id === this.selectedStream.id
       },
       shouldShowProgress (stream) {
-        return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed'
+        return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed' && this.getState(stream) !== 'duplicated'
       },
       sendNotification (status) {
         let notificationCompleted = {
@@ -148,7 +148,7 @@
         const isCompleted = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'completed' })
         const isWaiting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'waiting' })
         const isFailed = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'failed' })
-        const isDublicated = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'dublicated' })
+        const isDuplicated = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'duplicated' })
         const isIngesting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'ingesting' })
         if (isCompleted) {
           if (!!this.uploadingStreams[stream.id] && this.uploadingStreams[stream.id] !== 'completed') {
@@ -165,10 +165,10 @@
           this.uploadingStreams[stream.id] = 'failed'
           stream.completed = false
           return 'failed'
-        } else if (isDublicated) {
-          this.uploadingStreams[stream.id] = 'dublicated'
+        } else if (isDuplicated) {
+          this.uploadingStreams[stream.id] = 'duplicated'
           stream.completed = false
-          return 'dublicated'
+          return 'duplicated'
         } else if (isIngesting) {
           this.uploadingStreams[stream.id] = 'ingesting'
           stream.completed = false
@@ -182,7 +182,7 @@
       hidePause (streams) {
         let count = 0
         streams.forEach(stream => {
-          if (this.getState(stream) === 'completed' || this.getState(stream) === 'failed' || this.getState(stream) === 'dublicated') {
+          if (this.getState(stream) === 'completed' || this.getState(stream) === 'failed' || this.getState(stream) === 'duplicated') {
             count++
           } else if (this.getState(stream) === 'uploading' && this.checkWarningLoad(stream)) {
             count++
@@ -194,7 +194,7 @@
         let countFailed = 0
         let countComplited = 0
         stream.files.forEach((file) => {
-          if (file.state === 'failed' || file.state === 'dublicated') {
+          if (file.state === 'failed' || file.state === 'duplicated') {
             countFailed++
           } else if (file.state === 'completed') {
             countComplited++
@@ -210,13 +210,13 @@
           case 'waiting': return 2
           case 'failed': return 3
           case 'completed': return 4
-          case 'dublicated': return 5
+          case 'duplicated': return 5
         }
       },
       getProgress (stream) {
         const state = this.getState(stream)
         if (state === 'completed') return 100
-        else if (state === 'waiting' || state === 'failed' || state === 'dublicated') return 0
+        else if (state === 'waiting' || state === 'failed' || state === 'duplicated') return 0
         else if (this.checkWarningLoad(stream)) return 100
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         const uploadedFiles = stream.files.filter(file => { return file.state === 'ingesting' || file.state === 'completed' })
@@ -226,10 +226,10 @@
       },
       getStateStatus (stream) {
         const state = this.getState(stream)
-        if (state === 'completed' || state === 'failed' || state === 'dublicated') return ''
+        if (state === 'completed' || state === 'failed' || state === 'duplicated') return ''
         else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? ' files' : ' file')
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
-        const errorFiles = stream.files.filter(file => { return file.state === 'failed' || file.state === 'dublicated' })
+        const errorFiles = stream.files.filter(file => { return file.state === 'failed' || file.state === 'duplicated' })
         if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
         return `${completedFiles.length}/${stream.files.length} ingested | ${errorFiles.length} ${errorFiles.length > 1 ? 'errors' : 'error'}`
       },
