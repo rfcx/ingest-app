@@ -74,11 +74,18 @@
         if (stream.files && !stream.files.length) {
           return 'waiting'
         }
-        const isCompleted = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'completed' })
-        const isWaiting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'waiting' })
-        const isFailed = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'failed' })
-        const isDuplicated = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'duplicated' })
-        const isIngesting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'ingesting' })
+        const hasFiles = stream.files && stream.files.length
+        const total = stream.files.length
+        const completedFiles = stream.files.filter(file => file.state === 'completed').length
+        const waitingFiles = stream.files.filter(file => file.state === 'waiting').length
+        const failedFiles = stream.files.filter(file => file.state === 'failed').length
+        const duplicatedFiles = stream.files.filter(file => file.state === 'duplicated').length
+        const ingestingFiles = stream.files.filter(file => file.state === 'ingesting').length
+        const isCompleted = hasFiles && total === completedFiles
+        const isWaiting = hasFiles && total === waitingFiles
+        const isFailed = hasFiles && failedFiles > 0 && total === (failedFiles + duplicatedFiles)
+        const isDuplicated = hasFiles && total === duplicatedFiles
+        const isIngesting = hasFiles && total === ingestingFiles
         if (isCompleted) return 'completed'
         else if (isWaiting) return 'waiting'
         else if (isFailed) return 'failed'

@@ -12,7 +12,7 @@
         <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) , 'drop-hover': isDragging}">
           <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed'  || getState(stream) === 'duplicated'}">
             <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
-            <font-awesome-icon class="iconRedo" v-if="(getState(stream) === 'failed' || checkWarningLoad(stream)) && !isDuplicated && getState(stream) !== 'duplicated'" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
+            <font-awesome-icon class="iconRedo" v-if="getState(stream) === 'failed' || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
             <img :src="getStateImgUrl(getState(stream))">
           </div>
           <div class="state-progress" v-if="shouldShowProgress(stream)">
@@ -50,7 +50,6 @@
     },
     computed: {
       ...mapState({
-        // selectedStreamId: state => state.Stream.selectedStreamId,
         isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
       }),
       selectedStreamId () {
@@ -75,6 +74,7 @@
           }
         })
         if (count === this.files.length) return true
+        else return false
       }
     },
     methods: {
@@ -145,11 +145,18 @@
         if (stream.completed === true) {
           return 'completed'
         }
-        const isCompleted = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'completed' })
-        const isWaiting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'waiting' })
-        const isFailed = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'failed' })
-        const isDuplicated = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'duplicated' })
-        const isIngesting = stream.files && stream.files.length && stream.files.every(file => { return file.state === 'ingesting' })
+        const hasFiles = stream.files && stream.files.length
+        const total = stream.files.length
+        const completedFiles = stream.files.filter(file => file.state === 'completed').length
+        const waitingFiles = stream.files.filter(file => file.state === 'waiting').length
+        const failedFiles = stream.files.filter(file => file.state === 'failed').length
+        const duplicatedFiles = stream.files.filter(file => file.state === 'duplicated').length
+        const ingestingFiles = stream.files.filter(file => file.state === 'ingesting').length
+        const isCompleted = hasFiles && total === completedFiles
+        const isWaiting = hasFiles && total === waitingFiles
+        const isFailed = hasFiles && failedFiles > 0 && total === (failedFiles + duplicatedFiles)
+        const isDuplicated = hasFiles && total === duplicatedFiles
+        const isIngesting = hasFiles && total === ingestingFiles
         if (isCompleted) {
           if (!!this.uploadingStreams[stream.id] && this.uploadingStreams[stream.id] !== 'completed') {
             this.sendNotification('completed')
@@ -201,6 +208,7 @@
           }
         })
         if (countFailed !== stream.files.length && countComplited !== stream.files.length && (countFailed + countComplited) === stream.files.length) return true
+        else return false
       },
       getStatePriority (stream) {
         const state = this.getState(stream)

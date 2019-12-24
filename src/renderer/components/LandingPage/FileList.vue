@@ -36,7 +36,6 @@
         <span>Your synced folder is empty</span><br>
         <a v-if="selectedStream" class="button is-rounded is-primary" style="margin-top: 0.75em" @click="openFolder(selectedStream.folderPath)">Open Folder</a>
     </div>
-    <!-- <span class="has-text-weight-semibold"> {{ selectedStream.folderPath }} | {{ selectedStream.timestampFormat }} </span> -->
     <table v-show="!isEmptyFolder()" class="table is-hoverable" :class="{ 'lowerOpacity': files && files.length && isFilesReading }">
       <thead>
         <tr>
@@ -47,17 +46,17 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="file in files" :key="file.id">
+        <tr v-for="file in files" :key="file.id" :class="{ 'file-disable': file.disabled }">
           <td class="file-status" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' || file.state === 'duplicated' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
-          <!-- <td v-show="shouldShowProgress(file.state)">
-            <vue-circle ref="files" :progress="file.progress" :size="14" line-cap="round" :fill="fill" :thickness="2" :show-percent="false" @vue-circle-progress="progress" @vue-circle-end="progress_end">
-            </vue-circle>
-          </td> -->
-          <td class="file-row" :class="{ 'is-error': isError(file.state) }" >{{ file.name }}</td>
-          <td class="file-row" v-show="!isError(file.state)">{{ getTimestamp(file) }}</td>
-          <td class="file-row" v-show="!isError(file.state)">{{ file.fileSize }}</td>
-          <td class="is-error file-row" v-show="isError(file.state)">{{ file.stateMessage }}</td>
-          <td class="file-row" v-show="isError(file.state)"></td>
+          <td class="file-row" :class="{ 'is-error': isError(file.state) || isDuplicated(file.state)}" >{{ file.name }}</td>
+          <td class="file-row" v-show="!isError(file.state) && !isDuplicated(file.state)">{{ getTimestamp(file) }}</td>
+          <td class="file-row" v-show="!isError(file.state) && !isDuplicated(file.state)">{{ file.fileSize }}</td>
+          <td class="is-error file-row" v-show="isError(file.state) || isDuplicated(file.state)">{{ file.stateMessage }}</td>
+          <td class="file-row" v-show="isError(file.state)">
+            <font-awesome-icon class="iconRedo" :icon="iconRedo" @click="repeatUploading(file.id)"></font-awesome-icon>
+            <font-awesome-icon class="iconHide" :icon="iconHide" @click="toggleDisabled(file.id)"></font-awesome-icon>
+          </td>
+          <td class="file-row" v-show="isDuplicated(file.state)"></td>
         </tr>
       </tbody>
     </table>
@@ -83,19 +82,19 @@
   import File from '../../store/models/File'
   import Stream from '../../store/models/Stream'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-  import { faPencilAlt } from '@fortawesome/free-solid-svg-icons'
+  import { faPencilAlt, faRedo, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
   import settings from 'electron-settings'
   import api from '../../../../utils/api'
-  // import VueCircle from 'vue2-circle-progress'
 
   export default {
     components: {
       FontAwesomeIcon
-      // VueCircle
     },
     data () {
       return {
         iconPencil: faPencilAlt,
+        iconHide: faEyeSlash,
+        iconRedo: faRedo,
         fill: { color: ['#2FB04A'] },
         shouldShowDropDown: false,
         shouldShowConfirmToDeleteModal: false,
@@ -198,7 +197,10 @@
         // return state === 'uploading' || state === 'ingesting' || state === 'waiting'
       },
       isError (state) {
-        return state === 'failed' || state === 'duplicated'
+        return state === 'failed'
+      },
+      isDuplicated (state) {
+        return state === 'duplicated'
       },
       isEmptyFolder () {
         return this.files.length === 0
@@ -243,6 +245,41 @@
       },
       isProductionEnv () {
         return settings.get('settings.production_env')
+      },
+      getFile (fileId) {
+        return new Promise((resolve, reject) => {
+          const file = File.query().where((file) => {
+            return file.id === fileId
+          }).get()
+          if (file != null) {
+            resolve(file[0])
+          } else {
+            reject(new Error('Not found file'))
+          }
+        })
+      },
+      repeatUploading (fileId) {
+        let listener = (event, idToken) => {
+          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          return this.getFile(fileId)
+            .then((file) => {
+              console.log('failed file', file)
+              this.$file.uploadFile(file, idToken)
+            })
+        }
+        this.$electron.ipcRenderer.send('getIdToken')
+        this.$electron.ipcRenderer.on('sendIdToken', listener)
+      },
+      toggleDisabled (id) {
+        this.getFile(id).then((file) => {
+          console.log('disabled file', file)
+          this.updateDisabled(file)
+        })
+      },
+      updateDisabled (file) {
+        File.update({ where: file.id,
+          data: { disabled: !file.disabled }
+        })
       }
     },
     watch: {
@@ -408,6 +445,24 @@
 
   .lowerOpacity {
     opacity: 0.3;
+  }
+
+  .iconRedo {
+    color: black;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .iconHide {
+    vertical-align: middle;
+    color: black;
+    font-size: 13px;
+    cursor: pointer;
+    margin-left: 3px;
+  }
+
+  .file-disable {
+    opacity: 0.5;
   }
 
 </style>

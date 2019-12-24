@@ -8,10 +8,10 @@ import store from './store'
 import file from './services/file'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faChevronUp, faChevronDown, faPencilAlt, faRedo } from '@fortawesome/free-solid-svg-icons'
+import { faChevronUp, faChevronDown, faPencilAlt, faRedo, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
-library.add(faChevronUp, faChevronDown, faPencilAlt, faRedo)
+library.add(faChevronUp, faChevronDown, faPencilAlt, faRedo, faEyeSlash)
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios

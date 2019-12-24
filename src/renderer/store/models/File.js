@@ -20,7 +20,8 @@ export default class File extends Model {
       streamId: this.string(''),
       stream: this.belongsTo(Stream, 'streamId'),
       uploadId: this.string(''),
-      progress: this.number(0)
+      progress: this.number(0),
+      disabled: this.boolean(false)
     }
   }
 
