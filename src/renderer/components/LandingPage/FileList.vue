@@ -61,6 +61,9 @@
       </tbody>
     </table>
     <a title="Open selected folder" v-show="!isEmptyFolder()" class="button is-circle btn-open" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-folder-open.svg"></a>
+    <a title="Go to RfcxClientStreamWeb" class="button is-circle btn-extirnal-link" @click="redirectToStreamWeb()">
+      <font-awesome-icon class="faExternal" :icon="faExternalLinkAlt"></font-awesome-icon>
+    </a>
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
       <div class="modal-background"></div>
@@ -82,7 +85,7 @@
   import File from '../../store/models/File'
   import Stream from '../../store/models/Stream'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-  import { faPencilAlt, faRedo, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+  import { faPencilAlt, faRedo, faEyeSlash, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
   import settings from 'electron-settings'
   import api from '../../../../utils/api'
 
@@ -95,6 +98,7 @@
         iconPencil: faPencilAlt,
         iconHide: faEyeSlash,
         iconRedo: faRedo,
+        faExternalLinkAlt: faExternalLinkAlt,
         fill: { color: ['#2FB04A'] },
         shouldShowDropDown: false,
         shouldShowConfirmToDeleteModal: false,
@@ -280,6 +284,14 @@
         File.update({ where: file.id,
           data: { disabled: !file.disabled }
         })
+      },
+      redirectToStreamWeb () {
+        console.log('user redirected to the Client Stream Web')
+        if (this.selectedStream) {
+          this.$electron.shell.openExternal(`https://client-stream.rfcx.org/streams/${this.selectedStream.guid}?site=${this.selectedStream.siteGuid}`)
+        } else {
+          this.$electron.shell.openExternal(`https://client-stream.rfcx.org/streams`)
+        }
       }
     },
     watch: {
@@ -459,6 +471,12 @@
     font-size: 13px;
     cursor: pointer;
     margin-left: 3px;
+  }
+
+  .faExternal {
+    color: #2FB04A;
+    font-size: 24px;
+    cursor: pointer;
   }
 
   .file-disable {

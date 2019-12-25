@@ -298,12 +298,23 @@
     margin: auto;
     text-align:center;
     position: fixed;
-    right: 2em;
+    right: 4em;
     bottom: 2em;
     &:active,
     &:hover,
     &:focus {
       border-color: #fff;
+    }
+  }
+
+  .btn-extirnal-link {
+    right: 2em !important;
+    padding-right: 0 !important;
+    cursor: pointer !important;
+    &:active,
+    &:hover,
+    &:focus {
+      border-color: transparent !important;
     }
   }
 
