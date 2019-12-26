@@ -13,7 +13,8 @@ export default class Stream extends Model {
       timestampFormat: this.string(''),
       folderPath: this.string(''),
       siteGuid: this.string(''),
-      files: this.hasMany(File, 'streamId')
+      files: this.hasMany(File, 'streamId'),
+      env: this.string('')
     }
   }
 }
