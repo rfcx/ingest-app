@@ -202,7 +202,8 @@ export default {
               name: this.name,
               folderPath: this.folderPath,
               timestampFormat: this.selectedTimestampFormat,
-              siteGuid: this.currentSite.value
+              siteGuid: this.currentSite.value,
+              env: this.isProductionEnv() ? 'production' : 'staging'
             }
             console.log('creating stream', JSON.stringify(stream))
             Stream.insert({ data: stream, insert: ['files'] })
@@ -247,7 +248,8 @@ export default {
                 name: this.name,
                 folderPath: this.folderPath,
                 timestampFormat: this.selectedTimestampFormat,
-                siteGuid: this.currentSite.value
+                siteGuid: this.currentSite.value,
+                env: this.isProductionEnv() ? 'production' : 'staging'
               }
               console.log('creating stream', JSON.stringify(stream))
               Stream.insert({ data: stream, insert: ['files'] })

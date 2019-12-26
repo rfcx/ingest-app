@@ -287,11 +287,31 @@
       },
       redirectToStreamWeb () {
         console.log('user redirected to the Client Stream Web')
+        let url = 'https://client-stream.rfcx.org/'
         if (this.selectedStream) {
-          this.$electron.shell.openExternal(`https://client-stream.rfcx.org/streams/${this.selectedStream.guid}?site=${this.selectedStream.siteGuid}`)
+          if (this.selectedStream.env) {
+            if (this.selectedStream.env === 'production') {
+              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.guid}`
+            } else if (this.selectedStream.env === 'staging') {
+              url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.guid}`
+            } else {
+              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.guid}`
+            }
+          } else {
+            if (this.isProductionEnv()) {
+              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.guid}`
+            } else {
+              url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.guid}`
+            }
+          }
         } else {
-          this.$electron.shell.openExternal(`https://client-stream.rfcx.org/streams`)
+          if (this.isProductionEnv()) {
+            url = `https://client-stream.rfcx.org/streams`
+          } else {
+            url = `https://staging-client-stream.rfcx.org/streams`
+          }
         }
+        this.$electron.shell.openExternal(url)
       }
     },
     watch: {
