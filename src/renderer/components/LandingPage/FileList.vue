@@ -61,7 +61,7 @@
       </tbody>
     </table>
     <a title="Open selected folder" v-show="!isEmptyFolder()" class="button is-circle btn-open" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-folder-open.svg"></a>
-    <a title="Go to RfcxClientStreamWeb" class="button is-circle btn-extirnal-link" @click="redirectToStreamWeb()">
+    <a title="Redirect to RFCx Client Stream Web App" class="button is-circle btn-extirnal-link" @click="redirectToStreamWeb()">
       <font-awesome-icon class="faExternal" :icon="faExternalLinkAlt"></font-awesome-icon>
     </a>
     <!-- Modal -->
