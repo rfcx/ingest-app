@@ -290,27 +290,30 @@
   }
 
   a.is-circle {
-    height: 60px;
-    width: 60px;
     background-color: transparent;
     border-color: transparent;
     border-radius: 50%;
     margin: auto;
     text-align:center;
     position: fixed;
-    right: 4em;
+    right: 4.2em;
     bottom: 2em;
+    padding: 3px !important;
+    margin: 0 1px !important;
     &:active,
     &:hover,
     &:focus {
       border-color: #fff;
     }
+    img {
+      height: 32px;
+      width: 32px;
+    }
   }
 
   .btn-extirnal-link {
     right: 2em !important;
-    padding-right: 0 !important;
-    cursor: pointer !important;
+    cursor: pointer;
     &:active,
     &:hover,
     &:focus {

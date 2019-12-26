@@ -19,7 +19,7 @@ function createAuthWindow () {
   const {
     session: { webRequest }
   } = win.webContents
-  win.loadURL(authService.getAuthenticationURL())
+  win.loadURL(authService.getAuthenticationURL(), { userAgent: 'Chrome' })
   webRequest.onBeforeRequest(filter, async ({ url }) => {
     console.log('authWindow onBeforeRequest')
     await authService.loadTokens(url)
