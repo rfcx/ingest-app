@@ -15,14 +15,14 @@ const apiUrl = (proEnvironment) => {
 const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, idToken, progressCallback) => {
   console.log(`path: ${filePath} ext: ${fileExt}`)
   return requestUploadUrl(env, fileName, streamId, timestamp, idToken).then((data) => {
-    return (platform === 'amazon' ? uploadToS3(data.url, filePath, fileExt, progressCallback) : uploadToGoogleCloud(data.url, filePath, fileExt, progressCallback))
-      .then(() => {
-        console.log('uploadId', data.uploadId)
-        return Promise.resolve(data.uploadId)
-      })
-      .catch((error) => {
-        return Promise.reject(error)
-      })
+    return performUpload(data.url, filePath, fileExt, progressCallback).then(() => {
+      console.log('uploadId', data.uploadId)
+      return Promise.resolve(data.uploadId)
+    }).catch(error => {
+      console.error(error)
+      console.log(error.response)
+      throw error
+    })
   })
 }
 
@@ -55,54 +55,21 @@ const requestUploadUrl = (env, originalFilename, streamId, timestamp, idToken) =
 
 const fs = require('fs')
 
-function readFileAsync (path) {
-  return new Promise(function (resolve, reject) {
-    const maxContentLength = 209715200
-    const stats = fs.statSync(path)
-    const fileSizeInBytes = stats.size
-    if (fileSizeInBytes > maxContentLength) {
-      return reject(new Error('File size exceeds maximum.'))
-    }
-    fs.readFile(path, function (error, result) {
-      if (error || !result) {
-        reject(error)
-      } else {
-        resolve(result)
-      }
-    })
-  })
-}
-
-async function uploadToS3 (signedUrl, filePath, fileExt, progressCallback) {
-  try {
-    const contents = await readFileAsync(filePath)
-    if (contents) {
-      return axios.put(signedUrl, contents, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        onUploadProgress: function (progressEvent) {
-          const progress = parseInt(Math.round((progressEvent.loaded * 100) / progressEvent.total))
-          console.log('onUploadProgress', progress)
-          progressCallback(progress)
-        }
-      })
-    }
-  } catch (error) {
-    console.log(error)
+function performUpload (signedUrl, filePath, fileExt, progressCallback) {
+  var headers = {
+    'Content-Type': `audio/${fileExt}`
   }
-}
-
-const uploadToGoogleCloud = (signedUrl, filePath, fileExt, progressCallback) => {
+  if (platform === 'amazon') {
+    // S3 doesn't allow chunked uploads, so setting the Content-Length is required
+    const fileSize = fs.statSync(filePath).size
+    headers['Content-Length'] = fileSize
+  }
   const readStream = fs.createReadStream(filePath)
   const options = {
-    headers: {
-      'Content-Type': `audio/${fileExt}`
-    },
+    headers: headers,
     maxContentLength: 209715200,
     onUploadProgress: function (progressEvent) {
       const progress = parseInt(Math.round((progressEvent.loaded * 100) / progressEvent.total))
-      console.log('onUploadProgress', progress)
       progressCallback(progress)
     }
   }
