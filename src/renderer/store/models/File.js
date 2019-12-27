@@ -21,7 +21,8 @@ export default class File extends Model {
       stream: this.belongsTo(Stream, 'streamId'),
       uploadId: this.string(''),
       progress: this.number(0),
-      disabled: this.boolean(false)
+      disabled: this.boolean(false),
+      notified: this.boolean(false)
     }
   }
 
