@@ -8,6 +8,7 @@ import trayContainer from 'electron-tray-window'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
+import userService from './services/user-service'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
@@ -304,7 +305,8 @@ function initialSettings () {
   if (settings.get('settings') === undefined) {
     settings.set('settings', {
       auto_start: false,
-      production_env: false
+      production_env: false,
+      platform: 'amazon'
     })
   }
   setLoginItem(settings.get('settings.auto_start'))
@@ -386,13 +388,19 @@ async function getUserInfo () {
       global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
       global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
     }
+    await setAllUserSitesInfo()
     resolve()
   })
+}
+
+async function setAllUserSitesInfo () {
+  global.allSites = await userService.getUserSites(idToken)
 }
 
 async function refreshTokens () {
   try {
     await authService.refreshTokens()
+    await setAllUserSitesInfo()
   } catch (err) {
     logOut()
   }

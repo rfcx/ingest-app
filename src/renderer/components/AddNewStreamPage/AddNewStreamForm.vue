@@ -303,12 +303,13 @@ export default {
     getSites () {
       let accessibleSites = remote.getGlobal('accessibleSites')
       let defaultSite = remote.getGlobal('defaultSite')
+      let allSites = remote.getGlobal('allSites') || []
       console.log('accessibleSites', accessibleSites, 'defaultSite', defaultSite)
       if (defaultSite && accessibleSites) {
         if (accessibleSites.includes(defaultSite)) {
           let sites = accessibleSites.map((item) => {
             let obj = {
-              label: item,
+              label: (allSites.find(site => site.guid === item) || { name: item }).name,
               value: item,
               selected: item === defaultSite
             }

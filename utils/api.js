@@ -108,11 +108,19 @@ const sendInviteCode = (env, code, idToken) => {
     })
 }
 
+const getUserSites = (env, idToken) => {
+  return axios.get(apiUrl(env) + `/users/sites?`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+    .then(function (response) {
+      return response.data
+    })
+}
+
 export default {
   createStream,
   uploadFile,
   checkStatus,
   renameStream,
   touchApi,
-  sendInviteCode
+  sendInviteCode,
+  getUserSites
 }
