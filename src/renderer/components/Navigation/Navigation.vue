@@ -89,7 +89,12 @@
       },
       getSite () {
         let defaultSite = remote.getGlobal('defaultSite')
-        if (defaultSite) return defaultSite
+        let allSites = remote.getGlobal('allSites') || []
+        if (defaultSite && allSites.length) {
+          let site = allSites.find(el => el.guid === defaultSite)
+          return site.name
+        }
+        if (defaultSite && !allSites.length) return defaultSite
         else return 'RFCx Lab'
       },
       toggleDropDown () {
