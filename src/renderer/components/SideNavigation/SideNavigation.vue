@@ -296,6 +296,7 @@
     color: grey;
     font-size: 13px;
     cursor: pointer;
+    margin-left: 3px !important;
   }
 
 </style>

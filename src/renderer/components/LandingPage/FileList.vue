@@ -1,5 +1,5 @@
 <template>
-  <div :class="{ 'spinner': files && files.length && isFilesReading }">
+  <div :class="{ 'spinner': files && files.length && isFilesReading, 'dark-mode': this.isDarkMode }">
     <div class="stream-info-container">
       <div class="title-container">
         <div class="title-container-text" v-if="selectedStream && !isRenaming">
@@ -104,7 +104,8 @@
         shouldShowConfirmToDeleteModal: false,
         isRenaming: false,
         isLoading: false,
-        newStreamName: ''
+        newStreamName: '',
+        isDarkMode: false
       }
     },
     computed: {
@@ -323,6 +324,9 @@
           if (progress !== undefined) progress.updateProgress(file.progress)
         })
       }
+    },
+    created () {
+      this.isDarkMode = settings.get('settings.darkMode')
     }
   }
 </script>
@@ -501,6 +505,24 @@
 
   .file-disable {
     opacity: 0.5;
+  }
+
+  .dark-mode {
+    .edit-container-item-input {
+      color: #fff !important;
+      background-color: #292a3b !important;
+      border-color: #292a3b !important;
+    }
+    .btn {
+      background: #45485d;
+      border-color: #45485d;
+      color: #fff;
+    }
+    .btn:hover {
+      border-color: #3b3e53;
+      color: #fff;
+      background: #3b3e53;
+    }
   }
 
 </style>

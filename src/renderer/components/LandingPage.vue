@@ -1,19 +1,19 @@
 <template>
-  <div id="wrapper-landing-page" class="has-fixed-sidebar">
+  <div id="wrapper-landing-page" class="has-fixed-sidebar" :class="{ 'dark-mode': isDarkTheme === true }">
     <div v-if="hasAccessToApp()">
-      <navigation></navigation>
+      <navigation :class="{ 'dark-mode': isDarkTheme === true }"></navigation>
       <section class="main-content columns is-mobile">
-        <side-navigation></side-navigation>
-        <div class="column content is-desktop" v-if="streams && streams.length > 0">
+        <side-navigation :class="{ 'dark-mode': isDarkTheme }"></side-navigation>
+        <div class="column content is-desktop" v-if="streams && streams.length > 0" :class="{ 'dark-mode': isDarkTheme }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
         </div>
-        <div class="column content is-desktop" v-else @drop.prevent="handleDrop" @dragover.prevent>
+        <div class="column content is-desktop" v-else @drop.prevent="handleDrop" @dragover.prevent :class="{ 'dark-mode': isDarkTheme }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
         </div>
       </section>
-      <footer class="uploading-process-status" v-if="!isUploadingProcessEnabled"
+      <footer class="uploading-process-status" :class="{ 'dark-mode': isDarkTheme === true }" v-if="!isUploadingProcessEnabled"
         @mouseover="uploadingProcessText = 'Tap here to resume the uploading process'"
         @mouseleave="uploadingProcessText = 'The uploading process has been paused'"
         @click="resumeUploadingProcess()">
@@ -31,6 +31,7 @@
   import EmptyStream from './LandingPage/EmptyStream'
   import FileList from './LandingPage/FileList'
   import { mapState } from 'vuex'
+  import settings from 'electron-settings'
   import Stream from '../store/models/Stream'
   import fileHelper from '../../../utils/fileHelper'
   const { remote } = window.require('electron')
@@ -41,7 +42,8 @@
     data () {
       return {
         uploadingProcessText: 'The uploading process has been paused',
-        executed: false
+        executed: false,
+        darkTheme: settings.get('settings.darkMode')
       }
     },
     methods: {
@@ -107,6 +109,20 @@
       }),
       streams () {
         return Stream.all()
+      },
+      isDarkTheme () {
+        let darkMode = settings.get('settings.darkMode')
+        let listener = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('switchDarkMode', listener)
+          darkMode = arg
+          console.log('darkMode from listener', darkMode)
+          this.darkTheme = darkMode
+          return darkMode
+        }
+        this.$electron.ipcRenderer.on('switchDarkMode', listener)
+        console.log('darkMode from initial settings', darkMode, 'darkTheme', this.darkTheme)
+        if (darkMode === true) return true
+        else return false
       }
     },
     created () {
@@ -119,6 +135,8 @@
 
   html {
     overflow: hidden;
+    background-color: white;
+    color: #000;
   }
 
   html.has-navbar-fixed-top, body.has-navbar-fixed-top {
@@ -147,6 +165,8 @@
 
   .user-info-name {
     padding: 1rem;
+    display: inline-block;
+    vertical-align: middle;
   }
 
   .user-info-image {
@@ -282,7 +302,7 @@
 
   .progress {
     margin: 0.5rem auto !important;
-    height: 0.5rem;
+    height: 0.5rem !important;
   }
 
   .state-progress span {
@@ -303,7 +323,7 @@
     &:active,
     &:hover,
     &:focus {
-      border-color: #fff;
+      border-color: transparent !important;
     }
     img {
       height: 32px;
@@ -369,6 +389,58 @@
       display: flex;
     }
 
+  }
+
+  .dark-mode {
+    background-color: #131525 !important;
+    color: #fff !important;
+    .navbar-item {
+      color: white;
+    }
+    .stream-title {
+      color: white;
+    }
+    .menu-item:hover {
+      background-color: #292a3b;
+    }
+    .iconRedo {
+      color: #ccc;
+    }
+    .iconHide {
+      color: #ccc;
+      font-size: 14px;
+    }
+    .dropdown-content {
+      background-color: #292a3b;
+    }
+    .dropdown-item {
+      color: white;
+    }
+    .table {
+      background-color: #131525;
+      color: white;
+    }
+    table td {
+      border-color: #292a3b;
+    }
+    table tr:hover {
+      background-color: #292a3b !important;
+    }
+    .table thead td {
+      color: white !important;
+      opacity: 1;
+    }
+    .title-container-edit {
+      color: white;
+    }
+    .is-error {
+      color: #ccc;
+    }
+    .active {
+      border: 4px solid #131525 !important;
+      background-color: #131525 !important;
+      opacity: 0.8 !important;
+    }
   }
 
 </style>

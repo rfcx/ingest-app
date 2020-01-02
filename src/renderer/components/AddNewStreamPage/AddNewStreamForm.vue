@@ -1,5 +1,5 @@
 <template>
-    <fieldset class="fieldset-wrap" :class="{ 'spinner': isLoading && isMultipleUpload, 'disabled': isLoading && isMultipleUpload }">
+    <fieldset class="fieldset-wrap" :class="{ 'spinner': isLoading && isMultipleUpload, 'disabled': isLoading && isMultipleUpload, 'dark-mode': this.isDarkMode }">
         <div class="notification" v-show="error">
           <button class="delete" @click="onCloseAlert()"></button>
           {{ error }}
@@ -71,7 +71,7 @@
         </div>
         <div class="field is-grouped">
             <p class="control">
-                <router-link to="/"><button class="button is-rounded">Cancel</button></router-link>
+                <router-link to="/"><button class="button is-rounded cancel">Cancel</button></router-link>
             </p>
             <p class="control">
                 <button class="button is-rounded is-primary" :class="{ 'is-loading': isLoading && !isMultipleUpload}" :disabled="!hasPassedValidation && !isMultipleUpload" @click.prevent="createStream">Create</button>
@@ -104,6 +104,7 @@ export default {
       isShow: false,
       isLoading: false,
       isMultipleUpload: false,
+      isDarkMode: false,
       currentSite: null,
       idToken: null,
       newStreamsPaths: [],
@@ -391,6 +392,11 @@ export default {
   },
   created () {
     console.log('query', this.$route.query)
+    this.isDarkMode = settings.get('settings.darkMode')
+    let html = document.getElementsByTagName('html')[0]
+    if (html && this.isDarkMode) {
+      html.style.backgroundColor = '#131525'
+    }
     if (this.$route.query && this.$route.query.folderPath) {
       this.folderPath = this.$route.query.folderPath
       this.name = this.$route.query.name
@@ -404,7 +410,7 @@ export default {
 }
 </script>
 
-<style>
+<style lang="scss">
 
   .has-addons .input-control {
       width: -webkit-fill-available;
@@ -530,6 +536,19 @@ export default {
     color: transparent !important;
     pointer-events: none;
     opacity: 0.3 !important;
+  }
+
+  .dark-mode {
+    .cancel {
+      background-color: #45485d;
+      border-color: #45485d;
+      color: #fff;
+    }
+    .cancel:hover {
+      border-color: #3b3e53;
+      color: #fff;
+      background-color: #3b3e53;
+    }
   }
 
 </style>
