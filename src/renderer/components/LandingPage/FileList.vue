@@ -211,6 +211,15 @@
       },
       openFolder (link) {
         this.$electron.ipcRenderer.send('focusFolder', link)
+        if (this.files && this.files.length) {
+          this.files.forEach((file) => {
+            if (file.state === 'completed') {
+              File.update({ where: file.id,
+                data: { notified: true }
+              })
+            }
+          })
+        }
       },
       progress (event, progress, stepValue) {
         // console.log(stepValue)

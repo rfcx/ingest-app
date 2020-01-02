@@ -159,7 +159,10 @@
         const isIngesting = hasFiles && total === ingestingFiles
         if (isCompleted) {
           if (!!this.uploadingStreams[stream.id] && this.uploadingStreams[stream.id] !== 'completed') {
-            this.sendNotification('completed')
+            const notifiedStream = stream.files && stream.files.length && stream.files.every(file => file.notified === true)
+            if (!notifiedStream) {
+              this.sendNotification('completed')
+            }
           }
           this.uploadingStreams[stream.id] = 'completed'
           stream.completed = true

@@ -39,6 +39,13 @@ const getMD5Hash = (filePath) => {
   return cryptoJS.MD5(fileData).toString()
 }
 
+const getCheckSum = (filePath) => {
+  const fileData = readFile(filePath)
+  let fileWordArr = cryptoJS.lib.WordArray.create(fileData)
+  let sha1Hash = cryptoJS.SHA1(fileWordArr)
+  return sha1Hash.toString()
+}
+
 const getFileNameFromFilePath = (filePath) => {
   return path.parse(filePath).base
 }
@@ -68,5 +75,6 @@ export default {
   getExtension,
   getFileSize,
   isSupportedFileExtension,
-  isFolder
+  isFolder,
+  getCheckSum
 }

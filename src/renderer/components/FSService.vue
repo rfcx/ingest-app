@@ -32,6 +32,18 @@
         this.streams.forEach(stream => {
           fileWatcher.createWatcher(stream.folderPath, (newFilePath) => {
             if (this.fileIsExist(newFilePath)) return
+            let files = File.query().where('streamId', stream.id).orderBy('name').get()
+            if (files && files.length) {
+              files.forEach((file) => {
+                if (!fileHelper.isExist(file.path)) {
+                  return File.delete(file.id)
+                } else {
+                  if (fileHelper.getCheckSum(file.path) === fileHelper.getCheckSum(newFilePath)) {
+                    return this.updateFile(file.id, newFilePath)
+                  }
+                }
+              })
+            }
             console.log('New file for uploading', newFilePath)
             const file = this.createFileObject(newFilePath, stream)
             this.insertFile(file)
@@ -82,6 +94,14 @@
       insertFile (file) {
         console.log('insert file: ', file)
         File.insert({ data: file })
+      },
+      updateFile (fileId, path) {
+        let fileName = fileHelper.getFileNameFromFilePath(path)
+        if (fileName) {
+          File.update({ where: fileId,
+            data: { name: fileName, path: path }
+          })
+        }
       },
       deleteFile (fileId) {
         console.log('remove file: ', fileId)
