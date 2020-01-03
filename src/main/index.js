@@ -396,6 +396,9 @@ async function getUserInfo () {
       global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
       global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
     }
+    if (profile && profile.picture) {
+      global.picture = profile.picture
+    }
     await setAllUserSitesInfo()
     resolve()
   })

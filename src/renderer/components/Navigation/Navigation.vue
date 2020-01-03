@@ -17,7 +17,7 @@
           <div class="user-info-name"><span><span class="name">Hello, {{name}}!</span><br><span class="site-name">{{ siteName }}</span></span></div>
           <div class="dropdown is-right dropdown-nav" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()">
             <div class="dropdown-trigger">
-              <div class="user-info-image" aria-haspopup="true" aria-controls="dropdown-menu-nav"><img title="Menu" src="~@/assets/ic-profile-temp.svg" alt="rfcx" width="30" height="30"></div>
+              <div class="user-info-image" aria-haspopup="true" aria-controls="dropdown-menu-nav"><img title="Menu" class="user-img" :src="getUserPicture()" alt=""></div>
             </div>
             <div class="dropdown-menu dropdown-menu-navigation" id="dropdown-menu-nav" role="menu">
               <div class="dropdown-content">
@@ -82,6 +82,11 @@
       isProductionEnv () {
         return settings.get('settings.production_env')
       },
+      getUserPicture () {
+        let userPicture = remote.getGlobal('picture')
+        if (userPicture) return userPicture
+        else return require(`../../assets/ic-profile-temp.svg`)
+      },
       getUserName () {
         let userName = remote.getGlobal('firstname')
         if (userName) return userName
@@ -125,6 +130,11 @@
 
   .navigation-item {
     line-height: 1 !important;
+  }
+
+  .user-img {
+    border-radius: 50%;
+    height: 100%;
   }
 
 </style>

@@ -171,6 +171,11 @@
 
   .user-info-image {
     margin: auto;
+    text-align: center;
+    height: 30px;
+    max-width: 30px;
+    max-height: 30px;
+    width: 30px;
   }
 
   #wrapper-landing-page {
@@ -459,6 +464,15 @@
       border-color: #3b3e53;
       color: #fff;
       background: #3b3e53;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #45485d;
+    }
+    ::-webkit-scrollbar-track {
+      background-color: #52566e;
+    }
+    ::-webkit-scrollbar {
+      width: 3px;
     }
   }
 
