@@ -1,15 +1,15 @@
 <template>
   <div>
-    <aside class="column menu tray-menu">
+    <aside class="column menu tray-menu" :class="{ 'dark-tray': isDark }">
       <div class="tray-container">
-        <div class="menu-container side-menu-title">
+        <div class="menu-container side-menu-title side-menu-title-tray">
           <p class="menu-label"> {{ menuTitle }} </p>
           <a href="#" @click="toggleUploadingProcess()"><img :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
         </div>
         <ul class="tray-menu-list menu-list">
           <li v-for="stream in streams" :key="stream.id">
             <div class="menu-item" v-on:click="selectItem(stream)">
-              <div class="menu-container">
+              <div class="menu-container" :class="{ 'container-failed': getState(stream) === 'failed'  || getState(stream) === 'duplicated'}">
                 <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
                 <img :src="getStateImgUrl(getState(stream))">
               </div>
@@ -25,7 +25,7 @@
         </ul>
       </div>
     </aside>
-    <footer class="card-footer">
+    <footer class="card-footer" :class="{ 'dark-tray': isDark }">
     <a href="#" class="card-footer-item" @click="openApp()">Open Application</a>
   </footer>
   </div>
@@ -34,11 +34,17 @@
 <script>
   import { mapState } from 'vuex'
   import Stream from '../store/models/Stream'
+  import settings from 'electron-settings'
 
   export default {
     data () {
       return {
-        menuTitle: 'Uploading Streams'
+        menuTitle: 'Uploading Streams',
+        isDark: null,
+        darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
+          this.isDark = newValue
+          console.log('isDarkTheme', this.isDark)
+        })
       }
     },
     computed: {
@@ -145,15 +151,39 @@
     },
     created () {
       console.log('Tray page')
+      this.isDark = settings.get('settings.darkMode')
     }
   }
 </script>
 
-<style>
+<style lang="scss">
 
   .right {
     text-align: right !important;
     justify-content: flex-end !important;
+  }
+
+  .container-failed {
+    margin-right: 6px;
+  }
+
+  .side-menu-title-tray {
+    margin-right: 6.5px;
+  }
+
+  .dark-tray {
+    background-color: #131525 !important;
+    color: #fff !important;
+    .menu {
+      background-color: #131525 !important;
+      color: #fff !important;
+    }
+    .stream-title {
+      color: white;
+    }
+    .menu-item:hover {
+      background-color: #292a3b;
+    }
   }
 
 </style>

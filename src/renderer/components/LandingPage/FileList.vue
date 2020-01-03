@@ -9,7 +9,7 @@
         <div class="edit-container" v-if="isRenaming">
           <input class="input edit-container-item-input" v-model="newStreamName" type="text" placeholder="">
           <div class="edit-container-item-control">
-            <button class="button is-rounded btn" @click="cancel()">Cancel</button>
+            <button class="button is-rounded btn btn-edit-cancel" @click="cancel()">Cancel</button>
             <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!isNewStreamNameValid && (newStreamName && newStreamName.length > 0)" @click="saveStream()">Save</button>
           </div>
         </div>

@@ -21,7 +21,7 @@
             </div>
             <div class="dropdown-menu dropdown-menu-navigation" id="dropdown-menu-nav" role="menu">
               <div class="dropdown-content">
-                <a href="" class="dropdown-item has-text-danger" @click="logOut()">Log out</a>
+                <a href="" class="dropdown-item has-text-danger navigation-item" @click="logOut()">Log out</a>
               </div>
             </div>
           </div>
@@ -121,6 +121,10 @@
 
   .dropdown-menu-navigation {
     top: 76% !important;
+  }
+
+  .navigation-item {
+    line-height: 1 !important;
   }
 
 </style>

@@ -164,6 +164,16 @@ function createMenu () {
     {
       label: 'File',
       submenu: [
+        { label: 'Dark mode',
+          type: 'checkbox',
+          checked: settings.get('settings.darkMode'),
+          click: async () => {
+            settings.set('settings.darkMode', !settings.get('settings.darkMode'))
+            let darkMode = settings.get('settings.darkMode')
+            console.log('dark mode', darkMode)
+            mainWindow.webContents.send('switchDarkMode', darkMode)
+          }
+        },
         { label: 'Clear data',
           click: async () => {
             console.log('clear data')
@@ -200,7 +210,6 @@ function createMenu () {
             idToken = null
           }
         },
-        // { role: 'quit' }
         { label: 'Quit',
           click: function () {
             app.exit()
@@ -286,17 +295,12 @@ function showMainWindow () {
   }
 }
 
-// const appFolder = path.dirname(process.execPath)
-// const updateExe = path.resolve(appFolder, '..', 'Update.exe')
-// const exeName = path.basename(process.execPath)
-
 function setLoginItem (openAtLogin) {
   console.log('setLoginItem', openAtLogin)
   const args = openAtLogin ? ['--process-start-args', `"--hidden"`] : []
   app.setLoginItemSettings({
     openAtLogin: openAtLogin,
     openAsHidden: openAtLogin,
-    // path: updateExe,
     args: args
   })
 }
@@ -306,8 +310,12 @@ function initialSettings () {
     settings.set('settings', {
       auto_start: false,
       production_env: false,
-      platform: 'amazon'
+      platform: 'amazon',
+      darkMode: true
     })
+  }
+  if (settings.get('settings.darkMode') === undefined) {
+    settings.set('settings.darkMode', true)
   }
   setLoginItem(settings.get('settings.auto_start'))
 }

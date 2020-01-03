@@ -1,5 +1,5 @@
 <template>
-  <div id="wrapper-access-denied-page" class="access-denied-page">
+  <div id="wrapper-access-denied-page" class="access-denied-page" :class="{ 'dark-mode': isDark }">
     <div class="access-denied-page-label">You don't have required permissions to access this app. Ask admin@rfcx.org for details.</div>
     <div class="access-denied-page-btn">
       <a class="button is-primary" @click="logOut()">Log out</a>
@@ -40,7 +40,12 @@
         showSuccessMessage: false,
         errorMessage: '',
         isLoading: false,
-        hasAccessToSendCode: false
+        hasAccessToSendCode: false,
+        isDark: null,
+        darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
+          this.isDark = newValue
+          console.log('isDarkTheme', this.isDark)
+        })
       }
     },
     methods: {
@@ -89,6 +94,11 @@
     },
     created () {
       console.log('Access-denied page created')
+      this.isDark = settings.get('settings.darkMode')
+      let html = document.getElementsByTagName('html')[0]
+      if (html && this.isDark) {
+        html.style.backgroundColor = '#131525'
+      }
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         let idToken = null
@@ -106,11 +116,12 @@
   }
 </script>
 
-<style>
+<style lang="scss">
 
   .access-denied-page {
-    margin-top: 150px;
+    padding-top: 150px;
     text-align: center;
+    margin: 0;
   }
 
   .access-denied-page-label {
@@ -160,6 +171,12 @@
 
   .button_small {
     margin: 0 3px;
+  }
+
+  .dark-mode {
+    background-color: #131525 !important;
+    color: #fff !important;
+    overflow: auto !important;
   }
 
 </style>
