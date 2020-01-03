@@ -104,7 +104,6 @@ export default {
       isShow: false,
       isLoading: false,
       isMultipleUpload: false,
-      isDarkMode: false,
       currentSite: null,
       idToken: null,
       newStreamsPaths: [],
@@ -393,11 +392,6 @@ export default {
   },
   created () {
     console.log('query', this.$route.query)
-    this.isDarkMode = settings.get('settings.darkMode')
-    let html = document.getElementsByTagName('html')[0]
-    if (html && this.isDarkMode) {
-      html.style.backgroundColor = '#131525'
-    }
     if (this.$route.query && this.$route.query.folderPath) {
       this.folderPath = this.$route.query.folderPath
       this.name = this.$route.query.name

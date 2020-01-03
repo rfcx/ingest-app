@@ -23,6 +23,12 @@
         isDark: null,
         darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
           this.isDark = newValue
+          let html = document.getElementsByTagName('html')[0]
+          if (html && this.isDark) {
+            html.style.backgroundColor = '#131525'
+          } else {
+            html.style.backgroundColor = '#fff'
+          }
           console.log('isDarkTheme', this.isDark)
         })
       }
@@ -41,6 +47,7 @@
     margin: 16px auto;
     padding: 16px;
     max-width: 500px;
+    background-color: white;
   }
 
   .container-box.empty {
@@ -120,6 +127,20 @@
     ::-webkit-scrollbar {
       width: 3px;
     }
+    input[type="text"]::-webkit-input-placeholder {
+      color: #52566e !important;
+      opacity: 1;
+    }
+    :-ms-input-placeholder {
+      color: #52566e;
+    }
+    ::-moz-placeholder {
+      color: #52566e;
+    }
+    :-moz-placeholder {
+      color: #52566e;
+    }
+
   }
 
 </style>

@@ -3,12 +3,12 @@
     <div v-if="hasAccessToApp()">
       <navigation :class="{ 'dark-mode': isDarkTheme === true }"></navigation>
       <section class="main-content columns is-mobile">
-        <side-navigation :class="{ 'dark-mode': isDarkTheme }"></side-navigation>
-        <div class="column content is-desktop" v-if="streams && streams.length > 0" :class="{ 'dark-mode': isDarkTheme }">
+        <side-navigation :class="{ 'dark-mode': isDarkTheme === true }"></side-navigation>
+        <div class="column content is-desktop" v-if="streams && streams.length > 0" :class="{ 'dark-mode': isDarkTheme === true  }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
         </div>
-        <div class="column content is-desktop" v-else @drop.prevent="handleDrop" @dragover.prevent :class="{ 'dark-mode': isDarkTheme }">
+        <div class="column content is-desktop" v-else @drop.prevent="handleDrop" @dragover.prevent :class="{ 'dark-mode': isDarkTheme === true }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
         </div>
@@ -127,6 +127,8 @@
     },
     created () {
       console.log('view loaded')
+      let html = document.getElementsByTagName('html')[0]
+      html.style.overflowY = 'auto'
     }
   }
 </script>
@@ -226,6 +228,7 @@
     bottom: 0;
     left: 250px;
     right: 0;
+    background-color: white;
   }
 
   ::-webkit-scrollbar {
@@ -464,15 +467,6 @@
       border-color: #3b3e53;
       color: #fff;
       background: #3b3e53;
-    }
-    ::-webkit-scrollbar-thumb {
-      background-color: #45485d;
-    }
-    ::-webkit-scrollbar-track {
-      background-color: #52566e;
-    }
-    ::-webkit-scrollbar {
-      width: 3px;
     }
   }
 
