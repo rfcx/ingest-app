@@ -20,13 +20,15 @@
                 <span class="file-name">{{folderPath}}</span>
             </label>
         </div>
-        <div class="field" v-if="!isMultipleUpload">
-            <label for="name" class="label">Stream name</label>
-            <div class="control">
-                <input v-model="name" class="input" type="text" placeholder="Jaguar 1">
-            </div>
+        <div class="field field-stream-name" v-if="!isMultipleUpload">
+          <a class="button-link-form" v-if="isAddingToExistingStream" @click="addToExistingStream()">+ Add to existing stream</a>
+          <a class="button-link-form" v-if="!isAddingToExistingStream" @click="addToNewStream()">+ Add to new stream</a>
+          <label for="name" class="label">Stream name</label>
+          <div class="control">
+              <input v-model="name" class="input" type="text" placeholder="Jaguar 1">
+          </div>
         </div>
-        <div class="field">
+        <div class="field" v-if="isAddingToExistingStream">
           <label class="label">Site</label>
           <div class="control" v-click-outside="outside">
             <div class="dropdown-wrapper" :class="{ 'opened': isShow }">
@@ -43,7 +45,7 @@
             </div>
           </div>
         </div>
-        <div class="field">
+        <div class="field" v-if="isAddingToExistingStream">
             <label for="timestampFormat" class="label">Filename format</label>
             <div class="control">
                 <div class="select is-fullwidth">
@@ -54,7 +56,7 @@
             </div>
           <p class="help" v-if="!isCustomTimestampFormatSelected(timestampFormat)">{{ timestampPreview }} </p>
         </div>
-        <div class="field" v-if="isCustomTimestampFormatSelected(timestampFormat)">
+        <div class="field" v-if="isCustomTimestampFormatSelected(timestampFormat) && isAddingToExistingStream">
             <label for="customTimestampFormat" class="label">Custom filename format</label>
             <div class="control">
                 <input v-model="customTimestampFormat" class="input" type="text" placeholder="%Y%M%D-%H%m%s">
@@ -107,6 +109,7 @@ export default {
       isDarkMode: false,
       currentSite: null,
       idToken: null,
+      isAddingToExistingStream: true,
       newStreamsPaths: [],
       customTimestampFormatOptions: [
         { title: 'Year 4 digits (%Y)', format: '%Y', isSelected: false, isDisabled: false },
@@ -328,6 +331,12 @@ export default {
       if (selectedSite && selectedSite.length === 1) {
         this.currentSite = selectedSite[0]
       }
+    },
+    addToExistingStream () {
+      this.isAddingToExistingStream = false
+    },
+    addToNewStream () {
+      this.isAddingToExistingStream = true
     }
   },
   computed: {
@@ -537,6 +546,34 @@ export default {
     color: transparent !important;
     pointer-events: none;
     opacity: 0.3 !important;
+  }
+
+  .field-stream-name {
+    position: relative;
+  }
+
+  .button-link-form {
+    background-color: transparent;
+    border-color: transparent;
+    border: none;
+    text-decoration: none;
+    outline-color: transparent;
+    position: absolute;
+    right: 0;
+    top: 4px;
+    z-index: 100;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.5;
+    cursor: pointer;
+  }
+
+  .button-link-form:hover {
+    background-color: transparent;
+    border-color: transparent;
+    border: none;
+    outline-color: transparent;
+    text-decoration: none;
   }
 
 </style>
