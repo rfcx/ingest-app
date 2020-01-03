@@ -424,6 +424,17 @@
     .dropdown-item {
       color: white;
     }
+    .dropdown-item:hover {
+      background-color: #45485d !important;
+      color: white;
+    }
+    .modal-card-body,
+    .modal-card-foot {
+      background-color: #292a3b !important;
+    }
+    .modal-card-title {
+      color: white !important;
+    }
     .table {
       background-color: #131525;
       color: white;

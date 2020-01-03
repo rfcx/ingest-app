@@ -37,6 +37,12 @@
     created () {
       console.log('addNewStreamForm created')
       this.isDark = settings.get('settings.darkMode')
+      let html = document.getElementsByTagName('html')[0]
+      if (html && this.isDark) {
+        html.style.backgroundColor = '#131525'
+      } else {
+        html.style.backgroundColor = '#fff'
+      }
     }
   }
 </script>
