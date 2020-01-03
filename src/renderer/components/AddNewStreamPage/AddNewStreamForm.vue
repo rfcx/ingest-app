@@ -1,5 +1,5 @@
 <template>
-    <fieldset class="fieldset-wrap" :class="{ 'spinner': isLoading && isMultipleUpload, 'disabled': isLoading && isMultipleUpload, 'dark-mode': this.isDarkMode }">
+    <fieldset class="fieldset-wrap" :class="{ 'spinner': isLoading && isMultipleUpload, 'disabled': isLoading && isMultipleUpload }">
         <div class="notification" v-show="error">
           <button class="delete" @click="onCloseAlert()"></button>
           {{ error }}
@@ -536,19 +536,6 @@ export default {
     color: transparent !important;
     pointer-events: none;
     opacity: 0.3 !important;
-  }
-
-  .dark-mode {
-    .cancel {
-      background-color: #45485d;
-      border-color: #45485d;
-      color: #fff;
-    }
-    .cancel:hover {
-      border-color: #3b3e53;
-      color: #fff;
-      background-color: #3b3e53;
-    }
   }
 
 </style>

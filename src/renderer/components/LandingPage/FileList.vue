@@ -1,5 +1,5 @@
 <template>
-  <div :class="{ 'spinner': files && files.length && isFilesReading, 'dark-mode': this.isDarkMode }">
+  <div :class="{ 'spinner': files && files.length && isFilesReading }">
     <div class="stream-info-container">
       <div class="title-container">
         <div class="title-container-text" v-if="selectedStream && !isRenaming">
@@ -9,7 +9,7 @@
         <div class="edit-container" v-if="isRenaming">
           <input class="input edit-container-item-input" v-model="newStreamName" type="text" placeholder="">
           <div class="edit-container-item-control">
-            <button class="button is-rounded btn" @click="cancel()">Cancel</button>
+            <button class="button is-rounded btn btn-edit-cancel" @click="cancel()">Cancel</button>
             <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!isNewStreamNameValid && (newStreamName && newStreamName.length > 0)" @click="saveStream()">Save</button>
           </div>
         </div>
@@ -104,8 +104,7 @@
         shouldShowConfirmToDeleteModal: false,
         isRenaming: false,
         isLoading: false,
-        newStreamName: '',
-        isDarkMode: false
+        newStreamName: ''
       }
     },
     computed: {
@@ -324,9 +323,6 @@
           if (progress !== undefined) progress.updateProgress(file.progress)
         })
       }
-    },
-    created () {
-      this.isDarkMode = settings.get('settings.darkMode')
     }
   }
 </script>
@@ -505,24 +501,6 @@
 
   .file-disable {
     opacity: 0.5;
-  }
-
-  .dark-mode {
-    .edit-container-item-input {
-      color: #fff !important;
-      background-color: #292a3b !important;
-      border-color: #292a3b !important;
-    }
-    .btn {
-      background: #45485d;
-      border-color: #45485d;
-      color: #fff;
-    }
-    .btn:hover {
-      border-color: #3b3e53;
-      color: #fff;
-      background: #3b3e53;
-    }
   }
 
 </style>

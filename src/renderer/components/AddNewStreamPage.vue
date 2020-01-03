@@ -101,6 +101,25 @@
       background-color: #131525 !important;
       color: #131525 !important;
     }
+    .cancel {
+      background-color: #45485d;
+      border-color: #45485d;
+      color: #fff;
+    }
+    .cancel:hover {
+      border-color: #3b3e53;
+      color: #fff;
+      background-color: #3b3e53;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #45485d;
+    }
+    ::-webkit-scrollbar-track {
+      background-color: #52566e;
+    }
+    ::-webkit-scrollbar {
+      width: 3px;
+    }
   }
 
 </style>

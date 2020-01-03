@@ -302,7 +302,7 @@
 
   .progress {
     margin: 0.5rem auto !important;
-    height: 0.5rem !important;
+    height: 6px !important;
   }
 
   .state-progress span {
@@ -422,6 +422,10 @@
     }
     table td {
       border-color: #292a3b;
+      border-width: 0 0 2px !important;
+    }
+    .content table td, .content table th {
+      border: 1px solid #45485d;
     }
     table tr:hover {
       background-color: #292a3b !important;
@@ -440,6 +444,21 @@
       border: 4px solid #131525 !important;
       background-color: #131525 !important;
       opacity: 0.8 !important;
+    }
+    .edit-container-item-input {
+      color: #fff !important;
+      background-color: #292a3b !important;
+      border-color: #292a3b !important;
+    }
+    .btn-edit-cancel {
+      background: #45485d;
+      border-color: #45485d;
+      color: #fff;
+    }
+    .btn-edit-cancel:hover {
+      border-color: #3b3e53;
+      color: #fff;
+      background: #3b3e53;
     }
   }
 
