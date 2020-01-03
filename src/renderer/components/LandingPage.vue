@@ -306,6 +306,8 @@
 
   .menu .stream-title {
     color: $title-text-color;
+    text-overflow: ellipsis;
+    overflow: hidden;
   }
 
   .progress {
@@ -481,6 +483,9 @@
     }
     .empty {
       background-color: #131525 !important;
+    }
+    .state-progress span {
+      color: $body-text-color-dark;
     }
     ::-webkit-scrollbar-thumb {
       background-color: #45485d;

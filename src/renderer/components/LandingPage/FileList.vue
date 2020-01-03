@@ -3,7 +3,7 @@
     <div class="stream-info-container">
       <div class="title-container">
         <div class="title-container-text" v-if="selectedStream && !isRenaming">
-        <span>{{ selectedStream.name }} (_{{ selectedStream.id.substring(0, 4) }})</span>
+        <span class="stream-name">{{ selectedStream.name }} (_{{ selectedStream.id.substring(0, 4) }})</span>
         <span v-if="!isSelectedStreamFailed" class="title-container-edit" title="Rename the stream"><font-awesome-icon :icon="iconPencil" @click="renameStream()"></font-awesome-icon></span>
         </div>
         <div class="edit-container" v-if="isRenaming">
@@ -351,6 +351,16 @@
     color: $body-text-color;
   }
 
+  .dark-mode {
+    thead td, thead th {
+      color: $body-text-color-dark !important;
+    }
+
+    td.is-error {
+      color: $body-text-color-dark;
+    }
+  }
+
   .stream-info-container {
     padding-left: $default-padding-margin;
     padding-right: $default-padding-margin;
@@ -377,6 +387,10 @@
     width: 1em;
     height: 1em;
     padding-right: 0.25em;
+  }
+
+  .stream-info-container .dropdown.is-right .dropdown-menu {
+    top: 25px;
   }
 
   .modal-card {
@@ -461,6 +475,13 @@
 
   .title-container-text {
     margin-bottom: 6px !important;
+    max-width: 80%;
+  }
+
+  .title-container-text .stream-name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .btn-open {

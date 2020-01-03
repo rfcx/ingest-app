@@ -1,8 +1,10 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@import url('https://fonts.googleapis.com/css?family=Lato:300,400,700');
 
 $brand-primary: #2FB04A;
+$brand-primary-dark: #31984f;
 $title-text-color: black;
 $body-text-color: #6D6F72;
+$body-text-color-dark: #a1a1a7;
 $title-font-weight: 600;
 $navbar-height: 7rem;
 $default-padding-margin: 0.75em;
@@ -10,7 +12,7 @@ $default-font-size: 1rem;
 
 // Update Bulma's global variables
 $primary: $brand-primary;
-$family-sans-serif: "Open Sans", sans-serif;
+$family-sans-serif: 'Lato', sans-serif;
 $link: $brand-primary;
 
 @import "~bulma/";
