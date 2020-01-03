@@ -468,6 +468,18 @@
       color: #fff;
       background: #3b3e53;
     }
+    .empty {
+      background-color: #131525 !important;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: #45485d;
+    }
+    ::-webkit-scrollbar-track {
+      background-color: #52566e;
+    }
+    ::-webkit-scrollbar {
+      width: 3px;
+    }
   }
 
 </style>
