@@ -479,7 +479,6 @@
   }
 
   .title-container-text .stream-name {
-    display: block;
     overflow: hidden;
     text-overflow: ellipsis;
   }

@@ -13,7 +13,7 @@ function createAuthWindow () {
   let isDarkMode = settings.get('settings.darkMode')
   win = new BrowserWindow({
     width: 1000,
-    height: 600,
+    height: 650,
     webPreferences: {
       nodeIntegration: false
     }
