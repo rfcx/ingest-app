@@ -70,6 +70,10 @@
     background-color: #fff;
   }
 
+  .button-link-form {
+    color: black;
+  }
+
   .dark-page {
     background-color: #131525 !important;
     color: #fff !important;
@@ -123,6 +127,9 @@
       border-color: #3b3e53;
       color: #fff;
       background-color: #3b3e53;
+    }
+    .button-link-form {
+      color: white;
     }
     ::-webkit-scrollbar-thumb {
       background-color: #45485d;

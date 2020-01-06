@@ -115,6 +115,13 @@ const getUserSites = (env, idToken) => {
     })
 }
 
+const getExistingStreams = (env, idToken) => {
+  return axios.get(apiUrl(env) + `/streams`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+    .then(function (response) {
+      return response.data
+    })
+}
+
 export default {
   createStream,
   uploadFile,
@@ -122,5 +129,6 @@ export default {
   renameStream,
   touchApi,
   sendInviteCode,
-  getUserSites
+  getUserSites,
+  getExistingStreams
 }

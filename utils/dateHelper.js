@@ -29,7 +29,7 @@ const parseTimestamp = (fileName, timestampFormat) => {
   result = result.groups
 
   // Fix 2 character years
-  if (result.year.length === 2) result.year = '20' + result.year
+  if (result && result.year && result.year.length === 2) result.year = '20' + result.year
   return `${result.year}-${result.month}-${result.day}T${result.hour}:${result.minute}:${result.second}Z`
 }
 
