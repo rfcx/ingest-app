@@ -240,51 +240,8 @@ function createTray (platform) {
   var trayIcon = nativeImage.createFromPath(iconPath)
   trayIcon = trayIcon.resize({ width: 12, height: 17 })
   tray = new Tray(trayIcon)
-  // const trayMenu = Menu.buildFromTemplate([
-  //   {
-  //     label: 'Show App',
-  //     click: function () {
-  //       if (mainWindow === null) {
-  //         createWindow()
-  //       } else {
-  //         mainWindow.show()
-  //       }
-  //     }
-  //   },
-  //   {
-  //     label: 'Quit',
-  //     click: function () {
-  //       app.isQuiting = true
-  //       app.quit()
-  //     }
-  //   }
-  // ])
-  // tray.setContextMenu(trayMenu)
   trayContainer.setOptions({tray: tray, window: trayWindow})
-  // tray.on('click', function (event) {
-  //   trayWindow.isVisible() ? trayWindow.hide() : showTrayWindow(platform)
-  // })
 }
-
-// const showTrayWindow = (platform) => {
-//   const position = getWindowPosition(platform)
-//   trayWindow.setPosition(position.x, position.y, false)
-//   trayWindow.show()
-// }
-
-// const getWindowPosition = (platform) => {
-//   const windowBounds = trayWindow.getBounds()
-//   const trayBounds = tray.getBounds()
-
-//   let x, y
-//   if (platform === 'darwin') {
-//     // Center window horizontally below the tray icon
-//     x = Math.round(trayBounds.x + (trayBounds.width / 2) - (windowBounds.width / 2))
-//     // Position window 4 pixels vertically below the tray icon
-//     y = Math.round(trayBounds.y + trayBounds.height + 4)
-//   }
-//   return {x: x, y: y}
-// }
 
 function showMainWindow () {
   console.log('showMainWindow')

@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, Menu, app } from 'electron'
 import authService from './auth-service'
 import index from '../index'
 import settings from 'electron-settings'
@@ -7,10 +7,12 @@ const filter = {
   urls: ['file:///callback*']
 }
 let win = null
+let menu
 
 function createAuthWindow () {
   console.log('createAuthWindow')
   let isDarkMode = settings.get('settings.darkMode')
+  createMenu()
   win = new BrowserWindow({
     width: 600,
     height: 650,
@@ -58,6 +60,72 @@ function destroyAuthWin () {
     if (!win) return resolve()
     win.close()
     resolve()
+  })
+}
+
+function createMenu () {
+  /* MENU */
+  const template = [
+    {
+      label: 'File',
+      submenu: [
+        { label: 'Dark mode',
+          type: 'checkbox',
+          checked: settings.get('settings.darkMode'),
+          click: async () => {
+            settings.set('settings.darkMode', !settings.get('settings.darkMode'))
+            let darkMode = settings.get('settings.darkMode')
+            console.log('dark mode', darkMode)
+            switchDarkMode(darkMode)
+          }
+        },
+        { label: 'Auto start',
+          type: 'checkbox',
+          checked: settings.get('settings.auto_start'),
+          click: async (item) => {
+            const existingSettings = settings.get('settings')
+            existingSettings['auto_start'] = item.checked
+            settings.set('settings', existingSettings)
+            setLoginItem(item.checked)
+          }
+        },
+        { label: 'Quit',
+          click: async () => {
+            await destroyAuthWin()
+            app.exit()
+            app.quit()
+          }
+        }
+      ]
+    }
+  ]
+  menu = Menu.buildFromTemplate(template)
+  Menu.setApplicationMenu(menu)
+}
+
+function switchDarkMode (darkMode) {
+  let code = `title = document.getElementsByTagName('h3')[0]
+  if (title && ${darkMode}) { title.style.color = "#fff" }
+  else { title.style.color = "#000" }
+  titleSignUp = document.getElementsByTagName('h3')[1]
+  if (titleSignUp && ${darkMode}) { titleSignUp.style.color = "#fff" }
+  else { titleSignUp.style.color = "#000" }
+  html = document.getElementsByTagName('html')[0]
+  if (html && ${darkMode}) { html.style.backgroundColor = '#131525' }
+  else { html.style.backgroundColor = '#fff' }
+  body = document.getElementsByTagName('body')[0]
+  if (body && ${darkMode}) { body.style.backgroundColor = '#131525' }
+  else { body.style.backgroundColor = '#fff' }`
+  win.webContents.executeJavaScript(code)
+}
+
+function setLoginItem (openAtLogin) {
+  console.log('setLoginItem', openAtLogin)
+  const args = openAtLogin ? ['--process-start-args', `"--hidden"`] : []
+  app.setLoginItemSettings({
+    openAtLogin: openAtLogin,
+    openAsHidden: openAtLogin,
+    args: args
   })
 }
 
