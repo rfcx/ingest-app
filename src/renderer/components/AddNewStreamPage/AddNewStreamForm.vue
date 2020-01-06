@@ -36,7 +36,7 @@
           <div class="control" v-click-outside="outside">
             <div class="dropdown-wrapper" :class="{ 'opened': isShow }">
               <button class="dropdown-toggle" type="button" v-on:click="toggleDropdown">
-                <span class="dropdown-input">{{ existingStreams && existingStreams.length? (currentStream? currentStream.label : 'Select stream') : 'No existing streams'}}</span>
+                <span class="dropdown-input">{{ existingStreams && existingStreams.length? (currentStream? currentStream.label : 'Select stream') : (isLoadingStreams ? 'Loading streams' : 'No existing streams') }}</span>
                 <span class="dropdown-icon" v-show="!isShow && !isLoadingStreams"><font-awesome-icon :icon="iconDown"></font-awesome-icon></span>
                 <span class="dropdown-icon" v-show="isShow && !isLoadingStreams"><font-awesome-icon :icon="iconUp"></font-awesome-icon></span>
                 <span :class="{ 'small-spinner': isLoadingStreams }"></span>
@@ -66,7 +66,7 @@
             </div>
           </div>
         </div>
-        <div class="field" v-if="isAddingToExistingStream">
+        <div class="field">
             <label for="timestampFormat" class="label">Filename format</label>
             <div class="control">
                 <div class="select is-fullwidth">
@@ -370,18 +370,24 @@ export default {
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         api.getExistingStreams(this.isProductionEnv(), arg).then(items => {
-          let uniqArr = items.filter(function (item, pos, self) {
-            return self.findIndex(v => v.guid === item.guid) === pos
-          })
-          this.streams.forEach((stream, index, arr) => {
-            uniqArr.forEach((el) => {
-              if (el.guid === stream.guid) {
-                arr.splice(index, 1)
-              }
+          // Remove repeating streams
+          items = items.filter((item, index) => {
+            let duplicate = items.find((it, ind) => {
+              return index !== ind && it.guid === item.guid
             })
+            if (duplicate) {
+              return false
+            }
+            let existing = this.streams.find((stream) => {
+              return stream.id === item.guid
+            })
+            if (existing) {
+              return false
+            }
+            return true
           })
-          this.allStreams = uniqArr
-          this.existingStreams = uniqArr.map((item) => {
+          this.allStreams = items
+          this.existingStreams = items.map((item) => {
             let obj = {
               label: item.name,
               value: item.guid,
@@ -405,6 +411,11 @@ export default {
       this.isShow = false
     },
     addToStream () {
+      if (this.checkIfDuplicateStream(this.folderPath)) {
+        console.log('duplicate name')
+        this.error = 'You have already linked to this folder. Please select a different folder.'
+        return false
+      }
       if (!this.checkIfDirectoryIsExist(this.folderPath)) {
         this.error = 'The directory is not exist.'
         return false
@@ -412,19 +423,18 @@ export default {
       // Restore the stream in the local database
       this.allStreams.forEach((stream) => {
         if (stream.guid === this.currentStream.value) {
-          console.log('SAVING', stream)
           let restoringStream = {
-            id: stream.id,
+            id: stream.guid,
             name: stream.name,
             folderPath: this.folderPath,
-            // timestampFormat: stream.selectedTimestampFormat,
+            timestampFormat: this.selectedTimestampFormat,
             siteGuid: stream.site.guid,
             env: this.isProductionEnv() ? 'production' : 'staging'
           }
           console.log('restoring stream', JSON.stringify(restoringStream))
-          // Stream.insert({ data: restoringStream, insert: ['files'] })
-          // this.$store.dispatch('setSelectedStreamId', restoringStream.id)
-          // this.$router.push('/')
+          Stream.insert({ data: restoringStream, insert: ['files'] })
+          this.$store.dispatch('setSelectedStreamId', restoringStream.id)
+          this.$router.push('/')
         }
       })
     }
