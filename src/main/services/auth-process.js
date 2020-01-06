@@ -12,7 +12,7 @@ function createAuthWindow () {
   console.log('createAuthWindow')
   let isDarkMode = settings.get('settings.darkMode')
   win = new BrowserWindow({
-    width: 1000,
+    width: 600,
     height: 650,
     webPreferences: {
       nodeIntegration: false
@@ -33,9 +33,18 @@ function createAuthWindow () {
   win.webContents.on('did-finish-load', () => {
     let code = `if (document.getElementById('btn-login-passwordless'))
                 { document.getElementById('btn-login-passwordless').style.display = 'none' }
+                let title = document.getElementsByTagName('h3')[0]
+                if (title) { title.textContent= 'Rainforest Connection' }
+                if (title && ${isDarkMode}) { title.style.color = "#fff" }
+                let titleSignUp = document.getElementsByTagName('h3')[1]
+                if (titleSignUp) { titleSignUp.textContent= 'Rainforest Connection' }
+                if (titleSignUp && ${isDarkMode}) { titleSignUp.style.color = "#fff" }
+                let html = document.getElementsByTagName('html')[0]
+                if (html && ${isDarkMode})
+                { html.style.backgroundColor = '#131525' }
                 let body = document.getElementsByTagName('body')[0]
                 if (body && ${isDarkMode})
-                { body.style.backgroundColor = '#131525';  body.style.color = '#fff' }`
+                { body.style.backgroundColor = '#131525' }`
     win.webContents.executeJavaScript(code)
   })
   win.on('closed', () => {
