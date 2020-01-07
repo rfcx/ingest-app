@@ -7,14 +7,14 @@ const filter = {
   urls: ['file:///callback*']
 }
 let win = null
-let menu
+let menu, currentUrl
 
 function createAuthWindow () {
   console.log('createAuthWindow')
   let isDarkMode = settings.get('settings.darkMode')
   createMenu()
   win = new BrowserWindow({
-    width: 600,
+    width: 615,
     height: 650,
     webPreferences: {
       nodeIntegration: false
@@ -24,6 +24,7 @@ function createAuthWindow () {
     session: { webRequest }
   } = win.webContents
   win.loadURL(authService.getAuthenticationURL(), { userAgent: 'Chrome' })
+  currentUrl = authService.getAuthenticationURL()
   webRequest.onBeforeRequest(filter, async ({ url }) => {
     console.log('authWindow onBeforeRequest')
     await authService.loadTokens(url)
@@ -48,6 +49,16 @@ function createAuthWindow () {
                 if (body && ${isDarkMode})
                 { body.style.backgroundColor = '#131525' }`
     win.webContents.executeJavaScript(code)
+  })
+  win.webContents.on('did-redirect-navigation', (event, url) => {
+    if (currentUrl !== url) {
+      if (url.includes('https://rfcx.eu.auth0.com/login')) {
+        menu.items[0].submenu.items[2].enabled = false
+        return
+      }
+      menu.items[0].submenu.items[2].enabled = true
+      createBackButton()
+    }
   })
   win.on('closed', () => {
     win = null
@@ -89,6 +100,14 @@ function createMenu () {
             setLoginItem(item.checked)
           }
         },
+        { label: 'Back to Login page',
+          type: 'checkbox',
+          click: function () {
+            win.loadURL(authService.getAuthenticationURL(), { userAgent: 'Chrome' })
+            menu.items[0].submenu.items[2].enabled = false
+            menu.items[0].submenu.items[2].checked = false
+          }
+        },
         { label: 'Quit',
           click: async () => {
             await destroyAuthWin()
@@ -100,6 +119,7 @@ function createMenu () {
     }
   ]
   menu = Menu.buildFromTemplate(template)
+  menu.items[0].submenu.items[2].enabled = false
   Menu.setApplicationMenu(menu)
 }
 
@@ -116,6 +136,28 @@ function switchDarkMode (darkMode) {
   body = document.getElementsByTagName('body')[0]
   if (body && ${darkMode}) { body.style.backgroundColor = '#131525' }
   else { body.style.backgroundColor = '#fff' }`
+  win.webContents.executeJavaScript(code)
+}
+
+function getUrl () {
+  return authService.getAuthenticationURL()
+}
+
+function createBackButton () {
+  let code = `body = document.getElementsByTagName('body')[0]
+  if (body) {
+  body.style.position = 'relative'
+  body.style.overflowX = 'hidden'
+  let btn = document.createElement('button')
+  body.appendChild(btn)
+  btn.innerHTML = 'Back'
+  btn.style.position = 'absolute'; btn.style.top = '20%'; btn.style.left = '10px'
+  btn.style.fontSize = '16px'; btn.style.padding = '3px 10px'; btn.style.borderRadius = '3px';
+  btn.style.cursor = 'pointer'; btn.style.zIndex = '1000'
+  btn.onclick = function() {
+  body.removeChild(btn)
+  location.href = "${getUrl()}" }
+  }`
   win.webContents.executeJavaScript(code)
 }
 
