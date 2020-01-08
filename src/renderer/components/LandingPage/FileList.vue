@@ -1,5 +1,5 @@
 <template>
-  <div :class="{ 'spinner': files && files.length && isFilesReading }">
+  <div class="file-list" :class="{ 'spinner': files && files.length && isFilesReading }">
     <div class="stream-info-container">
       <div class="title-container">
         <div class="title-container-text" v-if="selectedStream && !isRenaming">
@@ -42,7 +42,7 @@
           <td></td>
           <td>Name</td>
           <td>Timestamp</td>
-          <td>File size</td>
+          <td class="file-size-head">File size</td>
         </tr>
       </thead>
       <tbody>
@@ -337,6 +337,15 @@
 </script>
 
 <style lang="scss">
+
+  .file-list {
+    height: 85% !important;
+    overflow-y: scroll;
+  }
+
+  .file-size-head {
+    min-width: 95px;
+  }
 
   thead {
     text-transform: uppercase;
