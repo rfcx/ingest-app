@@ -21,6 +21,7 @@
   "build": {
     "productName": "RFCx Ingest",
     "appId": "org.rfcx.ingest",
+    "afterSign": "./after-sign-hook.js",
     "directories": {
       "output": "build"
     },
@@ -28,6 +29,7 @@
       "dist/electron/**/*"
     ],
     "dmg": {
+      "sign": false,
       "contents": [
         {
           "x": 410,
@@ -45,7 +47,13 @@
     "mac": {
       "icon": "build/icons/ingest-mac.png",
       "provisioningProfile": "Ingest.provisionprofile",
-      "darkModeSupport": true
+      "darkModeSupport": true,
+      "hardenedRuntime" : true,
+      "gatekeeperAssess": false,
+      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
+      "entitlements": "build/entitlements.mac.inherit.plist",
+      "target": ["dmg", "zip"],
+      "type": "distribution"
     },
     "win": {
       "icon": "build/icons/ingest-win.png"
@@ -102,6 +110,7 @@
     "electron-builder": "^21.2.0",
     "electron-debug": "^3.0.0",
     "electron-devtools-installer": "^2.2.4",
+    "electron-notarize": "0.2.1",
     "eslint": "^4.19.1",
     "eslint-config-standard": "^11.0.0",
     "eslint-friendly-formatter": "^4.0.1",
