@@ -266,7 +266,7 @@ function initialSettings () {
   if (settings.get('settings') === undefined) {
     settings.set('settings', {
       auto_start: false,
-      production_env: false,
+      production_env: true,
       platform: 'amazon',
       darkMode: true
     })
