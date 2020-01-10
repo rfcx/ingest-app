@@ -8,7 +8,6 @@ module.exports = async function (params) {
     if (process.platform !== 'darwin') {
         return
     }
-    console.log('afterSign hook triggered', params)
     // Same appId in electron-builder.
     let appId = 'org.rfcx.ingest'
     let ascProvider = 'TWEGNU8HTW'
@@ -16,8 +15,7 @@ module.exports = async function (params) {
     if (!fs.existsSync(appPath)) {
         throw new Error(`Cannot find application at: ${appPath}`)
     }
-    console.log(`Notarizing ${appId} found at ${appPath}`)
-    console.log(appId, appPath, process.env.appleId, process.env.appleIdPassword, ascProvider)
+    // console.log(`Notarizing ${appId} found at ${appPath}`)
     try {
         await electron_notarize.notarize({
             appBundleId: appId,
@@ -29,5 +27,5 @@ module.exports = async function (params) {
     } catch (error) {
         console.error('Error notarizing', error)
     }
-    console.log(`Notarizing ${appId} is finished`)
+    console.log(`Notarizing is finished`)
 }

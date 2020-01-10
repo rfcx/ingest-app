@@ -49,11 +49,9 @@
       "provisioningProfile": "Ingest.provisionprofile",
       "darkModeSupport": true,
       "hardenedRuntime" : true,
-      "gatekeeperAssess": false,
       "entitlementsInherit": "build/entitlements.mac.inherit.plist",
       "entitlements": "build/entitlements.mac.inherit.plist",
-      "target": ["dmg", "zip"],
-      "type": "distribution"
+      "target": ["dmg", "zip"]
     },
     "win": {
       "icon": "build/icons/ingest-win.png"
