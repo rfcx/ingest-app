@@ -9,6 +9,7 @@ import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
 import userService from './services/user-service'
+import openLandingPage from './services/analytics-service'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
@@ -431,6 +432,7 @@ app.on('ready', () => {
   console.log('open as hidden', openedAsHidden)
   initialSettings()
   createAppWindow(openedAsHidden)
+  openLandingPage()
 })
 
 app.on('window-all-closed', () => {
