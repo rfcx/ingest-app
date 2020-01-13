@@ -1,3 +1,4 @@
+import userService from './user-service'
 const jwtDecode = require('jwt-decode')
 const request = require('request')
 const url = require('url')
@@ -117,7 +118,12 @@ async function parseTokens (responseBody) {
   if (profile && profile.picture) {
     global.picture = profile.picture
   }
+  await setAllUserSitesInfo(responseBody.id_token)
   console.log('parse tokens finished')
+}
+
+async function setAllUserSitesInfo (idToken) {
+  global.allSites = await userService.getUserSites(idToken)
 }
 
 async function logout () {
