@@ -77,7 +77,6 @@
           return
         }
         settings.set('settings.production_env', !this.isProductionEnv())
-        // settings.set('settings.production_env', true)
         this.productionEnv = this.isProductionEnv()
       },
       isProductionEnv () {

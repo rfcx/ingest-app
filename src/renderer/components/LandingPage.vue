@@ -165,6 +165,7 @@
 
   .navbar-item.tag {
     margin: auto 0 !important;
+    // display: none !important;
   }
 
   .user-info-nav {
