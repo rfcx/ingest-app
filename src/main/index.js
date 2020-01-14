@@ -9,7 +9,6 @@ import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
 import userService from './services/user-service'
-// import analyticsService from './services/analytics-service'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
@@ -357,6 +356,9 @@ async function getUserInfo () {
     if (profile && profile.picture) {
       global.picture = profile.picture
     }
+    if (profile && profile.guid) {
+      global.userId = profile.guid
+    }
     await setAllUserSitesInfo()
     resolve()
   })
@@ -408,10 +410,7 @@ async function createRefreshInterval () {
     checkToken()
   }, dayInMs)
 }
-// function getAnalytics () {
-// analyticsService.openLandingPage()
-// analyticsService.sendVersionOfApp()
-// }
+
 function resetTimers () {
   clearInterval(refreshIntervalTimeout)
 }
@@ -435,7 +434,7 @@ app.on('ready', () => {
   console.log('open as hidden', openedAsHidden)
   initialSettings()
   createAppWindow(openedAsHidden)
-  // getAnalytics()
+  global.version = `${process.env.npm_package_version}`
 })
 
 app.on('window-all-closed', () => {
