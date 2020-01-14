@@ -34,6 +34,7 @@
   import settings from 'electron-settings'
   import Stream from '../store/models/Stream'
   import fileHelper from '../../../utils/fileHelper'
+  import Analytics from 'electron-ga'
   const { remote } = window.require('electron')
 
   export default {
@@ -101,6 +102,14 @@
           this.$electron.ipcRenderer.send('removeTray')
           this.$store.dispatch('setUploadingProcess', false)
         }
+      },
+      async sendVersionOfApp () {
+        let version = remote.getGlobal('version')
+        let guid = remote.getGlobal('userId')
+        const analytics = new Analytics('UA-38186431-15', { appName: 'RFCx Ingest', appVersion: `${version}`, clientId: `${guid}` })
+        await analytics.send('screenview', { cd: `${guid}` })
+        await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}` })
+        console.log('analytics', analytics)
       }
     },
     computed: {
@@ -129,6 +138,7 @@
       console.log('view loaded')
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
+      this.sendVersionOfApp()
     }
   }
 </script>

@@ -118,6 +118,9 @@ async function parseTokens (responseBody) {
   if (profile && profile.picture) {
     global.picture = profile.picture
   }
+  if (profile && profile.guid) {
+    global.userId = profile.guid
+  }
   await setAllUserSitesInfo(responseBody.id_token)
   console.log('parse tokens finished')
 }

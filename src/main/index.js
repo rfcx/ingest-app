@@ -356,6 +356,9 @@ async function getUserInfo () {
     if (profile && profile.picture) {
       global.picture = profile.picture
     }
+    if (profile && profile.guid) {
+      global.userId = profile.guid
+    }
     await setAllUserSitesInfo()
     resolve()
   })
@@ -431,6 +434,7 @@ app.on('ready', () => {
   console.log('open as hidden', openedAsHidden)
   initialSettings()
   createAppWindow(openedAsHidden)
+  global.version = `${process.env.npm_package_version}`
 })
 
 app.on('window-all-closed', () => {
