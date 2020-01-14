@@ -139,6 +139,7 @@
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
+      settings.set('settings.production_env', true)
     }
   }
 </script>
@@ -165,7 +166,7 @@
 
   .navbar-item.tag {
     margin: auto 0 !important;
-    // display: none !important;
+    display: none !important;
   }
 
   .user-info-nav {
