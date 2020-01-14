@@ -106,7 +106,7 @@
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
         let guid = remote.getGlobal('userId')
-        const analytics = new Analytics('UA-156018231-1', { appName: 'RFCx Ingest', appVersion: `${version}`, clientId: `${guid}` })
+        const analytics = new Analytics('UA-38186431-15', { appName: 'RFCx Ingest', appVersion: `${version}`, clientId: `${guid}` })
         await analytics.send('screenview', { cd: `${guid}` })
         await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}` })
         console.log('analytics', analytics)
