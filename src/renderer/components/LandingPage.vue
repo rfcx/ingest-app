@@ -107,8 +107,8 @@
         let version = remote.getGlobal('version')
         let guid = remote.getGlobal('userId')
         const analytics = new Analytics('UA-38186431-15', { appName: 'RFCx Ingest', appVersion: `${version}`, clientId: `${guid}` })
-        await analytics.send('screenview', { cd: `${guid}` })
-        await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}` })
+        await analytics.send('screenview', { cd: `${guid}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
+        await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
         console.log('analytics', analytics)
       }
     },
