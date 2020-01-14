@@ -16,9 +16,9 @@
             <img :src="getStateImgUrl(getState(stream))">
           </div>
           <div class="state-progress" v-if="shouldShowProgress(stream)">
-            <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream) }" :value="getProgress(stream)" max="100"></progress>
-            <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) }">
-              <span v-if="!checkWarningLoad(stream)" class="is-size-7">{{ getState(stream) }}</span>
+            <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream), 'is-success': isFilesHidden(stream) }" :value="getProgress(stream)" max="100"></progress>
+            <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) || isFilesHidden(stream) }">
+              <span v-if="!checkWarningLoad(stream) && !isFilesHidden(stream)" class="is-size-7">{{ getState(stream) }}</span>
               <span class="is-size-7"> {{ getStateStatus(stream) }} </span>
             </div>
           </div>
@@ -203,14 +203,28 @@
       checkWarningLoad (stream) {
         let countFailed = 0
         let countComplited = 0
+        let countDisabled = 0
         stream.files.forEach((file) => {
-          if (file.state === 'failed' || file.state === 'duplicated') {
+          if (file.disabled === true) {
+            countDisabled++
+          } else if (file.state === 'failed' || file.state === 'duplicated') {
             countFailed++
           } else if (file.state === 'completed') {
             countComplited++
           }
         })
-        if (countFailed !== stream.files.length && countComplited !== stream.files.length && (countFailed + countComplited) === stream.files.length) return true
+        if (countFailed !== stream.files.length && countComplited !== stream.files.length && (countFailed + countComplited + countDisabled) === stream.files.length &&
+          (countDisabled + countComplited) !== stream.files.length && (countDisabled + countFailed + countComplited) === stream.files.length) return true
+        else return false
+      },
+      isFilesHidden (stream) {
+        let count = 0
+        stream.files.forEach(file => {
+          if (file.disabled === true || file.state === 'completed') {
+            count++
+          }
+        })
+        if (count === stream.files.length) return true
         else return false
       },
       getStatePriority (stream) {
@@ -229,6 +243,7 @@
         if (state === 'completed') return 100
         else if (state === 'waiting' || state === 'failed' || state === 'duplicated') return 0
         else if (this.checkWarningLoad(stream)) return 100
+        else if (this.isFilesHidden(stream)) return 100
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         const uploadedFiles = stream.files.filter(file => { return file.state === 'ingesting' || file.state === 'completed' })
         const completedPercentage = completedFiles.length / (stream.files.length * 2) * 100
@@ -242,6 +257,15 @@
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         const errorFiles = stream.files.filter(file => { return file.state === 'failed' || file.state === 'duplicated' })
         if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
+        if (this.isFilesHidden(stream)) {
+          let count = 0
+          stream.files.forEach(file => {
+            if (file.state === 'completed') {
+              count++
+            }
+          })
+          return `${completedFiles.length}/${count} ingested`
+        }
         return `${completedFiles.length}/${stream.files.length} ingested | ${errorFiles.length} ${errorFiles.length > 1 ? 'errors' : 'error'}`
       },
       toggleUploadingProcess () {

@@ -52,8 +52,8 @@
           <td class="file-row" v-show="!isError(file.state) && !isDuplicated(file.state)">{{ getTimestamp(file) }}</td>
           <td class="file-row" v-show="!isError(file.state) && !isDuplicated(file.state)">{{ file.fileSize }}</td>
           <td class="is-error file-row" v-show="isError(file.state) || isDuplicated(file.state)">{{ file.stateMessage }}</td>
-          <td class="file-row" v-show="isError(file.state)">
-            <font-awesome-icon class="iconRedo" :icon="iconRedo" @click="repeatUploading(file.id)"></font-awesome-icon>
+          <td class="file-row file-row-icons" v-show="isError(file.state) || isDuplicated(file.state)">
+            <font-awesome-icon v-show="isError(file.state)" class="iconRedo" :icon="iconRedo" @click="repeatUploading(file.id)"></font-awesome-icon>
             <font-awesome-icon class="iconHide" :icon="iconHide" @click="toggleDisabled(file.id)"></font-awesome-icon>
           </td>
           <td class="file-row" v-show="isDuplicated(file.state)"></td>
@@ -529,6 +529,10 @@
     font-size: 13px;
     cursor: pointer;
     margin-left: 3px;
+  }
+
+  .file-row-icons {
+    text-align: center !important;
   }
 
   .faExternal {
