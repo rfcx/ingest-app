@@ -34,16 +34,26 @@ const parseTimestamp = (fileName, timestampFormat) => {
 }
 
 const parseTimestampAuto = (input) => {
-  // Test "year month day" then "day month year"
+  // Test "year month day", "day month year", "[a-zA-Z]{3}[0-9]{4} year month day", "[a-zA-Z]{6} [a-zA-Z]{3} [a-zA-Z]{3} [a-zA-Z]{3} [a-zA-Z]{2}[0-9]{2} year month day"
   const test1 = '(?<year>(19|20)[0-9][0-9])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])'
   const test2 = '(?<day>0[1-9]|[12][0-9]|3[01])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<year>(19|20)[0-9][0-9]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])'
-  const regExp1 = new RegExp(test1, 'g')
-  var result = regExp1.exec(input)
+  const test3 = '(?<string>[a-zA-Z]{3}[0-9]{4})[-._ ]?(?<year>(19|20)[0-9][0-9])[- /._]?(?<month>0[1-9]|1[012])[- /._]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])'
+  const test4 = '(?<string>[a-zA-Z]{6}[-._ ]?[a-zA-Z]{3}[-._ ]?[a-zA-Z]{3}[-._ ]?[a-zA-Z]{3}[-._ ]?[a-zA-Z]{2}[0-9]{2})[-._ ]?(?<year>(19|20)[0-9][0-9])[- /._]?(?<month>0[1-9]|1[012])[- /._]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])'
+  const regExp3 = new RegExp(test3, 'g')
+  var result = regExp3.exec(input)
   if (result == null) {
-    const regExp2 = new RegExp(test2, 'g')
-    result = regExp2.exec(input)
+    const regExp4 = new RegExp(test4, 'g')
+    result = regExp4.exec(input)
     if (result == null) {
-      return undefined
+      const regExp1 = new RegExp(test1, 'g')
+      result = regExp1.exec(input)
+      if (result == null) {
+        const regExp2 = new RegExp(test2, 'g')
+        result = regExp2.exec(input)
+        if (result == null) {
+          return undefined
+        }
+      }
     }
   }
   result = result.groups
