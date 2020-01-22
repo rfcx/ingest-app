@@ -31,7 +31,7 @@
       <div class="subtitle-container">
         <img src="~@/assets/ic-pin.svg"><span v-if="selectedStream">{{ selectedStream.siteGuid }}</span>
         <img src="~@/assets/ic-timestamp.svg"><span v-if="selectedStream">{{ selectedStream.timestampFormat }}</span>
-        <div class="folder-area">
+        <div class="folder-area" v-if="selectedStream">
           <a title="Open selected folder" v-show="!isEmptyFolder()" class="button is-circle btn-open" @click="openFolder(selectedStream.folderPath)">
             <img class="img-open-folder" src="~@/assets/ic-folder-open.svg">
           </a>
