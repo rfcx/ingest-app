@@ -280,8 +280,8 @@
   }
 
   .menu-container-failed img {
-    width: 16px;
-    height: 16px;
+    width: 16px !important;
+    height: 16px !important;
     margin-left: 5px;
   }
 
@@ -336,20 +336,23 @@
     border-color: transparent;
     border-radius: 50%;
     margin: auto;
-    text-align:center;
-    position: fixed;
-    right: 4.2em;
-    bottom: 2em;
-    padding: 3px !important;
-    margin: 0 1px !important;
+    text-align: center;
+    // position: fixed;
+    // right: 4.2em;
+    // bottom: 2em;
+    padding: 0 0 0 3px !important;
+    margin: 0 0 0 1px !important;
     &:active,
     &:hover,
     &:focus {
       border-color: transparent !important;
     }
-    img {
-      height: 32px;
-      width: 32px;
+    .img-open-folder {
+      // height: 32px;
+      // width: 32px;
+      height: 25px !important;
+      width: 25px !important;
+      padding: 0 !important;
     }
   }
 

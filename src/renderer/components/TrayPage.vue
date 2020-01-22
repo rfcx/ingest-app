@@ -129,12 +129,12 @@
       getStatePriority (stream) {
         const state = this.getState(stream)
         switch (state) {
-          case 'uploading': return 0
-          case 'ingesting': return 1
-          case 'waiting': return 2
+          case 'waiting': return 0
+          case 'uploading': return 1
+          case 'ingesting': return 2
           case 'failed': return 3
-          case 'completed': return 4
-          case 'duplicated': return 5
+          case 'duplicated': return 4
+          case 'completed': return 5
         }
       },
       getProgress (stream) {

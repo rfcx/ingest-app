@@ -4,7 +4,6 @@
 
 <script>
   import fileHelper from '../../../utils/fileHelper'
-  import fileWatcher from '../../../utils/fileWatcher'
   import dateHelper from '../../../utils/dateHelper'
   import cryptoJS from 'crypto-js'
   import Stream from '../store/models/Stream'
@@ -30,27 +29,7 @@
         console.log('subscribeForFileChanges')
         // Subscribe for file changes.
         this.streams.forEach(stream => {
-          fileWatcher.createWatcher(stream.folderPath, (newFilePath) => {
-            if (this.fileIsExist(newFilePath)) return
-            let files = File.query().where('streamId', stream.id).orderBy('name').get()
-            if (files && files.length) {
-              files.forEach((file) => {
-                if (!fileHelper.isExist(file.path)) {
-                  return File.delete(file.id)
-                } else {
-                  if (fileHelper.getCheckSum(file.path) === fileHelper.getCheckSum(newFilePath)) {
-                    return this.updateFile(file.id, newFilePath)
-                  }
-                }
-              })
-            }
-            console.log('New file for uploading', newFilePath)
-            const file = this.createFileObject(newFilePath, stream)
-            this.insertFile(file)
-            this.insertFilesToStream([file], stream)
-          }, (removedFilePath) => {
-            this.deleteFile(this.getFileId(removedFilePath))
-          })
+          this.$file.refreshStream(stream)
         })
       },
       createFileObject (filePath, stream) {

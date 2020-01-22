@@ -19,8 +19,10 @@
           </div>
           <div class="dropdown-menu" id="dropdown-menu" role="menu">
             <div class="dropdown-content">
+              <a href="#" title="Rename the stream" class="dropdown-item" @click="refreshStream()">Refresh</a>
               <a href="#" title="Rename the stream" class="dropdown-item" @click="renameStream()">Rename</a>
               <!-- <hr class="dropdown-divider"> -->
+              <a href="#" title="Rename the stream" class="dropdown-item" @click="redirectToStreamWeb()">Redirect to RFCx Client Stream Web App</a>
               <a href="#" title="Delete the stream" class="dropdown-item has-text-danger" @click="showConfirmToDeleteStreamModal()">Delete</a>
             </div>
           </div>
@@ -29,6 +31,12 @@
       <div class="subtitle-container">
         <img src="~@/assets/ic-pin.svg"><span v-if="selectedStream">{{ selectedStream.siteGuid }}</span>
         <img src="~@/assets/ic-timestamp.svg"><span v-if="selectedStream">{{ selectedStream.timestampFormat }}</span>
+        <div class="folder-area">
+          <a title="Open selected folder" v-show="!isEmptyFolder()" class="button is-circle btn-open" @click="openFolder(selectedStream.folderPath)">
+            <img class="img-open-folder" src="~@/assets/ic-folder-open.svg">
+          </a>
+          {{ selectedStream.folderPath }}
+        </div>
       </div>
     </div>
     <div v-show="isEmptyFolder()" class="container-box empty has-text-centered">
@@ -56,14 +64,12 @@
             <font-awesome-icon v-show="isError(file.state)" class="iconRedo" :icon="iconRedo" @click="repeatUploading(file.id)"></font-awesome-icon>
             <font-awesome-icon class="iconHide" :icon="iconHide" @click="toggleDisabled(file.id)"></font-awesome-icon>
           </td>
-          <td class="file-row" v-show="isDuplicated(file.state)"></td>
         </tr>
       </tbody>
     </table>
-    <a title="Open selected folder" v-show="!isEmptyFolder()" class="button is-circle btn-open" @click="openFolder(selectedStream.folderPath)"><img src="~@/assets/ic-folder-open.svg"></a>
-    <a title="Redirect to RFCx Client Stream Web App" class="button is-circle btn-extirnal-link" @click="redirectToStreamWeb()">
+    <!-- <a title="Redirect to RFCx Client Stream Web App" class="button is-circle btn-extirnal-link" @click="redirectToStreamWeb()">
       <font-awesome-icon class="faExternal" :icon="faExternalLinkAlt"></font-awesome-icon>
-    </a>
+    </a> -->
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
       <div class="modal-background"></div>
@@ -130,7 +136,9 @@
         }
       },
       files () {
-        return File.query().where('streamId', this.selectedStreamId).orderBy('name').get()
+        return File.query().where('streamId', this.selectedStreamId).get().sort((fileA, fileB) => {
+          return this.getStatePriority(fileA) - this.getStatePriority(fileB)
+        })
       },
       isFilesReading () {
         let count = 0
@@ -143,10 +151,24 @@
       }
     },
     methods: {
+      getStatePriority (file) {
+        const state = file.state
+        switch (state) {
+          case 'waiting': return 0
+          case 'uploading': return 1
+          case 'ingesting': return 2
+          case 'failed': return 3
+          case 'duplicated': return 4
+          case 'completed': return 5
+        }
+      },
       renameStream () {
         this.newStreamName = null
         this.isRenaming = true
         this.newStreamName = this.selectedStream.name
+      },
+      refreshStream () {
+        this.$file.refreshStream(this.selectedStream)
       },
       saveStream () {
         this.isLoading = true
@@ -295,22 +317,22 @@
         })
       },
       redirectToStreamWeb () {
-        console.log('user redirected to the Client Stream Web')
+        console.log('user redirected to the Client Stream Web', this.selectedStream)
         let url = 'https://client-stream.rfcx.org/'
         if (this.selectedStream) {
           if (this.selectedStream.env) {
             if (this.selectedStream.env === 'production') {
-              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.guid}`
+              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
             } else if (this.selectedStream.env === 'staging') {
-              url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.guid}`
+              url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.id}`
             } else {
-              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.guid}`
+              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
             }
           } else {
             if (this.isProductionEnv()) {
-              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.guid}`
+              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
             } else {
-              url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.guid}`
+              url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.id}`
             }
           }
         } else {
@@ -339,8 +361,8 @@
 <style lang="scss">
 
   .file-list {
-    height: 85% !important;
-    overflow-y: scroll;
+    height: 100% !important;
+    overflow-y: auto;
   }
 
   .file-size-head {
@@ -390,6 +412,10 @@
     padding-left: $default-padding-margin;
     padding-right: $default-padding-margin;
     cursor: pointer;
+  }
+
+  .subtitle-container {
+    width: 95%;
   }
 
   .stream-info-container .subtitle-container img {
@@ -492,8 +518,14 @@
     text-overflow: ellipsis;
   }
 
+  .folder-area {
+   display: inline-block;
+   vertical-align: top;
+  }
+
   .btn-open {
     cursor: pointer;
+    height: 25px !important;
   }
 
   .spinner::after {

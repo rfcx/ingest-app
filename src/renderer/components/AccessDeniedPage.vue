@@ -22,7 +22,7 @@
         </div>
       </fieldset>
       <p class="success-message" v-if="showSuccessMessage">
-        <span>You have got access.</span>
+        <span>You have got access. Please, wait a moment.</span>
       </p>
     </div>
   </div>

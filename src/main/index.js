@@ -322,7 +322,7 @@ async function checkUserRole () {
       if (!idToken) return resolve(false)
     }
     let profile = jwtDecode(idToken)
-    console.log('roles', profile.roles)
+    console.log('roles', profile.roles, 'or', profile['https://rfcx.org/app_metadata'].authorization.roles)
     if (profile && profile.roles && (profile.roles || []).includes('rfcxUser')) {
       return resolve(true)
     } else if (profile && profile['https://rfcx.org/app_metadata'] && profile['https://rfcx.org/app_metadata'].authorization &&
@@ -371,7 +371,6 @@ async function setAllUserSitesInfo () {
 async function refreshTokens () {
   try {
     await authService.refreshTokens()
-    await setAllUserSitesInfo()
   } catch (err) {
     logOut()
   }
@@ -481,7 +480,8 @@ ipcMain.on('getIdToken', listener)
 
 async function listen (event, args) {
   await refreshTokens()
-  global.hasAccessToApp = true
+  await checkToken()
+  await hasAccessToApp()
   event.sender.send('sendRefreshToken')
 }
 
