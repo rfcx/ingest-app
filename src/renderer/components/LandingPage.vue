@@ -271,7 +271,7 @@
   }
 
   .menu-container svg {
-    margin-left: auto;
+    margin-left: auto !important;
     margin-right: 3px;
   }
 
