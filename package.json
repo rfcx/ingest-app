@@ -57,7 +57,7 @@
       ]
     },
     "win": {
-      "icon": "build/icons/ingest-win.ico"
+      "icon": "build/icons/ingest-windows.ico"
     },
     "linux": {
       "icon": "build/icons"
