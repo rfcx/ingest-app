@@ -11,6 +11,7 @@ export default class File extends Model {
       id: this.string(''),
       name: this.string(''),
       hash: this.attr(''),
+      sha1: this.attr(''),
       path: this.string(''),
       sizeInByte: this.number(0),
       extension: this.string(''),

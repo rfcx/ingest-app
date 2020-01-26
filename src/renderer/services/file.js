@@ -33,7 +33,7 @@ class FileProvider {
     return settings.get('settings.production_env')
   }
 
-  refreshStream (selectedStream) {
+  watchingStream (selectedStream) {
     fileWatcher.createWatcher(selectedStream.id, selectedStream.folderPath, (newFilePath) => {
       let files = File.query().where('streamId', selectedStream.id).orderBy('name').get()
       if (selectedStream.files && selectedStream.files.length === files.length) {
@@ -43,7 +43,12 @@ class FileProvider {
           if (!fileHelper.isExist(file.path)) {
             return File.delete(file.id)
           } else {
-            if (fileHelper.getCheckSum(file.path) === fileHelper.getCheckSum(newFilePath)) {
+            if (!file.sha1 || file.sha1 === '') {
+              File.update({ where: file.id,
+                data: { sha1: fileHelper.getCheckSum(file.path) }
+              })
+            }
+            if (file.sha1 === fileHelper.getCheckSum(newFilePath)) {
               return this.updateFile(file.id, newFilePath)
             }
           }
@@ -66,7 +71,9 @@ class FileProvider {
   createFileObject (filePath, stream) {
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
-    const hash = fileHelper.getMD5Hash(filePath)
+    const data = fileHelper.getMD5Hash(filePath)
+    const hash = data.hash
+    const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
     let isoDate
     if (stream.timestampFormat === 'Auto-detect') {
@@ -80,6 +87,7 @@ class FileProvider {
       id: this.getFileId(filePath),
       name: fileName,
       hash: hash,
+      sha1: sha1,
       path: filePath,
       extension: fileExt,
       sizeInByte: size,

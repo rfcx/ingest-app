@@ -23,13 +23,13 @@
         <div class="field field-stream-name" v-if="!isMultipleUpload">
           <a class="button-link-form" v-if="isAddingToExistingStream" @click="getExistingStreams()">+ Add to existing stream</a>
           <a class="button-link-form" v-if="!isAddingToExistingStream" @click="addToNewStream()">+ Add to new stream</a>
-          <label for="name" class="label">Stream name</label>
+          <label for="name" class="label" v-if="isAddingToExistingStream">Stream name</label>
           <div class="control" v-if="isAddingToExistingStream">
             <input v-model="name" class="input" type="text" placeholder="Jaguar 1">
           </div>
-          <div class="control" v-if="!isAddingToExistingStream">
+          <!-- <div class="control" v-if="!isAddingToExistingStream">
             <input v-model="existingStreamName" class="input" type="text" placeholder="Jaguar 1" disabled>
-          </div>
+          </div> -->
         </div>
         <div class="field" v-if="!isAddingToExistingStream">
           <label class="label">Existing streams</label>

@@ -29,7 +29,7 @@
         </div>
       </div>
       <div class="subtitle-container">
-        <img src="~@/assets/ic-pin.svg"><span v-if="selectedStream">{{ selectedStream.siteGuid }}</span>
+        <img src="~@/assets/ic-pin.svg"><span v-if="selectedStream" class="file-list-span">{{ selectedStream.siteGuid }}</span>
         <img src="~@/assets/ic-timestamp.svg"><span v-if="selectedStream">{{ selectedStream.timestampFormat }}</span>
         <div class="folder-area" v-if="selectedStream">
           <a title="Open selected folder" v-show="!isEmptyFolder()" class="button is-circle btn-open" @click="openFolder(selectedStream.folderPath)">
@@ -88,6 +88,7 @@
 
 <script>
   import dateHelper from '../../../../utils/dateHelper'
+  import fileHelper from '../../../../utils/fileHelper'
   import File from '../../store/models/File'
   import Stream from '../../store/models/Stream'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
@@ -137,6 +138,8 @@
       },
       files () {
         return File.query().where('streamId', this.selectedStreamId).get().sort((fileA, fileB) => {
+          return new Date(fileB.timestamp) - new Date(fileA.timestamp)
+        }).sort((fileA, fileB) => {
           return this.getStatePriority(fileA) - this.getStatePriority(fileB)
         })
       },
@@ -167,8 +170,17 @@
         this.isRenaming = true
         this.newStreamName = this.selectedStream.name
       },
-      refreshStream () {
-        this.$file.refreshStream(this.selectedStream)
+      async refreshStream () {
+        let files = File.query().where('streamId', this.selectedStream.id).orderBy('name').get()
+        await this.checkFilesExistense(files)
+        this.$file.watchingStream(this.selectedStream)
+      },
+      async checkFilesExistense (files) {
+        for (const file of files) {
+          if (!fileHelper.isExist(file.path)) {
+            await File.delete(file.id)
+          }
+        }
       },
       saveStream () {
         this.isLoading = true
@@ -418,6 +430,10 @@
     width: 95%;
   }
 
+  .file-list-span {
+    margin-right: 6px !important;
+  }
+
   .stream-info-container .subtitle-container img {
     width: 1em;
     height: 1em;
@@ -495,7 +511,7 @@
 
   .title-container-edit {
     margin-left: 10px !important;
-    color: grey;
+    color: #9B9B9B !important;
     font-size: 14px;
     cursor: pointer;
   }

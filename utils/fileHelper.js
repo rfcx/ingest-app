@@ -36,7 +36,12 @@ const getFilesFromDirectoryPath = (directoryPath) => {
 const getMD5Hash = (filePath) => {
   if (!isFile(filePath)) return ''
   const fileData = readFile(filePath)
-  return cryptoJS.MD5(fileData).toString()
+  let fileWordArr = cryptoJS.lib.WordArray.create(fileData)
+  let sha1Hash = cryptoJS.SHA1(fileWordArr)
+  return {
+    hash: cryptoJS.MD5(fileData).toString(),
+    sha1: sha1Hash.toString()
+  }
 }
 
 const getCheckSum = (filePath) => {

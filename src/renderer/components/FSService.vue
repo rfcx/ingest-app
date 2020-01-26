@@ -3,11 +3,7 @@
 </template>
 
 <script>
-  import fileHelper from '../../../utils/fileHelper'
-  import dateHelper from '../../../utils/dateHelper'
-  import cryptoJS from 'crypto-js'
   import Stream from '../store/models/Stream'
-  import File from '../store/models/File'
 
   export default {
     computed: {
@@ -27,73 +23,9 @@
     methods: {
       subscribeForFileChanges () {
         console.log('subscribeForFileChanges')
-        // Subscribe for file changes.
         this.streams.forEach(stream => {
-          this.$file.refreshStream(stream)
+          this.$file.watchingStream(stream)
         })
-      },
-      createFileObject (filePath, stream) {
-        const fileName = fileHelper.getFileNameFromFilePath(filePath)
-        const fileExt = fileHelper.getExtension(fileName)
-        const hash = fileHelper.getMD5Hash(filePath)
-        const size = fileHelper.getFileSize(filePath)
-        let isoDate
-        if (stream.timestampFormat === 'Auto-detect') {
-          isoDate = dateHelper.parseTimestampAuto(fileName)
-        } else {
-          isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
-        }
-        const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-        const state = this.getState(momentDate, fileExt)
-        return {
-          id: this.getFileId(filePath),
-          name: fileName,
-          hash: hash,
-          path: filePath,
-          extension: fileExt,
-          sizeInByte: size,
-          timestamp: isoDate,
-          streamId: stream.id,
-          state: state.state,
-          stateMessage: state.message
-        }
-      },
-      getState (momentDate, fileExt) {
-        if (!momentDate.isValid()) {
-          return {state: 'failed', message: 'Filename does not match with a filename format'}
-        } else if (!fileHelper.isSupportedFileExtension(fileExt)) {
-          return {state: 'failed', message: 'File extension is not supported'}
-        } else {
-          return {state: 'waiting', message: ''}
-        }
-      },
-      getFileId (filePath) {
-        return cryptoJS.MD5(filePath).toString()
-      },
-      insertFile (file) {
-        console.log('insert file: ', file)
-        File.insert({ data: file })
-      },
-      updateFile (fileId, path) {
-        let fileName = fileHelper.getFileNameFromFilePath(path)
-        if (fileName) {
-          File.update({ where: fileId,
-            data: { name: fileName, path: path }
-          })
-        }
-      },
-      deleteFile (fileId) {
-        console.log('remove file: ', fileId)
-        File.delete(fileId)
-      },
-      insertFilesToStream (files, stream) {
-        Stream.update({ where: stream.id,
-          data: { files: files },
-          insert: ['files']
-        })
-      },
-      fileIsExist (filePath) {
-        return !!File.find(this.getFileId(filePath))
       }
     },
     created () {
