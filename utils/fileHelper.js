@@ -66,7 +66,7 @@ const getFileSize = (filePath) => {
 }
 
 const isSupportedFileExtension = (fileExtension) => {
-  return fileExtension === 'wav' || fileExtension === 'mp3' || fileExtension === 'opus' || fileExtension === 'flac'
+  return fileExtension === 'wav' || fileExtension === 'opus' || fileExtension === 'flac'
 }
 
 export default {

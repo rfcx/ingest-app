@@ -1,5 +1,5 @@
 <template>
-<div id="wrapper-fs-service">FS Service</div>
+  <div id="wrapper-fs-service">FS Service</div>
 </template>
 
 <script>

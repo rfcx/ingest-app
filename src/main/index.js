@@ -63,8 +63,8 @@ function createWindow (openedAsHidden = false) {
 
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('did-finish-load')
-    backgroundAPIWindow.loadURL(backgroundAPIURL)
     backgroundFSWindow.loadURL(backgroundFSURL)
+    backgroundAPIWindow.loadURL(backgroundAPIURL)
   })
 
   mainWindow.on('closed', () => {
