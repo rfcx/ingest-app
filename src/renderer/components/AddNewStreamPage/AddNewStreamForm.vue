@@ -245,7 +245,7 @@ export default {
           }).catch(error => {
             console.log('error while creating stream', error)
             this.isLoading = false
-            this.error = error.message
+            this.error = error.message || error.data
           })
         }
         this.isLoading = true
@@ -678,6 +678,10 @@ export default {
     border: none;
     outline-color: transparent;
     text-decoration: none;
+  }
+
+  .notification {
+    z-index: 1000;
   }
 
 </style>

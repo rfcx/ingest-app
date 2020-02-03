@@ -33,6 +33,9 @@ const createStream = (env, streamName, siteGuid, idToken) => {
     .then(function (response) {
       const streamId = response.data.id
       return streamId
+    }).catch(error => {
+      console.log('error response', error.response)
+      throw error.response
     })
 }
 
