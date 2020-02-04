@@ -14,7 +14,8 @@ export default class Stream extends Model {
       folderPath: this.string(''),
       siteGuid: this.string(''),
       files: this.hasMany(File, 'streamId'),
-      env: this.string('')
+      env: this.string(''),
+      visibility: this.string('')
     }
   }
 }

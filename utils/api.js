@@ -27,9 +27,9 @@ const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, idTok
 }
 
 // Part 0: Create stream
-const createStream = (env, streamName, siteGuid, idToken) => {
+const createStream = (env, streamName, siteGuid, visibility, idToken) => {
   console.log('creating stream api:', streamName, 'site:', siteGuid)
-  return axios.post(apiUrl(env) + '/streams', { name: streamName, site: siteGuid }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return axios.post(apiUrl(env) + '/streams', { name: streamName, site: siteGuid, visibility: visibility }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const streamId = response.data.id
       return streamId

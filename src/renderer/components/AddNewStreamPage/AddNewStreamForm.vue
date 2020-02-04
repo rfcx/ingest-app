@@ -92,6 +92,11 @@
               </div>
             </div>
         </div>
+        <div class="field" v-if="isAddingToExistingStream">
+          <label class="checkbox">
+            <input type="checkbox" class="checkbox-form" v-on:click="toggleVisibility()">Private stream
+          </label>
+        </div>
         <div class="field is-grouped">
           <p class="control">
             <router-link to="/"><button class="button is-rounded cancel">Cancel</button></router-link>
@@ -132,6 +137,7 @@ export default {
       isLoading: false,
       isLoadingStreams: false,
       isMultipleUpload: false,
+      visibility: true,
       currentSite: null,
       currentStream: null,
       idToken: null,
@@ -227,7 +233,8 @@ export default {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           let idToken = null
           idToken = arg
-          api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, idToken).then(streamId => {
+          let visibility = this.visibility ? 'site' : 'private'
+          api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, visibility, idToken).then(streamId => {
             this.isLoading = false
             const stream = {
               id: streamId,
@@ -235,7 +242,8 @@ export default {
               folderPath: this.folderPath,
               timestampFormat: this.selectedTimestampFormat,
               siteGuid: this.currentSite.value,
-              env: this.isProductionEnv() ? 'production' : 'staging'
+              env: this.isProductionEnv() ? 'production' : 'staging',
+              visibility: visibility
             }
             console.log('creating stream', JSON.stringify(stream))
             Stream.insert({ data: stream, insert: ['files'] })
@@ -274,14 +282,16 @@ export default {
           }
           let count = 0
           const createStreamsAsync = async () => {
-            return api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, this.idToken).then(streamId => {
+            let visibility = this.visibility ? 'site' : 'private'
+            return api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, visibility, this.idToken).then(streamId => {
               const stream = {
                 id: streamId,
                 name: this.name,
                 folderPath: this.folderPath,
                 timestampFormat: this.selectedTimestampFormat,
                 siteGuid: this.currentSite.value,
-                env: this.isProductionEnv() ? 'production' : 'staging'
+                env: this.isProductionEnv() ? 'production' : 'staging',
+                visibility: visibility
               }
               console.log('creating stream', JSON.stringify(stream))
               Stream.insert({ data: stream, insert: ['files'] })
@@ -324,6 +334,9 @@ export default {
     // },
     toggleDropdown () {
       this.isShow = !this.isShow
+    },
+    toggleVisibility () {
+      this.visibility = !this.visibility
     },
     unselectAllValues () {
       this.sites.forEach((item) => {
@@ -684,6 +697,14 @@ export default {
 
   .notification {
     z-index: 1000;
+  }
+
+  .checkbox-form {
+    margin-right: 5px;
+  }
+
+  .checkbox {
+    font-size: 12px !important;
   }
 
 </style>
