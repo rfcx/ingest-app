@@ -702,14 +702,16 @@ export default {
 
   .checkbox-form {
     margin-right: 5px;
+    vertical-align: top !important;
   }
 
   .checkbox {
     font-size: 12px !important;
   }
 
-   .checkbox-span {
-    padding-bottom: 2px !important;
+  .checkbox-span {
+    line-height: 1 !important;;
+    vertical-align: top !important;
   }
 
 </style>
