@@ -10,7 +10,6 @@ import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
 import userService from './services/user-service'
 import fileWatcher from './services/file-watcher'
-// import fileService from '../renderer/services/file'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
@@ -159,6 +158,12 @@ function createWindow (openedAsHidden = false) {
   })
 
   createTray(process.platform)
+  app.setAboutPanelOptions({
+    applicationName: 'Ingest App',
+    applicationVersion: process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion(),
+    version: process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion(),
+    iconPath: process.platform === 'darwin' ? path.join(__static, 'rfcx-logo.png') : path.join(__static, 'rfcx-logo-win.png')
+  })
 }
 
 function createMenu () {
@@ -218,6 +223,10 @@ function createMenu () {
             app.exit()
             app.quit()
           }
+        },
+        { type: 'separator' },
+        { label: 'About Ingest App',
+          role: 'about'
         }
       ]
     },
@@ -436,7 +445,7 @@ app.on('ready', () => {
   console.log('open as hidden', openedAsHidden)
   initialSettings()
   createAppWindow(openedAsHidden)
-  global.version = `${process.env.npm_package_version}`
+  global.version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
 })
 
 app.on('window-all-closed', () => {
