@@ -433,6 +433,7 @@ export default {
           }
           console.log('restoring stream', JSON.stringify(restoringStream))
           Stream.insert({ data: restoringStream, insert: ['files'] })
+          this.$electron.ipcRenderer.send('subscribeToFileWatcher', [ restoringStream ])
           this.$store.dispatch('setSelectedStreamId', restoringStream.id)
           this.$router.push('/')
         }
