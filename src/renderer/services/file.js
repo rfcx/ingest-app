@@ -35,6 +35,7 @@ class FileProvider {
 
   watchingStream (selectedStream) {
     fileWatcher.createWatcher(selectedStream.id, selectedStream.folderPath, (newFilePath) => {
+      // let files = await this.getFiles(selectedStream)
       let files = File.query().where('streamId', selectedStream.id).orderBy('name').get()
       if (selectedStream.files && selectedStream.files.length === files.length) {
         if (this.fileIsExist(newFilePath)) return
@@ -62,6 +63,26 @@ class FileProvider {
     }, (removedFilePath) => {
       this.deleteFile(this.getFileId(removedFilePath))
     })
+  }
+
+  async getFiles (selectedStream) {
+    try {
+      return File.query().where('streamId', selectedStream.id).orderBy('name').get()
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  async newFilePath (newFilePath, selectedStream) {
+    if (this.fileIsExist(newFilePath)) return
+    console.log('New file for uploading', newFilePath)
+    const file = this.createFileObject(newFilePath, selectedStream)
+    this.insertFile(file)
+    this.insertFilesToStream([file], selectedStream)
+  }
+
+  removedFilePath (path) {
+    this.deleteFile(this.getFileId(path))
   }
 
   fileIsExist (filePath) {

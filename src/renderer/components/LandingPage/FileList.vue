@@ -95,6 +95,7 @@
   import { faPencilAlt, faRedo, faEyeSlash, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
   import settings from 'electron-settings'
   import api from '../../../../utils/api'
+  import fileWatcher from '../../../main/services/file-watcher'
 
   export default {
     components: {
@@ -172,8 +173,9 @@
       },
       async refreshStream () {
         let files = File.query().where('streamId', this.selectedStream.id).orderBy('name').get()
+        console.log('files for refreshing stream', files)
         await this.checkFilesExistense(files)
-        this.$file.watchingStream(this.selectedStream)
+        fileWatcher.subscribeStream(this.selectedStream)
       },
       async checkFilesExistense (files) {
         for (const file of files) {
@@ -262,7 +264,6 @@
         // console.log('circle end')
       },
       toggleDropDown () {
-        console.log('toggleDropDown')
         this.shouldShowDropDown = !this.shouldShowDropDown
       },
       showConfirmToDeleteStreamModal () {

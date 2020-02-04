@@ -1,8 +1,21 @@
 import * as chokidar from 'chokidar'
+import fileService from '../../renderer/services/file'
 
 // We are going to store all watchers in this objects by stream guid
 // This will let us close and remove previous watcher when we press "Refresh" button for stream
 let watchers = {}
+
+async function subscribeStream (selectedStream) {
+  await createWatcher(
+    selectedStream.id,
+    selectedStream.folderPath,
+    async (newFilePath) => {
+      await fileService.newFilePath(newFilePath, selectedStream)
+    },
+    (removedFilePath) => {
+      fileService.removedFilePath(removedFilePath)
+    })
+}
 
 async function createWatcher (guid, path, addCallback, removeCallback) {
   // close and remove previous watcher if exists
@@ -11,7 +24,7 @@ async function createWatcher (guid, path, addCallback, removeCallback) {
     watchers[guid] = null
   }
   const watcher = chokidar.watch(path, {
-    ignored: /(^|[/\\])\../, // ignore dotfiles
+    ignored: /(^|[\/\\])\../, //eslint-disable-line
     persistent: true,
     awaitWriteFinish: true
   })
@@ -27,4 +40,8 @@ async function createWatcher (guid, path, addCallback, removeCallback) {
   // save watcher to global object so we can access to it later
   watchers[guid] = watcher
 }
-export default { createWatcher }
+
+export default {
+  subscribeStream,
+  createWatcher
+}

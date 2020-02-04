@@ -240,7 +240,7 @@ export default {
             console.log('creating stream', JSON.stringify(stream))
             Stream.insert({ data: stream, insert: ['files'] })
             this.$store.dispatch('setSelectedStreamId', stream.id)
-            // this.$store.dispatch('setUploadingProcess', true)
+            this.$electron.ipcRenderer.send('subscribeToFileWatcher', [ stream ])
             this.$router.push('/')
           }).catch(error => {
             console.log('error while creating stream', error)
@@ -286,6 +286,7 @@ export default {
               console.log('creating stream', JSON.stringify(stream))
               Stream.insert({ data: stream, insert: ['files'] })
               this.$store.dispatch('setSelectedStreamId', stream.id)
+              this.$electron.ipcRenderer.send('subscribeToFileWatcher', [ stream ])
               // For the last stream.
               if (this.newStreamsPaths[this.newStreamsPaths.length - 1] === path && count === 0) {
                 count++

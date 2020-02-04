@@ -24,7 +24,7 @@
       subscribeForFileChanges () {
         console.log('subscribeForFileChanges')
         this.streams.forEach(stream => {
-          this.$file.watchingStream(stream)
+          // this.$file.watchingStream(stream, this.files)
         })
       }
     },
