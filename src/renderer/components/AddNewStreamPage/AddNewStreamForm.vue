@@ -94,7 +94,8 @@
         </div>
         <div class="field" v-if="isAddingToExistingStream">
           <label class="checkbox">
-            <input type="checkbox" class="checkbox-form" v-on:click="toggleVisibility()">Private stream
+            <input type="checkbox" class="checkbox-form" v-on:click="toggleVisibility()">
+            <span class="checkbox-span">Private stream</span>
           </label>
         </div>
         <div class="field is-grouped">
@@ -705,6 +706,10 @@ export default {
 
   .checkbox {
     font-size: 12px !important;
+  }
+
+   .checkbox-span {
+    padding-bottom: 2px !important;
   }
 
 </style>
