@@ -23,7 +23,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 // let mainWindow, backgroundAPIWindow, backgroundFSWindow, trayWindow
-let mainWindow, backgroundAPIWindow, trayWindow
+let mainWindow, backgroundAPIWindow, trayWindow, aboutWindow
 let menu, tray, idToken
 let refreshIntervalTimeout, expires
 let willQuitApp = false
@@ -45,6 +45,10 @@ const backgroundAPIURL = process.env.NODE_ENV === 'development'
 const trayURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/tray`
   : `file://${__dirname}/index.html#/tray`
+
+const aboutURL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:9080/#/about`
+  : `file://${__dirname}/index.html#/about`
 
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
@@ -82,6 +86,10 @@ function createWindow (openedAsHidden = false) {
       mainWindow = null
       if (backgroundAPIWindow) {
         backgroundAPIWindow = null
+      }
+      if (aboutWindow) {
+        aboutWindow.destroy()
+        aboutWindow = null
       }
       // if (backgroundFSWindow) {
       //   backgroundFSWindow = null
@@ -125,7 +133,7 @@ function createWindow (openedAsHidden = false) {
   //   show: true,
   //   webPreferences: { nodeIntegration: true }
   // })
-
+  createAboutUrl(false)
   trayWindow = new BrowserWindow({
     width: 300,
     height: 350,
@@ -163,6 +171,31 @@ function createWindow (openedAsHidden = false) {
     applicationVersion: process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion(),
     version: process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion(),
     iconPath: process.platform === 'darwin' ? path.join(__static, 'rfcx-logo.png') : path.join(__static, 'rfcx-logo-win.png')
+  })
+}
+
+function createAboutUrl (show) {
+  aboutWindow = new BrowserWindow({
+    width: 300,
+    height: 200,
+    show: show,
+    frame: true,
+    transparent: false,
+    titleBarStyle: 'default',
+    webPreferences: { nodeIntegration: true }
+  })
+
+  aboutWindow.on('close', () => {
+    console.log('aboutWindow close')
+    aboutWindow = null
+  })
+
+  aboutWindow.on('closed', () => {
+    console.log('aboutWindow closed')
+    if (aboutWindow) {
+      aboutWindow.destroy()
+      aboutWindow = null
+    }
   })
 }
 
@@ -226,7 +259,14 @@ function createMenu () {
         },
         { type: 'separator' },
         { label: 'About Ingest App',
-          role: 'about'
+          // role: 'about'
+          click: function () {
+            if (aboutURL) {
+              createAboutUrl(true)
+              aboutWindow.loadURL(aboutURL)
+              aboutWindow.show()
+            } else aboutWindow.loadURL(aboutURL)
+          }
         }
       ]
     },
