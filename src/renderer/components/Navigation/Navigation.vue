@@ -2,7 +2,7 @@
   <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
     <div class="navbar-brand">
       <div class="navbar-item">
-        <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx"></router-link>
+        <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="navbar-router-link"></router-link>
       </div>
       <span class="navbar-item">RFCx Ingest</span>
       <span class="navbar-item tag"
@@ -116,7 +116,7 @@
   }
 </script>
 
-<style>
+<style lang="scss">
 
   .dropdown-nav {
     vertical-align: middle !important;
@@ -135,6 +135,15 @@
   .user-img {
     border-radius: 50%;
     height: 100%;
+  }
+
+  .navbar-router-link {
+    &:hover,
+    &:focus {
+      text-decoration: none;
+      border: none;
+      outline: none;
+    }
   }
 
 </style>
