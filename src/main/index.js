@@ -176,6 +176,8 @@ function createAboutUrl (isShow) {
     webPreferences: { nodeIntegration: true }
   })
 
+  aboutWindow.removeMenu()
+
   aboutWindow.on('close', () => {
     console.log('aboutWindow close')
     aboutWindow = null
