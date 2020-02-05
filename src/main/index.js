@@ -91,9 +91,6 @@ function createWindow (openedAsHidden = false) {
         aboutWindow.destroy()
         aboutWindow = null
       }
-      // if (backgroundFSWindow) {
-      //   backgroundFSWindow = null
-      // }
       resetTimers()
       app.exit()
       app.quit()
@@ -128,7 +125,6 @@ function createWindow (openedAsHidden = false) {
     show: false,
     webPreferences: { nodeIntegration: true }
   })
-
   // backgroundFSWindow = new BrowserWindow({
   //   show: true,
   //   webPreferences: { nodeIntegration: true }
@@ -166,21 +162,16 @@ function createWindow (openedAsHidden = false) {
   })
 
   createTray(process.platform)
-  app.setAboutPanelOptions({
-    applicationName: 'Ingest App',
-    applicationVersion: process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion(),
-    version: process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion(),
-    iconPath: process.platform === 'darwin' ? path.join(__static, 'rfcx-logo.png') : path.join(__static, 'rfcx-logo-win.png')
-  })
 }
 
-function createAboutUrl (show) {
+function createAboutUrl (isShow) {
   aboutWindow = new BrowserWindow({
     width: 300,
     height: 200,
-    show: show,
+    show: isShow,
     frame: true,
     transparent: false,
+    backgroundColor: '#131525',
     titleBarStyle: 'default',
     webPreferences: { nodeIntegration: true }
   })
@@ -259,7 +250,6 @@ function createMenu () {
         },
         { type: 'separator' },
         { label: 'About Ingest App',
-          // role: 'about'
           click: function () {
             if (aboutURL) {
               createAboutUrl(true)

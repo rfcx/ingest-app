@@ -3,7 +3,6 @@
    <img class="about-logo" src="~@/assets/rfcx-logo.png">
    <div class="about-app">Ingest App</div>
    <div class="about-text" v-if="version">Version {{version}}</div>
-   <div class="about-text">Copyright © 2020 RFCx</div>
   </div>
 </template>
 
@@ -41,7 +40,7 @@
 <style lang="scss">
 
   .about-logo {
-    margin-top: 5px;
+    margin-top: 10px;
     width: 35px;
     height: 50px;
   }
