@@ -106,9 +106,31 @@
     .dropdown-link {
       color: white;
     }
-    .dropdown-link:hover {
+    .control-btn:focus,
+    .control-btn:active {
+      outline-color: rgb(19, 21, 37) !important;
+    }
+    .focus .dropdown-toggle {
+      border-radius: 5px;
+      box-shadow: 0 0 0 2px #243b31;
+    }
+    .dropdown-link:hover,
+    .dropdown-link:focus {
       background: #3b3e53 !important;
       color: white;
+      border: none;
+      outline: none;
+    }
+    .over {
+      background: #3b3e53 !important;
+      color: white;
+      border: none;
+      outline: none;
+    }
+    .dropdown-row:focus {
+      outline: none;
+      text-decoration: none;
+      border: none;
     }
     .notification {
       background: #3b3e53 !important;

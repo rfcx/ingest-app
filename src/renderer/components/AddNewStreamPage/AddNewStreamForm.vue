@@ -52,15 +52,15 @@
         <div class="field" v-if="isAddingToExistingStream">
           <label class="label">Site</label>
           <div class="control" v-click-outside="outside">
-            <div class="dropdown-wrapper" :class="{ 'opened': isShow }">
-              <button class="dropdown-toggle" type="button" v-on:click="toggleDropdown">
+            <div class="dropdown-wrapper" :class="{ 'opened': isShow, 'focus': isFocus }">
+              <button class="dropdown-toggle" type="button" v-on:keydown="onKeyDown($event)" v-on:click="toggleDropdown" @focus="onFocus($event)">
                 <span class="dropdown-input">{{ sites && sites.length ? (currentSite ? currentSite.label : 'Choose Site') : 'No sites' }}</span>
                 <span class="dropdown-icon" v-show="!isShow"><font-awesome-icon :icon="iconDown"></font-awesome-icon></span>
                 <span class="dropdown-icon" v-show="isShow"><font-awesome-icon :icon="iconUp"></font-awesome-icon></span>
               </button>
-              <div class="dropdown-list" v-show="isShow">
+              <div class="dropdown-list js-parent" v-show="isShow">
                 <div v-for="site in sites" :key="site.label" class="dropdown-row">
-                  <a class="dropdown-link" href="#" v-on:click="changeValue(site)" :title="site.label">{{ site.label }}</a>
+                  <a class="dropdown-link" href="#" v-on:click="onItemClick(site)" :class="{ 'over': site.selected}" title="site.label">{{ site.label }}</a>
                 </div>
               </div>
             </div>
@@ -69,7 +69,7 @@
         <div class="field">
             <label for="timestampFormat" class="label">Filename format</label>
             <div class="control">
-                <div class="select is-fullwidth">
+                <div class="select is-fullwidth" v-on:keyup.tab="Timestamp($event)">
                     <select v-model="timestampFormat">
                     <option v-for="option in timestampFormatOptions" :key="option">{{ option }}</option>
                     </select>
@@ -99,14 +99,14 @@
           </label>
         </div>
         <div class="field is-grouped">
-          <p class="control">
-            <router-link to="/"><button class="button is-rounded cancel">Cancel</button></router-link>
+          <p class="control control-btn">
+            <router-link class="control-btn" to="/"><button type="button" class="button is-rounded cancel">Cancel</button></router-link>
           </p>
-          <p class="control" v-if="isAddingToExistingStream">
-            <button class="button is-rounded is-primary" :class="{ 'is-loading': isLoading && !isMultipleUpload}" :disabled="!hasPassedValidation && !isMultipleUpload" @click.prevent="createStream">Create</button>
+          <p class="control control-btn" v-if="isAddingToExistingStream">
+            <button type="button" class="button is-rounded is-primary" :class="{ 'is-loading': isLoading && !isMultipleUpload}" :disabled="!hasPassedValidation && !isMultipleUpload" @click.prevent="createStream">Create</button>
           </p>
-          <p class="control" v-if="!isAddingToExistingStream">
-            <button class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!hasPassedValidation" @click.prevent="addToStream">Add</button>
+          <p class="control control-btn" v-if="!isAddingToExistingStream">
+            <button type="button" class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!hasPassedValidation" @click.prevent="addToStream">Add</button>
           </p>
         </div>
     </fieldset>
@@ -134,7 +134,10 @@ export default {
       customTimestampFormat: '',
       timestampFormatOptions: ['Auto-detect', '%Y%M%D-%H%m%s', '%Y%M%D?%H:%m:%s', 'Custom'],
       error: null,
+      selectedOptionIndex: 0,
+      lastActiveValue: null,
       isShow: false,
+      isFocus: false,
       isLoading: false,
       isLoadingStreams: false,
       isMultipleUpload: false,
@@ -317,24 +320,102 @@ export default {
     isProductionEnv () {
       return settings.get('settings.production_env')
     },
-    changeValue (item) {
+    onItemClick (item) {
+      this.changeItem(item)
+      this.isShow = false
+    },
+    changeItem (item) {
       this.unselectAllValues()
       item.selected = true
       this.currentSite = item
       console.log('currentSite', this.currentSite)
-      this.isShow = false
+      this.refreshLastActiveValue()
     },
-    // onKeyDown (event) {
-    // TODO: chose a site by a key
-    //   if (event.keyCode === 13) {
-    //     let item = this.items.find((item) => {
-    //       return item.selected === true
-    //     })
-    //     this.changeValue(item)
-    //   }
-    // },
+    changeSelectedOption (index) {
+      this.unselectAllValues()
+      index = index || 0
+      if (this.sites && this.sites[index]) {
+        this.selectedOptionIndex = index
+        this.sites[index].selected = true
+        this.currentSite = this.sites[index]
+        var el = document.querySelector('.js-parent')
+        setTimeout(() => {
+          var elChild = document.querySelector('.over')
+          el.scrollTop = elChild.offsetTop
+        }, 20)
+      }
+    },
+    showSitesDropdown () {
+      if (!this.isShow) {
+        // refresh last active value before opening the dropdown
+        this.refreshLastActiveValue()
+      }
+      this.isShow = true
+    },
+    onKeyDown (event) {
+      event.preventDefault()
+      event.stopPropagation()
+      if (event.keyCode === 40) { // arrow down
+        this.showSitesDropdown()
+        this.incrementActiveOption()
+      }
+      if (event.keyCode === 38) { // arrow up
+        this.showSitesDropdown()
+        this.decrementActiveOption()
+      }
+      if (event.keyCode === 27) { // esc
+        this.isShow = false
+        this.selectLastActiveValue()
+      }
+      if (event.keyCode === 13) { // enter
+        this.isFocus = false
+        if (this.selectedOptionIndex !== 0) {
+          let item = this.sites.find((item) => {
+            return item.selected === true
+          })
+          this.changeItem(item)
+        }
+        this.isShow = false
+      }
+    },
+    selectLastActiveValue () {
+      if (!this.lastActiveValue) {
+        return
+      }
+      let item = this.sites.find((item) => {
+        return item.value === this.lastActiveValue
+      })
+      this.changeItem(item)
+    },
+    decrementActiveOption () {
+      if (this.selectedOptionIndex > 0) {
+        this.changeSelectedOption(this.selectedOptionIndex - 1)
+      } else if (this.selectedOptionIndex === 0) {
+        this.selectedOptionIndex = this.sites.length - 1
+        this.changeSelectedOption(this.selectedOptionIndex)
+      }
+    },
+    incrementActiveOption () {
+      if (this.selectedOptionIndex === this.sites.length - 1) {
+        this.changeSelectedOption(0)
+      } else {
+        this.changeSelectedOption(this.selectedOptionIndex + 1)
+      }
+    },
+    refreshLastActiveValue () {
+      this.lastActiveValue = this.currentSite ? this.currentSite.value : null
+    },
+    onFocus (event) {
+      this.isFocus = true
+    },
     toggleDropdown () {
+      if (!this.isShow) {
+        this.refreshLastActiveValue()
+      } else {
+        this.selectLastActiveValue()
+      }
       this.isShow = !this.isShow
+      this.isFocus = false
     },
     toggleVisibility () {
       this.visibility = !this.visibility
@@ -346,6 +427,7 @@ export default {
     },
     outside: function (e) {
       this.isShow = false
+      this.selectLastActiveValue()
     },
     getSites () {
       let accessibleSites = remote.getGlobal('accessibleSites')
@@ -555,6 +637,38 @@ export default {
 
   .opened .dropdown-toggle {
     border-color: #2FB04A !important;
+  }
+
+  .focus .dropdown-toggle {
+    border-radius: 5px;
+    border-color: #2FB04A;
+    box-shadow: 0 0 0 0.125em rgba(47, 176, 74, 0.25);
+  }
+
+  .dropdown-row:focus {
+    outline: none;
+    text-decoration: none;
+    border: none;
+  }
+
+  .control-btn:focus,
+  .control-btn:active {
+    outline-color: white !important;
+  }
+
+  .dropdown-link:hover,
+  .dropdown-link:focus {
+    background: #e9e6e6 !important;
+    color: black;
+    border: none;
+    outline: none;
+  }
+
+  .over {
+    background: #e9e6e6 !important;
+    color: black;
+    border: none;
+    outline: none;
   }
 
   .dropdown-link {
