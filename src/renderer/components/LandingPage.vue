@@ -47,6 +47,22 @@
         darkTheme: settings.get('settings.darkMode')
       }
     },
+    // watch: {
+    //   streams (newStreams, oldStreams) {
+    //     console.log('watch streams changes')
+    //     try {
+    //       let strms = newStreams.filter((newStream) => {
+    //         return !oldStreams.find((oldStream) => {
+    //           return oldStream.id === newStream.id
+    //         })
+    //       })
+    //       if (strms && strms.length) {
+    //         console.log('subscribe new streams!!!!', strms)
+    //         this.$electron.ipcRenderer.send('subscribeToFileWatcher', strms)
+    //       }
+    //     } catch (e) { }
+    //   }
+    // },
     methods: {
       handleDrop (e) {
         console.log('e', e)

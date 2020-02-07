@@ -77,8 +77,8 @@ class FileProvider {
     if (this.fileIsExist(newFilePath)) return
     console.log('New file for uploading', newFilePath)
     const file = this.createFileObject(newFilePath, selectedStream)
-    this.insertFile(file)
-    this.insertFilesToStream([file], selectedStream)
+    await this.insertFile(file)
+    await this.insertFilesToStream([file], selectedStream)
   }
 
   removedFilePath (path) {
@@ -133,9 +133,9 @@ class FileProvider {
     return cryptoJS.MD5(filePath).toString()
   }
 
-  insertFile (file) {
+  async insertFile (file) {
+    await File.insert({ data: file })
     console.log('insert file: ', file)
-    File.insert({ data: file })
   }
 
   updateFile (fileId, path) {
@@ -152,11 +152,12 @@ class FileProvider {
     File.delete(fileId)
   }
 
-  insertFilesToStream (files, stream) {
-    Stream.update({ where: stream.id,
+  async insertFilesToStream (files, stream) {
+    await Stream.update({ where: stream.id,
       data: { files: files },
       insert: ['files']
     })
+    console.log('insert file to stream')
   }
 }
 

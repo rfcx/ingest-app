@@ -543,6 +543,7 @@ ipcMain.on('subscribeToFileWatcher', async function (event, data) {
       await fileWatcher.subscribeStream(stream)
     }
   }
+  event.sender.send('readingIsDone')
 })
 
 /**

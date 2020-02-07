@@ -108,6 +108,7 @@
           <p class="control control-btn" v-if="!isAddingToExistingStream">
             <button type="button" class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!hasPassedValidation" @click.prevent="addToStream">Add</button>
           </p>
+          <p class="reading-files-label" v-show="isReading">Reading files in the folder...</p>
         </div>
     </fieldset>
 </template>
@@ -139,6 +140,7 @@ export default {
       isShow: false,
       isFocus: false,
       isLoading: false,
+      isReading: false,
       isLoadingStreams: false,
       isMultipleUpload: false,
       visibility: true,
@@ -222,6 +224,13 @@ export default {
       this.$electron.ipcRenderer.send('getIdToken')
       this.$electron.ipcRenderer.on('sendIdToken', listener)
     },
+    listenerForReading (event, arg) {
+      this.$electron.ipcRenderer.removeListener('readingIsDone', this.listenerForReading)
+      setTimeout(() => {
+        console.log('readingIsDone')
+        this.$router.push('/')
+      }, 5000)
+    },
     async createStream () {
       if (!this.isMultipleUpload) {
         if (this.checkIfDuplicateStream(this.folderPath)) {
@@ -233,13 +242,17 @@ export default {
           this.error = 'The directory is not exist.'
           return false
         }
+        // let list = (event, arg) => {
+        //   console.log('readingIsDone')
+        //   this.$electron.ipcRenderer.removeListener('readingIsDone', list)
+        //   this.$router.push('/')
+        // }
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           let idToken = null
           idToken = arg
           let visibility = this.visibility ? 'site' : 'private'
-          api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, visibility, idToken).then(streamId => {
-            this.isLoading = false
+          api.createStream(this.isProductionEnv(), this.name, this.currentSite.value, visibility, idToken).then(async streamId => {
             const stream = {
               id: streamId,
               name: this.name,
@@ -249,11 +262,13 @@ export default {
               env: this.isProductionEnv() ? 'production' : 'staging',
               visibility: visibility
             }
-            console.log('creating stream', JSON.stringify(stream))
+            this.isReading = true
+            console.log('creating stream', JSON.stringify(stream), this.isReading)
             Stream.insert({ data: stream, insert: ['files'] })
             this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$electron.ipcRenderer.send('subscribeToFileWatcher', [ stream ])
-            this.$router.push('/')
+            this.$electron.ipcRenderer.on('readingIsDone', this.listenerForReading)
+            // this.$router.push('/')
           }).catch(error => {
             console.log('error while creating stream', error)
             this.isLoading = false
@@ -297,7 +312,8 @@ export default {
                 env: this.isProductionEnv() ? 'production' : 'staging',
                 visibility: visibility
               }
-              console.log('creating stream', JSON.stringify(stream))
+              this.isReading = true
+              console.log('creating stream', JSON.stringify(stream), this.isReading)
               Stream.insert({ data: stream, insert: ['files'] })
               this.$store.dispatch('setSelectedStreamId', stream.id)
               this.$electron.ipcRenderer.send('subscribeToFileWatcher', [ stream ])
@@ -305,7 +321,8 @@ export default {
               if (this.newStreamsPaths[this.newStreamsPaths.length - 1] === path && count === 0) {
                 count++
                 this.isLoading = false
-                this.$router.push('/')
+                this.$electron.ipcRenderer.on('readingIsDone', this.listenerForReading)
+                // this.$router.push('/')
               }
             }).catch(error => {
               console.log('error while creating stream', error)
@@ -527,11 +544,13 @@ export default {
             siteGuid: stream.site.guid,
             env: this.isProductionEnv() ? 'production' : 'staging'
           }
-          console.log('restoring stream', JSON.stringify(restoringStream))
+          this.isReading = true
+          console.log('restoring stream', JSON.stringify(restoringStream), this.isReading)
           Stream.insert({ data: restoringStream, insert: ['files'] })
           this.$electron.ipcRenderer.send('subscribeToFileWatcher', [ restoringStream ])
+          this.$electron.ipcRenderer.on('readingIsDone', this.listenerForReading)
           this.$store.dispatch('setSelectedStreamId', restoringStream.id)
-          this.$router.push('/')
+          // this.$router.push('/')
         }
       })
     }
@@ -542,6 +561,9 @@ export default {
     },
     streams () {
       return Stream.all()
+    },
+    selectedStreamId () {
+      return this.$store.state.Stream.selectedStreamId
     },
     selectedTimestampFormat: function () {
       switch (this.timestampFormat) {
@@ -826,6 +848,14 @@ export default {
   .checkbox-span {
     line-height: 1 !important;;
     vertical-align: top !important;
+  }
+
+  .reading-files-label {
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 5px;
+    font-size: 12px;
+    line-height: 38px;
   }
 
 </style>
