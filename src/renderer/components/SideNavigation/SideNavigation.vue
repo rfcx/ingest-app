@@ -1,5 +1,5 @@
 <template>
-  <aside class="column menu side-menu" :class="{ 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop" @dragover.prevent v-on:dragleave="outDrag($event)">
+  <aside class="column menu side-menu" :class="{ 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop" @dragover.prevent @dragleave="outDrag">
     <div class="menu-container side-menu-title">
       <p class="menu-label"> {{ menuTitle }} </p>
       <div class="side-menu-controls-wrapper">
@@ -79,8 +79,9 @@
     },
     methods: {
       outDrag (e) {
-        e.preventDefault()
-        this.isDragging = false
+        // FIX dropleave event
+        // e.preventDefault()
+        // this.isDragging = false
       },
       handleDrag (e) {
         this.isDragging = true
