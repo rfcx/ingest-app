@@ -85,6 +85,7 @@
       handleDrag (e) {
         e.preventDefault()
         e.dataTransfer.effectAllowed = 'all'
+        e.dataTransfer.dropEffect = 'move'
         this.isDragging = true
       },
       handleDrop (e) {
