@@ -4,11 +4,11 @@
       <navigation :class="{ 'dark-mode': isDarkTheme === true }"></navigation>
       <section class="main-content columns is-mobile">
         <side-navigation :class="{ 'dark-mode': isDarkTheme === true }"></side-navigation>
-        <div class="column content is-desktop" v-if="streams && streams.length > 0" :class="{ 'dark-mode': isDarkTheme === true  }">
+        <div class="column content is-desktop" v-if="streams && streams.length > 0" @dragover="onDragOver($event)" :class="{ 'dark-mode': isDarkTheme === true  }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
         </div>
-        <div class="column content is-desktop" v-else @drop.prevent="handleDrop" @dragover.prevent :class="{ 'dark-mode': isDarkTheme === true }">
+        <div class="column content is-desktop" v-else @drop.prevent="handleDrop" :class="{ 'dark-mode': isDarkTheme === true }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
         </div>
@@ -64,6 +64,11 @@
     //   }
     // },
     methods: {
+      onDragOver (e) {
+        e.preventDefault()
+        e.dataTransfer.effectAllowed = 'uninitialized'
+        e.dataTransfer.dropEffect = 'none'
+      },
       handleDrop (e) {
         console.log('e', e)
         let dt = e.dataTransfer

@@ -615,7 +615,7 @@
       top: 11.1rem;
       left: 250px;
       right: 0;
-      z-index: 10;
+      z-index: 1;
       @media only screen and (max-width: 850px) {
         top: 12rem;
       }

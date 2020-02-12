@@ -1,5 +1,5 @@
 <template>
-  <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+  <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation" @dragover="onDragOver($event)">
     <div class="navbar-brand">
       <div class="navbar-item">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="navbar-router-link"></router-link>
@@ -71,6 +71,11 @@
       }
     },
     methods: {
+      onDragOver (e) {
+        e.preventDefault()
+        e.dataTransfer.effectAllowed = 'uninitialized'
+        e.dataTransfer.dropEffect = 'none'
+      },
       switchEnvironment () {
         if (this.isInprogessOfUploading) {
           this.shouldShowAlert = true
