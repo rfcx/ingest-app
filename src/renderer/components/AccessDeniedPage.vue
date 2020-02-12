@@ -136,6 +136,7 @@
 
   .access-denied-page-btn {
     margin-top: 20px;
+    overflow: auto;
   }
 
   .user-code {
@@ -176,7 +177,6 @@
   .dark-mode {
     background-color: #131525 !important;
     color: #fff !important;
-    overflow: auto !important;
   }
 
 </style>

@@ -158,6 +158,10 @@
       console.log('view loaded')
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
+      let isDark = settings.get('settings.darkMode')
+      if (html && isDark) {
+        html.style.backgroundColor = '#131525'
+      }
       this.sendVersionOfApp()
       // settings.set('settings.production_env', true)
       this.subscribeForFileChanges()
@@ -435,6 +439,12 @@
       display: flex;
     }
 
+    .stream-info-container {
+      background: #fff;
+    }
+    .file-list-table__head {
+      background-color: #fff;
+    }
   }
 
   .dark-mode {
@@ -522,6 +532,12 @@
     }
     .state-progress span {
       color: $body-text-color-dark;
+    }
+    .stream-info-container {
+      background-color: #131525;
+    }
+    .file-list-table__head {
+      background-color: #131525;
     }
     ::-webkit-scrollbar-thumb {
       background-color: #45485d;

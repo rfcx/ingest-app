@@ -817,7 +817,6 @@ export default {
     position: absolute;
     right: 0;
     top: 5px;
-    z-index: 100;
     font-size: 12px;
     font-weight: 700;
     line-height: 1.5;

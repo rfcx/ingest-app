@@ -45,7 +45,7 @@
         <a v-if="selectedStream" class="button is-rounded is-primary" style="margin-top: 0.75em" @click="openFolder(selectedStream.folderPath)">Open Folder</a>
     </div>
     <table v-show="!isEmptyFolder()" class="table file-list-table is-hoverable" :class="{ 'lowerOpacity': files && files.length && isFilesReading }">
-      <thead>
+      <thead class="file-list-table__head">
         <tr>
           <td class="file-list-table__cell file-list-table__cell_status"></td>
           <td class="file-list-table__cell file-list-table__cell_name">Name</td>
@@ -375,7 +375,16 @@
 
   .file-list {
     height: 100% !important;
-    overflow-y: auto;
+    padding-top: 96px;
+    @media only screen and (max-width: 850px) {
+      padding-top: 105px;
+    }
+    @media only screen and (max-width: 650px) {
+      padding-top: 110px;
+    }
+    @media only screen and (max-width: 600px) {
+      padding-top: 120px;
+    }
   }
 
   .file-size-head {
@@ -409,6 +418,12 @@
     padding-left: $default-padding-margin;
     padding-right: $default-padding-margin;
     padding-bottom: $default-padding-margin;
+    position: fixed;
+    top: 7rem;
+    right: 0;
+    left: 250px;
+    background: rgb(19, 21, 37);
+    z-index: 10;
   }
 
   .stream-info-container .title-container {
@@ -595,6 +610,22 @@
   }
 
   .file-list-table {
+    &__head {
+      position: fixed;
+      top: 11.1rem;
+      left: 250px;
+      right: 0;
+      z-index: 10;
+      @media only screen and (max-width: 850px) {
+        top: 12rem;
+      }
+      @media only screen and (max-width: 650px) {
+        top: 12.1rem;
+      }
+      @media only screen and (max-width: 600px) {
+        top: 13.1rem;
+      }
+    }
     &__cell {
       &_status {
         width: 9%;
@@ -609,6 +640,10 @@
         width: 13%;
       }
     }
+  }
+
+  .table tbody {
+    overflow-y: auto !important;
   }
 
 </style>

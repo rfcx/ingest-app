@@ -17,6 +17,10 @@
         darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
           this.isDark = newValue
           console.log('isDarkTheme', this.isDark)
+          let html = document.getElementsByTagName('html')[0]
+          if (html && this.isDark) {
+            html.style.backgroundColor = '#131525'
+          }
         }),
         version: this.getVersion()
       }
@@ -59,6 +63,8 @@
     margin: auto;
     padding: 20px;
     overflow: hidden;
+    background-color: #ffffff !important;
+    color: #000 !important;
   }
 
   .dark-tray {
@@ -67,10 +73,10 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: #131525;
+    background-color: transparent;
   }
   ::-webkit-scrollbar-track {
-    background-color: #131525;
+    background-color: transparent;
   }
   ::-webkit-scrollbar {
     width: 1px;

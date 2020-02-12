@@ -68,6 +68,7 @@
 
   #wrapper-add-new-stream-page {
     background-color: #fff;
+    overflow-y: auto;
   }
 
   .button-link-form {
