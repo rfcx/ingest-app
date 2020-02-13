@@ -16,9 +16,9 @@
             <img :src="getStateImgUrl(getState(stream))">
           </div>
           <div class="state-progress" v-if="shouldShowProgress(stream)">
-            <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream), 'is-success': isFilesHidden(stream) }" :value="getProgress(stream)" max="100"></progress>
-            <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) || isFilesHidden(stream) }">
-              <span v-if="!checkWarningLoad(stream) && !isFilesHidden(stream)" class="is-size-7">{{ getState(stream) }}</span>
+            <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream), 'is-success': isFilesHidden(stream), 'is-danger': getState(stream) === 'duplicated' || getState(stream) === 'failed' }" :value="getProgress(stream)" max="100"></progress>
+            <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' }">
+              <span v-if="!checkWarningLoad(stream) && !isFilesHidden(stream) && getState(stream) === 'failed' && getState(stream) === 'duplicated'" class="is-size-7">{{ getState(stream) }}</span>
               <span class="is-size-7"> {{ getStateStatus(stream) }} </span>
             </div>
           </div>
@@ -129,7 +129,8 @@
         return stream.id === this.selectedStream.id
       },
       shouldShowProgress (stream) {
-        return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed' && this.getState(stream) !== 'duplicated'
+        return true
+        // this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed' && this.getState(stream) !== 'duplicated'
       },
       sendNotification (status) {
         let notificationCompleted = {
@@ -257,8 +258,16 @@
       },
       getStateStatus (stream) {
         const state = this.getState(stream)
-        if (state === 'completed' || state === 'failed' || state === 'duplicated') return ''
-        else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? ' files' : ' file')
+        if (state === 'duplicated') {
+          const duplicatedFiles = stream.files.filter(file => { return file.state === 'duplicated' })
+          return `0/${duplicatedFiles.length} ingested | ${duplicatedFiles.length} ${duplicatedFiles.length > 1 ? 'errors' : 'error'}`
+        } else if (state === 'failed') {
+          const failedFiles = stream.files.filter(file => { return file.state === 'failed' })
+          return `0/${failedFiles.length} ingested | ${failedFiles.length} ${failedFiles.length > 1 ? 'errors' : 'error'}`
+        } else if (state === 'completed') {
+          const successedFiles = stream.files.filter(file => { return file.state === 'completed' })
+          return `${successedFiles.length}/${successedFiles.length} ingested`
+        } else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? ' files' : ' file')
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         const errorFiles = stream.files.filter(file => { return file.state === 'failed' || file.state === 'duplicated' })
         if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
@@ -329,6 +338,11 @@
     font-size: 13px;
     cursor: pointer;
     margin-left: 3px !important;
+  }
+
+  .is-danger {
+    background-color: #f14668 !important;
+    border-color: transparent;
   }
 
 </style>

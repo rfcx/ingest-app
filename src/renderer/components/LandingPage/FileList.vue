@@ -423,7 +423,7 @@
     right: 0;
     left: 250px;
     background: rgb(19, 21, 37);
-    z-index: 10;
+    z-index: 100;
   }
 
   .stream-info-container .title-container {
@@ -457,6 +457,7 @@
   }
 
   .stream-info-container .dropdown.is-right .dropdown-menu {
+    z-index: 100 !important;
     top: 25px;
   }
 
@@ -615,7 +616,7 @@
       top: 11.1rem;
       left: 250px;
       right: 0;
-      z-index: 1;
+      z-index: 10 !important;
       @media only screen and (max-width: 850px) {
         top: 12rem;
       }

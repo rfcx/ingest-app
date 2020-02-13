@@ -274,6 +274,18 @@ function createMenu () {
         { label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' }
       ]
     }
+    // {
+    //   role: 'help',
+    //   submenu: [
+    //     {
+    //       label: 'Learn More',
+    //       click: async () => {
+    //         const { shell } = require('electron')
+    //         await shell.openExternal('https://electronjs.org')
+    //       }
+    //     }
+    //   ]
+    // }
   ]
   menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)

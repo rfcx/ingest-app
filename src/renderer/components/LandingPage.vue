@@ -448,7 +448,7 @@
       background: #fff;
     }
     .file-list-table__head {
-      background-color: #fff;
+      background-color: #fff !important;
     }
   }
 
@@ -542,7 +542,7 @@
       background-color: #131525;
     }
     .file-list-table__head {
-      background-color: #131525;
+      background-color: #131525 !important;
     }
     ::-webkit-scrollbar-thumb {
       background-color: #45485d;
