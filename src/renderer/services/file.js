@@ -17,14 +17,13 @@ class FileProvider {
         data: {state: 'uploading', stateMessage: progress, progress: progress}
       })
     }).then((uploadId) => {
-      console.log('uploadFile success', uploadId)
       return File.update({ where: file.id,
         data: {state: 'ingesting', stateMessage: '', uploadId: uploadId, progress: 100}
       })
     }).catch((error) => {
       console.log(error)
       return File.update({ where: file.id,
-        data: {state: 'failed', stateMessage: error.message}
+        data: {state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.'}
       })
     })
   }

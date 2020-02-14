@@ -9,7 +9,7 @@ const apiUrl = (proEnvironment) => {
     return platform === 'amazon' ? 'https://ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
   }
   return platform === 'amazon' ? 'https://staging-ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
-  // local staging for s3 'http://localhost:3030'
+  // return 'http://localhost:3030'
 }
 
 const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, idToken, progressCallback) => {
@@ -87,6 +87,9 @@ const checkStatus = (env, uploadId, idToken) => {
       const status = response.data.status
       const failureMessage = response.data.failureMessage
       return { status: status, failureMessage: failureMessage }
+    }).catch(error => {
+      console.log('error', error.response)
+      throw error.response
     })
 }
 
@@ -94,6 +97,9 @@ const renameStream = (env, streamId, streamName, streamSite, idToken) => {
   return axios.post(apiUrl(env) + `/streams/${streamId}`, { name: streamName, site: streamSite }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
+    }).catch(error => {
+      console.log('error', error.response)
+      throw error.response
     })
 }
 
@@ -108,6 +114,9 @@ const sendInviteCode = (env, code, idToken) => {
   return axios.post(apiUrl(env) + `/users/code`, { code: code }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
+    }).catch(error => {
+      console.log('error', error.response)
+      throw error.response
     })
 }
 
@@ -122,6 +131,9 @@ const getExistingStreams = (env, idToken) => {
   return axios.get(apiUrl(env) + `/streams`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
+    }).catch(error => {
+      console.log('error', error.response)
+      throw error.response
     })
 }
 

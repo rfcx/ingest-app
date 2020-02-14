@@ -117,7 +117,7 @@
             }).catch((error) => {
               console.log(error)
               return File.update({ where: file.id,
-                data: {state: 'failed', stateMessage: error.message}
+                data: {state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.'}
               })
             })
         }
