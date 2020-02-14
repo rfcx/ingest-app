@@ -16,8 +16,8 @@
               <div class="state-progress" v-if="shouldShowProgress(stream)">
                 <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream), 'is-success': isFilesHidden(stream), 'is-danger': getState(stream) === 'duplicated' || getState(stream) === 'failed' }" :value="getProgress(stream)" max="100"></progress>
                 <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' }">
-                  <span v-if="!checkWarningLoad(stream) && !isFilesHidden(stream) && getState(stream) === 'failed' && getState(stream) === 'duplicated'" class="is-size-7">{{ getState(stream) }}</span>
-                  <span class="is-size-7"> {{ getStateStatus(stream) }} </span>
+                  <span class="is-size-7 menu-container-left">{{ !checkWarningLoad(stream) && !isFilesHidden(stream) && getState(stream) === 'failed' && getState(stream) === 'duplicated' ? getState(stream) : '' }}</span>
+                  <span class="is-size-7 menu-container-right"> {{ getStateStatus(stream) }} </span>
                 </div>
               </div>
             </div>
@@ -208,6 +208,16 @@
   .is-danger {
     background-color: #f14668 !important;
     border-color: transparent;
+  }
+
+  .menu-container-left {
+    width: 29%;
+    text-align: left;
+  }
+
+  .menu-container-right {
+    width: 70%;
+    text-align: right;
   }
 
   .dark-tray {

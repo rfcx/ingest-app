@@ -11,6 +11,7 @@
           <div class="edit-container-item-control">
             <button class="button is-rounded btn btn-edit-cancel" @click="cancel()">Cancel</button>
             <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!isNewStreamNameValid && (newStreamName && newStreamName.length > 0)" @click="saveStream()">Save</button>
+            <span class="edit-container-error" v-show="error">{{ error }}</span>
           </div>
         </div>
         <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()">
@@ -19,10 +20,9 @@
           </div>
           <div class="dropdown-menu" id="dropdown-menu" role="menu">
             <div class="dropdown-content">
-              <a href="#" title="Rename the stream" class="dropdown-item" @click="refreshStream()">Refresh</a>
               <a href="#" title="Rename the stream" class="dropdown-item" @click="renameStream()">Rename</a>
-              <!-- <hr class="dropdown-divider"> -->
-              <a href="#" title="Rename the stream" class="dropdown-item" @click="redirectToStreamWeb()">Redirect to RFCx Client Stream Web App</a>
+              <a href="#" title="Rescan the folder" class="dropdown-item" @click="refreshStream()">Rescan the folder</a>
+              <a href="#" title="Redirect to Web App" class="dropdown-item" @click="redirectToStreamWeb()">Redirect to RFCx Client Stream Web App</a>
               <a href="#" title="Delete the stream" class="dropdown-item has-text-danger" @click="showConfirmToDeleteStreamModal()">Delete</a>
             </div>
           </div>
@@ -112,7 +112,8 @@
         shouldShowConfirmToDeleteModal: false,
         isRenaming: false,
         isLoading: false,
-        newStreamName: ''
+        newStreamName: '',
+        error: null
       }
     },
     computed: {
@@ -185,6 +186,7 @@
         }
       },
       saveStream () {
+        this.error = null
         this.isLoading = true
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
@@ -200,15 +202,18 @@
           }).catch(error => {
             console.log('error while updating stream', error)
             this.isLoading = false
+            if (error.status === 401 || error.data === 'UNAUTHORIZED') {
+              this.error = 'You are not authorized.'
+            } else { this.error = 'Error while updating stream.' }
           })
         }
-        this.isLoading = true
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       cancel () {
         this.isRenaming = false
         this.newStreamName = null
+        this.error = null
       },
       getFiles () {
         return this.files
@@ -509,7 +514,14 @@
 
   .edit-container {
     vertical-align: middle !important;
-    width: 500px !important;
+    width: 595px !important;
+  }
+
+  .edit-container-error {
+    margin-left: 3px;
+    font-size: 10px;
+    color: #a1a1a7;
+    vertical-align: middle;
   }
 
   .edit-container-item-input {

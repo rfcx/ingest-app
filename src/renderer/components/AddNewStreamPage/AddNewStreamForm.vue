@@ -272,7 +272,9 @@ export default {
           }).catch(error => {
             console.log('error while creating stream', error)
             this.isLoading = false
-            this.error = error.message || error.data
+            if (error.status === 401 || error.data === 'UNAUTHORIZED') {
+              this.error = 'You are not authorized.'
+            } else { this.error = error.message || error.data }
           })
         }
         this.isLoading = true
@@ -327,7 +329,9 @@ export default {
             }).catch(error => {
               console.log('error while creating stream', error)
               this.isLoading = false
-              this.error = error.message
+              if (error.status === 401 || error.data === 'UNAUTHORIZED') {
+                this.error = 'You are not authorized.'
+              } else { this.error = error.message || error.data }
             })
           }
           await createStreamsAsync()
@@ -480,6 +484,7 @@ export default {
     getExistingStreams () {
       this.isAddingToExistingStream = false
       this.isLoadingStreams = true
+      this.error = null
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         api.getExistingStreams(this.isProductionEnv(), arg).then(items => {
@@ -510,6 +515,12 @@ export default {
           })
           this.isLoadingStreams = false
           console.log('existingStreams', this.existingStreams)
+        }).catch(error => {
+          console.log('error while getting existing streams', error)
+          this.isLoadingStreams = false
+          if (error.status === 401 || error.data === 'UNAUTHORIZED') {
+            this.error = 'You are not authorized.'
+          } else { this.error = error.message || error.data }
         })
       }
       this.$electron.ipcRenderer.send('getIdToken')

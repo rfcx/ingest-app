@@ -264,6 +264,10 @@
     position: absolute;
   }
 
+  .side-menu-column {
+    padding-top: 3px !important;
+  }
+
   .content {
     position: absolute;
     top: $navbar-height;
@@ -543,6 +547,15 @@
     }
     .file-list-table__head {
       background-color: #131525 !important;
+    }
+    .modal.is-active {
+      z-index: 200;
+    }
+    .modal-background {
+      z-index: 150;
+    }
+    .modal-card {
+      z-index: 200;
     }
     ::-webkit-scrollbar-thumb {
       background-color: #45485d;
