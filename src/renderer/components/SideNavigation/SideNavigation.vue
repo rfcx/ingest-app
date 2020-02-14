@@ -266,7 +266,7 @@
           return `0/${failedFiles.length} ingested | ${failedFiles.length} ${failedFiles.length > 1 ? 'errors' : 'error'}`
         } else if (state === 'completed') {
           const successedFiles = stream.files.filter(file => { return file.state === 'completed' })
-          return `${successedFiles.length}/${successedFiles.length} ingested`
+          return `${successedFiles.length}/${successedFiles.length} ingested | 0 errors`
         } else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? ' files' : ' file')
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         const errorFiles = stream.files.filter(file => { return file.state === 'failed' || file.state === 'duplicated' })
