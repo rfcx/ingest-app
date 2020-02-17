@@ -57,7 +57,16 @@
       ]
     },
     "win": {
-      "icon": "build/icons/ingest-windows.ico"
+      "icon": "build/icons/ingest-windows.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ]
     },
     "linux": {
       "icon": "build/icons"
