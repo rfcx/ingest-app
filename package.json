@@ -2,6 +2,7 @@
   "name": "ingest-app",
   "version": "1.0.12",
   "author": "RFCx",
+  "private": true,
   "description": "Desktop application for ingesting audio to RFCx platform",
   "license": null,
   "main": "./dist/electron/main.js",

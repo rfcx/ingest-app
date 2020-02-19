@@ -9,7 +9,7 @@ const apiUrl = (proEnvironment) => {
     return platform === 'amazon' ? 'https://ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
   }
   return platform === 'amazon' ? 'https://staging-ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
-  // return 'http://localhost:3030'
+  // return 'http://192.168.154.144:3030' // return 'http://localhost:3030'
 }
 
 const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, idToken, progressCallback) => {
