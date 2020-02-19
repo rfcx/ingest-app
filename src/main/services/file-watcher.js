@@ -1,11 +1,29 @@
 import * as chokidar from 'chokidar'
 import fileService from '../../renderer/services/file'
+import fileHelper from '../../../utils/fileHelper'
+import File from '../../renderer/store/models/File'
 
 // We are going to store all watchers in this objects by stream guid
 // This will let us close and remove previous watcher when we press "Refresh" button for stream
 let watchers = {}
 
+async function checkFilesExistense (files) {
+  for (const file of files) {
+    if (!fileHelper.isExist(file.path)) {
+      await File.delete(file.id)
+    }
+  }
+}
+
+async function getFiles (selectedStream) {
+  return File.query().where('streamId', selectedStream.id).orderBy('name').get()
+}
+
 async function subscribeStream (selectedStream) {
+  try {
+    let files = await getFiles(selectedStream)
+    await checkFilesExistense(files)
+  } catch (e) { console.log(e) }
   await createWatcher(
     selectedStream.id,
     selectedStream.folderPath,

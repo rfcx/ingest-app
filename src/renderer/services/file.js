@@ -34,7 +34,11 @@ class FileProvider {
 
   watchingStream (selectedStream) {
     fileWatcher.createWatcher(selectedStream.id, selectedStream.folderPath, (newFilePath) => {
-      // let files = await this.getFiles(selectedStream)
+      // try {
+      //   let files = await this.getFiles(selectedStream)
+      // } catch (error) {
+      //   console.log(error)
+      // }
       let files = File.query().where('streamId', selectedStream.id).orderBy('name').get()
       if (selectedStream.files && selectedStream.files.length === files.length) {
         if (this.fileIsExist(newFilePath)) return
@@ -65,11 +69,7 @@ class FileProvider {
   }
 
   async getFiles (selectedStream) {
-    try {
-      return File.query().where('streamId', selectedStream.id).orderBy('name').get()
-    } catch (error) {
-      console.log(error)
-    }
+    return File.query().where('streamId', selectedStream.id).orderBy('name').get()
   }
 
   async newFilePath (newFilePath, selectedStream) {
