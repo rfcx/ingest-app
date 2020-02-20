@@ -60,6 +60,12 @@ function createAuthWindow () {
       createBackButton()
     }
   })
+  win.webContents.on('did-frame-finish-load', (event, isMainFrame, frameProcessId, frameRoutingId) => {
+    let url = event.sender.getURL()
+    if (url.includes('&lp=1&hl=')) {
+      createBackButton()
+    }
+  })
   win.on('closed', () => {
     win = null
     console.log('auth window closed')
