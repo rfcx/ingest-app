@@ -70,6 +70,34 @@ function createAuthWindow () {
     win = null
     console.log('auth window closed')
   })
+  win.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+    if (errorDescription === 'ERR_INTERNET_DISCONNECTED') {
+      let code = `body = document.getElementsByTagName('body')[0]
+      if (body) {
+      let div = document.createElement('div')
+      body.appendChild(div)
+      div.innerHTML = 'No Internet Connection'
+      div.style.fontSize = '20px'; div.style.color = 'grey'; div.style.paddingTop = '100px'; div.style.textAlign = 'center' }`
+      win.webContents.executeJavaScript(code)
+      let interval = setInterval(() => {
+        const checkInternetConnected = require('check-internet-connected')
+        const config = {
+          timeout: 5000,
+          retries: 1,
+          domain: 'apple.com'
+        }
+        checkInternetConnected(config)
+          .then(() => {
+            console.log('Connection available')
+            win.loadURL(authService.getAuthenticationURL(), { userAgent: 'Chrome' })
+            currentUrl = authService.getAuthenticationURL()
+            clearInterval(interval)
+          }).catch((err) => {
+            console.log('No connection', err)
+          })
+      }, 5000)
+    }
+  })
 }
 
 function destroyAuthWin () {

@@ -38,10 +38,6 @@ const backgroundAPIURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/api-service`
   : `file://${__dirname}/index.html#/api-service`
 
-// const backgroundFSURL = process.env.NODE_ENV === 'development'
-//   ? `http://localhost:9080/#/fs-service`
-//   : `file://${__dirname}/index.html#/fs-service`
-
 const trayURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/tray`
   : `file://${__dirname}/index.html#/tray`
@@ -69,7 +65,6 @@ function createWindow (openedAsHidden = false) {
 
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('did-finish-load')
-    // backgroundFSWindow.loadURL(backgroundFSURL)
     backgroundAPIWindow.loadURL(backgroundAPIURL)
   })
 
@@ -125,10 +120,6 @@ function createWindow (openedAsHidden = false) {
     show: false,
     webPreferences: { nodeIntegration: true }
   })
-  // backgroundFSWindow = new BrowserWindow({
-  //   show: true,
-  //   webPreferences: { nodeIntegration: true }
-  // })
   createAboutUrl(false)
   trayWindow = new BrowserWindow({
     width: 300,
