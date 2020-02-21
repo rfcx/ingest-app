@@ -8,7 +8,7 @@
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
         </div>
-        <div class="column content is-desktop" v-else @drop.prevent="handleDrop" :class="{ 'dark-mode': isDarkTheme === true }">
+        <div class="column content is-desktop" v-else @drop.prevent="handleDrop" @dragover.prevent :class="{ 'dark-mode': isDarkTheme === true }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
         </div>
