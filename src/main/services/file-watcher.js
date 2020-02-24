@@ -48,7 +48,7 @@ async function createWatcher (guid, path, addCallback, removeCallback) {
   })
   watcher
     .on('add', (path) => {
-      console.log(`File ${path} has been added`)
+      // console.log(`File ${path} has been added`)
       return addCallback(path)
     })
     .on('unlink', (path) => {

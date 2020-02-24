@@ -91,9 +91,9 @@ class FileProvider {
   createFileObject (filePath, stream) {
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
-    const data = fileHelper.getMD5Hash(filePath)
-    const hash = data.hash
-    const sha1 = data.sha1
+    // const data = fileHelper.getMD5Hash(filePath)
+    // const hash = data.hash
+    // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
     let isoDate
     if (stream.timestampFormat === 'Auto-detect') {
@@ -106,8 +106,8 @@ class FileProvider {
     return {
       id: this.getFileId(filePath),
       name: fileName,
-      hash: hash,
-      sha1: sha1,
+      hash: '',
+      sha1: '',
       path: filePath,
       extension: fileExt,
       sizeInByte: size,

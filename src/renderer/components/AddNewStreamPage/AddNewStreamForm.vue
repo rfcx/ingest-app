@@ -224,13 +224,6 @@ export default {
       this.$electron.ipcRenderer.send('getIdToken')
       this.$electron.ipcRenderer.on('sendIdToken', listener)
     },
-    listenerForReading (event, arg) {
-      this.$electron.ipcRenderer.removeListener('readingIsDone', this.listenerForReading)
-      setTimeout(() => {
-        console.log('readingIsDone')
-        this.$router.push('/')
-      }, 5000)
-    },
     async createStream () {
       if (!this.isMultipleUpload) {
         if (this.checkIfDuplicateStream(this.folderPath)) {
@@ -242,11 +235,6 @@ export default {
           this.error = 'The directory is not exist.'
           return false
         }
-        // let list = (event, arg) => {
-        //   console.log('readingIsDone')
-        //   this.$electron.ipcRenderer.removeListener('readingIsDone', list)
-        //   this.$router.push('/')
-        // }
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           let idToken = null
@@ -262,13 +250,18 @@ export default {
               env: this.isProductionEnv() ? 'production' : 'staging',
               visibility: visibility
             }
-            this.isReading = true
-            console.log('creating stream', JSON.stringify(stream), this.isReading)
+            console.log('creating stream', JSON.stringify(stream))
             Stream.insert({ data: stream, insert: ['files'] })
             this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$electron.ipcRenderer.send('subscribeToFileWatcher', [ stream ])
-            this.$electron.ipcRenderer.on('readingIsDone', this.listenerForReading)
-            // this.$router.push('/')
+            this.$store.dispatch('setSelectedStreamId', stream.id)
+            let interval = setInterval(() => {
+              const newStream = this.streams.filter(item => { return item.id === stream.id })
+              if (newStream) {
+                clearInterval(interval)
+                return this.$router.push('/')
+              }
+            }, 500)
           }).catch(error => {
             console.log('error while creating stream', error)
             this.isLoading = false
@@ -315,7 +308,7 @@ export default {
                 visibility: visibility
               }
               this.isReading = true
-              console.log('creating stream', JSON.stringify(stream), this.isReading)
+              console.log('creating stream', JSON.stringify(stream))
               Stream.insert({ data: stream, insert: ['files'] })
               this.$store.dispatch('setSelectedStreamId', stream.id)
               this.$electron.ipcRenderer.send('subscribeToFileWatcher', [ stream ])
@@ -323,8 +316,8 @@ export default {
               if (this.newStreamsPaths[this.newStreamsPaths.length - 1] === path && count === 0) {
                 count++
                 this.isLoading = false
-                this.$electron.ipcRenderer.on('readingIsDone', this.listenerForReading)
-                // this.$router.push('/')
+                this.isReading = false
+                this.$router.push('/')
               }
             }).catch(error => {
               console.log('error while creating stream', error)
@@ -544,6 +537,7 @@ export default {
         this.error = 'The directory is not exist.'
         return false
       }
+      this.isLoading = true
       // Restore the stream in the local database
       this.allStreams.forEach((stream) => {
         if (stream.guid === this.currentStream.value) {
@@ -555,13 +549,18 @@ export default {
             siteGuid: stream.site.guid,
             env: this.isProductionEnv() ? 'production' : 'staging'
           }
-          this.isReading = true
-          console.log('restoring stream', JSON.stringify(restoringStream), this.isReading)
+          console.log('restoring stream', JSON.stringify(restoringStream))
           Stream.insert({ data: restoringStream, insert: ['files'] })
           this.$electron.ipcRenderer.send('subscribeToFileWatcher', [ restoringStream ])
-          this.$electron.ipcRenderer.on('readingIsDone', this.listenerForReading)
           this.$store.dispatch('setSelectedStreamId', restoringStream.id)
-          // this.$router.push('/')
+          let interval = setInterval(() => {
+            const newStream = this.streams.filter(item => { return item.id === restoringStream.id })
+            if (newStream) {
+              clearInterval(interval)
+              this.isLoading = false
+              return this.$router.push('/')
+            }
+          }, 500)
         }
       })
     }

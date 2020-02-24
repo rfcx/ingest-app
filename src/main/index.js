@@ -539,14 +539,13 @@ ipcMain.on('focusFolder', (event, data) => {
   shell.openItem(data)
 })
 
-ipcMain.on('subscribeToFileWatcher', async function (event, data) {
-  console.log('subscribeToFileWatcher', data)
-  if (data && data.length) {
-    for (let stream of data) {
+ipcMain.on('subscribeToFileWatcher', async function (event, streams) {
+  console.log('subscribeToFileWatcher', streams)
+  if (streams && streams.length) {
+    for (let stream of streams) {
       await fileWatcher.subscribeStream(stream)
     }
   }
-  event.sender.send('readingIsDone')
 })
 
 /**
