@@ -37,6 +37,11 @@ export default new Router({
       component: require('@/components/AboutPage').default
     },
     {
+      path: '/update',
+      name: 'update-page',
+      component: require('@/components/UpdatePage').default
+    },
+    {
       path: '/access-denied-page',
       name: 'access-denied-page',
       component: require('@/components/AccessDeniedPage').default

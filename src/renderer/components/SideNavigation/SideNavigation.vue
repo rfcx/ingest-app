@@ -346,12 +346,12 @@
   }
 
   .menu-container-left {
-    width: 29%;
+    width: 25%;
     text-align: left;
   }
 
   .menu-container-right {
-    width: 70%;
+    width: 74%;
     text-align: right;
   }
 

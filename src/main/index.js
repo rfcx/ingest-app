@@ -48,6 +48,10 @@ const aboutURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/about`
   : `file://${__dirname}/index.html#/about`
 
+const updateURL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:9080/#/update`
+  : `file://${__dirname}/index.html#/update`
+
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
   /**
@@ -123,6 +127,7 @@ function createWindow (openedAsHidden = false) {
     webPreferences: { nodeIntegration: true }
   })
   createAboutUrl(false)
+  createUpdatePopupWindow(false)
   trayWindow = new BrowserWindow({
     width: 300,
     height: 350,
@@ -181,6 +186,34 @@ function createAboutUrl (isShow) {
     if (aboutWindow) {
       aboutWindow.destroy()
       aboutWindow = null
+    }
+  })
+}
+
+function createUpdatePopupWindow (isShow) {
+  updatePopupWindow = new BrowserWindow({
+    width: 500,
+    height: 300,
+    show: isShow,
+    frame: true,
+    transparent: false,
+    backgroundColor: '#131525',
+    titleBarStyle: 'default',
+    webPreferences: { nodeIntegration: true }
+  })
+
+  updatePopupWindow.removeMenu()
+
+  updatePopupWindow.on('close', () => {
+    console.log('updatePopupWindow close')
+    updatePopupWindow = null
+  })
+
+  updatePopupWindow.on('closed', () => {
+    console.log('updatePopupWindow closed')
+    if (updatePopupWindow) {
+      updatePopupWindow.destroy()
+      updatePopupWindow = null
     }
   })
 }
@@ -244,13 +277,22 @@ function createMenu () {
           }
         },
         { type: 'separator' },
-        { label: 'About Ingest App',
+        { label: 'Check for Updates',
           click: function () {
             if (aboutURL) {
               createAboutUrl(true)
               aboutWindow.loadURL(aboutURL)
               aboutWindow.show()
             } else aboutWindow.loadURL(aboutURL)
+          }
+        },
+        { label: 'About Ingest App',
+          click: function () {
+            if (aboutURL) {
+              createUpdatePopupWindow(true)
+              updatePopupWindow.loadURL(updateURL)
+              updatePopupWindow.show()
+            } else updatePopupWindow.loadURL(updateURL)
           }
         }
       ]
@@ -267,18 +309,6 @@ function createMenu () {
         { label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' }
       ]
     }
-    // {
-    //   role: 'help',
-    //   submenu: [
-    //     {
-    //       label: 'Learn More',
-    //       click: async () => {
-    //         const { shell } = require('electron')
-    //         await shell.openExternal('https://electronjs.org')
-    //       }
-    //     }
-    //   ]
-    // }
   ]
   menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
@@ -566,6 +596,8 @@ autoUpdater.on('update-available', () => console.log('update-available'))
 autoUpdater.on('update-not-available', () => console.log('update-not-available'))
 autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
   console.log('update-downloaded', event, releaseNotes, releaseName)
+  global.newVersion = releaseName
+  global.notes = releaseNotes
   dialog.showMessageBox(mainWindow, {
     type: 'question',
     buttons: ['Update', 'Cancel'],
