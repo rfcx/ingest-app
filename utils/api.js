@@ -110,8 +110,24 @@ const touchApi = (env, idToken) => {
     })
 }
 
-const sendInviteCode = (env, code, idToken) => {
-  return axios.post(apiUrl(env) + `/users/code`, { code: code }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+const sendInviteCode = (env, attrs, idToken) => {
+  let data = {
+    code: attrs.code
+  }
+  if (attrs.acceptTerms) {
+    data.accept_terms = !!attrs.acceptTerms
+  }
+  return axios.post(apiUrl(env) + `/users/code`, data, { headers: { 'Authorization': 'Bearer ' + idToken } })
+    .then(function (response) {
+      return response.data
+    }).catch(error => {
+      console.log('error', error.response)
+      throw error.response
+    })
+}
+
+const sendAcceptTerms = (env, idToken) => {
+  return axios.post(apiUrl(env) + `/users/accept-terms`, { }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -144,6 +160,7 @@ export default {
   renameStream,
   touchApi,
   sendInviteCode,
+  sendAcceptTerms,
   getUserSites,
   getExistingStreams
 }

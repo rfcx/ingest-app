@@ -91,7 +91,6 @@ async function loadTokens (callbackURL) {
         logout()
         return reject(error)
       }
-
       const responseBody = JSON.parse(body)
       await parseTokens(responseBody)
       refreshToken = responseBody.refresh_token
@@ -102,18 +101,20 @@ async function loadTokens (callbackURL) {
 }
 
 async function parseTokens (responseBody) {
+  let appMetadata = 'https://rfcx.org/app_metadata'
+  let userMetadata = 'https://rfcx.org/user_metadata'
   accessToken = responseBody.access_token
   await keytar.setPassword('ingest-app-access-token', keytarAccount, accessToken)
   profile = jwtDecode(responseBody.id_token)
   await keytar.setPassword('ingest-app-id-token', keytarAccount, responseBody.id_token)
   if (profile && profile.given_name) {
     global.firstname = profile.given_name
-  } else if (profile && profile.user_metadata && profile.user_metadata.given_name) {
-    global.firstname = profile.user_metadata.given_name
+  } else if (profile && profile[userMetadata] && profile[userMetadata].given_name) {
+    global.firstname = profile[userMetadata].given_name
   }
-  if (profile && profile['https://rfcx.org/app_metadata']) {
-    global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
-    global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
+  if (profile && profile[appMetadata]) {
+    global.accessibleSites = profile[appMetadata].accessibleSites
+    global.defaultSite = profile[appMetadata].defaultSite
   }
   if (profile && profile.picture) {
     global.picture = profile.picture
@@ -121,6 +122,10 @@ async function parseTokens (responseBody) {
   if (profile && profile.guid) {
     global.userId = profile.guid
   }
+  if (profile && profile.roles) {
+    global.roles = profile.roles
+  }
+  global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven === true
   await setAllUserSitesInfo(responseBody.id_token)
   console.log('parse tokens finished')
 }

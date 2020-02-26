@@ -1,10 +1,23 @@
 <template>
   <div id="wrapper-access-denied-page" class="access-denied-page" :class="{ 'dark-mode': isDark }">
-    <div class="access-denied-page-label">You don't have required permissions to access this app. Ask admin@rfcx.org for details.</div>
-    <div class="access-denied-page-btn">
-      <a class="button is-primary" @click="logOut()">Log out</a>
+    <a class="button is-default access-denied-page__logout-btn" @click="logOut()">Log out</a>
+    <div class="access-denied-page-label" v-if="hasRFCxRole === false">You don't have required permissions to access this app. Ask admin@rfcx.org for details.</div>
+    <div class="access-denied-page__terms-form" v-if="consentGiven === false">
+      <input type="checkbox" id="terms-checkbox" v-model="acceptTermsChecked" class="checkbox-form">
+      <span class="checkbox-span">
+        <label for="terms-checkbox">I have read and agree with</label> <a v-on:click="openTermsAndConditions()">Terms and Conditions</a>
+      </span>
+      <div class="access-denied-page__accept-terms-btn-wrapper">
+        <button class="button is-primary" :class="{ 'is-loading': isLoading }" :disabled="!acceptTermsChecked || isLoading || showSuccessMessage" v-if="hasRFCxRole === true" @click="sendAcceptTerms()">Submit</button>
+      </div>
+      <div v-if="hasRFCxRole === true && errorMessage">
+        <p class="error-message">{{errorMessage}}</p>
+      </div>
+      <p class="success-message" v-if="hasRFCxRole === true && showSuccessMessage">
+        <span>Redirecting to homepage...</span>
+      </p>
     </div>
-    <div class="user-code" v-if="hasAccessToSendCode">
+    <div class="user-code" v-if="hasAccessToSendCode && hasRFCxRole === false">
       <p class="user-code-label">Have an invite code? Paste is here:</p>
       <fieldset>
         <div class="form">
@@ -13,7 +26,7 @@
               <input id="userCode" v-model="code" class="input" type="text" name="code" placeholder="Code" :disabled="isLoading || showSuccessMessage" required>
             </div>
             <div class="control">
-              <button class="button is-primary" :class="{ 'is-loading': isLoading }" :disabled="!isFormValid || isLoading || showSuccessMessage" @click.prevent="sendRequest">Send</button>
+              <button class="button is-primary" :class="{ 'is-loading': isLoading }" :disabled="!isFormValid || isLoading || showSuccessMessage || !acceptTermsChecked" @click.prevent="sendRequest">Send</button>
             </div>
           </div>
           <div v-if="errorMessage">
@@ -31,6 +44,7 @@
 <script>
   import api from '../../../utils/api'
   import settings from 'electron-settings'
+  const { remote } = window.require('electron')
 
   export default {
     name: 'access-denied-page',
@@ -45,7 +59,11 @@
         darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
           this.isDark = newValue
           console.log('isDarkTheme', this.isDark)
-        })
+        }),
+        roles: null,
+        hasRFCxRole: null,
+        consentGiven: null,
+        acceptTermsChecked: false
       }
     },
     methods: {
@@ -60,6 +78,9 @@
         this.showSuccessMessage = false
         this.errorMessage = null
         this.isLoading = true
+        if (!this.acceptTermsChecked) {
+          return
+        }
         let listen = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendRefreshToken', listen)
           this.$router.push('/')
@@ -68,7 +89,11 @@
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           let idToken = null
           idToken = arg
-          return api.sendInviteCode(this.isProductionEnv(), this.code, idToken).then((data) => {
+          let payload = {
+            code: this.code,
+            acceptTerms: this.acceptTermsChecked
+          }
+          return api.sendInviteCode(this.isProductionEnv(), payload, idToken).then((data) => {
             this.isLoading = false
             if (data.success === true) {
               this.$electron.ipcRenderer.send('getRefreshToken')
@@ -85,6 +110,40 @@
         }
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
+      },
+      sendAcceptTerms () {
+        this.showSuccessMessage = false
+        this.errorMessage = null
+        this.isLoading = true
+        let listen = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('sendRefreshToken', listen)
+          this.$router.push('/')
+        }
+        let listener = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          let idToken = null
+          idToken = arg
+          return api.sendAcceptTerms(this.isProductionEnv(), idToken).then((data) => {
+            this.isLoading = false
+            console.log('\n\ndata', data, '\n\n')
+            if (data.success === true) {
+              this.$electron.ipcRenderer.send('getRefreshToken')
+              this.$electron.ipcRenderer.on('sendRefreshToken', listen)
+              this.showSuccessMessage = true
+            } else {
+              this.errorMessage = 'Unable to process your request.'
+            }
+          }).catch((err) => {
+            this.isLoading = false
+            console.log('error', err)
+            this.errorMessage = 'Unable to process your request.'
+          })
+        }
+        this.$electron.ipcRenderer.send('getIdToken')
+        this.$electron.ipcRenderer.on('sendIdToken', listener)
+      },
+      openTermsAndConditions () {
+        this.$electron.shell.openExternal('https://client-stream.rfcx.org/security/terms-of-service')
       }
     },
     computed: {
@@ -95,6 +154,9 @@
     created () {
       console.log('Access-denied page created')
       this.isDark = settings.get('settings.darkMode')
+      this.roles = remote.getGlobal('roles') || []
+      this.hasRFCxRole = this.roles.includes('rfcxUser')
+      this.consentGiven = remote.getGlobal('consentGiven') || false
       let html = document.getElementsByTagName('html')[0]
       if (html && this.isDark) {
         html.style.backgroundColor = '#131525'
@@ -122,6 +184,33 @@
     padding-top: 150px;
     text-align: center;
     margin: 0;
+    position: relative;
+    &__logout-btn {
+      position: absolute;
+      top: 15px;
+      right: 10px;
+      z-index: 1;
+    }
+    &__terms-form {
+      input,
+      span,
+      label,
+      a {
+        display: inline-block;
+        vertical-align: middle;
+        font-size: 14px;
+        line-height: 1;
+      }
+      label {
+        cursor: pointer;
+      }
+      a:hover {
+        color: #2FB04A;
+      }
+    }
+    &__accept-terms-btn-wrapper {
+      margin-top: 10px;
+    }
   }
 
   .access-denied-page-label {
@@ -132,16 +221,12 @@
     line-height: 4.8rem;
     color: grey;
     margin: 0 auto;
-  }
-
-  .access-denied-page-btn {
-    margin-top: 20px;
-    overflow: auto;
+    color: #fff;
   }
 
   .user-code {
    text-align: center;
-   margin-top: 40px;
+   margin-top: 20px;
   }
 
   .user-code-label {
@@ -149,7 +234,8 @@
     text-align: center;
     font-size: 14px;
     color: grey;
-    margin: 0 auto;
+    margin: 0 auto 5px;
+    color: #fff;
   }
 
   .form {
@@ -161,6 +247,7 @@
   .error-message {
     text-align: right;
     font-size: 14px;
+    color: #f14668;
   }
 
   .success-message {

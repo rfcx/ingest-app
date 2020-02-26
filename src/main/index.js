@@ -370,7 +370,7 @@ async function checkToken () {
   })
 }
 
-async function checkUserRole () {
+async function checkUserPermissions () {
   console.log('checkUserRole')
   return new Promise(async (resolve, reject) => {
     if (!idToken) {
@@ -378,18 +378,18 @@ async function checkUserRole () {
       if (!idToken) return resolve(false)
     }
     let profile = jwtDecode(idToken)
-    console.log('roles', profile.roles, 'or', profile['https://rfcx.org/app_metadata'].authorization.roles)
+    let appMetadata = 'https://rfcx.org/app_metadata'
+    let userMetadata = 'https://rfcx.org/user_metadata'
     if (profile && profile.roles && (profile.roles || []).includes('rfcxUser')) {
-      return resolve(true)
-    } else if (profile && profile['https://rfcx.org/app_metadata'] && profile['https://rfcx.org/app_metadata'].authorization &&
-      (profile['https://rfcx.org/app_metadata'].authorization.roles || []).includes('rfcxUser')) {
-      return resolve(true)
+      return resolve(profile[userMetadata] && !!profile[userMetadata].consentGiven)
+    } else if (profile && profile[appMetadata] && profile[appMetadata].authorization && (profile[appMetadata].authorization.roles || []).includes('rfcxUser')) {
+      return resolve(profile[userMetadata] && !!profile[userMetadata].consentGiven)
     } else return resolve(false)
   })
 }
 
 async function hasAccessToApp () {
-  global.hasAccessToApp = await checkUserRole()
+  global.hasAccessToApp = await checkUserPermissions()
 }
 
 async function getUserInfo () {
@@ -400,14 +400,16 @@ async function getUserInfo () {
       if (!idToken) return reject(new Error('no id token available'))
     }
     let profile = jwtDecode(idToken)
+    let appMetadata = 'https://rfcx.org/app_metadata'
+    let userMetadata = 'https://rfcx.org/user_metadata'
     if (profile && profile.given_name) {
       global.firstname = profile.given_name
-    } else if (profile && profile.user_metadata && profile.user_metadata.given_name) {
-      global.firstname = profile.user_metadata.given_name
+    } else if (profile && profile[userMetadata] && profile[userMetadata].given_name) {
+      global.firstname = profile[userMetadata].given_name
     }
-    if (profile && profile['https://rfcx.org/app_metadata']) {
-      global.accessibleSites = profile['https://rfcx.org/app_metadata'].accessibleSites
-      global.defaultSite = profile['https://rfcx.org/app_metadata'].defaultSite
+    if (profile && profile[appMetadata]) {
+      global.accessibleSites = profile[appMetadata].accessibleSites
+      global.defaultSite = profile[appMetadata].defaultSite
     }
     if (profile && profile.picture) {
       global.picture = profile.picture
@@ -415,6 +417,10 @@ async function getUserInfo () {
     if (profile && profile.guid) {
       global.userId = profile.guid
     }
+    if (profile && profile.roles) {
+      global.roles = profile.roles
+    }
+    global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven === true
     await setAllUserSitesInfo()
     resolve()
   })
