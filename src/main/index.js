@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain } from 'electron'
+import { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain, dialog, autoUpdater } from 'electron'
 import '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
@@ -13,7 +13,9 @@ import fileWatcher from './services/file-watcher'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
-
+const os = require('os')
+const log = require('electron-log')
+console.log = log.log
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -554,6 +556,44 @@ ipcMain.on('subscribeToFileWatcher', async function (event, streams) {
   }
 })
 
+let platform = os.platform() + '_' + os.arch()
+let version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
+let updaterFeedURL = 'https://localhost:3030/ingest-app/update/' + platform + '/' + version
+autoUpdater.setFeedURL(updaterFeedURL)
+autoUpdater.on('error', message => { console.error('There was a problem updating the application', message) })
+autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
+autoUpdater.on('update-available', () => console.log('update-available'))
+autoUpdater.on('update-not-available', () => console.log('update-not-available'))
+autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+  console.log('update-downloaded', event, releaseNotes, releaseName)
+  dialog.showMessageBox(mainWindow, {
+    type: 'question',
+    buttons: ['Update', 'Cancel'],
+    defaultId: 0,
+    message: `Version ${releaseName} is available, do you want to install it now?`,
+    title: 'Update available'
+  }, response => {
+    if (response === 0) {
+      autoUpdater.quitAndInstall()
+      setTimeout(() => {
+        console.log('mainWindow exit')
+        menu = null
+        mainWindow = null
+        if (backgroundAPIWindow) {
+          backgroundAPIWindow = null
+        }
+        if (aboutWindow) {
+          aboutWindow.destroy()
+          aboutWindow = null
+        }
+        resetTimers()
+        app.exit()
+        app.quit()
+      }, 3000)
+    }
+  })
+})
+autoUpdater.checkForUpdates()
 /**
  * Auto Updater
  *
