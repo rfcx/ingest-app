@@ -143,7 +143,7 @@
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       openTermsAndConditions () {
-        this.$electron.shell.openExternal('https://client-stream.rfcx.org/security/terms-of-service')
+        this.$electron.shell.openExternal('https://rfcx.org/terms-of-service')
       }
     },
     computed: {
