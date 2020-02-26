@@ -38,10 +38,6 @@ const backgroundAPIURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/api-service`
   : `file://${__dirname}/index.html#/api-service`
 
-// const backgroundFSURL = process.env.NODE_ENV === 'development'
-//   ? `http://localhost:9080/#/fs-service`
-//   : `file://${__dirname}/index.html#/fs-service`
-
 const trayURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/tray`
   : `file://${__dirname}/index.html#/tray`
@@ -69,7 +65,6 @@ function createWindow (openedAsHidden = false) {
 
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('did-finish-load')
-    // backgroundFSWindow.loadURL(backgroundFSURL)
     backgroundAPIWindow.loadURL(backgroundAPIURL)
   })
 
@@ -125,10 +120,6 @@ function createWindow (openedAsHidden = false) {
     show: false,
     webPreferences: { nodeIntegration: true }
   })
-  // backgroundFSWindow = new BrowserWindow({
-  //   show: true,
-  //   webPreferences: { nodeIntegration: true }
-  // })
   createAboutUrl(false)
   trayWindow = new BrowserWindow({
     width: 300,
@@ -554,14 +545,13 @@ ipcMain.on('focusFolder', (event, data) => {
   shell.openItem(data)
 })
 
-ipcMain.on('subscribeToFileWatcher', async function (event, data) {
-  console.log('subscribeToFileWatcher', data)
-  if (data && data.length) {
-    for (let stream of data) {
+ipcMain.on('subscribeToFileWatcher', async function (event, streams) {
+  console.log('subscribeToFileWatcher', streams)
+  if (streams && streams.length) {
+    for (let stream of streams) {
       await fileWatcher.subscribeStream(stream)
     }
   }
-  event.sender.send('readingIsDone')
 })
 
 /**
