@@ -24,13 +24,13 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-// let mainWindow, backgroundAPIWindow, backgroundFSWindow, trayWindow
-let mainWindow, backgroundAPIWindow, trayWindow, aboutWindow
-let menu, tray, idToken
-let refreshIntervalTimeout, expires
+let mainWindow, backgroundAPIWindow, trayWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
+let menu, tray, idToken, isManualUpdateCheck
+let refreshIntervalTimeout, expires, updateIntervalTimeout
 let willQuitApp = false
 let isLogOut = false
 let dayInMs = 60 * 60 * 24 * 1000
+let weekInMs = dayInMs * 7
 const gotTheLock = app.requestSingleInstanceLock()
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
@@ -52,6 +52,10 @@ const updateURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/update`
   : `file://${__dirname}/index.html#/update`
 
+const preferencesURL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:9080/#/preferences`
+  : `file://${__dirname}/index.html#/preferences`
+
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
   /**
@@ -72,6 +76,11 @@ function createWindow (openedAsHidden = false) {
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('did-finish-load')
     backgroundAPIWindow.loadURL(backgroundAPIURL)
+    setTimeout(() => {
+      if (global.newVersion && !updatePopupWindow) {
+        createUpdatePopupWindow(true)
+      }
+    }, 15000)
   })
 
   mainWindow.on('closed', () => {
@@ -87,6 +96,14 @@ function createWindow (openedAsHidden = false) {
       mainWindow = null
       if (backgroundAPIWindow) {
         backgroundAPIWindow = null
+      }
+      if (preferencesPopupWindow) {
+        preferencesPopupWindow.destroy()
+        preferencesPopupWindow = null
+      }
+      if (updatePopupWindow) {
+        updatePopupWindow.destroy()
+        updatePopupWindow = null
       }
       if (aboutWindow) {
         aboutWindow.destroy()
@@ -127,7 +144,7 @@ function createWindow (openedAsHidden = false) {
     webPreferences: { nodeIntegration: true }
   })
   createAboutUrl(false)
-  createUpdatePopupWindow(false)
+  createPreferencesPopupWindow(false)
   trayWindow = new BrowserWindow({
     width: 300,
     height: 350,
@@ -203,6 +220,7 @@ function createUpdatePopupWindow (isShow) {
   })
 
   updatePopupWindow.removeMenu()
+  updatePopupWindow.loadURL(updateURL)
 
   updatePopupWindow.on('close', () => {
     console.log('updatePopupWindow close')
@@ -214,6 +232,35 @@ function createUpdatePopupWindow (isShow) {
     if (updatePopupWindow) {
       updatePopupWindow.destroy()
       updatePopupWindow = null
+    }
+  })
+}
+
+function createPreferencesPopupWindow (isShow) {
+  preferencesPopupWindow = new BrowserWindow({
+    width: 500,
+    height: 300,
+    show: isShow,
+    frame: true,
+    transparent: false,
+    title: 'SETTINGS',
+    backgroundColor: '#131525',
+    titleBarStyle: 'default',
+    webPreferences: { nodeIntegration: true }
+  })
+
+  preferencesPopupWindow.removeMenu()
+
+  preferencesPopupWindow.on('close', () => {
+    console.log('preferencesPopupWindow close')
+    preferencesPopupWindow = null
+  })
+
+  preferencesPopupWindow.on('closed', () => {
+    console.log('preferencesPopupWindow closed')
+    if (preferencesPopupWindow) {
+      preferencesPopupWindow.destroy()
+      preferencesPopupWindow = null
     }
   })
 }
@@ -277,22 +324,40 @@ function createMenu () {
           }
         },
         { type: 'separator' },
+        { label: 'Preferences',
+          click: function () {
+            if (preferencesPopupWindow) {
+              preferencesPopupWindow.destroy()
+              preferencesPopupWindow = null
+            }
+            if (preferencesURL) {
+              createPreferencesPopupWindow(true)
+              preferencesPopupWindow.loadURL(preferencesURL)
+              preferencesPopupWindow.show()
+            } else preferencesPopupWindow.loadURL(preferencesURL)
+          }
+        },
         { label: 'Check for Updates',
           click: function () {
+            if (updatePopupWindow) {
+              updatePopupWindow.destroy()
+              updatePopupWindow = null
+            }
+            isManualUpdateCheck = true
+            checkForUpdates()
+          }
+        },
+        { label: 'About Ingest App',
+          click: function () {
+            if (aboutWindow) {
+              aboutWindow.destroy()
+              aboutWindow = null
+            }
             if (aboutURL) {
               createAboutUrl(true)
               aboutWindow.loadURL(aboutURL)
               aboutWindow.show()
             } else aboutWindow.loadURL(aboutURL)
-          }
-        },
-        { label: 'About Ingest App',
-          click: function () {
-            if (aboutURL) {
-              createUpdatePopupWindow(true)
-              updatePopupWindow.loadURL(updateURL)
-              updatePopupWindow.show()
-            } else updatePopupWindow.loadURL(updateURL)
           }
         }
       ]
@@ -347,11 +412,15 @@ function initialSettings () {
       auto_start: false,
       production_env: true,
       platform: 'amazon',
-      darkMode: true
+      darkMode: true,
+      auto_update_app: true
     })
   }
   if (settings.get('settings.darkMode') === undefined) {
     settings.set('settings.darkMode', true)
+  }
+  if (settings.get('settings.auto_update_app') === undefined) {
+    settings.set('settings.auto_update_app', true)
   }
   setLoginItem(settings.get('settings.auto_start'))
 }
@@ -497,6 +566,7 @@ async function createRefreshInterval () {
 
 function resetTimers () {
   clearInterval(refreshIntervalTimeout)
+  clearInterval(updateIntervalTimeout)
 }
 if (!gotTheLock) {
   app.exit()
@@ -510,6 +580,89 @@ if (!gotTheLock) {
     }
   })
 }
+
+function createAutoUpdaterSub () {
+  let platform = os.platform() + '_' + os.arch()
+  let version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
+  // let updaterFeedURL = 'https://localhost:3030/ingest-app/update/' + platform + '/' + version
+  let updaterFeedURL
+  if (process.platform === 'win32' || process.platform === 'win64') {
+    updaterFeedURL = ((process.env.NODE_ENV === 'development') ? 'https://localhost:3030/ingest-app/update/' : (settings.get('settings.production_env') ? 'https://ingest.rfcx.org/ingest-app/update/' : 'https://staging-ingest.rfcx.org/ingest-app/update/')) + platform + '/' + version + '/RELEASES'
+  } else {
+    updaterFeedURL = ((process.env.NODE_ENV === 'development') ? 'https://localhost:3030/ingest-app/update/' : (settings.get('settings.production_env') ? 'https://ingest.rfcx.org/ingest-app/update/' : 'https://staging-ingest.rfcx.org/ingest-app/update/')) + platform + '/' + version
+  }
+  autoUpdater.setFeedURL(updaterFeedURL)
+  autoUpdater.on('error', message => {
+    console.error('There was a problem updating the application', message)
+  })
+  autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
+  autoUpdater.on('update-available', () => {
+    console.log('update-available')
+    isManualUpdateCheck = false
+  })
+  autoUpdater.on('update-not-available', () => {
+    console.log('update-not-available')
+    if (isManualUpdateCheck) {
+      dialog.showMessageBox(mainWindow, {
+        type: 'info',
+        buttons: ['Ok'],
+        message: `You are up to date! RFCx Ingest App ${global.version} is the latest version.`,
+        title: 'UP TO DATE',
+        icon: path.join(__static, 'rfcx-logo-win.png')
+      })
+    }
+    isManualUpdateCheck = false
+  })
+  autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+    console.log('update-downloaded', releaseName)
+    global.newVersion = releaseName
+    global.notes = releaseNotes
+    if (!updatePopupWindow) {
+      createUpdatePopupWindow(true)
+    }
+    // if (settings.get('settings.auto_update_app')) {
+    //   updateApp()
+    // }
+  })
+}
+
+function updateApp () {
+  autoUpdater.quitAndInstall()
+  setTimeout(() => {
+    console.log('start updating')
+    menu = null
+    mainWindow = null
+    if (backgroundAPIWindow) {
+      backgroundAPIWindow = null
+    }
+    if (preferencesPopupWindow) {
+      preferencesPopupWindow.destroy()
+      preferencesPopupWindow = null
+    }
+    if (updatePopupWindow) {
+      updatePopupWindow.destroy()
+      updatePopupWindow = null
+    }
+    if (aboutWindow) {
+      aboutWindow.destroy()
+      aboutWindow = null
+    }
+    resetTimers()
+    app.exit()
+    app.quit()
+  }, 2000)
+}
+
+function createUpdateInterval () {
+  updateIntervalTimeout = setInterval(() => {
+    checkForUpdates()
+  }, weekInMs)
+}
+
+function checkForUpdates () {
+  console.log('checkForUpdates')
+  autoUpdater.checkForUpdates()
+}
 app.on('ready', () => {
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
   let openedAsHidden = false
@@ -519,6 +672,8 @@ app.on('ready', () => {
   initialSettings()
   createAppWindow(openedAsHidden)
   global.version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
+  createAutoUpdaterSub()
+  checkForUpdates()
 })
 
 app.on('window-all-closed', () => {
@@ -557,20 +712,20 @@ ipcMain.on('removeTray', (event, data) => {
   removeTray()
 })
 
-let listener = (event, args) => {
+let listenerOfToken = (event, args) => {
   event.sender.send('sendIdToken', idToken)
 }
 
-ipcMain.on('getIdToken', listener)
+ipcMain.on('getIdToken', listenerOfToken)
 
-async function listen (event, args) {
+async function listenerOfRefreshToken (event, args) {
   await refreshTokens()
   await checkToken()
   await hasAccessToApp()
   event.sender.send('sendRefreshToken')
 }
 
-ipcMain.on('getRefreshToken', listen)
+ipcMain.on('getRefreshToken', listenerOfRefreshToken)
 
 ipcMain.on('focusFolder', (event, data) => {
   console.log('focusFolder')
@@ -586,65 +741,23 @@ ipcMain.on('subscribeToFileWatcher', async function (event, streams) {
   }
 })
 
-let platform = os.platform() + '_' + os.arch()
-let version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
-let updaterFeedURL = 'https://localhost:3030/ingest-app/update/' + platform + '/' + version
-autoUpdater.setFeedURL(updaterFeedURL)
-autoUpdater.on('error', message => { console.error('There was a problem updating the application', message) })
-autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
-autoUpdater.on('update-available', () => console.log('update-available'))
-autoUpdater.on('update-not-available', () => console.log('update-not-available'))
-autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-  console.log('update-downloaded', event, releaseNotes, releaseName)
-  global.newVersion = releaseName
-  global.notes = releaseNotes
-  dialog.showMessageBox(mainWindow, {
-    type: 'question',
-    buttons: ['Update', 'Cancel'],
-    defaultId: 0,
-    message: `Version ${releaseName} is available, do you want to install it now?`,
-    title: 'Update available'
-  }, response => {
-    if (response === 0) {
-      autoUpdater.quitAndInstall()
-      setTimeout(() => {
-        console.log('mainWindow exit')
-        menu = null
-        mainWindow = null
-        if (backgroundAPIWindow) {
-          backgroundAPIWindow = null
-        }
-        if (aboutWindow) {
-          aboutWindow.destroy()
-          aboutWindow = null
-        }
-        resetTimers()
-        app.exit()
-        app.quit()
-      }, 3000)
-    }
-  })
-})
-autoUpdater.checkForUpdates()
-/**
- * Auto Updater
- *
- * Uncomment the following code below and install `electron-updater` to
- * support auto updating. Code Signing with a valid certificate is required.
- * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-electron-builder.html#auto-updating
- */
-
-/*
-import { autoUpdater } from 'electron-updater'
-
-autoUpdater.on('update-downloaded', () => {
-  autoUpdater.quitAndInstall()
+ipcMain.on('closeUpdatePopupWindow', () => {
+  console.log('closeUpdatePopupWindow')
+  if (updatePopupWindow) {
+    updatePopupWindow.destroy()
+    updatePopupWindow = null
+  }
 })
 
-app.on('ready', () => {
-  if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
+ipcMain.on('updateVersion', () => {
+  updateApp()
 })
- */
+
+ipcMain.on('changeAutoUpdateApp', () => {
+  if (settings.get('settings.auto_update_app')) {
+    createUpdateInterval()
+  } else { resetTimers() }
+})
 
 export default {
   createWindow,

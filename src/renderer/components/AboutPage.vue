@@ -1,8 +1,8 @@
 <template>
   <div class="about" :class="{ 'dark-tray': isDark }">
-   <img class="about-logo" src="~@/assets/rfcx-logo.png">
-   <div class="about-app">RFCx Ingest</div>
-   <div class="about-text" v-if="version">Version {{version}}</div>
+    <img class="about-logo" src="~@/assets/rfcx-logo.png">
+    <div class="about-app">RFCx Ingest</div>
+    <div class="about-text" v-if="version">Version {{version}}</div>
   </div>
 </template>
 

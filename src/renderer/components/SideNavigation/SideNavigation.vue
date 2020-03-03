@@ -3,8 +3,8 @@
     <div class="menu-container side-menu-title">
       <p class="menu-label"> {{ menuTitle }} </p>
       <div class="side-menu-controls-wrapper">
-        <a :title="isUploadingProcessEnabled? 'Pause' : 'Continue'" v-if="selectedStream && !hidePause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
-        <router-link title="Add a stream" to="/add"><img class="side-menu-controls-btn" src="~@/assets/ic-add-btn.svg"></router-link>
+        <a :title="isUploadingProcessEnabled? 'Pause uploading process' : 'Continue uploading process'" v-if="selectedStream && !hidePause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
+        <router-link title="Create a new stream" to="/add"><img class="side-menu-controls-btn" src="~@/assets/ic-add-btn.svg"></router-link>
       </div>
     </div>
     <ul class="menu-list">

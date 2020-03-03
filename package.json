@@ -1,10 +1,10 @@
 {
   "name": "ingest-app",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "author": "RFCx",
   "private": true,
   "description": "Desktop application for ingesting audio to RFCx platform",
-  "license": null,
+  "license": "",
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",
@@ -69,6 +69,11 @@
         }
       ]
     },
+    "nsis": {
+      "installerIcon": "build/icons/ingest-windows.ico",
+      "createStartMenuShortcut": true,
+      "perMachine": true
+    },
     "linux": {
       "icon": "build/icons"
     }
@@ -81,6 +86,7 @@
     "@fortawesome/vue-fontawesome": "0.1.8",
     "@vuex-orm/core": "^0.32.2",
     "axios": "^0.18.0",
+    "babel-runtime": "^6.26.0",
     "bulma": "^0.7.5",
     "check-internet-connected": "^2.0.4",
     "chokidar": "^3.3.1",
@@ -99,6 +105,7 @@
     "sox": "^0.1.0",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",
+    "vue-markdown": "^2.2.4",
     "vue-router": "^3.0.1",
     "vue2-circle-progress": "^1.2.3",
     "vuex": "^3.1.2",

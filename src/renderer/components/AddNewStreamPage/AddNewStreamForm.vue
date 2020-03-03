@@ -95,8 +95,9 @@
         <div class="field" v-if="isAddingToExistingStream">
           <label class="checkbox">
             <input type="checkbox" class="checkbox-form" v-on:click="toggleVisibility()">
-            <span class="checkbox-span">Private stream</span>
+            <span class="checkbox-span">Private stream*</span>
           </label>
+          <div class="checkbox-span checkbox-span-descr">*other users can't see this Stream. In the other case, only you and other users belonging to your site can see this Stream.</div>
         </div>
         <div class="field is-grouped">
           <p class="control control-btn">
@@ -857,6 +858,13 @@ export default {
   .checkbox-span {
     line-height: 1 !important;;
     vertical-align: top !important;
+  }
+
+  .checkbox-span-descr {
+    color: grey;
+    font-style: italic;
+    font-size: 12px;
+    margin-top: 5px;
   }
 
   .reading-files-label {
