@@ -4,13 +4,13 @@
      <span class="update-popup-title">{{ newVersion ? 'Update Available' : 'You use Latest Release'}}</span>
     </div>
     <div class="update-popup-content-wrapper">
-      <div class="update-popup-version" v-if="notes">{{ newVersion }} (Latest)</div>
-      <div class="update-popup-version" v-if="!notes">No updates</div>
+      <div class="update-popup-version" v-if="newVersion">{{ newVersion }} (Latest)</div>
+      <div class="update-popup-version" v-if="!newVersion"></div>
       <div class="update-popup-notes">
         <vue-markdown v-if="notes">{{notes}}</vue-markdown>
       </div>
       <div class="update-popup-controls">
-        <button class="button is-rounded btn-edit-cancel btn" @click="cancel()">Cancel</button>
+        <button class="button is-rounded btn-edit-cancel btn" @click="cancel()">Later</button>
         <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!newVersion" @click="update()">Update</button>
       </div>
     </div>
@@ -76,7 +76,7 @@
   }
 
   .update-popup-content-wrapper {
-    padding: 5px 1em 1em;
+    padding: 0px 1em 5px;
   }
 
   .update-popup-title {
@@ -92,7 +92,7 @@
 
   .update-popup-notes {
     font-size: 12px;
-    height: 160px;
+    height: 150px;
     overflow: auto !important;
   }
 

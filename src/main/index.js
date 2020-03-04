@@ -14,12 +14,14 @@ const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
 const os = require('os')
+const setupEvents = require('./../../setupEvents')
 const log = require('electron-log')
 console.log = log.log
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
  */
+
 if (process.env.NODE_ENV !== 'development') {
   global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
@@ -584,13 +586,8 @@ if (!gotTheLock) {
 function createAutoUpdaterSub () {
   let platform = os.platform() + '_' + os.arch()
   let version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
-  // let updaterFeedURL = 'https://localhost:3030/ingest-app/update/' + platform + '/' + version
-  let updaterFeedURL
-  if (process.platform === 'win32' || process.platform === 'win64') {
-    updaterFeedURL = ((process.env.NODE_ENV === 'development') ? 'https://localhost:3030/ingest-app/update/' : (settings.get('settings.production_env') ? 'https://ingest.rfcx.org/ingest-app/update/' : 'https://staging-ingest.rfcx.org/ingest-app/update/')) + platform + '/' + version + '/RELEASES'
-  } else {
-    updaterFeedURL = ((process.env.NODE_ENV === 'development') ? 'https://localhost:3030/ingest-app/update/' : (settings.get('settings.production_env') ? 'https://ingest.rfcx.org/ingest-app/update/' : 'https://staging-ingest.rfcx.org/ingest-app/update/')) + platform + '/' + version
-  }
+  // let updaterFeedURL = 'https://localhost:3030/update/' + platform + '/' + version
+  let updaterFeedURL = ((process.env.NODE_ENV === 'development') ? 'https://localhost:3030/update/' : (settings.get('settings.production_env') ? 'https://ingest.rfcx.org/update/' : 'https://staging-ingest.rfcx.org/update/')) + platform + '/' + version
   autoUpdater.setFeedURL(updaterFeedURL)
   autoUpdater.on('error', message => {
     console.error('There was a problem updating the application', message)
@@ -602,11 +599,16 @@ function createAutoUpdaterSub () {
   })
   autoUpdater.on('update-not-available', () => {
     console.log('update-not-available')
+    let messageForPopup
+    if (process.platform === 'win32' || process.platform === 'win64') messageForPopup = `You don't have any updates`
+    else {
+      messageForPopup = `You are up to date! RFCx Ingest App ${process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()} is the latest version.`
+    }
     if (isManualUpdateCheck) {
       dialog.showMessageBox(mainWindow, {
         type: 'info',
         buttons: ['Ok'],
-        message: `You are up to date! RFCx Ingest App ${global.version} is the latest version.`,
+        message: messageForPopup,
         title: 'UP TO DATE',
         icon: path.join(__static, 'rfcx-logo-win.png')
       })
@@ -614,9 +616,9 @@ function createAutoUpdaterSub () {
     isManualUpdateCheck = false
   })
   autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-    console.log('update-downloaded', releaseName)
-    global.newVersion = releaseName
-    global.notes = releaseNotes
+    console.log('update-downloaded', releaseName, releaseNotes)
+    if (releaseName) global.newVersion = releaseName
+    if (releaseNotes) global.notes = releaseNotes
     if (!updatePopupWindow) {
       createUpdatePopupWindow(true)
     }
@@ -664,6 +666,7 @@ function checkForUpdates () {
   autoUpdater.checkForUpdates()
 }
 app.on('ready', () => {
+  if (setupEvents.handleSquirrelEvent(app)) return
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
   let openedAsHidden = false
   if (process.platform === 'darwin') openedAsHidden = app.getLoginItemSettings().wasOpenedAsHidden
