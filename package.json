@@ -63,7 +63,13 @@
       "certificatePassword": "topherwhite",
       "publisherName": "RFCx",
       "target": [
-        "squirrel"
+        {
+          "target": "squirrel",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
       ]
     },
     "squirrelWindows": {

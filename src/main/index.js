@@ -600,7 +600,7 @@ function createAutoUpdaterSub () {
   autoUpdater.on('update-not-available', () => {
     console.log('update-not-available')
     let messageForPopup
-    if (process.platform === 'win32' || process.platform === 'win64') messageForPopup = `You don't have any updates`
+    if (process.platform === 'win32' || process.platform === 'win64') messageForPopup = `You don't have any updates.`
     else {
       messageForPopup = `You are up to date! RFCx Ingest App ${process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()} is the latest version.`
     }
