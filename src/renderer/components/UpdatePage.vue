@@ -10,8 +10,8 @@
         <vue-markdown v-if="notes">{{notes}}</vue-markdown>
       </div>
       <div class="update-popup-controls">
-        <button class="button is-rounded btn-edit-cancel btn" @click="cancel()">Later</button>
-        <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!newVersion" @click="update()">Update</button>
+        <button class="button is-rounded btn-edit-cancel btn" @click="cancel()">{{ platform === 'mac' ? 'Cancel' : 'Install on quit' }}</button>
+        <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!newVersion" @click="update()">Update now</button>
       </div>
     </div>
   </div>
@@ -27,6 +27,7 @@
       return {
         isDark: null,
         notes: null,
+        platform: null,
         isLoading: false,
         darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
           this.isDark = newValue
@@ -59,6 +60,7 @@
     created () {
       console.log('Update page')
       this.isDark = settings.get('settings.darkMode')
+      this.platform = remote.getGlobal('platform')
       let html = document.getElementsByTagName('html')[0]
       if (html && this.isDark) {
         html.style.backgroundColor = '#131525'

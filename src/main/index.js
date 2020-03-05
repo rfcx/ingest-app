@@ -32,7 +32,7 @@ let refreshIntervalTimeout, expires, updateIntervalTimeout
 let willQuitApp = false
 let isLogOut = false
 let dayInMs = 60 * 60 * 24 * 1000
-let weekInMs = dayInMs * 7
+// let weekInMs = dayInMs * 7
 const gotTheLock = app.requestSingleInstanceLock()
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
@@ -78,11 +78,11 @@ function createWindow (openedAsHidden = false) {
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('did-finish-load')
     backgroundAPIWindow.loadURL(backgroundAPIURL)
-    setTimeout(() => {
-      if (global.newVersion && !updatePopupWindow) {
-        createUpdatePopupWindow(true)
-      }
-    }, 15000)
+    // setTimeout(() => {
+    //   if (global.newVersion && !updatePopupWindow) {
+    //     createUpdatePopupWindow(true)
+    //   }
+    // }, 15000)
   })
 
   mainWindow.on('closed', () => {
@@ -566,9 +566,16 @@ async function createRefreshInterval () {
   }, dayInMs)
 }
 
+function resetUpdateTimers () {
+  if (updateIntervalTimeout) {
+    clearInterval(updateIntervalTimeout)
+  }
+}
+
 function resetTimers () {
-  clearInterval(refreshIntervalTimeout)
-  clearInterval(updateIntervalTimeout)
+  if (refreshIntervalTimeout) {
+    clearInterval(refreshIntervalTimeout)
+  }
 }
 if (!gotTheLock) {
   app.exit()
@@ -622,9 +629,9 @@ function createAutoUpdaterSub () {
     if (!updatePopupWindow) {
       createUpdatePopupWindow(true)
     }
-    // if (settings.get('settings.auto_update_app')) {
-    //   updateApp()
-    // }
+    if (settings.get('settings.auto_update_app') && (process.platform === 'darwin')) {
+      updateApp()
+    }
   })
 }
 
@@ -658,7 +665,7 @@ function updateApp () {
 function createUpdateInterval () {
   updateIntervalTimeout = setInterval(() => {
     checkForUpdates()
-  }, weekInMs)
+  }, dayInMs)
 }
 
 function checkForUpdates () {
@@ -675,8 +682,12 @@ app.on('ready', () => {
   initialSettings()
   createAppWindow(openedAsHidden)
   global.version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
+  global.platform = (process.platform === 'win32' || process.platform === 'win64') ? 'win' : 'mac'
   createAutoUpdaterSub()
-  checkForUpdates()
+  if (settings.get('settings.auto_update_app')) {
+    checkForUpdates()
+    createUpdateInterval()
+  }
 })
 
 app.on('window-all-closed', () => {
@@ -758,8 +769,9 @@ ipcMain.on('updateVersion', () => {
 
 ipcMain.on('changeAutoUpdateApp', () => {
   if (settings.get('settings.auto_update_app')) {
+    checkForUpdates()
     createUpdateInterval()
-  } else { resetTimers() }
+  } else { resetUpdateTimers() }
 })
 
 export default {

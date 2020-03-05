@@ -17,7 +17,8 @@ async function getUserSites (idToken) {
 
     request(req, async (error, response, body) => {
       if (error) {
-        return reject(new Error(error))
+        // return reject(new Error(error))
+        return resolve([])
       }
       resolve(Array.isArray(body) ? body : [])
     })

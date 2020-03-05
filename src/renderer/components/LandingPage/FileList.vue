@@ -44,15 +44,17 @@
         <span>Your synced folder is empty</span><br>
         <a v-if="selectedStream" class="button is-rounded is-primary" style="margin-top: 0.75em" @click="openFolder(selectedStream.folderPath)">Open Folder</a>
     </div>
-    <table v-show="!isEmptyFolder()" class="table file-list-table is-hoverable" :class="{ 'lowerOpacity': files && files.length && isFilesReading }">
-      <thead class="file-list-table__head">
+    <table v-show="!isEmptyFolder()" class="table file-list-table file-list-table_head is-hoverable" :class="{ 'lowerOpacity': files && files.length && isFilesReading }">
+      <thead>
         <tr>
           <td class="file-list-table__cell file-list-table__cell_status"></td>
           <td class="file-list-table__cell file-list-table__cell_name">Name</td>
           <td class="file-list-table__cell file-list-table__cell_info">Timestamp</td>
-          <td class="file-list-table__cell file-list-table__cell_controls file-size-head">File size</td>
+          <td class="file-list-table__cell file-list-table__cell_controls">File size</td>
         </tr>
       </thead>
+    </table>
+    <table v-show="!isEmptyFolder()" class="table file-list-table is-hoverable" :class="{ 'lowerOpacity': files && files.length && isFilesReading }">
       <tbody>
         <tr v-for="file in files" :key="file.id" :class="{ 'file-disable': file.disabled }">
           <td class="file-status file-list-table__cell file-list-table__cell_status" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' || file.state === 'duplicated' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
@@ -392,10 +394,6 @@
     }
   }
 
-  .file-size-head {
-    min-width: 95px;
-  }
-
   thead {
     text-transform: uppercase;
     font-weight: $title-font-weight;
@@ -496,7 +494,6 @@
   .file-status {
     text-align: center !important;
     padding: 0.4rem 0.75rem 0.7rem 0 !important;
-    width: 73px !important;
   }
 
   .file-status img {
@@ -627,11 +624,12 @@
   }
 
   .file-list-table {
-    &__head {
+    &_head {
       position: fixed;
       top: 11.1rem;
-      left: 250px;
+      left: 262px;
       right: 0;
+      width: calc(100% - 274px) !important;
       z-index: 10 !important;
       @media only screen and (max-width: 850px) {
         top: 12rem;
@@ -641,6 +639,11 @@
       }
       @media only screen and (max-width: 600px) {
         top: 13.1rem;
+      }
+      .file-list-table {
+        &__cell {
+          white-space: nowrap;
+        }
       }
     }
     &__cell {

@@ -8,12 +8,12 @@
     </div>
     <div class="preferences-popup-update-wrapper" v-if="currentTab === 'update'">
       <div class="preferences-popup-update-auto">
-        <div class="preferences-popup-update-auto-title">Automatically download major updates</div>
-        <label class="checkbox preferences-popup-update-auto-checkbox">
+        <div class="preferences-popup-update-auto-title">Check for updates automatically</div>
+        <label class="checkbox preferences-popup-update-auto-checkbox preferences-popup-checkbox">
           <input type="checkbox" class="checkbox-form" v-model="isAutoUpdateApp" v-on:click="toggleDisabled()">
-          <span class="checkbox-span">{{ isAutoUpdateApp? 'Enabled' : 'Disabled' }}</span>
+          <span class="checkbox-span">Enabled</span>
         </label>
-        <div class="preferences-popup-update-auto-descr">RFCx Ingest automatically downloads minor updates and bug fixes.</div>
+        <div class="preferences-popup-update-auto-descr">RFCx Ingest automatically checks for new app versions, downloads then and installs on app's restart.</div>
       </div>
     </div>
     <div class="preferences-popup-about-wrapper" v-if="currentTab === 'about'">
@@ -127,12 +127,25 @@
     overflow: hidden;
   }
 
+  .preferences-popup-checkbox {
+    &:hover,
+    &:active {
+      color: #000;
+    }
+  }
+
   .dark-tray {
     background-color: #131525 !important;
     color: #fff !important;
     .preferences-popup-tab a {
-    color: #fff !important;
-  }
+      color: #fff !important;
+    }
+    .preferences-popup-checkbox {
+      &:hover,
+      &:active {
+        color: #fff;
+      }
+    }
   }
 
   ::-webkit-scrollbar-thumb {
