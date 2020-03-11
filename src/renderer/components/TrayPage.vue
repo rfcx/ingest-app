@@ -10,7 +10,7 @@
           <li v-for="stream in streams" :key="stream.id">
             <div class="menu-item" v-on:click="selectItem(stream)">
               <div class="menu-container" :class="{ 'container-failed': getState(stream) === 'failed'  || getState(stream) === 'duplicated'}">
-                <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
+                <span class="stream-title">{{ stream.name }}</span>
                 <img :src="getStateImgUrl(getState(stream))">
               </div>
               <div class="state-progress" v-if="shouldShowProgress(stream)">

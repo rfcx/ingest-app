@@ -3,7 +3,7 @@
     <div class="stream-info-container">
       <div class="title-container">
         <div class="title-container-text" v-if="selectedStream && !isRenaming">
-        <span class="stream-name">{{ selectedStream.name }} (_{{ selectedStream.id.substring(0, 4) }})</span>
+        <span class="stream-name">{{ selectedStream.name }}</span>
         <span v-if="!isSelectedStreamFailed" class="title-container-edit" title="Rename the stream"><font-awesome-icon :icon="iconPencil" @click="renameStream()"></font-awesome-icon></span>
         </div>
         <div class="edit-container" v-if="isRenaming">

@@ -11,7 +11,7 @@
       <li v-for="stream in streams" :key="stream.id">
         <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) , 'drop-hover': isDragging}">
           <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed'  || getState(stream) === 'duplicated'}">
-            <span class="stream-title"> {{ stream.name }} (_{{ stream.id.substring(0, 4) }}) </span>
+            <span class="stream-title">{{ stream.name }}</span>
             <font-awesome-icon class="iconRedo" v-if="getState(stream) === 'failed' || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
             <img :src="getStateImgUrl(getState(stream))">
           </div>
