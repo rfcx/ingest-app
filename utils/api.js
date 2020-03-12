@@ -9,13 +9,13 @@ const apiUrl = (proEnvironment) => {
     return platform === 'amazon' ? 'https://ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
   }
   return platform === 'amazon' ? 'https://staging-ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
-  // return 'http://192.168.154.144:3030' // return 'http://localhost:3030'
+  // return 'https://192.168.154.144:3030' // return 'https://localhost:3030'
 }
 
-const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, idToken, progressCallback) => {
+const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
   console.log(`path: ${filePath} ext: ${fileExt}`)
   return requestUploadUrl(env, fileName, streamId, timestamp, idToken).then((data) => {
-    return performUpload(data.url, filePath, fileExt, progressCallback).then(() => {
+    return performUpload(data.url, filePath, fileExt, fileSize, progressCallback).then(() => {
       console.log('uploadId', data.uploadId)
       return Promise.resolve(data.uploadId)
     }).catch(error => {
@@ -58,13 +58,13 @@ const requestUploadUrl = (env, originalFilename, streamId, timestamp, idToken) =
 
 const fs = require('fs')
 
-function performUpload (signedUrl, filePath, fileExt, progressCallback) {
+function performUpload (signedUrl, filePath, fileExt, fileSize, progressCallback) {
   var headers = {
     'Content-Type': `audio/${fileExt}`
   }
   if (platform === 'amazon') {
     // S3 doesn't allow chunked uploads, so setting the Content-Length is required
-    const fileSize = fs.statSync(filePath).size
+    // const fileSize = fs.statSync(filePath).size
     headers['Content-Length'] = fileSize
   }
   const readStream = fs.createReadStream(filePath)
@@ -95,6 +95,26 @@ const checkStatus = (env, uploadId, idToken) => {
 
 const renameStream = (env, streamId, streamName, streamSite, idToken) => {
   return axios.post(apiUrl(env) + `/streams/${streamId}`, { name: streamName, site: streamSite }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+    .then(function (response) {
+      return response.data
+    }).catch(error => {
+      console.log('error', error.response)
+      throw error.response
+    })
+}
+
+const deleteStream = (env, streamId, idToken) => {
+  return axios.delete(apiUrl(env) + `/streams/${streamId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+    .then(function (response) {
+      return response.data
+    }).catch(error => {
+      console.log('error', error.response)
+      throw error.response
+    })
+}
+
+const moveToTrashStream = (env, streamId, idToken) => {
+  return axios.post(apiUrl(env) + `/streams/${streamId}/move-to-trash`, {}, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -158,6 +178,8 @@ export default {
   uploadFile,
   checkStatus,
   renameStream,
+  deleteStream,
+  moveToTrashStream,
   touchApi,
   sendInviteCode,
   sendAcceptTerms,

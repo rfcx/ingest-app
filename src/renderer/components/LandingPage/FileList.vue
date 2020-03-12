@@ -14,6 +14,9 @@
             <span class="edit-container-error" v-show="error">{{ error }}</span>
           </div>
         </div>
+        <div class="notification is-danger is-light notice file-list-notice" v-if="errorMessage">
+          <strong>{{ errorMessage }}</strong>
+        </div>
         <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()" title="The stream’s menu to help you delete, rename or redirect you to RFCx Client Stream Web App. If you have any problems with recognition of your folder with audio you can click on 'Rescan the folder'">
           <div class="dropdown-trigger">
             <img src="~@/assets/ic-menu.svg" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -23,7 +26,7 @@
               <a href="#" title="Rename the stream" class="dropdown-item" @click="renameStream()">Rename</a>
               <a href="#" title="Rescan the folder" class="dropdown-item" @click="refreshStream()">Rescan the folder</a>
               <a href="#" title="Redirect to Web App" class="dropdown-item" @click="redirectToStreamWeb()">Redirect to RFCx Client Stream Web App</a>
-              <a href="#" title="Delete the stream" class="dropdown-item has-text-danger" @click="showConfirmToDeleteStreamModal()">Delete</a>
+              <a href="#" title="Delete the stream" class="dropdown-item has-text-danger" @click="showConfirmToDeleteStreamModal()">{{ ((files && !files.length) || isFilesUploading) ? 'Delete' : 'Move to Trash List'}}</a>
             </div>
           </div>
         </div>
@@ -69,9 +72,6 @@
         </tr>
       </tbody>
     </table>
-    <!-- <a title="Redirect to RFCx Client Stream Web App" class="button is-circle btn-extirnal-link" @click="redirectToStreamWeb()">
-      <font-awesome-icon class="faExternal" :icon="faExternalLinkAlt"></font-awesome-icon>
-    </a> -->
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
       <div class="modal-background"></div>
@@ -81,7 +81,7 @@
         </div>
         <footer class="modal-card-foot">
           <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
-          <button class="button is-danger" @click="deleteStream()">Delete</button>
+          <button class="button is-danger" :class="{ 'is-loading': isDeleting }" @click="deleteStream()">Delete</button>
         </footer>
       </div>
     </div>
@@ -114,8 +114,10 @@
         shouldShowConfirmToDeleteModal: false,
         isRenaming: false,
         isLoading: false,
+        isDeleting: false,
         newStreamName: '',
-        error: null
+        error: null,
+        errorMessage: null
       }
     },
     computed: {
@@ -151,6 +153,15 @@
         let count = 0
         this.files.forEach(file => {
           if (file.state === 'waiting' || file.state === undefined) {
+            count++
+          }
+        })
+        if (count === this.files.length) return true
+      },
+      isFilesUploading () {
+        let count = 0
+        this.files.forEach(file => {
+          if (file.state === 'waiting' || file.state === undefined || file.state === 'uploading') {
             count++
           }
         })
@@ -280,15 +291,38 @@
         this.shouldShowConfirmToDeleteModal = false
       },
       deleteStream () {
-        // hide confirm modal
-        this.hideConfirmToDeleteStreamModal()
-        // delete files from current stream
+        this.errorMessage = null
+        this.isDeleting = true
+        let listener = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          let idToken = null
+          idToken = arg
+          if ((this.files && !this.files.length) || this.isFilesUploading) {
+            api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(data => {
+              console.log('stream is deleted')
+              this.removeStreamFromVuex()
+            }).catch(error => {
+              console.log('error while deleting stream', error)
+              this.errorHandler(error, true)
+            })
+          } else {
+            api.moveToTrashStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(data => {
+              console.log('stream is moved to the trash list')
+              this.removeStreamFromVuex()
+            }).catch(error => {
+              console.log('Error while moving stream to trash', error)
+              this.errorHandler(error, false)
+            })
+          }
+        }
+        this.$electron.ipcRenderer.send('getIdToken')
+        this.$electron.ipcRenderer.on('sendIdToken', listener)
+      },
+      removeStreamFromVuex () {
         this.files.forEach(file => {
           File.delete(file.id)
         })
-        // delete current stream
         Stream.delete(this.selectedStreamId)
-        // select a new stream
         const stream = Stream.query().where((stream) => {
           return stream.id !== this.selectedStreamId
         }).first()
@@ -297,6 +331,22 @@
         }
         // If a stream deleted when the uploading process was paused.
         this.$store.dispatch('setUploadingProcess', true)
+        this.isDeleting = false
+        this.hideConfirmToDeleteStreamModal()
+      },
+      errorHandler (error, isDeleting) {
+        this.isDeleting = false
+        this.hideConfirmToDeleteStreamModal()
+        setTimeout(() => {
+          this.errorMessage = null
+        }, 10000)
+        if (error.status === 401 || error.data === 'UNAUTHORIZED') {
+          this.errorMessage = 'You are not authorized.'
+        } else if (error.status === 404) {
+          this.errorMessage = 'Stream with given guid not found.'
+        } else if (error.status === 403) {
+          this.errorMessage = `You don't have enough permissions for this action.`
+        } else { this.errorMessage = isDeleting ? 'Error while deleting stream.' : 'Error while moving stream to trash.' }
       },
       isProductionEnv () {
         return settings.get('settings.production_env')
@@ -664,6 +714,10 @@
 
   .table tbody {
     overflow-y: auto !important;
+  }
+
+  .file-list-notice {
+    left: 30% !important;
   }
 
 </style>

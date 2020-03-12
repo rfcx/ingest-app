@@ -12,7 +12,7 @@ class FileProvider {
     File.update({ where: file.id,
       data: {state: 'uploading', stateMessage: '0', progress: 0}
     })
-    return api.uploadFile(this.isProductionEnv(), file.name, file.path, file.extension, file.streamId, file.timestamp, idToken, (progress) => {
+    return api.uploadFile(this.isProductionEnv(), file.name, file.path, file.extension, file.streamId, file.timestamp, file.sizeInByte, idToken, (progress) => {
       File.update({ where: file.id,
         data: {state: 'uploading', stateMessage: progress, progress: progress}
       })
