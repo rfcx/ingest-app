@@ -73,8 +73,8 @@
       ]
     },
     "squirrelWindows": {
-      "iconUrl": "https://rfcx.org/favicon.ico",
-      "loadingGif": "build/icons/ingest-app-icon.gif",
+      "iconUrl": "build/icons/win-installer-icon.ico",
+      "loadingGif": "build/icons/win-installer-gif.gif",
       "remoteReleases": "http://localhost:5000/public",
       "useAppIdAsId": false
     },
