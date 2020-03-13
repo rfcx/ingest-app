@@ -9,6 +9,7 @@ import cryptoJS from 'crypto-js'
 
 class FileProvider {
   uploadFile (file, idToken) {
+    console.log('\nupload file ', file)
     File.update({ where: file.id,
       data: {state: 'uploading', stateMessage: '0', progress: 0}
     })

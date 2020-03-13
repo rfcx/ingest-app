@@ -14,41 +14,35 @@
   export default {
     data: () => {
       return {
-        uploadWorkerTimeout: workerTimeoutMinimum,
-        checkStatusWorkerTimeout: workerTimeoutMinimum
+        checkStatusWorkerTimeout: workerTimeoutMinimum,
+        checkWaitingFilesInterval: null
       }
     },
     computed: {
       ...mapState({
         isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
-      }),
-      allUnsyncFiles () {
-        return File.query().where('state', 'waiting').get()
-      }
+      })
     },
     watch: {
-      allUnsyncFiles (val, oldVal) {
-        // console.log('allUnsyncFiles changed', val)
-        // const oldIds = oldVal.map((file) => { return file.id })
-        // const newIds = val.map((file) => { return file.id })
-        // if (JSON.stringify(oldIds) === JSON.stringify(newIds)) return // do nothing if the data is the same
-        // val.forEach(file => {
-        //   this.uploadFile(file)
-        // })
-      },
       isUploadingProcessEnabled (val, oldVal) {
         console.log('isUploadingProcessEnabled', val, oldVal)
         if (val === oldVal) return
-        this.uploadWorkerTimeout = workerTimeoutMinimum
         this.checkStatusWorkerTimeout = workerTimeoutMinimum
         this.tickUpload()
         this.tickCheckStatus()
       }
     },
     methods: {
+      getUploadingFiles () {
+        return new Promise((resolve, reject) => {
+          let files = File.query().where('state', 'uploading').orderBy('timestamp').get()
+          resolve(files != null ? files : [])
+        })
+      },
       getUnsyncedFile () {
         return new Promise((resolve, reject) => {
           const file = File.query().where('state', 'waiting').orderBy('timestamp').first()
+          console.log('\nwaiting file ', file)
           if (file != null) {
             resolve(file)
           } else {
@@ -69,9 +63,6 @@
         })
       },
       uploadFile (file) {
-        File.update({ where: file.id,
-          data: {state: 'uploading', stateMessage: '0', progress: 0}
-        })
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           let idToken = null
@@ -127,6 +118,8 @@
       queueFileToUpload () {
         return this.getUnsyncedFile().then((file) => {
           return this.uploadFile(file)
+        }).catch((err) => {
+          console.log(err)
         })
       },
       queueJobToCheckStatus () {
@@ -135,31 +128,23 @@
         })
       },
       tickUpload () {
-        console.log('tickUpload', this.isUploadingProcessEnabled)
         if (!this.isUploadingProcessEnabled) return
-        // Get all files with a status waiting and upload them.
-        this.queueFileToUpload().then(() => {
-          console.log('uploading job success')
-          this.uploadWorkerTimeout = workerTimeoutMinimum
-          setTimeout(() => { this.tickUpload() }, this.uploadWorkerTimeout)
-        }).catch((err) => {
-          console.log(err)
-          this.uploadWorkerTimeout = Math.min(2 * this.uploadWorkerTimeout, workerTimeoutMaximum)
-          console.log('uploading job fail, retrying in', this.uploadWorkerTimeout)
-          setTimeout(() => { this.tickUpload() }, this.uploadWorkerTimeout)
-        })
+        return this.getUploadingFiles()
+          .then((files) => {
+            if (!files.length) {
+              console.log('\nNo uploading files', files)
+              this.queueFileToUpload()
+            }
+          })
       },
       tickCheckStatus () {
-        console.log('tickCheckStatus', this.isUploadingProcessEnabled)
         if (!this.isUploadingProcessEnabled) return
         this.queueJobToCheckStatus().then(() => {
-          console.log('ingesting job success')
           this.checkStatusWorkerTimeout = workerTimeoutMinimum
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         }).catch((err) => {
           console.log(err)
           this.checkStatusWorkerTimeout = Math.min(2 * this.checkStatusWorkerTimeout, workerTimeoutMaximum)
-          console.log('ingesting job fail, retrying in', this.checkStatusWorkerTimeout)
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
       },
@@ -169,10 +154,16 @@
     },
     created () {
       console.log('API Service')
-      // uploading
-      this.tickUpload()
-      // ingesting
+      this.checkWaitingFilesInterval = setInterval(() => {
+        this.tickUpload()
+      }, workerTimeoutMinimum)
       this.tickCheckStatus()
+    },
+    beforeDestroy () {
+      console.log('\nclearInterval')
+      if (this.checkWaitingFilesInterval) {
+        clearInterval(this.checkWaitingFilesInterval)
+      }
     }
   }
 </script>
