@@ -125,7 +125,8 @@ async function parseTokens (responseBody) {
   if (profile && profile.roles) {
     global.roles = profile.roles
   }
-  global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven === true
+  global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
+    profile[userMetadata].consentGiven.toString() === 'true'
   await setAllUserSitesInfo(responseBody.id_token)
   console.log('parse tokens finished')
 }

@@ -245,7 +245,7 @@
   }
 
   .error-message {
-    text-align: right;
+    text-align: center;
     font-size: 14px;
     color: #f14668;
   }

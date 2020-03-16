@@ -475,9 +475,11 @@ async function checkUserPermissions () {
     let appMetadata = 'https://rfcx.org/app_metadata'
     let userMetadata = 'https://rfcx.org/user_metadata'
     if (profile && profile.roles && (profile.roles || []).includes('rfcxUser')) {
-      return resolve(profile[userMetadata] && !!profile[userMetadata].consentGiven)
+      return resolve(profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
+        profile[userMetadata].consentGiven.toString() === 'true')
     } else if (profile && profile[appMetadata] && profile[appMetadata].authorization && (profile[appMetadata].authorization.roles || []).includes('rfcxUser')) {
-      return resolve(profile[userMetadata] && !!profile[userMetadata].consentGiven)
+      return resolve(profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
+        profile[userMetadata].consentGiven.toString() === 'true')
     } else return resolve(false)
   })
 }
@@ -514,7 +516,8 @@ async function getUserInfo () {
     if (profile && profile.roles) {
       global.roles = profile.roles
     }
-    global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven === true
+    global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
+      profile[userMetadata].consentGiven.toString() === 'true'
     await setAllUserSitesInfo()
     resolve()
   })
