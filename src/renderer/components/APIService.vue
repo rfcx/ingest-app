@@ -41,7 +41,11 @@
       },
       getUnsyncedFile () {
         return new Promise((resolve, reject) => {
-          const file = File.query().where('state', 'waiting').orderBy('timestamp').first()
+          const file = File.query().where('state', 'waiting')
+            .orderBy('retries', 'desc')
+            .orderBy('timestamp', 'asc')
+            .first()
+          // const file = File.query().where('state', 'waiting').orderBy('timestamp').first()
           console.log('\nwaiting file ', file)
           if (file != null) {
             resolve(file)
@@ -53,7 +57,7 @@
       getUploadedFile () {
         return new Promise((resolve, reject) => {
           const file = File.query().where((file) => {
-            return file.state === 'ingesting' && file.uploadId !== ''
+            return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== ''
           }).orderBy('timestamp').first()
           if (file != null) {
             resolve(file)
@@ -96,9 +100,15 @@
                     data: {state: 'completed', stateMessage: '', progress: 100}
                   })
                 case 30:
-                  return File.update({ where: file.id,
-                    data: {state: 'failed', stateMessage: failureMessage}
-                  })
+                  if (file.retries < 3) {
+                    return File.update({ where: file.id,
+                      data: { state: 'waiting', stateMessage: '', retries: file.retries++ }
+                    })
+                  } else {
+                    return File.update({ where: file.id,
+                      data: {state: 'failed', stateMessage: failureMessage}
+                    })
+                  }
                 case 31:
                   return File.update({ where: file.id,
                     data: {state: 'duplicated', stateMessage: failureMessage}
@@ -163,6 +173,7 @@
       console.log('\nclearInterval')
       if (this.checkWaitingFilesInterval) {
         clearInterval(this.checkWaitingFilesInterval)
+        this.checkWaitingFilesInterval = null
       }
     }
   }

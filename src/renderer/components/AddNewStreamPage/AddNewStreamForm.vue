@@ -255,7 +255,6 @@ export default {
             Stream.insert({ data: stream, insert: ['files'] })
             this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$electron.ipcRenderer.send('subscribeToFileWatcher', [ stream ])
-            this.$store.dispatch('setSelectedStreamId', stream.id)
             let interval = setInterval(() => {
               const newStream = this.streams.filter(item => { return item.id === stream.id })
               if (newStream) {

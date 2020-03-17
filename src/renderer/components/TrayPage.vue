@@ -213,6 +213,8 @@
   .menu-container-left {
     width: 29%;
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .menu-container-right {

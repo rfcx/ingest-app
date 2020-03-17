@@ -1,3 +1,4 @@
+import File from '../src/renderer/store/models/File'
 const axios = require('axios')
 const fileStreamAxios = axios.create({
   adapter: require('./axios-http-adapter').default
@@ -12,18 +13,24 @@ const apiUrl = (proEnvironment) => {
   // return 'https://192.168.154.144:3030' // return 'https://localhost:3030'
 }
 
-const uploadFile = (env, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
+const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
   console.log(`path: ${filePath} ext: ${fileExt}`)
-  return requestUploadUrl(env, fileName, streamId, timestamp, idToken).then((data) => {
-    return performUpload(data.url, filePath, fileExt, fileSize, progressCallback).then(() => {
+  return requestUploadUrl(env, fileName, streamId, timestamp, idToken)
+    .then((data) => {
       console.log('uploadId', data.uploadId)
-      return Promise.resolve(data.uploadId)
-    }).catch(error => {
-      console.error(error)
-      console.log(error.response)
-      throw error
+      File.update({ where: fileId,
+        data: {state: 'uploading', uploadId: data.uploadId, progress: 0}
+      })
+      return performUpload(data.url, filePath, fileExt, fileSize, progressCallback)
+        .then(() => {
+          return Promise.resolve(data.uploadId)
+        })
+        .catch(error => {
+          console.error(error)
+          console.log(error.response)
+          throw error
+        })
     })
-  })
 }
 
 // Part 0: Create stream

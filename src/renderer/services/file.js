@@ -10,17 +10,14 @@ import cryptoJS from 'crypto-js'
 class FileProvider {
   uploadFile (file, idToken) {
     console.log('\nupload file ', file)
-    File.update({ where: file.id,
-      data: {state: 'uploading', stateMessage: '0', progress: 0}
-    })
-    return api.uploadFile(this.isProductionEnv(), file.name, file.path, file.extension, file.streamId, file.timestamp, file.sizeInByte, idToken, (progress) => {
-      File.update({ where: file.id,
-        data: {state: 'uploading', stateMessage: progress, progress: progress}
-      })
-    }).then((uploadId) => {
-      return File.update({ where: file.id,
-        data: {state: 'ingesting', stateMessage: '', uploadId: uploadId, progress: 100}
-      })
+    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.timestamp,
+      file.sizeInByte, idToken, (progress) => {
+      // FIX progress scale when we will start work with google cloud
+      // File.update({ where: file.id,
+      //   data: {state: 'uploading', stateMessage: progress, progress: progress}
+      // })
+      }).then((uploadId) => {
+      console.log('\nfile uploaded successfully')
     }).catch((error) => {
       console.log(error)
       return File.update({ where: file.id,

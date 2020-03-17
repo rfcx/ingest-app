@@ -675,6 +675,7 @@ function checkForUpdates () {
   console.log('checkForUpdates')
   autoUpdater.checkForUpdates()
 }
+app.commandLine.appendArgument('--enable-features=Metal')
 app.on('ready', () => {
   if (setupEvents.handleSquirrelEvent(app)) return
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
