@@ -117,7 +117,8 @@
         isDeleting: false,
         newStreamName: '',
         error: null,
-        errorMessage: null
+        errorMessage: null,
+        interval: null
       }
     },
     computed: {
@@ -311,7 +312,10 @@
               this.removeStreamFromVuex()
             }).catch(error => {
               console.log('Error while moving stream to trash', error)
-              this.errorHandler(error, false)
+              if (error.status === 404) {
+                this.errorMessage = null
+                this.removeStreamFromVuex()
+              } else this.errorHandler(error, false)
             })
           }
         }
@@ -319,20 +323,32 @@
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       removeStreamFromVuex () {
-        this.files.forEach(file => {
+        for (let file of this.files) {
           File.delete(file.id)
-        })
-        Stream.delete(this.selectedStreamId)
-        const stream = Stream.query().where((stream) => {
-          return stream.id !== this.selectedStreamId
-        }).first()
-        if (stream) {
-          this.$store.dispatch('setSelectedStreamId', stream.id)
         }
-        // If a stream deleted when the uploading process was paused.
-        this.$store.dispatch('setUploadingProcess', true)
-        this.isDeleting = false
-        this.hideConfirmToDeleteStreamModal()
+        this.interval = setInterval(() => {
+          if (!this.files.length) {
+            Stream.delete(this.selectedStreamId)
+            const stream = Stream.query().where((stream) => {
+              return stream.id !== this.selectedStreamId
+            }).first()
+            if (stream) {
+              this.$store.dispatch('setSelectedStreamId', stream.id)
+            }
+            // If a stream deleted when the uploading process was paused.
+            this.$store.dispatch('setUploadingProcess', true)
+            this.isDeleting = false
+            this.hideConfirmToDeleteStreamModal()
+            this.removeInterval()
+          }
+        }, 3000)
+      },
+      removeInterval () {
+        if (this.interval) {
+          clearInterval(this.interval)
+          this.interval = null
+          console.log('stream deleted from vuex orm', this.interval)
+        }
       },
       errorHandler (error, isDeleting) {
         this.isDeleting = false
@@ -342,8 +358,6 @@
         }, 10000)
         if (error.status === 401 || error.data === 'UNAUTHORIZED') {
           this.errorMessage = 'You are not authorized.'
-        } else if (error.status === 404) {
-          this.errorMessage = 'Stream with given guid not found.'
         } else if (error.status === 403) {
           this.errorMessage = `You don't have enough permissions for this action.`
         } else { this.errorMessage = isDeleting ? 'Error while deleting stream.' : 'Error while moving stream to trash.' }
@@ -718,6 +732,16 @@
 
   .file-list-notice {
     left: 30% !important;
+  }
+
+  ::-webkit-scrollbar-thumb {
+      background-color: gray;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: #52566e;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
   }
 
 </style>

@@ -558,13 +558,13 @@
       z-index: 200;
     }
     ::-webkit-scrollbar-thumb {
-      background-color: #45485d;
+      background-color: gray;
     }
     ::-webkit-scrollbar-track {
       background-color: #52566e;
     }
     ::-webkit-scrollbar {
-      width: 3px;
+      width: 6px;
     }
   }
 

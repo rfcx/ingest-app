@@ -348,6 +348,8 @@
   .menu-container-left {
     width: 25%;
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .menu-container-right {

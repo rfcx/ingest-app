@@ -23,7 +23,8 @@ export default class File extends Model {
       uploadId: this.string(''),
       progress: this.number(0),
       disabled: this.boolean(false),
-      notified: this.boolean(false)
+      notified: this.boolean(false),
+      retries: this.number(0)
     }
   }
 
