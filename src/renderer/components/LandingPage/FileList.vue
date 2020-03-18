@@ -117,8 +117,7 @@
         isDeleting: false,
         newStreamName: '',
         error: null,
-        errorMessage: null,
-        interval: null
+        errorMessage: null
       }
     },
     computed: {
@@ -299,22 +298,25 @@
           let idToken = null
           idToken = arg
           if ((this.files && !this.files.length) || this.isFilesUploading) {
-            api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(data => {
+            api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
               console.log('stream is deleted')
-              this.removeStreamFromVuex()
+              await this.removeStreamFromVuex()
+              this.modalHandler()
             }).catch(error => {
               console.log('error while deleting stream', error)
               this.errorHandler(error, true)
             })
           } else {
-            api.moveToTrashStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(data => {
+            api.moveToTrashStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
               console.log('stream is moved to the trash list')
-              this.removeStreamFromVuex()
-            }).catch(error => {
+              await this.removeStreamFromVuex()
+              this.modalHandler()
+            }).catch(async (error) => {
               console.log('Error while moving stream to trash', error)
-              if (error.status === 404) {
+              if (error.status === 404 || error.data === 'Stream with given guid not found.') {
                 this.errorMessage = null
-                this.removeStreamFromVuex()
+                await this.removeStreamFromVuex()
+                this.modalHandler()
               } else this.errorHandler(error, false)
             })
           }
@@ -322,33 +324,23 @@
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
-      removeStreamFromVuex () {
+      async removeStreamFromVuex () {
         for (let file of this.files) {
           File.delete(file.id)
         }
-        this.interval = setInterval(() => {
-          if (!this.files.length) {
-            Stream.delete(this.selectedStreamId)
-            const stream = Stream.query().where((stream) => {
-              return stream.id !== this.selectedStreamId
-            }).first()
-            if (stream) {
-              this.$store.dispatch('setSelectedStreamId', stream.id)
-            }
-            // If a stream deleted when the uploading process was paused.
-            this.$store.dispatch('setUploadingProcess', true)
-            this.isDeleting = false
-            this.hideConfirmToDeleteStreamModal()
-            this.removeInterval()
-          }
-        }, 3000)
+        Stream.delete(this.selectedStreamId)
       },
-      removeInterval () {
-        if (this.interval) {
-          clearInterval(this.interval)
-          this.interval = null
-          console.log('stream deleted from vuex orm', this.interval)
+      modalHandler () {
+        const stream = Stream.query().where((stream) => {
+          return stream.id !== this.selectedStreamId
+        }).first()
+        if (stream) {
+          this.$store.dispatch('setSelectedStreamId', stream.id)
         }
+        // If a stream deleted when the uploading process was paused.
+        this.$store.dispatch('setUploadingProcess', true)
+        this.isDeleting = false
+        this.hideConfirmToDeleteStreamModal()
       },
       errorHandler (error, isDeleting) {
         this.isDeleting = false

@@ -78,6 +78,11 @@ class FileProvider {
     await this.insertFilesToStream([file], selectedStream)
   }
 
+  async insertNewFiles (files, selectedStream) {
+    await this.insertFiles(files)
+    await this.insertFilesToStream(files, selectedStream)
+  }
+
   removedFilePath (path) {
     this.deleteFile(this.getFileId(path))
   }
@@ -133,6 +138,11 @@ class FileProvider {
   async insertFile (file) {
     await File.insert({ data: file })
     console.log('insert file: ', file)
+  }
+
+  async insertFiles (files) {
+    await File.insert({ data: files })
+    console.log('insert files: ', files)
   }
 
   updateFile (fileId, path) {

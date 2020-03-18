@@ -45,20 +45,26 @@ export appleIdPassword=**APP-SPECIFIC PASSWORD**
 
 1. Get a certificate with the password from DevOps or Team Lead.
 Add this information to your package.json of the app:
+``` bash
     “win”: {
-        “certificateFile”: “./build/certs/"######.p12”,
+        “certificateFile”: “./build/certs/######.p12”,
         “certificatePassword”: “######”
     }
-2. Create a simple Node.js server with 5000 port which serves static files from the previous build. Paste them into ./node-server/public. After every build, we should put 4 files with the last version in the folder: ./node-server/public and includes following files: RELEASES, .exe, *-delta.nupkg and -full.nupkg (If a new version of the app v1.1.1 you should put v1.1.0 to the folder).
+```
+2. Create a simple Node.js server with 5000 port which serves static files from the previous build. Paste them into ./node-server/public. After every build, we should put 4 files with the last version in the folder: `./node-server/public` and includes following files: RELEASES, .exe, *-delta.nupkg and -full.nupkg (If a new version of the app v1.1.1 you should put v1.1.0 to the folder).
 3. Check you Node.js port  to the package.json of the app:
+``` bash
     “squirrelWindows”: {
-        **“remoteReleases”: “http://localhost:5000/public”**
+        “remoteReleases”: “http://localhost:5000/public”
     }
-4. Use ```npm run build``` command for building the app. 4. After building we you see two folders for windows in the .app/build folder:
+```
+4. Use ```npm run build``` command for building the app.
+5. After building we you see two folders for windows in the `./app/build` folder:
     - squirrel windows
     - squirrel-windows-ia32
 These folders keep a new release for WinX64 and WinX86.
-5. Upload assets for releases to the GitHub (RELEASES, .exe, *-delta.nupkg and -full.nupkg). For supporting the WinX86 system we should only publish one version for the 32-bit system. Both assets files (ia32, x64) have similar names, but the 32-bit system doesn’t support a 64-bit system.
+6. Upload assets for releases to the GitHub: __RELEASES, .exe, *-delta.nupkg and -full.nupkg__.
+For supporting the WinX86 system we should only publish one version for the 32-bit system. Both assets files (ia32, x64) have similar names, but the 32-bit system doesn’t support a 64-bit system.
 
 
 Lint all JS/Vue component files in `src/`

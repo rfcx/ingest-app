@@ -13,7 +13,7 @@
         </div>
         <div class="field file has-name is-right is-fullwidth" style="display: none" v-if="!isMultipleUpload">
             <label class="file-label">
-                <input class="file-input" type="file" ref="file" name="resume" v-on:change="onFileChange($event)" webkitdirectory directory multiple/>
+                <input class="file-input" type="file" ref="file" name="resume" v-on:change="changeFolder($event)" webkitdirectory directory multiple/>
                 <span class="file-cta">
                     <span class="file-label">Browse</span>
                 </span>
@@ -181,11 +181,10 @@ export default {
     focusWindow () {
       this.$refs.file.focus()
     },
-    onFileChange (event) {
-      console.log('onFileChange', event)
+    changeFolder (event) {
       const file = event.target.files[0]
       if (file) this.folderPath = file.path
-      console.log(file)
+      console.log('changeFolder', file)
       let streamName = fileHelper.getFileNameFromFilePath(this.folderPath)
       if (streamName) {
         this.name = streamName
@@ -261,7 +260,7 @@ export default {
                 clearInterval(interval)
                 return this.$router.push('/')
               }
-            }, 500)
+            }, 5000)
           }).catch(error => {
             console.log('error while creating stream', error)
             this.isLoading = false

@@ -20,15 +20,27 @@ async function getFiles (selectedStream) {
 }
 
 async function subscribeStream (selectedStream) {
+  let newFiles = []
+  let timeout
   try {
     let files = await getFiles(selectedStream)
     await checkFilesExistense(files)
   } catch (e) { console.log(e) }
-  await createWatcher(
-    selectedStream.id,
-    selectedStream.folderPath,
+  await createWatcher(selectedStream.id, selectedStream.folderPath,
     async (newFilePath) => {
-      await fileService.newFilePath(newFilePath, selectedStream)
+      if (await fileService.fileIsExist(newFilePath)) return
+      if (timeout) { clearTimeout(timeout) }
+      const file = await fileService.createFileObject(newFilePath, selectedStream)
+      if (file) {
+        newFiles.push(file)
+        timeout = setTimeout(() => {
+          if (newFiles && newFiles.length) {
+            // Insert array of files to the db
+            fileService.insertNewFiles(newFiles, selectedStream)
+            newFiles = []
+          }
+        }, 2000)
+      }
     },
     (removedFilePath) => {
       fileService.removedFilePath(removedFilePath)
