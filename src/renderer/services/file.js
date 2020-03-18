@@ -19,10 +19,16 @@ class FileProvider {
       }).then((uploadId) => {
       console.log('\nfile uploaded successfully')
     }).catch((error) => {
-      console.log(error)
-      return File.update({ where: file.id,
-        data: {state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.'}
-      })
+      console.log(error.message)
+      if (error.message === 'Request body larger than maxBodyLength limit') {
+        return File.update({ where: file.id,
+          data: {state: 'failed', stateMessage: 'File size exceeded. Maximum file size is 200 MB'}
+        })
+      } else {
+        return File.update({ where: file.id,
+          data: {state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.'}
+        })
+      }
     })
   }
 
