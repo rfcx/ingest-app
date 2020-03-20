@@ -10,6 +10,7 @@
 <script>
   import File from './store/models/File'
   import settings from 'electron-settings'
+  const isOnline = require('is-online')
 
   export default {
     name: 'rfcx-ingest',
@@ -26,10 +27,17 @@
       updateOnlineStatus (e) {
         const { type } = e
         this.onLine = type === 'online'
-        this.$store.dispatch('setUploadingProcess', this.onLine)
-        settings.set('settings.onLine', this.onLine)
         if (!this.onLine) {
+          console.log('\nupdateOnlineStatus', this.onLine)
+          this.$store.dispatch('setUploadingProcess', this.onLine)
+          settings.set('settings.onLine', this.onLine)
           this.checkAfterSuspended()
+        } else {
+          isOnline().then(online => {
+            console.log('\nupdateOnlineStatus', online)
+            this.$store.dispatch('setUploadingProcess', online)
+            settings.set('settings.onLine', online)
+          })
         }
       },
       checkAfterSuspended () {
