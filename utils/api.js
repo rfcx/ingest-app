@@ -25,11 +25,10 @@ const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestam
         .then(() => {
           return Promise.resolve(data.uploadId)
         })
-        .catch(error => {
-          console.error(error)
-          console.log(error.response)
-          throw error
-        })
+    })
+    .catch(error => {
+      console.log('error', error, error.response)
+      throw error
     })
 }
 
@@ -95,8 +94,8 @@ const checkStatus = (env, uploadId, idToken) => {
       const failureMessage = response.data.failureMessage
       return { status: status, failureMessage: failureMessage }
     }).catch(error => {
-      console.log('error', error.response)
-      throw error.response
+      console.log('error', error, error.response)
+      throw error
     })
 }
 

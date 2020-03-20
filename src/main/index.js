@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain, dialog, autoUpdater } from 'electron'
+import { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain, dialog, autoUpdater, powerMonitor } from 'electron'
 import '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
@@ -77,7 +77,6 @@ function createWindow (openedAsHidden = false) {
 
   mainWindow.webContents.on('did-finish-load', () => {
     console.log('did-finish-load')
-    backgroundAPIWindow.loadURL(backgroundAPIURL)
     // setTimeout(() => {
     //   if (global.newVersion && !updatePopupWindow) {
     //     createUpdatePopupWindow(true)
@@ -145,6 +144,7 @@ function createWindow (openedAsHidden = false) {
     show: false,
     webPreferences: { nodeIntegration: true }
   })
+  backgroundAPIWindow.loadURL(backgroundAPIURL)
   createAboutUrl(false)
   createPreferencesPopupWindow(false)
   trayWindow = new BrowserWindow({
@@ -179,6 +179,19 @@ function createWindow (openedAsHidden = false) {
   })
 
   createTray(process.platform)
+
+  powerMonitor.on('suspend', () => {
+    console.log('------------The system is going to suspend----------')
+    // Pause uploading process if the app hasn't an internet connection
+    backgroundAPIWindow.webContents.send('suspendApp', false)
+  })
+  powerMonitor.on('resume', () => {
+    console.log('------------The system is going to resume-----------')
+    // Continue uploading process if the app has an internet connection
+    if (settings.get('settings.onLine')) {
+      backgroundAPIWindow.webContents.send('suspendApp', true)
+    }
+  })
 }
 
 function createAboutUrl (isShow) {
@@ -415,7 +428,8 @@ function initialSettings () {
       production_env: true,
       platform: 'amazon',
       darkMode: true,
-      auto_update_app: true
+      auto_update_app: true,
+      onLine: true
     })
   }
   if (settings.get('settings.darkMode') === undefined) {
@@ -423,6 +437,9 @@ function initialSettings () {
   }
   if (settings.get('settings.auto_update_app') === undefined) {
     settings.set('settings.auto_update_app', true)
+  }
+  if (settings.get('settings.onLine') === undefined) {
+    settings.set('settings.onLine', true)
   }
   setLoginItem(settings.get('settings.auto_start'))
 }
@@ -748,6 +765,10 @@ ipcMain.on('getRefreshToken', listenerOfRefreshToken)
 ipcMain.on('focusFolder', (event, data) => {
   console.log('focusFolder')
   shell.openItem(data)
+})
+
+ipcMain.on('setUploadingProcess', (event, data) => {
+  console.log('setUploadingProcess', data)
 })
 
 ipcMain.on('subscribeToFileWatcher', async function (event, streams) {

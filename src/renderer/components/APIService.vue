@@ -28,7 +28,7 @@
         console.log('isUploadingProcessEnabled', val, oldVal)
         if (val === oldVal) return
         this.checkStatusWorkerTimeout = workerTimeoutMinimum
-        this.tickUpload()
+        // this.tickUpload()
         this.tickCheckStatus()
       }
     },
@@ -91,10 +91,6 @@
                   return File.update({ where: file.id,
                     data: {state: 'ingesting', stateMessage: '', progress: 100}
                   })
-                case 19:
-                  return File.update({ where: file.id,
-                    data: {state: 'ingesting', stateMessage: '', progress: 100}
-                  })
                 case 20:
                   return File.update({ where: file.id,
                     data: {state: 'completed', stateMessage: '', progress: 100}
@@ -102,7 +98,7 @@
                 case 30:
                   if (file.retries < 3) {
                     return File.update({ where: file.id,
-                      data: { state: 'waiting', stateMessage: '', retries: file.retries++ }
+                      data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries++ }
                     })
                   } else {
                     return File.update({ where: file.id,
@@ -116,10 +112,10 @@
                 default: break
               }
             }).catch((error) => {
-              console.log(error)
-              return File.update({ where: file.id,
-                data: {state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.'}
-              })
+              console.log('error', error)
+              // return File.update({ where: file.id,
+              //   data: {state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.'}
+              // })
             })
         }
         this.$electron.ipcRenderer.send('getIdToken')
@@ -158,12 +154,37 @@
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
       },
+      checkAfterSuspended () {
+        return this.getUploadingFiles()
+          .then((files) => {
+            if (files.length) {
+              console.log('\nuploading files with errors after suspend/loses internet connection', files)
+              // If the app suspends/loses internet connection the uploading file changes the status to waiting
+              for (let file of files) {
+                File.update({ where: file.id,
+                  data: {state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: 0}
+                })
+              }
+            }
+          })
+      },
       isProductionEnv () {
         return settings.get('settings.production_env')
       }
     },
+    mounted () {
+      let listener = (event, arg) => {
+        this.$electron.ipcRenderer.removeListener('suspendApp', listener)
+        // Continue uploading process if the app resumes
+        this.$store.dispatch('setUploadingProcess', arg)
+        this.$electron.ipcRenderer.send('setUploadingProcess', arg)
+        if (arg === true) { this.checkAfterSuspended() }
+      }
+      this.$electron.ipcRenderer.on('suspendApp', listener)
+    },
     created () {
       console.log('API Service')
+      this.checkAfterSuspended()
       this.checkWaitingFilesInterval = setInterval(() => {
         this.tickUpload()
       }, workerTimeoutMinimum)

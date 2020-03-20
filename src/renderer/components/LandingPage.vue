@@ -112,7 +112,7 @@
           // For the first enter to the app for continue the uploading process
           console.log('hasAccessToApp on the first enter', hasAccessToApp)
           this.executed = true
-          this.$store.dispatch('setUploadingProcess', true)
+          // this.$store.dispatch('setUploadingProcess', true)
           return true
         } else if (hasAccessToApp && this.executed) {
           console.log('hasAccessToApp', hasAccessToApp)
@@ -121,7 +121,7 @@
           console.log('hasAccessToApp', hasAccessToApp)
           this.$router.push('/access-denied-page')
           this.$electron.ipcRenderer.send('removeTray')
-          this.$store.dispatch('setUploadingProcess', false)
+          // this.$store.dispatch('setUploadingProcess', false)
         }
       },
       async sendVersionOfApp () {

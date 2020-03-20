@@ -17,12 +17,20 @@ class FileProvider {
       //   data: {state: 'uploading', stateMessage: progress, progress: progress}
       // })
       }).then((uploadId) => {
-      console.log('\nfile uploaded successfully')
+      console.log('\nfile uploaded to the temp folder S3')
     }).catch((error) => {
-      console.log(error.message)
+      console.log('ERROR UPLOAD FILE', error, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
         return File.update({ where: file.id,
           data: {state: 'failed', stateMessage: 'File size exceeded. Maximum file size is 200 MB'}
+        })
+      } else if (file.retries < 3) {
+        return File.update({ where: file.id,
+          data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries++ }
+        })
+      } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
+        return File.update({ where: file.id,
+          data: {state: 'failed', stateMessage: 'Network Error'}
         })
       } else {
         return File.update({ where: file.id,

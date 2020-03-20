@@ -8,6 +8,9 @@
 </template>
 
 <script>
+  import File from './store/models/File'
+  import settings from 'electron-settings'
+
   export default {
     name: 'rfcx-ingest',
     data () {
@@ -23,6 +26,29 @@
       updateOnlineStatus (e) {
         const { type } = e
         this.onLine = type === 'online'
+        this.$store.dispatch('setUploadingProcess', this.onLine)
+        settings.set('settings.onLine', this.onLine)
+        if (!this.onLine) {
+          this.checkAfterSuspended()
+        }
+      },
+      checkAfterSuspended () {
+        return this.getUploadingFiles()
+          .then((files) => {
+            if (files.length) {
+              for (let file of files) {
+                File.update({ where: file.id,
+                  data: {state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: 0}
+                })
+              }
+            }
+          })
+      },
+      getUploadingFiles () {
+        return new Promise((resolve, reject) => {
+          let files = File.query().where('state', 'uploading').orderBy('timestamp').get()
+          resolve(files != null ? files : [])
+        })
       }
     }
   }
