@@ -5,9 +5,6 @@
 <script>
   import { mapState } from 'vuex'
   import File from '../store/models/File'
-  import api from '../../../utils/api'
-  import settings from 'electron-settings'
-
   const workerTimeoutMaximum = 10000
   const workerTimeoutMinimum = 3000
 
@@ -28,7 +25,6 @@
         console.log('isUploadingProcessEnabled', val, oldVal)
         if (val === oldVal) return
         this.checkStatusWorkerTimeout = workerTimeoutMinimum
-        // this.tickUpload()
         this.tickCheckStatus()
       }
     },
@@ -39,13 +35,18 @@
           resolve(files != null ? files : [])
         })
       },
+      getSuspendedFiles () {
+        return new Promise((resolve, reject) => {
+          let files = File.query().where(file => { return file.state === 'uploading' && file.uploadId !== '' && file.uploaded === false }).orderBy('timestamp').get()
+          resolve(files != null ? files : [])
+        })
+      },
       getUnsyncedFile () {
         return new Promise((resolve, reject) => {
           const file = File.query().where('state', 'waiting')
             .orderBy('retries', 'desc')
             .orderBy('timestamp', 'asc')
             .first()
-          // const file = File.query().where('state', 'waiting').orderBy('timestamp').first()
           console.log('\nwaiting file ', file)
           if (file != null) {
             resolve(file)
@@ -57,7 +58,7 @@
       getUploadedFile () {
         return new Promise((resolve, reject) => {
           const file = File.query().where((file) => {
-            return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== ''
+            return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== '' && file.uploaded === true
           }).orderBy('timestamp').first()
           if (file != null) {
             resolve(file)
@@ -76,51 +77,6 @@
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
-      checkStatus (file) {
-        let listener = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-          let idToken = null
-          idToken = arg
-          return api.checkStatus(this.isProductionEnv(), file.uploadId, idToken)
-            .then((data) => {
-              const status = data.status
-              const failureMessage = data.failureMessage
-              console.log('Ingest status = ' + status)
-              switch (status) {
-                case 10:
-                  return File.update({ where: file.id,
-                    data: {state: 'ingesting', stateMessage: '', progress: 100}
-                  })
-                case 20:
-                  return File.update({ where: file.id,
-                    data: {state: 'completed', stateMessage: '', progress: 100}
-                  })
-                case 30:
-                  if (file.retries < 3) {
-                    return File.update({ where: file.id,
-                      data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries++ }
-                    })
-                  } else {
-                    return File.update({ where: file.id,
-                      data: {state: 'failed', stateMessage: failureMessage}
-                    })
-                  }
-                case 31:
-                  return File.update({ where: file.id,
-                    data: {state: 'duplicated', stateMessage: failureMessage}
-                  })
-                default: break
-              }
-            }).catch((error) => {
-              console.log('error', error)
-              // return File.update({ where: file.id,
-              //   data: {state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.'}
-              // })
-            })
-        }
-        this.$electron.ipcRenderer.send('getIdToken')
-        this.$electron.ipcRenderer.on('sendIdToken', listener)
-      },
       queueFileToUpload () {
         return this.getUnsyncedFile().then((file) => {
           return this.uploadFile(file)
@@ -130,7 +86,13 @@
       },
       queueJobToCheckStatus () {
         return this.getUploadedFile().then((file) => {
-          return this.checkStatus(file)
+          let listener = (event, arg) => {
+            this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+            let idToken = arg
+            return this.$file.checkStatus(file, idToken, false)
+          }
+          this.$electron.ipcRenderer.send('getIdToken')
+          this.$electron.ipcRenderer.on('sendIdToken', listener)
         })
       },
       tickUpload () {
@@ -155,21 +117,21 @@
         })
       },
       checkAfterSuspended () {
-        return this.getUploadingFiles()
+        return this.getSuspendedFiles()
           .then((files) => {
             if (files.length) {
               console.log('\nuploading files with errors after suspend/loses internet connection', files)
-              // If the app suspends/loses internet connection the uploading file changes the status to waiting
-              for (let file of files) {
-                File.update({ where: file.id,
-                  data: {state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: 0}
-                })
+              let listener = (event, arg) => {
+                this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+                let idToken = arg
+                for (let file of files) {
+                  return this.$file.checkStatus(file, idToken, true)
+                }
               }
+              this.$electron.ipcRenderer.send('getIdToken')
+              this.$electron.ipcRenderer.on('sendIdToken', listener)
             }
           })
-      },
-      isProductionEnv () {
-        return settings.get('settings.production_env')
       }
     },
     mounted () {

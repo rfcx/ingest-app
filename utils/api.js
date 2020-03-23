@@ -19,7 +19,7 @@ const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestam
     .then((data) => {
       console.log('uploadId', data.uploadId)
       File.update({ where: fileId,
-        data: {state: 'uploading', uploadId: data.uploadId, progress: 0}
+        data: {state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false}
       })
       return performUpload(data.url, filePath, fileExt, fileSize, progressCallback)
         .then(() => {
@@ -55,7 +55,6 @@ const requestUploadUrl = (env, originalFilename, streamId, timestamp, idToken) =
     .then(function (response) {
       const url = response.data.url
       const uploadId = response.data.uploadId
-      console.log('uploadId = ' + uploadId)
       return { url, uploadId }
     })
 }

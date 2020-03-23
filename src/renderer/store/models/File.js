@@ -24,7 +24,8 @@ export default class File extends Model {
       progress: this.number(0),
       disabled: this.boolean(false),
       notified: this.boolean(false),
-      retries: this.number(0)
+      retries: this.number(0),
+      uploaded: this.boolean(false)
     }
   }
 

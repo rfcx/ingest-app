@@ -41,20 +41,24 @@
         }
       },
       checkAfterSuspended () {
-        return this.getUploadingFiles()
+        return this.getSuspendedFiles()
           .then((files) => {
             if (files.length) {
-              for (let file of files) {
-                File.update({ where: file.id,
-                  data: {state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: 0}
-                })
+              let listener = (event, arg) => {
+                this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+                let idToken = arg
+                for (let file of files) {
+                  return this.$file.checkStatus(file, idToken, true)
+                }
               }
+              this.$electron.ipcRenderer.send('getIdToken')
+              this.$electron.ipcRenderer.on('sendIdToken', listener)
             }
           })
       },
-      getUploadingFiles () {
+      getSuspendedFiles () {
         return new Promise((resolve, reject) => {
-          let files = File.query().where('state', 'uploading').orderBy('timestamp').get()
+          let files = File.query().where(file => { return file.state === 'uploading' && file.uploadId !== '' && file.uploaded === false }).orderBy('timestamp').get()
           resolve(files != null ? files : [])
         })
       }

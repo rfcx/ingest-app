@@ -18,6 +18,7 @@ class FileProvider {
       // })
       }).then((uploadId) => {
       console.log('\nfile uploaded to the temp folder S3')
+      File.update({ where: file.id, data: {uploaded: true} })
     }).catch((error) => {
       console.log('ERROR UPLOAD FILE', error, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
@@ -179,6 +180,50 @@ class FileProvider {
       insert: ['files']
     })
     console.log('insert file to stream')
+  }
+
+  checkStatus (file, idToken, isSuspended) {
+    return api.checkStatus(this.isProductionEnv(), file.uploadId, idToken)
+      .then((data) => {
+        const status = data.status
+        const failureMessage = data.failureMessage
+        console.log('Ingest status = ' + status)
+        switch (status) {
+          case 0:
+            if (isSuspended) {
+              // If the app suspends/loses internet connection the uploading file changes the status to waiting
+              return File.update({ where: file.id,
+                data: {state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: 0}
+              })
+            }
+            return
+          case 10:
+            return File.update({ where: file.id,
+              data: {state: 'ingesting', stateMessage: '', progress: 100}
+            })
+          case 20:
+            return File.update({ where: file.id,
+              data: {state: 'completed', stateMessage: '', progress: 100}
+            })
+          case 30:
+            if (file.retries < 3) {
+              return File.update({ where: file.id,
+                data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries++ }
+              })
+            } else {
+              return File.update({ where: file.id,
+                data: {state: 'failed', stateMessage: failureMessage}
+              })
+            }
+          case 31:
+            return File.update({ where: file.id,
+              data: {state: 'duplicated', stateMessage: failureMessage}
+            })
+          default: break
+        }
+      }).catch((error) => {
+        console.log('error', error)
+      })
   }
 }
 
