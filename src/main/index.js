@@ -75,15 +75,6 @@ function createWindow (openedAsHidden = false) {
 
   // mainWindow.webContents.once('dom-ready', () => mainWindow.webContents.openDevTools())
 
-  mainWindow.webContents.on('did-finish-load', () => {
-    console.log('did-finish-load')
-    // setTimeout(() => {
-    //   if (global.newVersion && !updatePopupWindow) {
-    //     createUpdatePopupWindow(true)
-    //   }
-    // }, 15000)
-  })
-
   mainWindow.on('closed', () => {
     resetTimers()
     mainWindow = null
@@ -648,9 +639,6 @@ function createAutoUpdaterSub () {
     if (releaseNotes) global.notes = releaseNotes
     if (!updatePopupWindow) {
       createUpdatePopupWindow(true)
-    }
-    if (settings.get('settings.auto_update_app') && (process.platform === 'darwin')) {
-      updateApp()
     }
   })
 }

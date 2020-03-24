@@ -94,7 +94,7 @@
 
   .update-popup-notes {
     font-size: 12px;
-    height: 150px;
+    height: 140px;
     overflow: auto !important;
   }
 
