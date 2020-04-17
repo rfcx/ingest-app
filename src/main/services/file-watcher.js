@@ -49,10 +49,7 @@ async function subscribeStream (selectedStream) {
 
 async function createWatcher (guid, path, addCallback, removeCallback) {
   // close and remove previous watcher if exists
-  if (watchers[guid]) {
-    await watchers[guid].close()
-    watchers[guid] = null
-  }
+  await closeWatcher(guid)
   const watcher = chokidar.watch(path, {
     ignored: /(^|[\/\\])\../, //eslint-disable-line
     persistent: true,
@@ -69,9 +66,18 @@ async function createWatcher (guid, path, addCallback, removeCallback) {
     })
   // save watcher to global object so we can access to it later
   watchers[guid] = watcher
+  console.log('watchers', watchers)
+}
+
+async function closeWatcher (guid) {
+  if (watchers[guid]) {
+    await watchers[guid].close()
+    watchers[guid] = null
+  }
 }
 
 export default {
   subscribeStream,
-  createWatcher
+  createWatcher,
+  closeWatcher
 }

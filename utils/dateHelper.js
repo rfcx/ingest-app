@@ -10,7 +10,7 @@ const parseTimestamp = (fileName, timestampFormat) => {
     '%D': '(?<day>[0-3][0-9])',
     '%H': '(?<hour>[0-2][0-9])',
     '%m': '(?<minute>[0-5][0-9])',
-    '%s': '(?<second>[0-5][0-9])'
+    '%s': '(?<second>[0-5][0-9])?'
   }
 
   var regExpString = timestampFormat
@@ -27,18 +27,19 @@ const parseTimestamp = (fileName, timestampFormat) => {
   }
 
   result = result.groups
-
-  // Fix 2 character years
+  if (!result.second) result.second = '00'
   if (result && result.year && result.year.length === 2) result.year = '20' + result.year
   return `${result.year}-${result.month}-${result.day}T${result.hour}:${result.minute}:${result.second}Z`
 }
 
 const parseTimestampAuto = (input) => {
   // Test "year month day", "day month year", "[a-zA-Z]{3}[0-9]{4} year month day", "[a-zA-Z]{6} [a-zA-Z]{3} [a-zA-Z]{3} [a-zA-Z]{3} [a-zA-Z]{2}[0-9]{2} year month day"
-  const test1 = '(?<year>(19|20)[0-9][0-9])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])'
-  const test2 = '(?<day>0[1-9]|[12][0-9]|3[01])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<year>(19|20)[0-9][0-9]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])'
-  const test3 = '(?<string>[a-zA-Z]{3}[0-9]{4})[-._ ]?(?<year>(19|20)[0-9][0-9])[- /._]?(?<month>0[1-9]|1[012])[- /._]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])'
-  const test4 = '(?<string>[a-zA-Z]{6}[-._ ]?[a-zA-Z]{3}[-._ ]?[a-zA-Z]{3}[-._ ]?[a-zA-Z]{3}[-._ ]?[a-zA-Z]{2}[0-9]{2})[-._ ]?(?<year>(19|20)[0-9][0-9])[- /._]?(?<month>0[1-9]|1[012])[- /._]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])'
+  const test1 = '(?<year>(19|20)[0-9][0-9])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])?'
+  const test5 = '(?<year>[0-9][0-9])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])?'
+  const test2 = '(?<day>0[1-9]|[12][0-9]|3[01])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<year>(19|20)[0-9][0-9]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])?'
+  const test6 = '(?<day>0[1-9]|[12][0-9]|3[01])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<year>[0-9][0-9]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])?'
+  const test3 = '(?<string>[a-zA-Z]{3}[0-9]{4})[-._ ]?(?<year>(19|20)[0-9][0-9])[- /._]?(?<month>0[1-9]|1[012])[- /._]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])?'
+  const test4 = '(?<string>[a-zA-Z]{6}[-._ ]?[a-zA-Z]{3}[-._ ]?[a-zA-Z]{3}[-._ ]?[a-zA-Z]{3}[-._ ]?[a-zA-Z]{2}[0-9]{2})[-._ ]?(?<year>(19|20)[0-9][0-9])[- /._]?(?<month>0[1-9]|1[012])[- /._]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])?'
   const regExp3 = new RegExp(test3, 'g')
   var result = regExp3.exec(input)
   if (result == null) {
@@ -51,14 +52,23 @@ const parseTimestampAuto = (input) => {
         const regExp2 = new RegExp(test2, 'g')
         result = regExp2.exec(input)
         if (result == null) {
-          return undefined
+          const regExp5 = new RegExp(test5, 'g')
+          result = regExp5.exec(input)
+          if (result == null) {
+            const regExp6 = new RegExp(test6, 'g')
+            result = regExp6.exec(input)
+            if (result == null) {
+              return undefined
+            }
+          }
         }
       }
     }
   }
   result = result.groups
-  // Fix 2 character years
-  if (result.year.length === 2) result.year = '20' + result.year
+
+  if (!result.second) result.second = '00'
+  if (result && result.year && result.year.length === 2) result.year = '20' + result.year
   return `${result.year}-${result.month}-${result.day}T${result.hour}:${result.minute}:${result.second}Z`
 }
 

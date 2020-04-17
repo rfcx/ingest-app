@@ -3,7 +3,6 @@ import api from '../../../utils/api'
 import File from '../store/models/File'
 import Stream from '../store/models/Stream'
 import fileHelper from '../../../utils/fileHelper'
-import fileWatcher from '../../../utils/fileWatcher'
 import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 
@@ -43,42 +42,6 @@ class FileProvider {
 
   isProductionEnv () {
     return settings.get('settings.production_env')
-  }
-
-  watchingStream (selectedStream) {
-    fileWatcher.createWatcher(selectedStream.id, selectedStream.folderPath, (newFilePath) => {
-      // try {
-      //   let files = await this.getFiles(selectedStream)
-      // } catch (error) {
-      //   console.log(error)
-      // }
-      let files = File.query().where('streamId', selectedStream.id).orderBy('name').get()
-      if (selectedStream.files && selectedStream.files.length === files.length) {
-        if (this.fileIsExist(newFilePath)) return
-      } else if (files && files.length) {
-        files.forEach((file) => {
-          if (!fileHelper.isExist(file.path)) {
-            return File.delete(file.id)
-          } else {
-            if (!file.sha1 || file.sha1 === '') {
-              File.update({ where: file.id,
-                data: { sha1: fileHelper.getCheckSum(file.path) }
-              })
-            }
-            if (file.sha1 === fileHelper.getCheckSum(newFilePath)) {
-              return this.updateFile(file.id, newFilePath)
-            }
-          }
-        })
-      }
-      if (this.fileIsExist(newFilePath)) return
-      console.log('New file for uploading', newFilePath)
-      const file = this.createFileObject(newFilePath, selectedStream)
-      this.insertFile(file)
-      this.insertFilesToStream([file], selectedStream)
-    }, (removedFilePath) => {
-      this.deleteFile(this.getFileId(removedFilePath))
-    })
   }
 
   async getFiles (selectedStream) {
@@ -121,6 +84,7 @@ class FileProvider {
     }
     const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
     const state = this.getState(momentDate, fileExt)
+    console.log('createFileObject, stream.id', stream.id)
     return {
       id: this.getFileId(filePath),
       name: fileName,
@@ -179,7 +143,7 @@ class FileProvider {
       data: { files: files },
       insert: ['files']
     })
-    console.log('insert file to stream')
+    console.log('insert files to stream:', files)
   }
 
   checkStatus (file, idToken, isSuspended) {

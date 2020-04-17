@@ -184,13 +184,11 @@ export default {
     changeFolder (event) {
       const file = event.target.files[0]
       if (file) this.folderPath = file.path
-      console.log('changeFolder', file)
       let streamName = fileHelper.getFileNameFromFilePath(this.folderPath)
       if (streamName) {
         this.name = streamName
       }
       this.error = null
-      // FIXME: check timestamp for auto-detect option
     },
     onCloseAlert () {
       this.error = null

@@ -300,7 +300,7 @@
           if ((this.files && !this.files.length) || this.isFilesUploading) {
             api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
               console.log('stream is deleted')
-              await this.removeStreamFromVuex()
+              await this.removeStreamFromVuex(this.selectedStream.id)
               this.modalHandler()
             }).catch(error => {
               console.log('error while deleting stream', error)
@@ -309,13 +309,13 @@
           } else {
             api.moveToTrashStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
               console.log('stream is moved to the trash list')
-              await this.removeStreamFromVuex()
+              await this.removeStreamFromVuex(this.selectedStream.id)
               this.modalHandler()
             }).catch(async (error) => {
               console.log('Error while moving stream to trash', error)
               if (error.status === 404 || error.data === 'Stream with given guid not found.') {
                 this.errorMessage = null
-                await this.removeStreamFromVuex()
+                await this.removeStreamFromVuex(this.selectedStream.id)
                 this.modalHandler()
               } else this.errorHandler(error, false)
             })
@@ -324,11 +324,12 @@
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
-      async removeStreamFromVuex () {
+      async removeStreamFromVuex (selectedStreamId) {
         for (let file of this.files) {
           File.delete(file.id)
         }
-        Stream.delete(this.selectedStreamId)
+        Stream.delete(selectedStreamId)
+        fileWatcher.closeWatcher(selectedStreamId)
       },
       modalHandler () {
         const stream = Stream.query().where((stream) => {
