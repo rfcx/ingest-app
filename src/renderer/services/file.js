@@ -26,7 +26,7 @@ class FileProvider {
         })
       } else if (file.retries < 3) {
         return File.update({ where: file.id,
-          data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries++ }
+          data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
         })
       } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
         return File.update({ where: file.id,
@@ -170,9 +170,13 @@ class FileProvider {
               data: {state: 'completed', stateMessage: '', progress: 100}
             })
           case 30:
-            if (file.retries < 3) {
+            if (failureMessage.includes('is zero')) {
               return File.update({ where: file.id,
-                data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries++ }
+                data: {state: 'failed', stateMessage: 'Corrupted file'}
+              })
+            } else if (file.retries < 3) {
+              return File.update({ where: file.id,
+                data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
               })
             } else {
               return File.update({ where: file.id,
