@@ -81,6 +81,7 @@
         </div>
         <footer class="modal-card-foot">
           <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
+          <!-- :disabled="isDeleting" -->
           <button class="button is-danger" :class="{ 'is-loading': isDeleting }" @click="deleteStream()">Delete</button>
         </footer>
       </div>
@@ -117,7 +118,8 @@
         isDeleting: false,
         newStreamName: '',
         error: null,
-        errorMessage: null
+        errorMessage: null,
+        checkWaitingFilesInterval: null
       }
     },
     computed: {
@@ -301,7 +303,7 @@
             api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
               console.log('stream is deleted')
               await this.removeStreamFromVuex(this.selectedStream.id)
-              this.modalHandler()
+              // this.modalHandler()
             }).catch(error => {
               console.log('error while deleting stream', error)
               this.errorHandler(error, true)
@@ -310,13 +312,13 @@
             api.moveToTrashStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
               console.log('stream is moved to the trash list')
               await this.removeStreamFromVuex(this.selectedStream.id)
-              this.modalHandler()
+              // this.modalHandler()
             }).catch(async (error) => {
               console.log('Error while moving stream to trash', error)
               if (error.status === 404 || error.data === 'Stream with given guid not found.') {
                 this.errorMessage = null
                 await this.removeStreamFromVuex(this.selectedStream.id)
-                this.modalHandler()
+                // this.modalHandler()
               } else this.errorHandler(error, false)
             })
           }
@@ -326,10 +328,26 @@
       },
       async removeStreamFromVuex (selectedStreamId) {
         for (let file of this.files) {
-          File.delete(file.id)
+          await File.delete(file.id)
         }
-        Stream.delete(selectedStreamId)
-        fileWatcher.closeWatcher(selectedStreamId)
+        this.checkWaitingFilesInterval = setInterval(() => {
+          if (!this.files.length) {
+            Stream.delete(selectedStreamId)
+            fileWatcher.closeWatcher(selectedStreamId)
+            this.modalHandler()
+            this.clearInterval()
+            console.log('stream is moved from Vuex Store')
+          }
+        }, 3000)
+        // Stream.delete(selectedStreamId)
+        // fileWatcher.closeWatcher(selectedStreamId)
+      },
+      clearInterval () {
+        console.log('\nclearInterval')
+        if (this.checkWaitingFilesInterval) {
+          clearInterval(this.checkWaitingFilesInterval)
+          this.checkWaitingFilesInterval = null
+        }
       },
       modalHandler () {
         const stream = Stream.query().where((stream) => {
@@ -431,6 +449,9 @@
           if (progress !== undefined) progress.updateProgress(file.progress)
         })
       }
+    },
+    beforeDestroy () {
+      this.clearInterval()
     }
   }
 </script>
