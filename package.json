@@ -60,7 +60,6 @@
     "win": {
       "icon": "build/icons/ingest-windows.ico",
       "certificateFile": "./build/certs/certificate.p12",
-      "certificatePassword": "topherwhite",
       "publisherName": "RFCx",
       "target": [
         {
