@@ -23,7 +23,7 @@ const readFile = (filePath) => {
 }
 
 const getExtension = (fileName) => {
-  return fileName.split('.').pop()
+  return fileName.split('.').pop().toLowerCase()
 }
 
 const getFilesFromDirectoryPath = (directoryPath) => {
@@ -56,7 +56,7 @@ const getFileNameFromFilePath = (filePath) => {
 }
 
 const getFileName = (fileName) => {
-  const ext = '.' + getExtension(fileName) // FIXME: call getExtension function
+  const ext = '.' + getExtension(fileName)
   return fileName.replace(ext, '')
 }
 
@@ -66,7 +66,8 @@ const getFileSize = (filePath) => {
 }
 
 const isSupportedFileExtension = (fileExtension) => {
-  return fileExtension === 'wav' || fileExtension === 'opus' || fileExtension === 'flac'
+  let extension = fileExtension.toLowerCase()
+  return extension === 'wav' || extension === 'opus' || extension === 'flac'
 }
 
 export default {
