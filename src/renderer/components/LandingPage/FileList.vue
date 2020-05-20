@@ -81,6 +81,7 @@
         </div>
         <footer class="modal-card-foot">
           <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
+          <!-- :disabled="isDeleting" -->
           <button class="button is-danger" :class="{ 'is-loading': isDeleting }" @click="deleteStream()">Delete</button>
         </footer>
       </div>
@@ -117,7 +118,8 @@
         isDeleting: false,
         newStreamName: '',
         error: null,
-        errorMessage: null
+        errorMessage: null,
+        checkWaitingFilesInterval: null
       }
     },
     computed: {
@@ -325,11 +327,15 @@
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       async removeStreamFromVuex (selectedStreamId) {
-        for (let file of this.files) {
-          File.delete(file.id)
+        let listen = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
+          console.log('files deleted')
+          Stream.delete(selectedStreamId)
+          fileWatcher.closeWatcher(selectedStreamId)
         }
-        Stream.delete(selectedStreamId)
-        fileWatcher.closeWatcher(selectedStreamId)
+        let ids = this.files.map((file) => { return file.id })
+        this.$electron.ipcRenderer.send('deleteFiles', ids)
+        this.$electron.ipcRenderer.on('filesDeleted', listen)
       },
       modalHandler () {
         const stream = Stream.query().where((stream) => {
@@ -352,7 +358,7 @@
         if (error.status === 401 || error.data === 'UNAUTHORIZED') {
           this.errorMessage = 'You are not authorized.'
         } else if (error.status === 403) {
-          this.errorMessage = `You don't have enough permissions for this action.`
+          this.errorMessage = `You don't have permissions to delete non-empty stream.`
         } else { this.errorMessage = isDeleting ? 'Error while deleting stream.' : 'Error while moving stream to trash.' }
       },
       isProductionEnv () {
