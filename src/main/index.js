@@ -768,6 +768,18 @@ ipcMain.on('subscribeToFileWatcher', async function (event, streams) {
   }
 })
 
+ipcMain.on('deleteFiles', async function (event, ids) {
+  console.log('deleteFiles', ids)
+  if (ids && ids.length) {
+    await File.delete((file) => {
+      if (ids.includes(file.id)) {
+        return file.id
+      }
+    })
+    event.sender.send('filesDeleted')
+  }
+})
+
 ipcMain.on('closeUpdatePopupWindow', () => {
   console.log('closeUpdatePopupWindow')
   if (updatePopupWindow) {

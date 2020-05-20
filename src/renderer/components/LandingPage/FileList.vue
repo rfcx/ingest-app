@@ -303,7 +303,7 @@
             api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
               console.log('stream is deleted')
               await this.removeStreamFromVuex(this.selectedStream.id)
-              // this.modalHandler()
+              this.modalHandler()
             }).catch(error => {
               console.log('error while deleting stream', error)
               this.errorHandler(error, true)
@@ -312,13 +312,13 @@
             api.moveToTrashStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
               console.log('stream is moved to the trash list')
               await this.removeStreamFromVuex(this.selectedStream.id)
-              // this.modalHandler()
+              this.modalHandler()
             }).catch(async (error) => {
               console.log('Error while moving stream to trash', error)
               if (error.status === 404 || error.data === 'Stream with given guid not found.') {
                 this.errorMessage = null
                 await this.removeStreamFromVuex(this.selectedStream.id)
-                // this.modalHandler()
+                this.modalHandler()
               } else this.errorHandler(error, false)
             })
           }
@@ -327,27 +327,15 @@
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       async removeStreamFromVuex (selectedStreamId) {
-        for (let file of this.files) {
-          await File.delete(file.id)
+        let listen = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
+          console.log('files deleted')
+          Stream.delete(selectedStreamId)
+          fileWatcher.closeWatcher(selectedStreamId)
         }
-        this.checkWaitingFilesInterval = setInterval(() => {
-          if (!this.files.length) {
-            Stream.delete(selectedStreamId)
-            fileWatcher.closeWatcher(selectedStreamId)
-            this.modalHandler()
-            this.clearInterval()
-            console.log('stream is moved from Vuex Store')
-          }
-        }, 3000)
-        // Stream.delete(selectedStreamId)
-        // fileWatcher.closeWatcher(selectedStreamId)
-      },
-      clearInterval () {
-        console.log('\nclearInterval')
-        if (this.checkWaitingFilesInterval) {
-          clearInterval(this.checkWaitingFilesInterval)
-          this.checkWaitingFilesInterval = null
-        }
+        let ids = this.files.map((file) => { return file.id })
+        this.$electron.ipcRenderer.send('deleteFiles', ids)
+        this.$electron.ipcRenderer.on('filesDeleted', listen)
       },
       modalHandler () {
         const stream = Stream.query().where((stream) => {
@@ -370,7 +358,7 @@
         if (error.status === 401 || error.data === 'UNAUTHORIZED') {
           this.errorMessage = 'You are not authorized.'
         } else if (error.status === 403) {
-          this.errorMessage = `You don't have enough permissions for this action.`
+          this.errorMessage = `You don't have permissions to delete non-empty stream.`
         } else { this.errorMessage = isDeleting ? 'Error while deleting stream.' : 'Error while moving stream to trash.' }
       },
       isProductionEnv () {
@@ -449,9 +437,6 @@
           if (progress !== undefined) progress.updateProgress(file.progress)
         })
       }
-    },
-    beforeDestroy () {
-      this.clearInterval()
     }
   }
 </script>

@@ -3,10 +3,8 @@ import Vuex from 'vuex'
 import VuexORM from '@vuex-orm/core'
 import Stream from './models/Stream'
 import File from './models/File'
-
-import { createPersistedState, createSharedMutations } from 'vuex-electron'
-
 import modules from './modules'
+import { createPersistedState, createSharedMutations } from 'vuex-electron'
 
 Vue.use(Vuex)
 
