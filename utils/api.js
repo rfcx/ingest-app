@@ -1,4 +1,5 @@
 import File from '../src/renderer/store/models/File'
+import fileHelper from './fileHelper'
 const axios = require('axios')
 const fileStreamAxios = axios.create({
   adapter: require('./axios-http-adapter').default
@@ -14,8 +15,7 @@ const apiUrl = (proEnvironment) => {
 }
 
 const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
-  console.log(`path: ${filePath} ext: ${fileExt}`)
-  return requestUploadUrl(env, fileName, streamId, timestamp, idToken)
+  return requestUploadUrl(env, fileName, filePath, streamId, timestamp, idToken)
     .then((data) => {
       console.log('uploadId', data.uploadId)
       File.update({ where: fileId,
@@ -47,9 +47,10 @@ const createStream = (env, streamName, siteGuid, visibility, idToken) => {
 
 // Part 1: Get signed url
 
-const requestUploadUrl = (env, originalFilename, streamId, timestamp, idToken) => {
+const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, idToken) => {
   // Make a request for a user with a given ID
-  const params = { filename: originalFilename, stream: streamId, timestamp: timestamp }
+  const sha1 = fileHelper.getCheckSum(filePath)
+  const params = { filename: originalFilename, checksum: sha1, stream: streamId, timestamp: timestamp }
   console.log('requestUploadUrl with params', params)
   return axios.post(apiUrl(env) + '/uploads', params, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
