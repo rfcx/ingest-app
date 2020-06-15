@@ -14,6 +14,7 @@ export default class File extends Model {
       sha1: this.attr(''),
       path: this.string(''),
       sizeInByte: this.number(0),
+      durationInSecond: this.number(0),
       extension: this.string(''),
       timestamp: this.attr(null),
       state: this.string(''), // state: waiting, uploading, ingesting, completed, fail
