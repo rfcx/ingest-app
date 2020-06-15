@@ -74,7 +74,7 @@
           <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': isError(file.state) || isDuplicated(file.state)}" >{{ file.name }}</td>
           <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ getTimestamp(file) }}</td>
           <td colspan="2" class="is-error file-row file-list-table__cell file-list-table__cell_info" v-if="isError(file.state) || isDuplicated(file.state)">{{ file.stateMessage }}</td>
-          <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ file.fileSize }}</td>
+          <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ file.fileDuration }}</td>
           <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ file.fileSize }}</td>
           <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls" v-if="isError(file.state) || isDuplicated(file.state)">
             <font-awesome-icon v-show="isError(file.state)" class="iconRedo" :icon="iconRedo" @click="repeatUploading(file.id)"></font-awesome-icon>

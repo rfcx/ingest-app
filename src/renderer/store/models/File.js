@@ -30,6 +30,13 @@ export default class File extends Model {
     }
   }
 
+  get fileDuration () {
+    var date = new Date(0)
+    date.setSeconds(this.durationInSecond)
+    var timeString = date.toISOString().substr(11, 8)
+    return timeString
+  }
+
   get fileSize () {
     const bytes = this.sizeInByte
     var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
