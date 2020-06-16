@@ -47,23 +47,34 @@
         <span>Your synced folder is empty</span><br>
         <a v-if="selectedStream" class="button is-rounded is-primary" style="margin-top: 0.75em" @click="openFolder(selectedStream.folderPath)">Open Folder</a>
     </div>
-    <table v-show="!isEmptyFolder()" class="table file-list-table file-list-table_head is-hoverable" :class="{ 'lowerOpacity': files && files.length && isFilesReading }">
+    <!-- <table v-show="!isEmptyFolder()" class="table file-list-table file-list-table_head is-hoverable" :class="{ 'lowerOpacity': files && files.length && isFilesReading }">
       <thead>
         <tr>
           <td class="file-list-table__cell file-list-table__cell_status"></td>
           <td class="file-list-table__cell file-list-table__cell_name">Name</td>
           <td class="file-list-table__cell file-list-table__cell_info">Timestamp</td>
+          <td class="file-list-table__cell file-list-table__cell_controls">Duration</td>
           <td class="file-list-table__cell file-list-table__cell_controls">File size</td>
         </tr>
       </thead>
-    </table>
+    </table> -->
     <table v-show="!isEmptyFolder()" class="table file-list-table is-hoverable" :class="{ 'lowerOpacity': files && files.length && isFilesReading }">
+      <thead>
+        <tr>
+          <td class="file-list-table__cell file-list-table__cell_status"></td>
+          <td class="file-list-table__cell file-list-table__cell_name">Name</td>
+          <td class="file-list-table__cell file-list-table__cell_info">Timestamp</td>
+          <td class="file-list-table__cell file-list-table__cell_controls">Duration</td>
+          <td class="file-list-table__cell file-list-table__cell_controls">File size</td>
+        </tr>
+      </thead>
       <tbody>
         <tr v-for="file in files" :key="file.id" :class="{ 'file-disable': file.disabled }">
           <td class="file-status file-list-table__cell file-list-table__cell_status" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' || file.state === 'duplicated' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
           <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': isError(file.state) || isDuplicated(file.state)}" >{{ file.name }}</td>
           <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ getTimestamp(file) }}</td>
-          <td class="is-error file-row file-list-table__cell file-list-table__cell_info" v-if="isError(file.state) || isDuplicated(file.state)">{{ file.stateMessage }}</td>
+          <td colspan="2" class="is-error file-row file-list-table__cell file-list-table__cell_info" v-if="isError(file.state) || isDuplicated(file.state)">{{ file.stateMessage }}</td>
+          <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ file.fileDuration }}</td>
           <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ file.fileSize }}</td>
           <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls" v-if="isError(file.state) || isDuplicated(file.state)">
             <font-awesome-icon v-show="isError(file.state)" class="iconRedo" :icon="iconRedo" @click="repeatUploading(file.id)"></font-awesome-icon>
@@ -685,16 +696,17 @@
     }
     &__cell {
       &_status {
-        width: 9%;
+        width: 10%;
       }
       &_name {
-        width: 40%;
+        width: 35%;
       }
       &_info {
-        width: 38%;
+        width: 10%;
       }
       &_controls {
-        width: 13%;
+        width: 15%;
+        text-align: center !important;
       }
     }
   }

@@ -51,7 +51,7 @@ class FileProvider {
   async newFilePath (newFilePath, selectedStream) {
     if (this.fileIsExist(newFilePath)) return
     console.log('New file for uploading', newFilePath)
-    const file = this.createFileObject(newFilePath, selectedStream)
+    const file = await this.createFileObject(newFilePath, selectedStream)
     await this.insertFile(file)
     await this.insertFilesToStream([file], selectedStream)
   }
@@ -69,13 +69,14 @@ class FileProvider {
     return !!File.find(this.getFileId(filePath))
   }
 
-  createFileObject (filePath, stream) {
+  async createFileObject (filePath, stream) {
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
     // const data = fileHelper.getMD5Hash(filePath)
     // const hash = data.hash
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
+    const duration = await fileHelper.getFileDuration(filePath)
     let isoDate
     if (stream.timestampFormat === 'Auto-detect') {
       isoDate = dateHelper.parseTimestampAuto(fileName)
@@ -93,6 +94,7 @@ class FileProvider {
       path: filePath,
       extension: fileExt,
       sizeInByte: size,
+      durationInSecond: duration,
       timestamp: isoDate,
       streamId: stream.id,
       state: state.state,

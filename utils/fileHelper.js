@@ -1,6 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 const cryptoJS = require('crypto-js')
+const { getAudioDurationInSeconds } = require('get-audio-duration')
 
 const getFilePath = (directoryPath, fileName) => {
   return path.join(directoryPath, fileName)
@@ -65,6 +66,10 @@ const getFileSize = (filePath) => {
   return stats.size
 }
 
+const getFileDuration = (filePath) => {
+  return getAudioDurationInSeconds(filePath)
+}
+
 const isSupportedFileExtension = (fileExtension) => {
   let extension = fileExtension.toLowerCase()
   return extension === 'wav' || extension === 'opus' || extension === 'flac'
@@ -80,6 +85,7 @@ export default {
   getFileName,
   getExtension,
   getFileSize,
+  getFileDuration,
   isSupportedFileExtension,
   isFolder,
   getCheckSum
