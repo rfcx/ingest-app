@@ -1,6 +1,6 @@
 <template>
   <div class="file-list" :class="{ 'spinner': files && files.length && isFilesReading }">
-    <div class="stream-info-container">
+    <!-- <div class="stream-info-container">
       <div class="title-container">
         <div class="title-container-text" v-if="selectedStream && !isRenaming">
         <span class="stream-name">{{ selectedStream.name }}</span>
@@ -41,7 +41,8 @@
           {{ selectedStream.folderPath }}
         </div>
       </div>
-    </div>
+    </div> -->
+    <header-view @updateError="updateError" @updateErrorMessage="updateErrorMessage" @updateLoading="updateLoading"></header-view>
     <div v-show="isEmptyFolder()" class="container-box empty has-text-centered">
         <img src="~@/assets/ic-folder-empty.svg" style="margin-bottom: 0.75em"><br>
         <span>Your synced folder is empty</span><br>
@@ -70,7 +71,7 @@
       </thead>
       <tbody>
         <tr v-for="file in files" :key="file.id" :class="{ 'file-disable': file.disabled }">
-          <td class="file-status file-list-table__cell file-list-table__cell_status" v-show="!shouldShowProgress(file.state)"><img :class="{ 'file-failed': file.state === 'failed' || file.state === 'duplicated' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
+          <td class="file-status file-list-table__cell file-list-table__cell_status"><img :class="{ 'file-failed': file.state === 'failed' || file.state === 'duplicated' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
           <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': isError(file.state) || isDuplicated(file.state)}" >{{ file.name }}</td>
           <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ getTimestamp(file) }}</td>
           <td colspan="2" class="is-error file-row file-list-table__cell file-list-table__cell_info" v-if="isError(file.state) || isDuplicated(file.state)">{{ file.stateMessage }}</td>
@@ -83,54 +84,31 @@
         </tr>
       </tbody>
     </table>
-    <!-- Modal -->
-    <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
-      <div class="modal-background"></div>
-      <div class="modal-card">
-        <div class="modal-card-body">
-          <p class="modal-card-title">Are you sure to delete this stream?</p>
-        </div>
-        <footer class="modal-card-foot">
-          <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
-          <!-- :disabled="isDeleting" -->
-          <button class="button is-danger" :class="{ 'is-loading': isDeleting }" @click="deleteStream()">Delete</button>
-        </footer>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
+  import HeaderView from './HeaderView'
   import dateHelper from '../../../../utils/dateHelper'
-  import fileHelper from '../../../../utils/fileHelper'
   import File from '../../store/models/File'
   import Stream from '../../store/models/Stream'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-  import { faPencilAlt, faRedo, faEyeSlash, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
-  import settings from 'electron-settings'
-  import api from '../../../../utils/api'
-  import fileWatcher from '../../../main/services/file-watcher'
+  import { faRedo, faEyeSlash, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 
   export default {
     components: {
-      FontAwesomeIcon
+      FontAwesomeIcon, HeaderView
     },
     data () {
       return {
-        iconPencil: faPencilAlt,
         iconHide: faEyeSlash,
         iconRedo: faRedo,
         faExternalLinkAlt: faExternalLinkAlt,
         fill: { color: ['#2FB04A'] },
-        shouldShowDropDown: false,
-        shouldShowConfirmToDeleteModal: false,
-        isRenaming: false,
-        isLoading: false,
-        isDeleting: false,
-        newStreamName: '',
         error: null,
         errorMessage: null,
-        checkWaitingFilesInterval: null
+        checkWaitingFilesInterval: null,
+        isLoading: false
       }
     },
     computed: {
@@ -170,15 +148,6 @@
           }
         })
         if (count === this.files.length) return true
-      },
-      isFilesUploading () {
-        let count = 0
-        this.files.forEach(file => {
-          if (file.state === 'waiting' || file.state === undefined || file.state === 'uploading') {
-            count++
-          }
-        })
-        if (count === this.files.length) return true
       }
     },
     methods: {
@@ -193,58 +162,6 @@
           case 'completed': return 5
         }
       },
-      renameStream () {
-        this.newStreamName = null
-        this.isRenaming = true
-        this.newStreamName = this.selectedStream.name
-      },
-      async refreshStream () {
-        let files = File.query().where('streamId', this.selectedStream.id).orderBy('name').get()
-        console.log('files for refreshing stream', files)
-        await this.checkFilesExistense(files)
-        fileWatcher.subscribeStream(this.selectedStream)
-      },
-      async checkFilesExistense (files) {
-        for (const file of files) {
-          if (!fileHelper.isExist(file.path)) {
-            await File.delete(file.id)
-          }
-        }
-      },
-      saveStream () {
-        this.error = null
-        this.isLoading = true
-        let listener = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-          let idToken = null
-          idToken = arg
-          api.renameStream(this.isProductionEnv(), this.selectedStream.id, this.newStreamName, this.selectedStream.siteGuid, idToken).then(data => {
-            console.log('stream is updated')
-            Stream.update({ where: this.selectedStream.id,
-              data: { name: this.newStreamName }
-            })
-            this.isLoading = false
-            this.isRenaming = false
-          }).catch(error => {
-            console.log('error while updating stream', error)
-            this.isLoading = false
-            if (error.status === 401 || error.data === 'UNAUTHORIZED') {
-              this.error = 'You are not authorized.'
-            } else { this.error = 'Error while updating stream.' }
-          })
-        }
-        this.$electron.ipcRenderer.send('getIdToken')
-        this.$electron.ipcRenderer.on('sendIdToken', listener)
-      },
-      cancel () {
-        this.isRenaming = false
-        this.newStreamName = null
-        this.error = null
-      },
-      getFiles () {
-        return this.files
-        // return fs.readdirSync(this.selectedStream.folderPath)
-      },
       getStateImgUrl (state) {
         return require(`../../assets/ic-state-${state}.svg`)
       },
@@ -257,15 +174,6 @@
       isValid (date) {
         const momentDate = dateHelper.getMomentDateFromAppDate(date)
         return dateHelper.isValidDate(momentDate)
-      },
-      updateState (file, state) {
-        File.update({ where: file.name,
-          data: { state: state }
-        })
-      },
-      shouldShowProgress (state) {
-        return false
-        // return state === 'uploading' || state === 'ingesting' || state === 'waiting'
       },
       isError (state) {
         return state === 'failed'
@@ -293,87 +201,6 @@
       },
       progress_end (event) {
         // console.log('circle end')
-      },
-      toggleDropDown () {
-        this.shouldShowDropDown = !this.shouldShowDropDown
-      },
-      showConfirmToDeleteStreamModal () {
-        this.shouldShowConfirmToDeleteModal = true
-      },
-      hideConfirmToDeleteStreamModal () {
-        this.shouldShowConfirmToDeleteModal = false
-      },
-      deleteStream () {
-        this.errorMessage = null
-        this.isDeleting = true
-        let listener = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-          let idToken = null
-          idToken = arg
-          if ((this.files && !this.files.length) || this.isFilesUploading) {
-            api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
-              console.log('stream is deleted')
-              await this.removeStreamFromVuex(this.selectedStream.id)
-              this.modalHandler()
-            }).catch(error => {
-              console.log('error while deleting stream', error)
-              this.errorHandler(error, true)
-            })
-          } else {
-            api.moveToTrashStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
-              console.log('stream is moved to the trash list')
-              await this.removeStreamFromVuex(this.selectedStream.id)
-              this.modalHandler()
-            }).catch(async (error) => {
-              console.log('Error while moving stream to trash', error)
-              if (error.status === 404 || error.data === 'Stream with given guid not found.') {
-                this.errorMessage = null
-                await this.removeStreamFromVuex(this.selectedStream.id)
-                this.modalHandler()
-              } else this.errorHandler(error, false)
-            })
-          }
-        }
-        this.$electron.ipcRenderer.send('getIdToken')
-        this.$electron.ipcRenderer.on('sendIdToken', listener)
-      },
-      async removeStreamFromVuex (selectedStreamId) {
-        let listen = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
-          console.log('files deleted')
-          Stream.delete(selectedStreamId)
-          fileWatcher.closeWatcher(selectedStreamId)
-        }
-        let ids = this.files.map((file) => { return file.id })
-        this.$electron.ipcRenderer.send('deleteFiles', ids)
-        this.$electron.ipcRenderer.on('filesDeleted', listen)
-      },
-      modalHandler () {
-        const stream = Stream.query().where((stream) => {
-          return stream.id !== this.selectedStreamId
-        }).first()
-        if (stream) {
-          this.$store.dispatch('setSelectedStreamId', stream.id)
-        }
-        // If a stream deleted when the uploading process was paused.
-        this.$store.dispatch('setUploadingProcess', true)
-        this.isDeleting = false
-        this.hideConfirmToDeleteStreamModal()
-      },
-      errorHandler (error, isDeleting) {
-        this.isDeleting = false
-        this.hideConfirmToDeleteStreamModal()
-        setTimeout(() => {
-          this.errorMessage = null
-        }, 10000)
-        if (error.status === 401 || error.data === 'UNAUTHORIZED') {
-          this.errorMessage = 'You are not authorized.'
-        } else if (error.status === 403) {
-          this.errorMessage = `You don't have permissions to delete non-empty stream.`
-        } else { this.errorMessage = isDeleting ? 'Error while deleting stream.' : 'Error while moving stream to trash.' }
-      },
-      isProductionEnv () {
-        return settings.get('settings.production_env')
       },
       getFile (fileId) {
         return new Promise((resolve, reject) => {
@@ -410,33 +237,14 @@
           data: { disabled: !file.disabled }
         })
       },
-      redirectToStreamWeb () {
-        console.log('user redirected to the Client Stream Web', this.selectedStream)
-        let url = 'https://client-stream.rfcx.org/'
-        if (this.selectedStream) {
-          if (this.selectedStream.env) {
-            if (this.selectedStream.env === 'production') {
-              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
-            } else if (this.selectedStream.env === 'staging') {
-              url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.id}`
-            } else {
-              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
-            }
-          } else {
-            if (this.isProductionEnv()) {
-              url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
-            } else {
-              url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.id}`
-            }
-          }
-        } else {
-          if (this.isProductionEnv()) {
-            url = `https://client-stream.rfcx.org/streams`
-          } else {
-            url = `https://staging-client-stream.rfcx.org/streams`
-          }
-        }
-        this.$electron.shell.openExternal(url)
+      updateError (error) {
+        this.error = error
+      },
+      updateErrorMessage (errorMessage) {
+        this.errorMessage = errorMessage
+      },
+      updateLoading (isLoading) {
+        this.isLoading = isLoading
       }
     },
     watch: {
