@@ -2,22 +2,22 @@
   <div>
     <aside class="column menu tray-menu" :class="{ 'dark-tray': isDark }">
       <div class="tray-container">
-        <div class="menu-container side-menu-title side-menu-title-tray">
-          <p class="menu-label"> {{ menuTitle }} </p>
-          <a href="#" @click="toggleUploadingProcess()"><img :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
+        <div class="menu-container side-menu-title">
+          <div class="menu-label">Streams</div>
+          <!-- <a href="#" @click="toggleUploadingProcess()"><img :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a> -->
         </div>
-        <ul class="tray-menu-list menu-list">
+        <ul class="menu-list">
           <li v-for="stream in streams" :key="stream.id">
             <div class="menu-item" v-on:click="selectItem(stream)">
               <div class="menu-container" :class="{ 'container-failed': getState(stream) === 'failed'  || getState(stream) === 'duplicated'}">
-                <span class="stream-title">{{ stream.name }}</span>
+                <div class="stream-title">{{ stream.name }}</div>
                 <img :src="getStateImgUrl(getState(stream))">
               </div>
               <div class="state-progress" v-if="shouldShowProgress(stream)">
                 <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream), 'is-success': isFilesHidden(stream), 'is-danger': getState(stream) === 'duplicated' || getState(stream) === 'failed' }" :value="getProgress(stream)" max="100"></progress>
                 <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' }">
-                  <span class="is-size-7 menu-container-left">{{ checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' ? '' : getState(stream) }}</span>
-                  <span class="is-size-7 menu-container-right"> {{ getStateStatus(stream) }} </span>
+                  <span class="menu-container-left">{{ checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' ? '' : getState(stream) }}</span>
+                  <span class="menu-container-right"> {{ getStateStatus(stream) }} </span>
                 </div>
               </div>
             </div>
@@ -74,8 +74,7 @@
         this.openApp()
       },
       shouldShowProgress (stream) {
-        return true
-        // this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed' && this.getState(stream) !== 'duplicated'
+        return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed' && this.getState(stream) !== 'duplicated'
       },
       getState (stream) {
         if (stream.files && !stream.files.length) {
@@ -161,7 +160,7 @@
         } else if (state === 'completed') {
           const successedFiles = stream.files.filter(file => { return file.state === 'completed' })
           return `${successedFiles.length}/${successedFiles.length} ingested | 0 errors`
-        } else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? ' files' : ' file')
+        } else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? '+ files' : ' file')
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         const errorFiles = stream.files.filter(file => { return file.state === 'failed' || file.state === 'duplicated' })
         if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
@@ -201,39 +200,48 @@
     margin-right: 6px;
   }
 
-  .side-menu-title-tray {
-    margin-right: 6.5px;
-  }
-
   .is-danger {
     background-color: #f14668 !important;
     border-color: transparent;
   }
 
-  .menu-container-left {
-    width: 29%;
-    text-align: left;
+  .menu-container-left,
+  .menu-container-right {
+    font-family: Avenir;
+    font-size: 11px;
+    font-weight: 500;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    text-align: right;
+    color: #f1f1f1;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
+  .menu-container-left {
+    width: 35%;
+    text-align: left;
+  }
+
   .menu-container-right {
-    width: 70%;
+    width: 64%;
     text-align: right;
   }
 
   .dark-tray {
-    background-color: #131525 !important;
+    background-color: #232436 !important;
     color: #fff !important;
     .menu {
-      background-color: #131525 !important;
+      background-color: #232436 !important;
       color: #fff !important;
     }
     .stream-title {
       color: white;
     }
     .menu-item:hover {
-      background-color: #292a3b;
+     background-color: #2e3145 !important;
     }
   }
 

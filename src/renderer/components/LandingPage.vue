@@ -196,7 +196,7 @@
 
   .navbar-item.tag {
     margin: auto 0 !important;
-    // display: none !important;
+
   }
 
   .user-info-nav {
@@ -257,7 +257,7 @@
   .side-menu {
     flex: none;
     width: 200px !important;
-    padding: 0 8px 0 16px !important;
+    padding: 0 !important;
     margin-right: $default-padding-margin;
     top: $navbar-height;
     bottom: 0;
@@ -300,9 +300,11 @@
 
   .menu-container {
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
-    align-items: center;
+    align-self: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .menu-container svg {
@@ -347,11 +349,20 @@
     color: $title-text-color;
     text-overflow: ellipsis;
     overflow: hidden;
+    font-family: Avenir;
+    font-size: 14px !important;
+    font-weight: 900 !important;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal !important;
+    letter-spacing: normal !important;
+    margin-right: 3px;
+    align-self: center;
   }
 
   .progress {
-    margin: 0.5rem auto !important;
-    height: 6px !important;
+    margin: 4px auto !important;
+    height: 3px !important;
   }
 
   .state-progress span {
@@ -364,9 +375,6 @@
     border-radius: 50%;
     margin: auto;
     text-align: center;
-    // position: fixed;
-    // right: 4.2em;
-    // bottom: 2em;
     padding: 0 0 0 3px !important;
     margin: 0 0 0 1px !important;
     &:active,
@@ -375,8 +383,6 @@
       border-color: transparent !important;
     }
     .img-open-folder {
-      // height: 32px;
-      // width: 32px;
       height: 25px !important;
       width: 25px !important;
       padding: 0 !important;
@@ -407,6 +413,8 @@
 
   .tray-menu {
     height: 300px;
+    padding: 0 !important;
+    padding-top: 20px !important;
   }
 
   .uploading-process-status {
@@ -461,8 +469,9 @@
     .stream-title {
       color: white;
     }
-    .menu-item:hover {
-      background-color: #292a3b;
+    .menu-item:hover,
+    .menu-item_active {
+      background-color: #2e3145 !important;
     }
     .iconRedo {
       color: #ccc;
@@ -472,13 +481,13 @@
       font-size: 14px;
     }
     .dropdown-content {
-      background-color: #292a3b;
+      background-color: #232436;
     }
     .dropdown-item {
       color: white;
     }
     .dropdown-item:hover {
-      background-color: #45485d !important;
+      background-color: #2e3145 !important;
       color: white;
     }
     .modal-card-body,

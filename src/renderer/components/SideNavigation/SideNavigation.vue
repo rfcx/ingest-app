@@ -51,17 +51,17 @@
     </div>
     <ul class="menu-list">
       <li v-for="stream in streams" :key="stream.id">
-        <div class="menu-item" v-on:click="selectItem(stream)" :class="{ 'is-active': isActive(stream) , 'drop-hover': isDragging}">
+        <div class="menu-item" v-on:click="selectItem(stream)" :class="{'menu-item_active': isActive(stream), 'drop-hover': isDragging}">
           <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed'  || getState(stream) === 'duplicated'}">
-            <span class="stream-title">{{ stream.name }}</span>
+            <div class="stream-title">{{ stream.name }}</div>
             <font-awesome-icon class="iconRedo" v-if="getState(stream) === 'failed' || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
             <img :src="getStateImgUrl(getState(stream))">
           </div>
           <div class="state-progress" v-if="shouldShowProgress(stream)">
             <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream), 'is-success': isFilesHidden(stream), 'is-danger': getState(stream) === 'duplicated' || getState(stream) === 'failed' }" :value="getProgress(stream)" max="100"></progress>
             <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' }">
-              <span class="is-size-7 menu-container-left">{{ checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' ? '' : getState(stream) }}</span>
-              <span class="is-size-7 menu-container-right"> {{ getStateStatus(stream) }} </span>
+              <span class="menu-container-left">{{ checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' ? '' : getState(stream) }}</span>
+              <span class="menu-container-right"> {{ getStateStatus(stream) }} </span>
             </div>
           </div>
         </div>
@@ -268,8 +268,7 @@
         return stream.id === this.selectedStream.id
       },
       shouldShowProgress (stream) {
-        return true
-        // this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed' && this.getState(stream) !== 'duplicated'
+        return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed' && this.getState(stream) !== 'duplicated'
       },
       sendNotification (status) {
         let notificationCompleted = {
@@ -406,7 +405,7 @@
         } else if (state === 'completed') {
           const successedFiles = stream.files.filter(file => { return file.state === 'completed' })
           return `${successedFiles.length}/${successedFiles.length} ingested | 0 errors`
-        } else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? ' files' : ' file')
+        } else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? '+ files' : ' file')
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         const errorFiles = stream.files.filter(file => { return file.state === 'failed' || file.state === 'duplicated' })
         if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
@@ -458,6 +457,7 @@
 <style lang="scss">
 
   .header {
+    padding: 0 8px 0 16px;
     margin-bottom: 7px;
     display: flex;
     justify-content: space-between;
@@ -503,7 +503,7 @@
   }
 
   .user-stat-wrapper {
-    padding: 0;
+    padding: 0 8px 0 16px;
     margin-bottom: 7px;
     font-family: Lato;
     font-size: 14px;
@@ -543,11 +543,12 @@
     display: flex;
     justify-content: flex-start;
     div {
-      width: 30%;
+      width: 35%;
       overflow: hidden;
       text-overflow: ellipsis;
+      margin-right: 5px;
       &:last-child {
-         width: 70%;
+         width: 65%;
       }
     }
   }
@@ -560,7 +561,7 @@
   }
 
   .side-menu-title {
-    padding: 2px 0;
+    padding: 2px 8px 2px 16px;
   }
 
   .side-menu-search-btn {
@@ -588,6 +589,10 @@
     }
   }
 
+  .menu-item {
+    padding: 9px 16px 8px 16px !important;
+  }
+
   .menu-label {
     font-family: Avenir !important;
     font-size: 10px !important;
@@ -598,6 +603,7 @@
     letter-spacing: normal !important;
     color: #ffffff !important;
     margin: 0 !important;
+    align-self: center;
   }
 
   .search-wrapper {
@@ -681,15 +687,28 @@
     border-color: transparent;
   }
 
-  .menu-container-left {
-    width: 25%;
-    text-align: left;
+  .menu-container-left,
+  .menu-container-right {
+    font-family: Avenir;
+    font-size: 11px;
+    font-weight: 500;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    text-align: right;
+    color: #f1f1f1;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
+  .menu-container-left {
+    width: 35%;
+    text-align: left;
+  }
+
   .menu-container-right {
-    width: 74%;
+    width: 64%;
     text-align: right;
   }
 
