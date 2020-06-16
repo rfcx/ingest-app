@@ -27,7 +27,7 @@
           <div>{{allFiles.length}}</div><div>files uploaded</div>
         </div>
         <div class="user-stat-info">
-          <div>{{getAllFilesSize()}}</div><div>mb used</div>
+          <div>{{getAllFilesSize()}}</div><div>{{mesure}} used</div>
         </div>
       </div>
     </div>
@@ -87,6 +87,7 @@
         uploadingStreams: {},
         timeoutKeyboard: {},
         searchStr: '',
+        mesure: '',
         isDragging: false,
         showUserMenu: false,
         toggleSearch: false,
@@ -147,7 +148,17 @@
       getAllFilesSize () {
         let size = 0
         this.allFiles.forEach(file => { size += file.sizeInByte })
-        return ((size / 1000) / 1000).toFixed(2)
+        return this.getFileSize(size)
+      },
+      getFileSize (bytes) {
+        var sizes = ['bytes', 'kb', 'mb', 'gb', 'tb']
+        if (bytes === 0) {
+          this.mesure = sizes[0]
+          return '0'
+        }
+        var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
+        this.mesure = sizes[i]
+        return Math.round(bytes / Math.pow(1024, i), 2)
       },
       switchEnvironment () {
         if (this.isInprogessOfUploading) {

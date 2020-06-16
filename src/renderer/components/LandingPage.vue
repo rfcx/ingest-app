@@ -320,10 +320,6 @@
     margin-left: 5px;
   }
 
-  .side-menu-controls-wrapper {
-    // margin-right: 4px;
-  }
-
   .side-menu-controls-btn {
     width: 17px;
     height: 17px;
