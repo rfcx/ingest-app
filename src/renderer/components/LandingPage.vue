@@ -196,6 +196,7 @@
 
   .navbar-item.tag {
     margin: auto 0 !important;
+
   }
 
   .user-info-nav {
@@ -468,8 +469,9 @@
     .stream-title {
       color: white;
     }
-    .menu-item:hover {
-      background-color: #2e3145;
+    .menu-item:hover,
+    .menu-item_active {
+      background-color: #2e3145 !important;
     }
     .iconRedo {
       color: #ccc;

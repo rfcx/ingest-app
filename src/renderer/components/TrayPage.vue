@@ -16,7 +16,7 @@
               <div class="state-progress" v-if="shouldShowProgress(stream)">
                 <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream), 'is-success': isFilesHidden(stream), 'is-danger': getState(stream) === 'duplicated' || getState(stream) === 'failed' }" :value="getProgress(stream)" max="100"></progress>
                 <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' }">
-                  <span class="menu-container-left">{{ checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' ? '' : getState(stream) + '...' }}</span>
+                  <span class="menu-container-left">{{ checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' ? '' : getState(stream) }}</span>
                   <span class="menu-container-right"> {{ getStateStatus(stream) }} </span>
                 </div>
               </div>
@@ -78,7 +78,7 @@
       },
       getState (stream) {
         if (stream.files && !stream.files.length) {
-          return 'preparing to upload'
+          return 'waiting'
         }
         const hasFiles = stream.files && stream.files.length
         const total = stream.files.length
@@ -93,7 +93,7 @@
         const isDuplicated = hasFiles && total === duplicatedFiles
         const isIngesting = hasFiles && total === ingestingFiles
         if (isCompleted) return 'completed'
-        else if (isWaiting) return 'preparing to upload'
+        else if (isWaiting) return 'waiting'
         else if (isFailed) return 'failed'
         else if (isDuplicated) return 'duplicated'
         else if (isIngesting) return 'ingesting'
@@ -153,17 +153,17 @@
         const state = this.getState(stream)
         if (state === 'duplicated') {
           const duplicatedFiles = stream.files.filter(file => { return file.state === 'duplicated' })
-          return `0/${duplicatedFiles.length} synced`
+          return `0/${duplicatedFiles.length} ingested | ${duplicatedFiles.length} ${duplicatedFiles.length > 1 ? 'errors' : 'error'}`
         } else if (state === 'failed') {
           const failedFiles = stream.files.filter(file => { return file.state === 'failed' })
-          return `0/${failedFiles.length} synced`
+          return `0/${failedFiles.length} ingested | ${failedFiles.length} ${failedFiles.length > 1 ? 'errors' : 'error'}`
         } else if (state === 'completed') {
           const successedFiles = stream.files.filter(file => { return file.state === 'completed' })
-          return `${successedFiles.length}/${successedFiles.length} synced`
+          return `${successedFiles.length}/${successedFiles.length} ingested | 0 errors`
         } else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? '+ files' : ' file')
         const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
         const errorFiles = stream.files.filter(file => { return file.state === 'failed' || file.state === 'duplicated' })
-        if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} synced`
+        if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
         if (this.isFilesHidden(stream)) {
           let count = 0
           stream.files.forEach(file => {
@@ -171,9 +171,9 @@
               count++
             }
           })
-          return `${completedFiles.length}/${count} synced`
+          return `${completedFiles.length}/${count} ingested`
         }
-        return `${completedFiles.length}/${stream.files.length} synced`
+        return `${completedFiles.length}/${stream.files.length} ingested | ${errorFiles.length} ${errorFiles.length > 1 ? 'errors' : 'error'}`
       },
       openApp () {
         this.$electron.ipcRenderer.send('openMainWindow')
@@ -221,12 +221,12 @@
   }
 
   .menu-container-left {
-    width: 59%;
+    width: 35%;
     text-align: left;
   }
 
   .menu-container-right {
-    width: 40%;
+    width: 64%;
     text-align: right;
   }
 
