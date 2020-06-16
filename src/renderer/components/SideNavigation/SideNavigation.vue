@@ -1,11 +1,53 @@
 <template>
   <aside class="column menu side-menu side-menu-column" :class="{ 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop" @dragover.prevent @dragleave="outDrag">
-    <div class="menu-container side-menu-title">
-      <p class="menu-label"> {{ menuTitle }} </p>
-      <div class="side-menu-controls-wrapper">
-        <a :title="isUploadingProcessEnabled? 'Pause uploading process' : 'Continue uploading process'" v-if="selectedStream && !hidePause(streams)" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
-        <router-link title="Create a new stream" to="/add"><img class="side-menu-controls-btn" src="~@/assets/ic-add-btn.svg"></router-link>
+    <div class="header">
+      <div class="header-logo">
+        <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
       </div>
+      <div class="header-env">
+        <button class="button" :class="{ 'is-primary': productionEnv, 'is-dark': !productionEnv }" @click="switchEnvironment()">
+          {{ productionEnv ? 'production' : 'staging' }}
+        </button>
+      </div>
+      <div class="header-user-pic" @click="toggleUserMenu()">
+        <img title="Menu" class="user-pic" :src="getUserPicture()" alt="">
+      </div>
+    </div>
+    <div class="user-stat-wrapper" v-if="showUserMenu">
+      <div class="user-stat-name">{{ userName }}</div>
+      <button class="button user-stat-btn" @click="logOut()">Log out</button>
+      <div class="user-stat-info-wrapper">
+        <div class="user-stat-info">
+          <div>{{streams.length}}</div><div>streams created</div>
+        </div>
+        <div class="user-stat-info">
+          <div>0</div><div>hours long</div>
+        </div>
+        <div class="user-stat-info">
+          <div>{{allFiles.length}}</div><div>files uploaded</div>
+        </div>
+        <div class="user-stat-info">
+          <div>{{getAllFilesSize()}}</div><div>{{mesure}} used</div>
+        </div>
+      </div>
+    </div>
+    <div class="menu-container side-menu-title">
+      <div class="menu-label">Streams</div>
+      <div class="side-menu-controls-wrapper">
+        <button title="Filter" class="side-menu-search-btn" v-on:click="onFocusInput()">
+          <img v-if="!toggleSearch" src="~@/assets/ic-search.svg">
+          <img v-if="toggleSearch" src="~@/assets/ic-search-active.svg">
+        </button>
+        <router-link title="Add new stream" to="/add"><img class="side-menu-add-btn" src="~@/assets/ic-add-stream.svg"></router-link>
+      </div>
+    </div>
+    <div v-if="toggleSearch" class="search-wrapper" :class="{ 'search-wrapper_red': isRequiredSymbols }">
+      <input type="text" class="input search-input" placeholder="Filter" v-model="searchStr"
+        @keyup="onKeyUp($event)" ref="searchStream">
+      <button title="Remove search text" class="btn-remove" @click="onRemoveSearchText()"
+        :class="{ 'btn-remove-active': searchStr }">
+        <img src="~@/assets/ic-remove.svg">
+      </button>
     </div>
     <ul class="menu-list">
       <li v-for="stream in streams" :key="stream.id">
@@ -30,19 +72,27 @@
 
 <script>
   import { mapState } from 'vuex'
+  import settings from 'electron-settings'
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
   import fileHelper from '../../../../utils/fileHelper'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
+  const { remote } = window.require('electron')
 
   export default {
     data () {
       return {
         iconRedo: faRedo,
-        menuTitle: 'Streams',
         uploadingStreams: {},
-        isDragging: false
+        timeoutKeyboard: {},
+        searchStr: '',
+        mesure: '',
+        isDragging: false,
+        showUserMenu: false,
+        toggleSearch: false,
+        userName: this.getUserName(),
+        productionEnv: this.isProductionEnv()
       }
     },
     components: {
@@ -63,8 +113,22 @@
           return this.getStatePriority(streamA) - this.getStatePriority(streamB)
         })
       },
+      allFiles () {
+        return File.all()
+      },
       files () {
         return File.query().where('streamId', this.selectedStreamId).orderBy('name').get()
+      },
+      getUnsyncedFiles () {
+        return File.query().where('state', 'waiting').orderBy('timestamp').get()
+      },
+      getUploadedFiles () {
+        return File.query().where((file) => {
+          return file.state === 'ingesting' && file.uploadId !== ''
+        }).orderBy('timestamp').get()
+      },
+      isInprogessOfUploading () {
+        return this.getUnsyncedFiles.length > 0 || this.getUploadedFiles.length > 0
       },
       isDuplicated () {
         let count = 0
@@ -75,9 +139,84 @@
         })
         if (count === this.files.length) return true
         else return false
+      },
+      isRequiredSymbols () {
+        return this.searchStr && this.searchStr.length > 0 && this.searchStr.length < 3
       }
     },
     methods: {
+      getAllFilesSize () {
+        let size = 0
+        this.allFiles.forEach(file => { size += file.sizeInByte })
+        return this.getFileSize(size)
+      },
+      getFileSize (bytes) {
+        var sizes = ['bytes', 'kb', 'mb', 'gb', 'tb']
+        if (bytes === 0) {
+          this.mesure = sizes[0]
+          return '0'
+        }
+        var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
+        this.mesure = sizes[i]
+        return Math.round(bytes / Math.pow(1024, i), 2)
+      },
+      switchEnvironment () {
+        if (this.isInprogessOfUploading) {
+          return
+        }
+        settings.set('settings.production_env', !this.isProductionEnv())
+        this.productionEnv = this.isProductionEnv()
+      },
+      isProductionEnv () {
+        return settings.get('settings.production_env')
+      },
+      toggleUserMenu () {
+        this.showUserMenu = !this.showUserMenu
+      },
+      getUserName () {
+        let userName = remote.getGlobal('firstname')
+        if (userName) return userName
+        else return 'Awesome'
+      },
+      getUserPicture () {
+        let userPicture = remote.getGlobal('picture')
+        if (userPicture) return userPicture
+        else return require(`../../assets/ic-profile-temp.svg`)
+      },
+      logOut () {
+        this.$electron.ipcRenderer.send('logOut')
+      },
+      onFocusInput () {
+        this.toggleSearch = !this.toggleSearch
+        setTimeout(() => {
+          if (this.toggleSearch) {
+            this.$refs.searchStream.focus()
+          }
+        }, 0)
+        if (!this.toggleSearch && this.searchStr === '') {
+          return
+        }
+        if (!this.toggleSearch && this.searchStr !== '') {
+          this.onRemoveSearchText()
+        }
+      },
+      onRemoveSearchText () {
+        this.searchStr = ''
+        // TODO: show all streams
+      },
+      onKeyUp (event) {
+        if ([13, 37, 38, 39, 40].includes(event.keyCode)) { return }
+        if (event.keyCode === 8 && this.searchStr.length < 3) {
+          // TODO: show all streams
+          return
+        }
+        if (this.timeoutKeyboard) { clearTimeout(this.timeoutKeyboard) }
+        this.timeoutKeyboard = setTimeout(() => {
+          if (this.searchStr.length >= 3) {
+            // TODO: find a stream
+          }
+        }, 500)
+      },
       outDrag (e) {
         // FIX dropleave event
         // e.preventDefault()
@@ -316,7 +455,204 @@
   }
 </script>
 
-<style >
+<style lang="scss">
+
+  .header {
+    margin-bottom: 7px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 37px;
+  }
+
+  .header-logo,
+  .header-env,
+  .header-user-pic {
+    cursor: pointer;
+  }
+
+  .header-logo {
+    margin-right: 10px;
+    height: 37px;
+    img {
+      height: 37px;
+      width: auto;
+    }
+  }
+
+  .icon-logo {
+    &:hover,
+    &:focus {
+      text-decoration: none;
+      border: none;
+      outline: none;
+    }
+  }
+
+  .header-env {
+    button {
+      height: 1.8em;
+      font-size: 12px;
+      padding-top: calc(0.1em - 0px);
+      padding-bottom: calc(0.175em - 0px);
+    }
+  }
+
+  .header-user-pic {
+    margin-left: auto;
+  }
+
+  .user-stat-wrapper {
+    padding: 0;
+    margin-bottom: 7px;
+    font-family: Lato;
+    font-size: 14px;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.29;
+    letter-spacing: 0.2px;
+    animation-duration: 4s;
+    animation-delay: 2s;
+  }
+
+  .user-stat-name {
+    margin-bottom: 5px;
+  }
+
+  .user-stat-btn {
+    font-family: Lato !important;
+    font-weight: normal !important;
+    font-stretch: normal !important;
+    font-style: normal !important;
+    line-height: 1.29 !important;
+    letter-spacing: 0.2px !important;
+    margin-bottom: 10px;
+    height: 19px !important;
+    font-size: 12px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  .user-stat-info-wrapper {
+    margin: 0;
+    padding: 0;
+  }
+
+  .user-stat-info {
+    display: flex;
+    justify-content: flex-start;
+    div {
+      width: 30%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      &:last-child {
+         width: 70%;
+      }
+    }
+  }
+
+  .user-pic {
+    border-radius: 50%;
+    height: 100%;
+    height: 32px;
+    width: auto;
+  }
+
+  .side-menu-title {
+    padding: 2px 0;
+  }
+
+  .side-menu-search-btn {
+    background-color: transparent;
+    border: none !important;
+    padding: 0 !important;
+    margin-right: 5px;
+    cursor: pointer;
+    &:hover,
+    &:active,
+    &:focus {
+      outline: none !important;
+      border: none !important;
+    }
+    img {
+      height: 15px;
+      width: 15px;
+    }
+  }
+
+  .side-menu-add-btn {
+    img {
+      height: 20px;
+      width: 20px;
+    }
+  }
+
+  .menu-label {
+    font-family: Avenir !important;
+    font-size: 10px !important;
+    font-weight: 900 !important;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal !important;
+    color: #ffffff !important;
+    margin: 0 !important;
+  }
+
+  .search-wrapper {
+    border-radius: 3px;
+    border: solid 1px #ffffff;
+    display: inline-block;
+    vertical-align: middle;
+    width: 98%;
+    padding: 0 5px;
+    margin-bottom: 7px;
+    height: 29px;
+    line-height: normal;
+    &_red {
+      border: solid 1px red;
+    }
+  }
+
+  .search-input {
+    display: inline-block !important;
+    vertical-align: top !important;
+    width: 87% !important;
+    height: 27px !important;
+    padding: 0 0 1px 0px !important;
+    font-family: Lato;
+    font-size: 13px !important;
+    font-weight: normal;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal !important;
+    letter-spacing: 0.67px;
+    background-color: #232436 !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .btn-remove {
+    background-color: transparent;
+    border: none !important;
+    color: #ffffff;
+    text-align: right;
+    opacity: 0.2;
+    padding: 0;
+    width: 10%;
+    line-height: 1.6;
+    margin-top: 7px;
+    cursor: pointer;
+    img {
+      width: 12px;
+      height: 12px;
+    }
+  }
+  .btn-remove-active {
+    opacity: 1;
+  }
 
   .drag-active {
     border: 4px solid #cac5c5 !important;
@@ -355,6 +691,20 @@
   .menu-container-right {
     width: 74%;
     text-align: right;
+  }
+
+  input[type="text"]::-webkit-input-placeholder {
+    color: #52566e !important;
+    opacity: 1;
+  }
+  :-ms-input-placeholder {
+    color: #52566e;
+  }
+  ::-moz-placeholder {
+    color: #52566e;
+  }
+  :-moz-placeholder {
+    color: #52566e;
   }
 
 </style>
