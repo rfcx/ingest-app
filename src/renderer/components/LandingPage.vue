@@ -1,9 +1,9 @@
 <template>
   <div id="wrapper-landing-page" class="has-fixed-sidebar" :class="{ 'dark-mode': isDarkTheme === true }">
     <div v-if="hasAccessToApp()">
-      <navigation :class="{ 'dark-mode': isDarkTheme === true }"></navigation>
+      <!-- <navigation :class="{ 'dark-mode': isDarkTheme === true }"></navigation> -->
       <section class="main-content columns is-mobile">
-        <side-navigation :class="{ 'dark-mode': isDarkTheme === true }"></side-navigation>
+        <side-navigation :class="{ 'dark-mode': isDarkTheme === true, 'dark-aside': isDarkTheme === true }"></side-navigation>
         <div class="column content is-desktop" v-if="streams && streams.length > 0" @dragover="onDragOver($event)" :class="{ 'dark-mode': isDarkTheme === true  }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
@@ -256,8 +256,8 @@
 
   .side-menu {
     flex: none;
-    width: 250px !important;
-    padding: $default-padding-margin 0;
+    width: 200px !important;
+    padding: 0 8px 0 16px !important;
     margin-right: $default-padding-margin;
     top: $navbar-height;
     bottom: 0;
@@ -265,14 +265,15 @@
   }
 
   .side-menu-column {
-    padding-top: 3px !important;
+    padding-top: 20px !important;
   }
 
   .content {
     position: absolute;
     top: $navbar-height;
+    padding: 0 !important;
     bottom: 0;
-    left: 250px;
+    left: 200px;
     right: 0;
     background-color: white;
   }
@@ -319,12 +320,8 @@
     margin-left: 5px;
   }
 
-  .side-menu-title {
-    padding: 0 $default-padding-margin;
-  }
-
   .side-menu-controls-wrapper {
-    margin-right: 4px;
+    // margin-right: 4px;
   }
 
   .side-menu-controls-btn {
@@ -459,6 +456,9 @@
   .dark-mode {
     background-color: #131525 !important;
     color: #fff !important;
+    aside {
+      background-color: #232436 !important;
+    }
     .navbar-item {
       color: white;
     }

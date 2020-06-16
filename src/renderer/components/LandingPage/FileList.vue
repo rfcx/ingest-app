@@ -445,16 +445,8 @@
 
   .file-list {
     height: 100% !important;
-    padding-top: 96px;
-    @media only screen and (max-width: 850px) {
-      padding-top: 105px;
-    }
-    @media only screen and (max-width: 650px) {
-      padding-top: 110px;
-    }
-    @media only screen and (max-width: 600px) {
-      padding-top: 120px;
-    }
+    padding-top: 20px !important;
+    background: rgb(19, 21, 37);
   }
 
   thead {
@@ -481,25 +473,13 @@
   }
 
   .stream-info-container {
-    padding-left: $default-padding-margin;
-    padding-right: $default-padding-margin;
-    padding-bottom: $default-padding-margin;
-    position: fixed;
-    top: 7rem;
-    right: 0;
-    left: 250px;
-    background: rgb(19, 21, 37);
-    z-index: 100;
+    padding: 0 16px;
   }
 
   .stream-info-container .title-container {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-  }
-
-  .stream-info-container .title-container span {
-    font-weight: $title-font-weight;
   }
 
   .stream-info-container .title-container .dropdown {
@@ -621,6 +601,14 @@
   .title-container-text .stream-name {
     overflow: hidden;
     text-overflow: ellipsis;
+    font-family: Avenir;
+    font-size: 14px;
+    font-weight: 900;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: #ffffff;
   }
 
   .folder-area {
@@ -688,21 +676,7 @@
 
   .file-list-table {
     &_head {
-      position: fixed;
-      top: 11.1rem;
-      left: 262px;
-      right: 0;
-      width: calc(100% - 274px) !important;
-      z-index: 10 !important;
-      @media only screen and (max-width: 850px) {
-        top: 12rem;
-      }
-      @media only screen and (max-width: 650px) {
-        top: 12.1rem;
-      }
-      @media only screen and (max-width: 600px) {
-        top: 13.1rem;
-      }
+      margin-bottom: 0 !important;
       .file-list-table {
         &__cell {
           white-space: nowrap;
