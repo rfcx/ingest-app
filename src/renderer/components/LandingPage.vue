@@ -13,19 +13,21 @@
           <file-list v-else></file-list>
         </div>
       </section>
-      <footer class="uploading-process-status" :class="{ 'dark-mode': isDarkTheme === true }" v-if="!isUploadingProcessEnabled"
+      <global-progress></global-progress>
+      <!-- <footer class="uploading-process-status" :class="{ 'dark-mode': isDarkTheme === true }" v-if="!isUploadingProcessEnabled"
         @mouseover="uploadingProcessText = 'Tap here to resume the uploading process'"
         @mouseleave="uploadingProcessText = 'The uploading process has been paused'"
         @click="resumeUploadingProcess()">
         <span>
           {{ uploadingProcessText }}
         </span>
-      </footer>
+      </footer> -->
     </div>
   </div>
 </template>
 
 <script>
+  import GlobalProgress from './SideNavigation/GlobalProgress'
   import Navigation from './Navigation/Navigation'
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyStream from './LandingPage/EmptyStream'
@@ -39,7 +41,7 @@
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyStream, FileList },
+    components: { Navigation, SideNavigation, EmptyStream, FileList, GlobalProgress },
     data () {
       return {
         uploadingProcessText: 'The uploading process has been paused',
@@ -256,7 +258,7 @@
 
   .side-menu {
     flex: none;
-    width: 200px !important;
+    width: $sidebar-width !important;
     padding: 0 !important;
     margin-right: $default-padding-margin;
     top: $navbar-height;
@@ -273,7 +275,7 @@
     top: $navbar-height;
     padding: 0 !important;
     bottom: 0;
-    left: 200px;
+    left: $sidebar-width;
     right: 0;
     background-color: white;
   }

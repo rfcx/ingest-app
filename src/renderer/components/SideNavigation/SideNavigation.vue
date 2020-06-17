@@ -456,6 +456,10 @@
 
 <style lang="scss">
 
+  .side-menu {
+    margin-bottom: $global-progress-height;
+  }
+
   .header {
     padding: 0 8px 0 16px;
     margin-bottom: 7px;
