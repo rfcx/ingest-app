@@ -17,7 +17,7 @@ export default class File extends Model {
       durationInSecond: this.number(0),
       extension: this.string(''),
       timestamp: this.attr(null),
-      state: this.string(''), // state: waiting, uploading, ingesting, completed, fail
+      state: this.string(''), // state: preparing, local_error, waiting, uploading, ingesting, completed, server_error
       stateMessage: this.string(''),
       streamId: this.string(''),
       stream: this.belongsTo(Stream, 'streamId'),
@@ -43,5 +43,13 @@ export default class File extends Model {
     if (bytes === 0) return '0 Byte'
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
     return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i]
+  }
+
+  isDuplicated () {
+    return this.stateMessage.includes('duplicate')
+  }
+
+  isError () {
+    return this.state.includes('error')
   }
 }
