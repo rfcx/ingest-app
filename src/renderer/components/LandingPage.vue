@@ -6,11 +6,13 @@
         <side-navigation :class="{ 'dark-mode': isDarkTheme === true, 'dark-aside': isDarkTheme === true }"></side-navigation>
         <div class="column content is-desktop" v-if="streams && streams.length > 0" @dragover="onDragOver($event)" :class="{ 'dark-mode': isDarkTheme === true  }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <file-list v-else></file-list>
+          <!-- <file-list v-else></file-list> -->
+          <file-container v-else></file-container>
         </div>
         <div class="column content is-desktop" v-else @drop.prevent="handleDrop" @dragover.prevent :class="{ 'dark-mode': isDarkTheme === true }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <file-list v-else></file-list>
+          <!-- <file-list v-else></file-list> -->
+          <file-container v-else></file-container>
         </div>
       </section>
       <footer class="uploading-process-status" :class="{ 'dark-mode': isDarkTheme === true }" v-if="!isUploadingProcessEnabled"
@@ -30,6 +32,7 @@
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyStream from './LandingPage/EmptyStream'
   import FileList from './LandingPage/FileList'
+  import FileContainer from './LandingPage/FileContainer/FileContainer'
   import { mapState } from 'vuex'
   import settings from 'electron-settings'
   import Stream from '../store/models/Stream'
@@ -39,7 +42,7 @@
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyStream, FileList },
+    components: { Navigation, SideNavigation, EmptyStream, FileList, FileContainer },
     data () {
       return {
         uploadingProcessText: 'The uploading process has been paused',
