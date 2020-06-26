@@ -74,6 +74,6 @@ export default class File extends Model {
   }
 
   get canRedo () {
-    return this.state.includes('error') && !this.isDuplicated
+    return FileState.canRedo(this.state, this.stateMessage)
   }
 }

@@ -14,17 +14,14 @@ const getStatePriority = function (state, message) {
 }
 
 const isInPreparedGroup = function (state) {
-  console.log('check if isInPreparedGroup ', state)
   return state === 'preparing' || state === 'local_error'
 }
 
 const isInQueuedGroup = function (state) {
-  console.log('check if isInQueuedGroup ', state)
   return state === 'waiting' || state === 'uploading' || state === 'ingesting'
 }
 
 const isInCompletedGroup = function (state) {
-  console.log('check if isInCompletedGroup ', state)
   return state === 'completed' || state === 'server_error' || state === 'failed'
 }
 
@@ -48,6 +45,10 @@ const isCompleted = function (state) {
   return state === 'completed'
 }
 
+const canRedo = function (state, message) {
+  return (state === 'failed' || state === 'server_error') && !message.toLowerCase().includes('duplicate')
+}
+
 export default {
   getStatePriority,
   isInPreparedGroup,
@@ -57,5 +58,6 @@ export default {
   isWaiting,
   isError,
   isDuplicated,
-  isCompleted
+  isCompleted,
+  canRedo
 }

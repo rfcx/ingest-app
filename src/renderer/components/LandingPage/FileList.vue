@@ -78,7 +78,7 @@
           <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!file.isError">{{ file.fileDuration }}</td>
           <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!file.isError">{{ file.fileSize }}</td>
           <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls" v-if="file.isError">
-            <font-awesome-icon v-show="file.canRedo" class="iconRedo" :icon="iconRedo" @click="repeatUploading(file.id)"></font-awesome-icon>
+            <font-awesome-icon v-show="file.canRedo" class="iconRedo" :icon="iconRedo" @click="repeatUploading(file)"></font-awesome-icon>
             <font-awesome-icon class="iconHide" :icon="iconHide" @click="toggleDisabled(file.id)"></font-awesome-icon>
           </td>
         </tr>
