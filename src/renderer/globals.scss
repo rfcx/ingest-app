@@ -17,9 +17,9 @@ $default-font-size: 1rem;
 $primary: $brand-primary;
 $family-sans-serif: 'Lato', sans-serif;
 $link: $brand-primary;
-$tabs-border-bottom-color: #131525;
+$tabs-border-bottom-color: #2e3145;
 $tabs-link-color: #ffffff;
 $tabs-link-hover-color: #ffffff;
-$tabs-toggle-link-border-width: 3px;
+$tabs-border-bottom-width: 2px;
 
 @import "~bulma/";

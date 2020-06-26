@@ -2,8 +2,7 @@
   <div class="landing__file-wrapper">
     <header-view></header-view>
     <tab :files="files"></tab>
-    <!-- TODO: if selected tab is prepared => show format info  -->
-    <file-name-format-info></file-name-format-info>
+    <file-name-format-info v-if="selectedTab === 'Prepared'"></file-name-format-info>
     <file-list :allFiles="files"></file-list>
   </div>
 </template>
@@ -38,3 +37,16 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+  .landing {
+    &__file-wrapper {
+      height: 100% !important;
+      padding-top: $default-padding-margin !important;
+      background: rgb(19, 21, 37);
+    }
+    &__tab-wrapper {
+      padding-bottom: $default-padding-margin;
+    }
+  }
+</style>

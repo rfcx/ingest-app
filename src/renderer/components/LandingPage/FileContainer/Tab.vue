@@ -47,10 +47,14 @@ export default {
 </script>
 
 <style lang="scss">
-  .tabs ul {
-    border-bottom-color: transparent;
+
+  .tabs {
+    ul {
+      margin-left: 0px !important;
+    }
+    .is-active {
+      font-weight: $title-font-weight;
+    }
   }
-  .tabs .is-active {
-    font-weight: $title-font-weight;
-  }
+
 </style>

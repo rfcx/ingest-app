@@ -1,5 +1,5 @@
 <template>
-  <div class="landing__file-list-wrapper">
+  <div class="file-list__wrapper">
     <table class="table file-list-table is-hoverable" v-if="files.length > 0">
       <thead>
         <tr>
@@ -111,3 +111,4 @@ export default {
   }
 }
 </script>
+
