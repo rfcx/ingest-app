@@ -6,10 +6,24 @@ const getStatePriority = function (state, message) {
     case 'ingesting': return 3
     case 'local_error': return 5
     case 'server_error':
-      if (message.includes('duplicate')) return 4
+      if (message.toLowerCase().includes('duplicate')) return 4
       else return 5
     case 'duplicated': return 6
     case 'completed': return 7
+  }
+}
+
+const getName = function (state, message) {
+  switch (state) {
+    case 'preparing': return ''
+    case 'waiting': return 'waiting'
+    case 'uploading': return 'uploading'
+    case 'ingesting': return 'ingesting'
+    case 'local_error': return 'failed'
+    case 'server_error':
+      if (message.toLowerCase().includes('duplicate')) return 'duplicated'
+      else return 'failed'
+    case 'completed': return 'completed'
   }
 }
 
@@ -51,6 +65,7 @@ const canRedo = function (state, message) {
 
 export default {
   getStatePriority,
+  getName,
   isInPreparedGroup,
   isInQueuedGroup,
   isInCompletedGroup,

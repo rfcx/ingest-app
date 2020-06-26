@@ -14,7 +14,7 @@
         <tr v-for="file in files" :key="file.id" :class="{ 'file-disable': file.disabled }">
           <td class="file-status file-list-table__cell file-list-table__cell_status">
             <img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)">
-            <span class="file-status-state">{{ file.state }}</span>
+            <span class="file-status-state">{{ getStateName(file) }}</span>
           </td>
           <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError }" >
             {{ file.name }}
@@ -66,6 +66,7 @@ export default {
       selectedTab: state => state.AppSetting.selectedTab
     }),
     files () {
+      if (!this.allFiles) return []
       switch (this.selectedTab) {
         case 'Prepared':
           return this.allFiles.filter(file => FileState.isInPreparedGroup(file.state))
@@ -88,6 +89,9 @@ export default {
           reject(new Error('Not found file'))
         }
       })
+    },
+    getStateName (file) {
+      return FileState.getName(file.state, file.stateMessage)
     },
     getStateImgUrl (state) {
       if (state === 'preparing') return ''
