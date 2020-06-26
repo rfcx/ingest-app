@@ -14,15 +14,18 @@ const getStatePriority = function (state, message) {
 }
 
 const isInPreparedGroup = function (state) {
+  console.log('check if isInPreparedGroup ', state)
   return state === 'preparing' || state === 'local_error'
 }
 
 const isInQueuedGroup = function (state) {
+  console.log('check if isInQueuedGroup ', state)
   return state === 'waiting' || state === 'uploading' || state === 'ingesting'
 }
 
 const isInCompletedGroup = function (state) {
-  return state === 'completed' || state === 'server_error'
+  console.log('check if isInCompletedGroup ', state)
+  return state === 'completed' || state === 'server_error' || state === 'failed'
 }
 
 const isPreparing = function (state) {
@@ -34,7 +37,7 @@ const isWaiting = function (state) {
 }
 
 const isError = function (state) {
-  return state.includes('error')
+  return state.includes('error') || state === 'failed'
 }
 
 const isDuplicated = function (state) {

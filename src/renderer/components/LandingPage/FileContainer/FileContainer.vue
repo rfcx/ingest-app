@@ -1,5 +1,5 @@
 <template>
-  <div class="landing-file__file-wrapper">
+  <div class="landing__file-wrapper">
     <header-view></header-view>
     <tab></tab>
     <!-- TODO: if selected tab is prepared => show format info  -->

@@ -6,6 +6,8 @@ $brand-primary-dark: #31984f;
 $title-text-color: black;
 $body-text-color: #6D6F72;
 $body-text-color-dark: #a1a1a7;
+$backgroud-color: #ffffff;
+$backgroud-color-dark: #131525;
 $title-font-weight: 600;
 $navbar-height: 0rem;
 $default-padding-margin: 0.75em;
@@ -15,5 +17,9 @@ $default-font-size: 1rem;
 $primary: $brand-primary;
 $family-sans-serif: 'Lato', sans-serif;
 $link: $brand-primary;
+$tabs-border-bottom-color: #131525;
+$tabs-link-color: #ffffff;
+$tabs-link-hover-color: #ffffff;
+$tabs-toggle-link-border-width: 3px;
 
 @import "~bulma/";

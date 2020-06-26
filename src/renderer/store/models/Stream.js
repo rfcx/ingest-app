@@ -44,8 +44,8 @@ export default class Stream extends Model {
     return 'uploading'
   }
 
-  get isInPreparingState () {
-    return FileState.isInPreparedGroup(this.state)
+  get numberOfFilesInPrepared () {
+    return this.files.filter(file => FileState.isInPreparedGroup(file.state))
   }
 
   get isError () {
@@ -62,5 +62,9 @@ export default class Stream extends Model {
 
   get canRedo () {
     return this.state.includes('error') && !this.isDuplicated
+  }
+
+  stateIsDuplicated () {
+    return this.state === 'duplicated'
   }
 }

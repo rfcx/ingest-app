@@ -1,5 +1,6 @@
 import { Model } from '@vuex-orm/core'
 import Stream from './Stream'
+import FileState from '../../../../utils/fileState'
 
 export default class File extends Model {
   static entity = 'files'
@@ -51,6 +52,21 @@ export default class File extends Model {
 
   get isDuplicated () {
     return this.stateMessage.includes('duplicate')
+  }
+
+  get isInPreparedGroup () {
+    console.log('===== isInPreparedGroup')
+    return FileState.isInPreparedGroup(this.state)
+  }
+
+  get isInQueuedGroup () {
+    console.log('===== isInQueuedGroup')
+    return FileState.isInQueuedGroup(this.state)
+  }
+
+  get isInCompletedGroup () {
+    console.log('===== isInCompletedGroup')
+    return FileState.isInCompletedGroup(this.state)
   }
 
   get isError () {
