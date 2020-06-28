@@ -63,9 +63,6 @@
       }
     },
     methods: {
-      isStateError (state) {
-        return fileState.isError(state)
-      },
       getUploadingProcessIcon (enabled) {
         const state = enabled ? 'pause' : 'play'
         return require(`../assets/ic-uploading-${state}-white.svg`)

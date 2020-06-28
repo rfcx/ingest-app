@@ -55,14 +55,7 @@
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="stream-title">{{ stream.name }}</div>
             <font-awesome-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
-            <img :src="getStateImgUrl(getState(stream))">
-          </div>
-          <div class="state-progress" v-if="shouldShowProgress(stream)">
-            <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream), 'is-success': isFilesHidden(stream), 'is-danger': stream.isError }" :value="getProgress(stream)" max="100"></progress>
-            <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) || isFilesHidden(stream) || stream.isError }">
-              <span class="menu-container-left">{{ checkWarningLoad(stream) || isFilesHidden(stream) || stream.isError ? '' : getState(stream) }}</span>
-              <span class="menu-container-right"> {{ getStateStatus(stream) }} </span>
-            </div>
+            <img v-if="stream.isUploading || stream.isError" :src="getStateImgUrl(stream.state)">
           </div>
         </div>
       </li>

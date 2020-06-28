@@ -47,6 +47,10 @@ const isWaiting = function (state) {
   return state === 'waiting'
 }
 
+const isLocalError = function (state) {
+  return state === 'local_error'
+}
+
 const isError = function (state) {
   return state.includes('error') || state === 'failed'
 }
@@ -71,6 +75,7 @@ export default {
   isInCompletedGroup,
   isPreparing,
   isWaiting,
+  isLocalError,
   isError,
   isDuplicated,
   isCompleted,
