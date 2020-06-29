@@ -2,7 +2,7 @@
   <div class="landing__file-wrapper">
     <header-view></header-view>
     <tab :files="files"></tab>
-    <file-name-format-info v-if="selectedTab === 'Prepared'"></file-name-format-info>
+    <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
     <file-list :allFiles="files"></file-list>
   </div>
 </template>
@@ -33,6 +33,9 @@ export default {
         }).sort((fileA, fileB) => {
           return FileState.getStatePriority(fileA.state, fileA.stateMessage) - FileState.getStatePriority(fileB.state, fileB.stateMessage)
         })
+    },
+    preparingFiles () {
+      return this.files.filter(file => FileState.isInPreparedGroup(file.state))
     }
   }
 }
