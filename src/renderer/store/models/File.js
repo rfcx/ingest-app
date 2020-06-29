@@ -46,26 +46,28 @@ export default class File extends Model {
     return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i]
   }
 
+  get isPreparing () {
+    return FileState.isPreparing(this.state)
+  }
+
   get isCompleted () {
     return this.state === 'completed'
   }
 
   get isDuplicated () {
+    if (!this.stateMessage) return false
     return this.stateMessage.includes('duplicate')
   }
 
   get isInPreparedGroup () {
-    console.log('===== isInPreparedGroup')
     return FileState.isInPreparedGroup(this.state)
   }
 
   get isInQueuedGroup () {
-    console.log('===== isInQueuedGroup')
     return FileState.isInQueuedGroup(this.state)
   }
 
   get isInCompletedGroup () {
-    console.log('===== isInCompletedGroup')
     return FileState.isInCompletedGroup(this.state)
   }
 

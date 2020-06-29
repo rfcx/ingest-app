@@ -11,14 +11,7 @@
             <div class="menu-item" v-on:click="selectItem(stream)">
               <div class="menu-container" :class="{ 'container-failed': stream.isError }">
                 <div class="stream-title">{{ stream.name }}</div>
-                <img :src="getStateImgUrl(stream.state)">
-              </div>
-              <div class="state-progress" v-if="shouldShowProgress(stream)">
-                <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream), 'is-success': isFilesHidden(stream), 'is-danger': stream.isError }" :value="getProgress(stream)" max="100"></progress>
-                <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) || isFilesHidden(stream) || stream.isError }">
-                  <span class="menu-container-left">{{ checkWarningLoad(stream) || isFilesHidden(stream) || stream.isError ? '' : stream.state }}</span>
-                  <span class="menu-container-right"> {{ getStateStatus(stream) }} </span>
-                </div>
+                <img v-if="stream.isUploading || stream.isError" :src="getStateImgUrl(stream.state)">
               </div>
             </div>
           </li>

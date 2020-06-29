@@ -6,7 +6,7 @@ const getStatePriority = function (state, message) {
     case 'ingesting': return 3
     case 'local_error': return 5
     case 'server_error':
-      if (message.toLowerCase().includes('duplicate')) return 4
+      if (message && message.toLowerCase().includes('duplicate')) return 4
       else return 5
     case 'duplicated': return 6
     case 'completed': return 7
@@ -14,6 +14,7 @@ const getStatePriority = function (state, message) {
 }
 
 const getName = function (state, message) {
+  if (!message) return ''
   switch (state) {
     case 'preparing': return ''
     case 'waiting': return 'waiting'
@@ -21,7 +22,7 @@ const getName = function (state, message) {
     case 'ingesting': return 'ingesting'
     case 'local_error': return 'failed'
     case 'server_error':
-      if (message.toLowerCase().includes('duplicate')) return 'duplicated'
+      if (message && message.toLowerCase().includes('duplicate')) return 'duplicated'
       else return 'failed'
     case 'completed': return 'completed'
   }
@@ -64,6 +65,7 @@ const isCompleted = function (state) {
 }
 
 const canRedo = function (state, message) {
+  if (!message) return false
   return (state === 'failed' || state === 'server_error') && !message.toLowerCase().includes('duplicate')
 }
 

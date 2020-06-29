@@ -28,6 +28,7 @@ export default class Stream extends Model {
     if (uploadingFiles.length > 0) return 'uploading'
     if (errorFiles.length > 0) return 'failed'
     if (isCompleted) return 'completed'
+    return ''
     // if (this.files && !this.files.length) {
     //   return 'waiting'
     // }
@@ -56,7 +57,6 @@ export default class Stream extends Model {
   }
 
   get isUploading () {
-    console.log('g isUploading')
     return this.files.filter(file => FileState.isInQueuedGroup(file.state)).length > 0
   }
 
