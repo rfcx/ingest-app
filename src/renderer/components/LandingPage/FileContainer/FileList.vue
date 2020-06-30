@@ -8,6 +8,7 @@
           <td class="file-list-table__cell file-list-table__cell_info">Timestamp</td>
           <td class="file-list-table__cell file-list-table__cell_controls">Duration</td>
           <td class="file-list-table__cell file-list-table__cell_controls">File size</td>
+          <td class="file-list-table__cell file-list-table__cell_controls" v-if="selectedTab === 'Prepared'"></td>
         </tr>
       </thead>
       <tbody>
@@ -34,6 +35,9 @@
           <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls" v-if="file.isError">
             <font-awesome-icon v-show="file.canRedo" class="iconRedo" :icon="iconRedo" @click="repeatUploading(file)"></font-awesome-icon>
           </td>
+          <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls" v-if="isInPreparedGroup(file)">
+            <font-awesome-icon class="iconTrash" :icon="iconTrash" @click="remove(file)"></font-awesome-icon>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -47,12 +51,13 @@ import File from '../../../store/models/File'
 import FileState from '../../../../../utils/fileState'
 import dateHelper from '../../../../../utils/dateHelper'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faRedo } from '@fortawesome/free-solid-svg-icons'
+import { faRedo, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 export default {
   data () {
     return {
-      iconRedo: faRedo
+      iconRedo: faRedo,
+      iconTrash: faTrash
     }
   },
   props: {
@@ -104,6 +109,9 @@ export default {
       const appDate = dateHelper.convertMomentDateToAppDate(momentDate)
       return appDate
     },
+    isInPreparedGroup (file) {
+      return FileState.isInPreparedGroup(file.state)
+    },
     isError (file) {
       return FileState.isError(file.state)
     },
@@ -111,6 +119,9 @@ export default {
       File.update({ where: file.id,
         data: { state: 'waiting', stateMessage: '' }
       })
+    },
+    remove (file) {
+      File.delete(file.id)
     }
   }
 }
