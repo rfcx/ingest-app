@@ -5,29 +5,38 @@
       <span class="preparing-file-settings__name-format-description">xxxx</span>
     </div>
     <div class="preparing-file-settings__actions-wrapper">
-      <button type="button" class="button is-rounded cancel">Clear all</button>
+      <button type="button" class="button is-rounded cancel" @click.prevent="confirmToClearAllFiles()">Clear all</button>
       <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="readyToUploadFiles.length < 1">Start upload ({{readyToUploadFiles.length}})</button>
     </div>
   </div>
 </template>
 
 <script>
+import File from '../../../store/models/File'
+
 export default {
   props: {
     preparingFiles: Array
   },
   computed: {
     readyToUploadFiles () {
-      console.log(this.preparingFiles.length)
       return this.preparingFiles.filter(file => file.isPreparing)
     }
   },
   methods: {
     queueToUpload () {
-      this.preparingFiles.forEach(file => {
+      this.readyToUploadFiles.forEach(file => {
         File.update({ where: file.id,
           data: { state: 'waiting', stateMessage: '' }
         })
+      })
+    },
+    confirmToClearAllFiles () {
+      this.clearAllFiles()
+    },
+    clearAllFiles () {
+      this.preparingFiles.forEach(file => {
+        File.delete(file.id)
       })
     }
   }
