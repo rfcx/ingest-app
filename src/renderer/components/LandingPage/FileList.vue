@@ -71,14 +71,14 @@
       </thead>
       <tbody>
         <tr v-for="file in files" :key="file.id" :class="{ 'file-disable': file.disabled }">
-          <td class="file-status file-list-table__cell file-list-table__cell_status"><img :class="{ 'file-failed': file.state === 'failed' || file.state === 'duplicated' }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
-          <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': isError(file.state) || isDuplicated(file.state)}" >{{ file.name }}</td>
-          <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ getTimestamp(file) }}</td>
-          <td colspan="2" class="is-error file-row file-list-table__cell file-list-table__cell_info" v-if="isError(file.state) || isDuplicated(file.state)">{{ file.stateMessage }}</td>
-          <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ file.fileDuration }}</td>
-          <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!isError(file.state) && !isDuplicated(file.state)">{{ file.fileSize }}</td>
-          <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls" v-if="isError(file.state) || isDuplicated(file.state)">
-            <font-awesome-icon v-show="isError(file.state)" class="iconRedo" :icon="iconRedo" @click="repeatUploading(file.id)"></font-awesome-icon>
+          <td class="file-status file-list-table__cell file-list-table__cell_status"><img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
+          <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError}" >{{ file.name }}</td>
+          <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">{{ getTimestamp(file) }}</td>
+          <td colspan="2" class="is-error file-row file-list-table__cell file-list-table__cell_info" v-if="file.isError">{{ file.stateMessage }}</td>
+          <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!file.isError">{{ file.fileDuration }}</td>
+          <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!file.isError">{{ file.fileSize }}</td>
+          <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls" v-if="file.isError">
+            <font-awesome-icon v-show="file.canRedo" class="iconRedo" :icon="iconRedo" @click="repeatUploading(file)"></font-awesome-icon>
             <font-awesome-icon class="iconHide" :icon="iconHide" @click="toggleDisabled(file.id)"></font-awesome-icon>
           </td>
         </tr>
@@ -94,6 +94,7 @@
   import Stream from '../../store/models/Stream'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo, faEyeSlash, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+  import fileState from '../../../../utils/fileState'
 
   export default {
     components: {
@@ -126,7 +127,7 @@
         let count = 0
         if (stream) {
           stream[0].files.forEach(file => {
-            if (file.state === 'failed' || file.state === 'duplicated') {
+            if (file.isError) {
               count++
             }
           })
@@ -143,7 +144,7 @@
       isFilesReading () {
         let count = 0
         this.files.forEach(file => {
-          if (file.state === 'waiting' || file.state === undefined) {
+          if (fileState.isWaiting(file.state) || file.state === undefined) {
             count++
           }
         })
@@ -153,17 +154,12 @@
     methods: {
       getStatePriority (file) {
         const state = file.state
-        switch (state) {
-          case 'waiting': return 0
-          case 'uploading': return 1
-          case 'ingesting': return 2
-          case 'failed': return 3
-          case 'duplicated': return 4
-          case 'completed': return 5
-        }
+        return fileState.getStatePriority(state, file.stateMessage)
       },
       getStateImgUrl (state) {
-        return require(`../../assets/ic-state-${state}.svg`)
+        if (state === 'preparing') return ''
+        const s = state.includes('error') ? 'failed' : state
+        return require(`../../assets/ic-state-${s}.svg`)
       },
       getTimestamp (file) {
         const isoDate = file.timestamp
@@ -175,12 +171,6 @@
         const momentDate = dateHelper.getMomentDateFromAppDate(date)
         return dateHelper.isValidDate(momentDate)
       },
-      isError (state) {
-        return state === 'failed'
-      },
-      isDuplicated (state) {
-        return state === 'duplicated'
-      },
       isEmptyFolder () {
         return this.files && this.files.length === 0
       },
@@ -188,7 +178,7 @@
         this.$electron.ipcRenderer.send('focusFolder', link)
         if (this.files && this.files.length) {
           this.files.forEach((file) => {
-            if (file.state === 'completed') {
+            if (fileState.isCompleted(file.state)) {
               File.update({ where: file.id,
                 data: { notified: true }
               })

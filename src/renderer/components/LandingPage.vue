@@ -6,11 +6,13 @@
         <side-navigation :class="{ 'dark-mode': isDarkTheme, 'dark-aside': isDarkTheme , 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
         <div class="column content is-desktop" v-if="streams && streams.length > 0" @dragover="onDragOver($event)" :class="{ 'dark-mode': isDarkTheme === true  }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <file-list v-else></file-list>
+          <!-- <file-list v-else></file-list> -->
+          <file-container v-else></file-container>
         </div>
         <div class="column content is-desktop" v-else @drop.prevent="handleDrop" @dragover.prevent :class="{ 'dark-mode': isDarkTheme === true }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <file-list v-else></file-list>
+          <!-- <file-list v-else></file-list> -->
+          <file-container v-else></file-container>
         </div>
       </section>
       <global-progress></global-progress>
@@ -24,6 +26,7 @@
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyStream from './LandingPage/EmptyStream'
   import FileList from './LandingPage/FileList'
+  import FileContainer from './LandingPage/FileContainer/FileContainer'
   import { mapState } from 'vuex'
   import settings from 'electron-settings'
   import File from '../store/models/File'
@@ -34,7 +37,7 @@
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyStream, FileList, GlobalProgress },
+    components: { Navigation, SideNavigation, EmptyStream, FileList, FileContainer, GlobalProgress },
     data () {
       return {
         uploadingProcessText: 'The uploading process has been paused',

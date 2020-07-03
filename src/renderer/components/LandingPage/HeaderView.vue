@@ -95,7 +95,7 @@ export default {
       let count = 0
       if (stream) {
         stream[0].files.forEach(file => {
-          if (file.state === 'failed' || file.state === 'duplicated') {
+          if (file.isError) {
             count++
           }
         })

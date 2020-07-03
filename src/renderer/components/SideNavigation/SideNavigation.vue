@@ -52,17 +52,10 @@
     <ul class="menu-list">
       <li v-for="stream in streams" :key="stream.id">
         <div class="menu-item" v-on:click="selectItem(stream)" :class="{'menu-item_active': isActive(stream), 'drop-hover': isDragging}">
-          <div class="menu-container" :class="{ 'menu-container-failed': getState(stream) === 'failed'  || getState(stream) === 'duplicated'}">
+          <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="stream-title">{{ stream.name }}</div>
-            <font-awesome-icon class="iconRedo" v-if="getState(stream) === 'failed' || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
-            <img :src="getStateImgUrl(getState(stream))">
-          </div>
-          <div class="state-progress" v-if="shouldShowProgress(stream)">
-            <progress class="progress is-primary" :class="{ 'is-warning': checkWarningLoad(stream), 'is-success': isFilesHidden(stream), 'is-danger': getState(stream) === 'duplicated' || getState(stream) === 'failed' }" :value="getProgress(stream)" max="100"></progress>
-            <div class="menu-container" :class="{ 'right': checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' }">
-              <span class="menu-container-left">{{ checkWarningLoad(stream) || isFilesHidden(stream) || getState(stream) === 'failed' || getState(stream) === 'duplicated' ? '' : getState(stream) }}</span>
-              <span class="menu-container-right"> {{ getStateStatus(stream) }} </span>
-            </div>
+            <font-awesome-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
+            <img v-if="stream.isUploading || stream.isError" :src="getStateImgUrl(stream.state)">
           </div>
         </div>
       </li>
@@ -76,6 +69,7 @@
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
   import fileHelper from '../../../../utils/fileHelper'
+  import FileState from '../../../../utils/fileState'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
   const { remote } = window.require('electron')
@@ -133,7 +127,7 @@
       isDuplicated () {
         let count = 0
         this.files.forEach(file => {
-          if (file.state === 'complited' || file.state === 'duplicated') {
+          if (FileState.isDuplicated(file.state)) {
             count++
           }
         })
@@ -258,7 +252,9 @@
         return require(`../../assets/ic-uploading-${state}-green.svg`)
       },
       getStateImgUrl (state) {
-        return require(`../../assets/ic-state-${state}.svg`)
+        if (FileState.isPreparing(state)) return ''
+        const s = FileState.isError(state) ? 'failed' : state
+        return require(`../../assets/ic-state-${s}.svg`)
       },
       selectItem (stream) {
         this.$store.dispatch('setSelectedStreamId', stream.id)
@@ -336,7 +332,7 @@
       hidePause (streams) {
         let count = 0
         streams.forEach(stream => {
-          if (this.getState(stream) === 'completed' || this.getState(stream) === 'failed' || this.getState(stream) === 'duplicated') {
+          if (stream.isCompleted || stream.isError) {
             count++
           } else if (this.getState(stream) === 'uploading' && this.checkWarningLoad(stream)) {
             count++

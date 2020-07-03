@@ -22,7 +22,7 @@ class FileProvider {
       console.log('ERROR UPLOAD FILE', error, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
         return File.update({ where: file.id,
-          data: {state: 'failed', stateMessage: 'File size exceeded. Maximum file size is 200 MB'}
+          data: {state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB'}
         })
       } else if (file.retries < 3) {
         return File.update({ where: file.id,
@@ -30,11 +30,11 @@ class FileProvider {
         })
       } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
         return File.update({ where: file.id,
-          data: {state: 'failed', stateMessage: 'Network Error'}
+          data: {state: 'server_error', stateMessage: 'Network Error'}
         })
       } else {
         return File.update({ where: file.id,
-          data: {state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.'}
+          data: {state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.'}
         })
       }
     })
@@ -104,11 +104,11 @@ class FileProvider {
 
   getState (momentDate, fileExt) {
     if (!momentDate.isValid()) {
-      return {state: 'failed', message: 'Filename does not match with a filename format'}
+      return {state: 'local_error', message: 'Filename does not match with a filename format'}
     } else if (!fileHelper.isSupportedFileExtension(fileExt)) {
-      return {state: 'failed', message: 'File extension is not supported'}
+      return {state: 'local_error', message: 'File extension is not supported'}
     } else {
-      return {state: 'waiting', message: ''}
+      return {state: 'preparing', message: ''}
     }
   }
 
@@ -175,7 +175,7 @@ class FileProvider {
           case 30:
             if (failureMessage.includes('is zero')) {
               return File.update({ where: file.id,
-                data: {state: 'failed', stateMessage: 'Corrupted file'}
+                data: {state: 'server_error', stateMessage: 'Corrupted file'}
               })
             } else if (file.retries < 3) {
               return File.update({ where: file.id,
@@ -183,12 +183,12 @@ class FileProvider {
               })
             } else {
               return File.update({ where: file.id,
-                data: {state: 'failed', stateMessage: failureMessage}
+                data: {state: 'server_error', stateMessage: failureMessage}
               })
             }
           case 31:
             return File.update({ where: file.id,
-              data: {state: 'duplicated', stateMessage: failureMessage}
+              data: {state: 'server_error', stateMessage: failureMessage}
             })
           default: break
         }
