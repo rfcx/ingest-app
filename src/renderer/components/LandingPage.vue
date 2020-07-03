@@ -3,7 +3,7 @@
     <div v-if="hasAccessToApp()">
       <!-- <navigation :class="{ 'dark-mode': isDarkTheme === true }"></navigation> -->
       <section class="main-content columns is-mobile">
-        <side-navigation :class="{ 'dark-mode': isDarkTheme === true, 'dark-aside': isDarkTheme === true }"></side-navigation>
+        <side-navigation :class="{ 'dark-mode': isDarkTheme, 'dark-aside': isDarkTheme , 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
         <div class="column content is-desktop" v-if="streams && streams.length > 0" @dragover="onDragOver($event)" :class="{ 'dark-mode': isDarkTheme === true  }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <file-list v-else></file-list>
@@ -13,25 +13,20 @@
           <file-list v-else></file-list>
         </div>
       </section>
-      <footer class="uploading-process-status" :class="{ 'dark-mode': isDarkTheme === true }" v-if="!isUploadingProcessEnabled"
-        @mouseover="uploadingProcessText = 'Tap here to resume the uploading process'"
-        @mouseleave="uploadingProcessText = 'The uploading process has been paused'"
-        @click="resumeUploadingProcess()">
-        <span>
-          {{ uploadingProcessText }}
-        </span>
-      </footer>
+      <global-progress></global-progress>
     </div>
   </div>
 </template>
 
 <script>
+  import GlobalProgress from './SideNavigation/GlobalProgress'
   import Navigation from './Navigation/Navigation'
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyStream from './LandingPage/EmptyStream'
   import FileList from './LandingPage/FileList'
   import { mapState } from 'vuex'
   import settings from 'electron-settings'
+  import File from '../store/models/File'
   import Stream from '../store/models/Stream'
   import fileHelper from '../../../utils/fileHelper'
   import Analytics from 'electron-ga'
@@ -39,7 +34,7 @@
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyStream, FileList },
+    components: { Navigation, SideNavigation, EmptyStream, FileList, GlobalProgress },
     data () {
       return {
         uploadingProcessText: 'The uploading process has been paused',
@@ -144,6 +139,13 @@
       streams () {
         return Stream.all()
       },
+      shouldShowProgress () {
+        return this.uploadingFiles.length > 0
+      },
+      uploadingFiles () {
+        const files = File.all()
+        return files.filter(f => f.state === 'uploading')
+      },
       isDarkTheme () {
         let darkMode = settings.get('settings.darkMode')
         let listener = (event, arg) => {
@@ -196,7 +198,6 @@
 
   .navbar-item.tag {
     margin: auto 0 !important;
-
   }
 
   .user-info-nav {
@@ -256,12 +257,15 @@
 
   .side-menu {
     flex: none;
-    width: 200px !important;
+    width: $sidebar-width !important;
     padding: 0 !important;
     margin-right: $default-padding-margin;
     top: $navbar-height;
     bottom: 0;
     position: absolute;
+    &__with-progress {
+      margin-bottom: $global-progress-height;
+    }
   }
 
   .side-menu-column {
@@ -273,7 +277,7 @@
     top: $navbar-height;
     padding: 0 !important;
     bottom: 0;
-    left: 200px;
+    left: $sidebar-width;
     right: 0;
     background-color: white;
   }
