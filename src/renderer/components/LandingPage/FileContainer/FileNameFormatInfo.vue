@@ -43,7 +43,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .preparing-file-settings {
     &__wrapper {
       padding: $default-padding-margin;

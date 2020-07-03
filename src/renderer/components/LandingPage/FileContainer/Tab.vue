@@ -1,5 +1,5 @@
 <template>
-  <div class="landing__tab-wrapper">
+  <div class="file-tab__wrapper">
     <div class="tabs is-fullwidth">
       <ul>
         <li v-for="tab in tabGroups" :key="tab" :class="{ 'is-active': selectedTab ? tab === selectedTab : tab === 'Prepared' }" @click="setActive(tab)">
@@ -46,7 +46,13 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+
+    .file-tab {
+      &__wrapper {
+        padding-bottom: $default-padding-margin;
+      }
+    }
 
   .tabs {
     ul {

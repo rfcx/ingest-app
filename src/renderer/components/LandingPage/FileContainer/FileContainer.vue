@@ -1,5 +1,5 @@
 <template>
-  <div class="landing__file-wrapper">
+  <div class="file-container__wrapper">
     <header-view></header-view>
     <tab :files="files"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
@@ -41,15 +41,12 @@ export default {
 }
 </script>
 
-<style lang="scss">
-  .landing {
-    &__file-wrapper {
+<style lang="scss" scoped>
+  .file-container {
+    &__wrapper {
       height: 100% !important;
       padding-top: $default-padding-margin !important;
       background: rgb(19, 21, 37);
-    }
-    &__tab-wrapper {
-      padding-bottom: $default-padding-margin;
     }
   }
 </style>
