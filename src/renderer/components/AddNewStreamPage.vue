@@ -176,7 +176,6 @@
     :-moz-placeholder {
       color: #52566e;
     }
-
   }
 
 </style>
