@@ -450,7 +450,7 @@
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
   .header {
     padding: 0 8px 0 16px;
