@@ -100,7 +100,7 @@ const checkStatus = (env, uploadId, idToken) => {
 }
 
 const renameStream = (env, streamId, streamName, streamSite, idToken) => {
-  return axios.post(apiUrl(env) + `/streams/${streamId}`, { name: streamName, site: streamSite }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return axios.patch(apiUrl(env) + `/streams/${streamId}`, { name: streamName, site: streamSite }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
