@@ -174,7 +174,7 @@
       }
       this.sendVersionOfApp()
       // settings.set('settings.production_env', true)
-      this.subscribeForFileChanges()
+      // this.subscribeForFileChanges()
     }
   }
 </script>
