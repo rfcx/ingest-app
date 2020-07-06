@@ -23,7 +23,6 @@
         <div class="dropdown-menu" id="dropdown-menu" role="menu">
           <div class="dropdown-content">
             <a href="#" title="Rename the stream" class="dropdown-item" @click="renameStream()">Rename</a>
-            <a href="#" title="Rescan the folder" class="dropdown-item" @click="refreshStream()">Rescan the folder</a>
             <a href="#" title="Redirect to Web App" class="dropdown-item" @click="redirectToStreamWeb()">Redirect to RFCx Client Stream Web App</a>
             <a href="#" title="Delete the stream" class="dropdown-item has-text-danger" @click="showConfirmToDeleteStreamModal()">{{ ((files && !files.length) || isFilesUploading) ? 'Delete' : 'Move to Trash List'}}</a>
           </div>
@@ -60,8 +59,6 @@
 import Stream from '../../store/models/Stream'
 import File from '../../store/models/File'
 import api from '../../../../utils/api'
-import fileWatcher from '../../../main/services/file-watcher'
-import fileHelper from '../../../../utils/fileHelper'
 import settings from 'electron-settings'
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 
@@ -199,7 +196,6 @@ export default {
         this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
         console.log('files deleted')
         Stream.delete(selectedStreamId)
-        fileWatcher.closeWatcher(selectedStreamId)
       }
       let ids = this.files.map((file) => { return file.id })
       this.$electron.ipcRenderer.send('deleteFiles', ids)
@@ -246,20 +242,6 @@ export default {
             })
           }
         })
-      }
-    },
-    // Refresh
-    async refreshStream () {
-      let files = File.query().where('streamId', this.selectedStream.id).orderBy('name').get()
-      console.log('files for refreshing stream', files)
-      await this.checkFilesExistense(files)
-      fileWatcher.subscribeStream(this.selectedStream)
-    },
-    async checkFilesExistense (files) {
-      for (const file of files) {
-        if (!fileHelper.isExist(file.path)) {
-          await File.delete(file.id)
-        }
       }
     },
     // Go to Stream Web
