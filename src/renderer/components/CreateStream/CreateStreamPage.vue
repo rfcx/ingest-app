@@ -16,19 +16,7 @@
       <input v-model="location" class="input" type="text" placeholder="Latitude, Longitude">
     </div>
   </div>
-  <MglMap :accessToken="accessToken" :mapStyle="mapStyle" logoPosition="top-right">
-    <GeocoderControl
-      :accessToken="accessToken"
-      :input.sync="defaultInput"
-      :mapboxGl="mapbox"
-      :marker=true
-      :localGeocoder="coordinatesGeocoder"
-      :limit=1
-      :zoom=10
-      position="top-left"
-      @results="handleSearch"
-    />
-  </MglMap>
+  <Map></Map>
   <div class="field is-grouped">
     <p class="control control-btn">
       <router-link class="control-btn" to="/"><button type="button" class="button is-rounded cancel">Cancel</button></router-link>
@@ -44,10 +32,7 @@
 import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
-import Mapbox from 'mapbox-gl'
-import { MglMap } from 'vue-mapbox'
-import GeocoderControl from './GeocoderControl'
-import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
+import Map from './Map'
 
 export default {
   data () {
@@ -56,15 +41,10 @@ export default {
       location: '15, 100',
       isLoading: false,
       hasPassValidation: false,
-      error: '',
-      accessToken: 'pk.eyJ1IjoicmZjeCIsImEiOiJoMEptMnlJIn0.LPKrjG_3AeYB5cqsyLpcrg',
-      mapStyle: 'mapbox://styles/rfcx/ck9g6dci83g3x1io8dl27r7aq',
-      defaultInput: 'search by latitude, longitude',
-      searchLimit: 1,
-      mapbox: null
+      error: ''
     }
   },
-  components: { MglMap, GeocoderControl },
+  components: { Map },
   computed: {
     hasPassedValidation () {
       return this.name && this.location
@@ -108,35 +88,7 @@ export default {
     },
     isProductionEnv () {
       return settings.get('settings.production_env')
-    },
-    handleSearch (event) {
-      console.log(event)
-    },
-    coordinatesGeocoder (query) {
-      const matches = query.match(/^(-?\d+\.?\d*)[, ]+(-?\d+\.?\d*)[ ]*$/i)
-      if (!matches) return null
-      const coordinateFeature = (lat, lng) => {
-        return {
-          center: [lng, lat],
-          geometry: {
-            type: 'Point',
-            coordinates: [lng, lat]
-          },
-          place_name: 'latitude: ' + lat + ' longitude: ' + lng,
-          place_type: ['coordinate'],
-          properties: {},
-          type: 'Feature'
-        }
-      }
-      const coord1 = Number(matches[1])
-      const coord2 = Number(matches[2])
-      let geocodes = []
-      geocodes.push(coordinateFeature(coord1, coord2))
-      return geocodes
     }
-  },
-  created () {
-    this.mapbox = Mapbox
   }
 }
 </script>

@@ -89,6 +89,10 @@ export default {
     mapboxgl: {
       type: Object,
       default: null
+    },
+    localGeocoderOnly: {
+      type: Boolean,
+      default: false
     }
   },
 
