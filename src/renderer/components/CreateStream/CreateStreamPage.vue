@@ -16,7 +16,7 @@
       <input v-model="location" class="input" type="text" placeholder="Latitude, Longitude">
     </div>
   </div>
-  <Map></Map>
+  <Map @locationSelected="onSelectLocation"></Map>
   <div class="field is-grouped">
     <p class="control control-btn">
       <router-link class="control-btn" to="/"><button type="button" class="button is-rounded cancel">Cancel</button></router-link>
@@ -38,7 +38,8 @@ export default {
   data () {
     return {
       name: 'Test',
-      location: '15, 100',
+      selectedLatitude: null,
+      selectedLongitude: null,
       isLoading: false,
       hasPassValidation: false,
       error: ''
@@ -48,16 +49,22 @@ export default {
   computed: {
     hasPassedValidation () {
       return this.name && this.location
+    },
+    location () {
+      return `${this.selectedLatitude}, ${this.selectedLongitude}`
     }
   },
   methods: {
+    onSelectLocation (coordinates) {
+      console.log('on selected location: ', coordinates)
+      this.selectedLongitude = coordinates[0]
+      this.selectedLatitude = coordinates[1]
+    },
     createStream () {
-      // TODO: implement this
-      // const name = this.name
-      // const location = this.location
+      // TODO: verify data
       const visibility = false
-      const latitude = 15
-      const longitude = 100
+      const latitude = this.selectedLatitude
+      const longitude = this.selectedLongitude
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         let idToken = arg

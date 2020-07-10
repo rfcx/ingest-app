@@ -43,6 +43,7 @@
         console.log(`onselected`)
         console.log(event)
         this.selectedCoordinates = event.result.center
+        this.$emit('locationSelected', this.selectedCoordinates)
       },
       coordinatesGeocoder (query) {
         const matches = query.match(/^(-?\d+\.?\d*)[, ]+(-?\d+\.?\d*)[ ]*$/i)
