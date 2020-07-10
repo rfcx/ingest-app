@@ -10,13 +10,10 @@
       <input v-model="name" class="input" type="text" placeholder="Jaguar 1">
     </div>
   </div>
-  <div class="field field-location">
-    <label for="name" class="label">Locations</label>
-    <div class="control">
-      <input v-model="location" class="input" type="text" placeholder="Latitude, Longitude">
-    </div>
+  <div class="field field-stream-name">
+    <label for="location" class="label">Location</label>
+    <Map @locationSelected="onSelectLocation"></Map>
   </div>
-  <Map @locationSelected="onSelectLocation"></Map>
   <div class="field is-grouped">
     <p class="control control-btn">
       <router-link class="control-btn" to="/"><button type="button" class="button is-rounded cancel">Cancel</button></router-link>
@@ -37,7 +34,7 @@ import Map from './Map'
 export default {
   data () {
     return {
-      name: 'Test',
+      name: '',
       selectedLatitude: null,
       selectedLongitude: null,
       isLoading: false,
@@ -48,10 +45,8 @@ export default {
   components: { Map },
   computed: {
     hasPassedValidation () {
-      return this.name && this.location
-    },
-    location () {
-      return `${this.selectedLatitude}, ${this.selectedLongitude}`
+      if (!(this.name && this.selectedLatitude && this.selectedLongitude)) return false
+      return true
     }
   },
   methods: {

@@ -56,7 +56,6 @@
               coordinates: [lng, lat]
             },
             place_name: 'latitude: ' + lat + ' longitude: ' + lng,
-            // place_name: `${lat}, ${lng}`,
             place_type: ['coordinate'],
             properties: {},
             type: 'Feature'
