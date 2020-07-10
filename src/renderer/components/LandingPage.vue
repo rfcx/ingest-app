@@ -45,22 +45,6 @@
         darkTheme: settings.get('settings.darkMode')
       }
     },
-    // watch: {
-    //   streams (newStreams, oldStreams) {
-    //     console.log('watch streams changes')
-    //     try {
-    //       let strms = newStreams.filter((newStream) => {
-    //         return !oldStreams.find((oldStream) => {
-    //           return oldStream.id === newStream.id
-    //         })
-    //       })
-    //       if (strms && strms.length) {
-    //         console.log('subscribe new streams!!!!', strms)
-    //         this.$electron.ipcRenderer.send('subscribeToFileWatcher', strms)
-    //       }
-    //     } catch (e) { }
-    //   }
-    // },
     methods: {
       onDragOver (e) {
         e.preventDefault()
@@ -129,10 +113,6 @@
         await analytics.send('screenview', { cd: `${guid}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
         await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
         console.log('analytics', analytics)
-      },
-      subscribeForFileChanges (stream) {
-        let streams = stream ? [ stream ] : this.streams
-        this.$electron.ipcRenderer.send('subscribeToFileWatcher', streams)
       }
     },
     computed: {
@@ -174,7 +154,6 @@
       }
       this.sendVersionOfApp()
       // settings.set('settings.production_env', true)
-      this.subscribeForFileChanges()
     }
   }
 </script>
