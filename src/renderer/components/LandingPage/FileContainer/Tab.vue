@@ -21,11 +21,12 @@ export default {
     }
   },
   props: {
-    files: Array
+    files: Array,
+    selectedTab: String
   },
   computed: {
     ...mapState({
-      selectedTab: state => state.AppSetting.selectedTab
+      selectedStreamId: state => state.Stream.selectedStreamId
     })
   },
   methods: {
@@ -40,7 +41,9 @@ export default {
       }
     },
     setActive (tab) {
-      this.$store.dispatch('setSelectedTab', tab)
+      const tabObject = {}
+      tabObject[this.selectedStreamId] = tab
+      this.$store.dispatch('setSelectedTab', tabObject)
     }
   }
 }

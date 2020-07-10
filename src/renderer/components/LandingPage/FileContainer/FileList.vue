@@ -46,7 +46,6 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
 import File from '../../../store/models/File'
 import FileState from '../../../../../utils/fileState'
 import dateHelper from '../../../../../utils/dateHelper'
@@ -61,15 +60,13 @@ export default {
     }
   },
   props: {
-    allFiles: Array
+    allFiles: Array,
+    selectedTab: String
   },
   components: {
     FontAwesomeIcon
   },
   computed: {
-    ...mapState({
-      selectedTab: state => state.AppSetting.selectedTab
-    }),
     files () {
       if (!this.allFiles) return []
       switch (this.selectedTab) {
