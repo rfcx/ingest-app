@@ -217,15 +217,17 @@
         // this.isDragging = false
       },
       handleDrag (e) {
+        console.log('handleDrag -- side', e)
         this.isDragging = true
       },
       handleDrop (e) {
-        console.log('e', e)
+        console.log('handleDrop -- side', e)
         let dt = e.dataTransfer
         let files = dt.files
         this.handleFiles(files)
       },
       handleFiles (files) {
+        console.log('handleFiles -- side', files)
         let arrPath = []
         this.isDragging = false
         if (files && files.length === 1) {
@@ -654,12 +656,6 @@
   }
   .btn-remove-active {
     opacity: 1;
-  }
-
-  .drag-active {
-    border: 4px solid #cac5c5 !important;
-    background-color: #cac5c5 !important;
-    opacity: 0.3 !important;
   }
 
   .drop-hover {

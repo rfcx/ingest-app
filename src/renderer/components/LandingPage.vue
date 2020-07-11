@@ -1,15 +1,16 @@
 <template>
-  <div id="wrapper-landing-page" class="has-fixed-sidebar" :class="{ 'dark-mode': isDarkTheme === true }">
+  <div id="wrapper-landing-page" :class="{ 'dark-mode': isDarkTheme === true, 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop"
+     @dragover.prevent @dragleave="outDrag">
     <div v-if="hasAccessToApp()">
       <!-- <navigation :class="{ 'dark-mode': isDarkTheme === true }"></navigation> -->
       <section class="main-content columns is-mobile">
         <side-navigation :class="{ 'dark-mode': isDarkTheme, 'dark-aside': isDarkTheme , 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
-        <div class="column content is-desktop" v-if="streams && streams.length > 0" @dragover="onDragOver($event)" :class="{ 'dark-mode': isDarkTheme === true  }">
+        <div class="column content is-desktop" v-if="streams && streams.length > 0" :class="{ 'dark-mode': isDarkTheme === true  }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <!-- <file-list v-else></file-list> -->
           <file-container v-else></file-container>
         </div>
-        <div class="column content is-desktop" v-else @drop.prevent="handleDrop" @dragover.prevent :class="{ 'dark-mode': isDarkTheme === true }">
+        <div class="column content is-desktop" v-else :class="{ 'dark-mode': isDarkTheme === true }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <!-- <file-list v-else></file-list> -->
           <file-container v-else></file-container>
@@ -42,42 +43,52 @@
       return {
         uploadingProcessText: 'The uploading process has been paused',
         executed: false,
-        darkTheme: settings.get('settings.darkMode')
+        darkTheme: settings.get('settings.darkMode'),
+        isDragging: false
       }
     },
     methods: {
+      outDrag (e) {
+        // FIX dropleave event
+        // e.preventDefault()
+        this.isDragging = false
+      },
+      handleDrag (e) {
+        console.log('handleDrag -- side', e)
+        this.isDragging = true
+      },
       onDragOver (e) {
+        console.log('onDragOver', e)
         e.preventDefault()
         e.dataTransfer.effectAllowed = 'uninitialized'
         e.dataTransfer.dropEffect = 'none'
       },
       handleDrop (e) {
-        console.log('e', e)
+        console.log('handleDrop', e)
         let dt = e.dataTransfer
         let files = dt.files
         this.handleFiles(files)
       },
       handleFiles (files) {
-        let arrPath = []
+        console.log('handleFiles', files)
         this.isDragging = false
-        if (files && files.length === 1) {
-          ([...files]).forEach((file) => {
+        if (files) {
+          ([...files]).forEach(file => {
             if (fileHelper.isFolder(file.path)) {
-              console.log('file', file)
-              this.$router.push({ path: '/add', query: { folderPath: file.path, name: fileHelper.getFileNameFromFilePath(file.path) } })
+              const filesInDirectory = fileHelper.getFilesFromDirectoryPath(file.path).map(name => {
+                return { name: name, path: file.path + '/' + name }
+              })
+              filesInDirectory.forEach(file => {
+                this.saveFile(file)
+              })
+            } else {
+              this.saveFile(file)
             }
           })
-        } else if (files && files.length > 1) {
-          ([...files]).forEach((file) => {
-            if (fileHelper.isFolder(file.path)) {
-              console.log('file', file)
-              arrPath.push(file.path)
-            }
-          })
-          if (arrPath && arrPath.length) {
-            this.$router.push({ path: '/add', query: { folderPaths: arrPath } })
-          }
         }
+      },
+      saveFile (file) {
+        this.$file.newFilePath(file.path, this.selectedStream)
       },
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
@@ -117,10 +128,14 @@
     },
     computed: {
       ...mapState({
+        selectedStreamId: state => state.Stream.selectedStreamId,
         isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
       }),
       streams () {
         return Stream.all()
+      },
+      selectedStream () {
+        return Stream.find(this.selectedStreamId)
       },
       shouldShowProgress () {
         return this.uploadingFiles.length > 0
@@ -557,6 +572,12 @@
     ::-webkit-scrollbar {
       width: 6px;
     }
+  }
+
+  .drag-active {
+    border: 4px solid #cac5c5 !important;
+    background-color: #cac5c5 !important;
+    opacity: 0.3 !important;
   }
 
 </style>

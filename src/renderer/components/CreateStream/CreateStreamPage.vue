@@ -88,6 +88,7 @@ export default {
               name: this.name,
               latitude: latitude,
               longitude: longitude,
+              timestampFormat: 'Auto-detect',
               env: this.isProductionEnv() ? 'production' : 'staging',
               visibility: visibility
             }
