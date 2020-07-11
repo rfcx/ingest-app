@@ -192,14 +192,18 @@ export default {
       this.$electron.ipcRenderer.on('sendIdToken', listener)
     },
     async removeStreamFromVuex (selectedStreamId) {
-      let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
-        console.log('files deleted')
+      let ids = this.files.map((file) => { return file.id })
+      if (ids && ids.length > 0) {
+        let listen = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
+          console.log('files deleted')
+          Stream.delete(selectedStreamId)
+        }
+        this.$electron.ipcRenderer.send('deleteFiles', ids)
+        this.$electron.ipcRenderer.on('filesDeleted', listen)
+      } else {
         Stream.delete(selectedStreamId)
       }
-      let ids = this.files.map((file) => { return file.id })
-      this.$electron.ipcRenderer.send('deleteFiles', ids)
-      this.$electron.ipcRenderer.on('filesDeleted', listen)
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true
