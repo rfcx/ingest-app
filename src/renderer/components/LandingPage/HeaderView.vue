@@ -31,12 +31,6 @@
     </div>
     <div class="subtitle-container">
       <img src="~@/assets/ic-pin.svg"><span v-if="selectedStream" class="file-list-span">{{ selectedStream.siteGuid || `${selectedStream.latitude}, ${selectedStream.longitude}` }}</span>
-      <div class="folder-area" v-if="selectedStream" :class="{ 'btn-open-empty': isEmptyFolder() }">
-        <a title="Open selected folder" v-show="!isEmptyFolder()" class="button is-circle btn-open" @click="openFolder(selectedStream.folderPath)">
-          <img class="img-open-folder" src="~@/assets/ic-folder-open.svg">
-        </a>
-        {{ selectedStream.folderPath }}
-      </div>
     </div>
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
@@ -112,9 +106,6 @@ export default {
     }
   },
   methods: {
-    isEmptyFolder () {
-      return this.files && this.files.length === 0
-    },
     // Dropdown menu
     toggleDropDown () {
       this.shouldShowDropDown = !this.shouldShowDropDown
@@ -234,19 +225,6 @@ export default {
       } else if (error.status === 403) {
         this.errorMessage = `You don't have permissions to delete non-empty stream.`
       } else { this.errorMessage = isDeleting ? 'Error while deleting stream.' : 'Error while moving stream to trash.' }
-    },
-    // Go to folder
-    openFolder (link) {
-      this.$electron.ipcRenderer.send('focusFolder', link)
-      if (this.files && this.files.length) {
-        this.files.forEach((file) => {
-          if (file.state === 'completed') {
-            File.update({ where: file.id,
-              data: { notified: true }
-            })
-          }
-        })
-      }
     },
     // Go to Stream Web
     isProductionEnv () {
