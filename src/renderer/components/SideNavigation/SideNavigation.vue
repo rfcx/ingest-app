@@ -51,7 +51,7 @@
     </div>
     <ul class="menu-list">
       <li v-for="stream in streams" :key="stream.id">
-        <div class="menu-item" v-on:click="selectItem(stream)" :class="{'menu-item_active': isActive(stream), 'drop-hover': isDragging}">
+        <div class="menu-item" v-on:click="selectItem(stream)" :class="{'menu-item_active': isActive(stream)}">
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="stream-title">{{ stream.name }}</div>
             <font-awesome-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
@@ -81,7 +81,6 @@
         timeoutKeyboard: {},
         searchStr: '',
         mesure: '',
-        isDragging: false,
         showUserMenu: false,
         toggleSearch: false,
         userName: this.getUserName(),
