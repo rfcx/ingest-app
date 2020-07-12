@@ -16,7 +16,7 @@
       <div class="notification is-danger is-light notice file-list-notice" v-if="errorMessage">
         <strong>{{ errorMessage }}</strong>
       </div>
-      <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()" title="The stream’s menu to help you delete, rename or redirect you to RFCx Client Stream Web App. If you have any problems with recognition of your folder with audio you can click on 'Rescan the folder'">
+      <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()" title="The stream’s menu to help you delete, rename or redirect you to RFCx Client Stream Web App.">
         <div class="dropdown-trigger">
           <img src="~@/assets/ic-menu.svg" aria-haspopup="true" aria-controls="dropdown-menu">
         </div>
@@ -81,16 +81,12 @@ export default {
       return this.newStreamName.trim().length && this.newStreamName.trim().length >= 3 && this.newStreamName.trim().length <= 40
     },
     isSelectedStreamFailed () {
-      let stream = Stream.query().with('files').where('$id', this.selectedStreamId).get()
-      let count = 0
-      if (stream) {
-        stream[0].files.forEach(file => {
-          if (file.isError) {
-            count++
-          }
-        })
-        if (count === stream[0].files.length) return true
-      }
+      let streams = Stream.query().with('files').where('$id', this.selectedStreamId).get()
+      if (!streams) { return false } // no stream
+      const allFiles = streams[0].files // files of that stream
+      const failedItems = allFiles.filter(file => file.isError)
+      if (allFiles.length > 0 && failedItems.length === allFiles.length) return true // all files are failed
+      return false
     },
     files () {
       return File.query().where('streamId', this.selectedStreamId).get()
