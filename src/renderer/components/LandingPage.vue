@@ -72,20 +72,31 @@
       handleFiles (files) {
         console.log('handleFiles', files)
         this.isDragging = false
-        if (files) {
-          ([...files]).forEach(file => {
-            if (fileHelper.isFolder(file.path)) {
-              const filesInDirectory = fileHelper.getFilesFromDirectoryPath(file.path).map(name => {
-                return { name: name, path: file.path + '/' + name }
-              })
-              filesInDirectory.forEach(file => {
-                this.saveFile(file)
-              })
-            } else {
-              this.saveFile(file)
-            }
-          })
-        }
+        // let subfolder = []
+        if (!files) { return } // no files
+        ([...files]).forEach(file => {
+          if (fileHelper.isFolder(file.path)) {
+            this.handleFolder(file)
+          } else {
+            this.saveFile(file)
+          }
+        })
+      },
+      handleFolder (folder) {
+        // see all stuff in the directory
+        const stuffInDirectory = fileHelper.getFilesFromDirectoryPath(folder.path).map(name => {
+          return { name: name, path: folder.path + '/' + name }
+        })
+        // get the files in the directory
+        const files = stuffInDirectory.filter(file => !fileHelper.isFolder(file.path))
+        console.log(`stuffInDirectory ${stuffInDirectory}`)
+        // save files to the db
+        files.forEach(file => {
+          this.saveFile(file)
+        })
+        // get subfolders
+        const subfolders = stuffInDirectory.filter(file => fileHelper.isFolder(file.path))
+        subfolders.forEach(folder => this.handleFolder(folder))
       },
       saveFile (file) {
         this.$file.newFilePath(file.path, this.selectedStream)
