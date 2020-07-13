@@ -1,14 +1,23 @@
 <template>
     <div class="container-box empty has-text-centered">
-        <img src="~@/assets/ic-folder-empty.svg" style="margin-bottom: 0.75em"><br>
-        <span>Your synced folder is empty</span><br>
-        <a class="button is-rounded is-primary" style="margin-top: 0.75em" @click="openFolder(selectedStream.folderPath)">Open Folder</a>
+        <img :src="imageUrl" style="margin-bottom: 0.75em"><br>
+        <!-- <p>No files in completed</p> -->
+        <span>Drop audio files here and press start upload to start uploading the audio files to the stream.</span>
     </div>
 </template>
+
 <script>
   import { mapState } from 'vuex'
   import Stream from '../../store/models/Stream'
   export default {
+    props: {
+      isDragging: Boolean
+    },
+    data () {
+      return {
+        imageUrl: require('../../assets/ic-file.svg')
+      }
+    },
     computed: {
       ...mapState({
         selectedStreamId: state => state.Stream.selectedStreamId
@@ -17,11 +26,28 @@
         return Stream.find(this.selectedStreamId)
       }
     },
-    methods: {
-      openFolder (link) {
-        console.log(link)
-        this.$electron.shell.openItem(link)
+    watch: {
+      isDragging (value) {
+        if (value === true) {
+          this.imageUrl = require('../../assets/ic-file-fill.svg')
+        } else {
+          this.imageUrl = require('../../assets/ic-file.svg')
+        }
       }
     }
   }
 </script>
+
+<style lang="scss" scoped>
+
+  span {
+    width: 100px;
+  }
+
+  .container-box.empty {
+    margin: 16px auto;
+    padding: 16px;
+    max-width: 300px;
+  }
+  
+</style>
