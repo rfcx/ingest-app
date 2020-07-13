@@ -1,5 +1,5 @@
 <template>
-  <aside class="column menu side-menu side-menu-column" :class="{ 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop" @dragover.prevent @dragleave="outDrag">
+  <aside class="column menu side-menu side-menu-column">
     <div class="header">
       <div class="header-logo">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
@@ -51,7 +51,7 @@
     </div>
     <ul class="menu-list">
       <li v-for="stream in streams" :key="stream.id">
-        <div class="menu-item" v-on:click="selectItem(stream)" :class="{'menu-item_active': isActive(stream), 'drop-hover': isDragging}">
+        <div class="menu-item" v-on:click="selectItem(stream)" :class="{'menu-item_active': isActive(stream)}">
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="stream-title">{{ stream.name }}</div>
             <font-awesome-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
@@ -68,7 +68,6 @@
   import settings from 'electron-settings'
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
-  import fileHelper from '../../../../utils/fileHelper'
   import FileState from '../../../../utils/fileState'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
@@ -82,7 +81,6 @@
         timeoutKeyboard: {},
         searchStr: '',
         mesure: '',
-        isDragging: false,
         showUserMenu: false,
         toggleSearch: false,
         userName: this.getUserName(),
@@ -210,42 +208,6 @@
             // TODO: find a stream
           }
         }, 500)
-      },
-      outDrag (e) {
-        // FIX dropleave event
-        // e.preventDefault()
-        // this.isDragging = false
-      },
-      handleDrag (e) {
-        this.isDragging = true
-      },
-      handleDrop (e) {
-        console.log('e', e)
-        let dt = e.dataTransfer
-        let files = dt.files
-        this.handleFiles(files)
-      },
-      handleFiles (files) {
-        let arrPath = []
-        this.isDragging = false
-        if (files && files.length === 1) {
-          ([...files]).forEach((file) => {
-            if (fileHelper.isFolder(file.path)) {
-              console.log('file', file)
-              this.$router.push({ path: '/add', query: { folderPath: file.path, name: fileHelper.getFileNameFromFilePath(file.path) } })
-            }
-          })
-        } else if (files && files.length > 1) {
-          ([...files]).forEach((file) => {
-            if (fileHelper.isFolder(file.path)) {
-              console.log('file', file)
-              arrPath.push(file.path)
-            }
-          })
-          if (arrPath && arrPath.length) {
-            this.$router.push({ path: '/add', query: { folderPaths: arrPath } })
-          }
-        }
       },
       getUploadingProcessIcon (enabled) {
         const state = enabled ? 'pause' : 'play'
@@ -654,12 +616,6 @@
   }
   .btn-remove-active {
     opacity: 1;
-  }
-
-  .drag-active {
-    border: 4px solid #cac5c5 !important;
-    background-color: #cac5c5 !important;
-    opacity: 0.3 !important;
   }
 
   .drop-hover {

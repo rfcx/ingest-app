@@ -16,7 +16,7 @@
       <div class="notification is-danger is-light notice file-list-notice" v-if="errorMessage">
         <strong>{{ errorMessage }}</strong>
       </div>
-      <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()" title="The stream’s menu to help you delete, rename or redirect you to RFCx Client Stream Web App. If you have any problems with recognition of your folder with audio you can click on 'Rescan the folder'">
+      <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()" title="The stream’s menu to help you delete, rename or redirect you to RFCx Client Stream Web App.">
         <div class="dropdown-trigger">
           <img src="~@/assets/ic-menu.svg" aria-haspopup="true" aria-controls="dropdown-menu">
         </div>
@@ -31,12 +31,6 @@
     </div>
     <div class="subtitle-container">
       <img src="~@/assets/ic-pin.svg"><span v-if="selectedStream" class="file-list-span">{{ selectedStream.siteGuid || `${selectedStream.latitude}, ${selectedStream.longitude}` }}</span>
-      <div class="folder-area" v-if="selectedStream" :class="{ 'btn-open-empty': isEmptyFolder() }">
-        <a title="Open selected folder" v-show="!isEmptyFolder()" class="button is-circle btn-open" @click="openFolder(selectedStream.folderPath)">
-          <img class="img-open-folder" src="~@/assets/ic-folder-open.svg">
-        </a>
-        {{ selectedStream.folderPath }}
-      </div>
     </div>
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
@@ -87,16 +81,12 @@ export default {
       return this.newStreamName.trim().length && this.newStreamName.trim().length >= 3 && this.newStreamName.trim().length <= 40
     },
     isSelectedStreamFailed () {
-      let stream = Stream.query().with('files').where('$id', this.selectedStreamId).get()
-      let count = 0
-      if (stream) {
-        stream[0].files.forEach(file => {
-          if (file.isError) {
-            count++
-          }
-        })
-        if (count === stream[0].files.length) return true
-      }
+      let streams = Stream.query().with('files').where('$id', this.selectedStreamId).get()
+      if (!streams) { return false } // no stream
+      const allFiles = streams[0].files // files of that stream
+      const failedItems = allFiles.filter(file => file.isError)
+      if (allFiles.length > 0 && failedItems.length === allFiles.length) return true // all files are failed
+      return false
     },
     files () {
       return File.query().where('streamId', this.selectedStreamId).get()
@@ -112,9 +102,6 @@ export default {
     }
   },
   methods: {
-    isEmptyFolder () {
-      return this.files && this.files.length === 0
-    },
     // Dropdown menu
     toggleDropDown () {
       this.shouldShowDropDown = !this.shouldShowDropDown
@@ -192,14 +179,18 @@ export default {
       this.$electron.ipcRenderer.on('sendIdToken', listener)
     },
     async removeStreamFromVuex (selectedStreamId) {
-      let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
-        console.log('files deleted')
+      let ids = this.files.map((file) => { return file.id })
+      if (ids && ids.length > 0) {
+        let listen = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
+          console.log('files deleted')
+          Stream.delete(selectedStreamId)
+        }
+        this.$electron.ipcRenderer.send('deleteFiles', ids)
+        this.$electron.ipcRenderer.on('filesDeleted', listen)
+      } else {
         Stream.delete(selectedStreamId)
       }
-      let ids = this.files.map((file) => { return file.id })
-      this.$electron.ipcRenderer.send('deleteFiles', ids)
-      this.$electron.ipcRenderer.on('filesDeleted', listen)
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true
@@ -230,19 +221,6 @@ export default {
       } else if (error.status === 403) {
         this.errorMessage = `You don't have permissions to delete non-empty stream.`
       } else { this.errorMessage = isDeleting ? 'Error while deleting stream.' : 'Error while moving stream to trash.' }
-    },
-    // Go to folder
-    openFolder (link) {
-      this.$electron.ipcRenderer.send('focusFolder', link)
-      if (this.files && this.files.length) {
-        this.files.forEach((file) => {
-          if (file.state === 'completed') {
-            File.update({ where: file.id,
-              data: { notified: true }
-            })
-          }
-        })
-      }
     },
     // Go to Stream Web
     isProductionEnv () {

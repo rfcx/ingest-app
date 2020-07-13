@@ -2,7 +2,7 @@
   <div class="preparing-file-settings__wrapper">
     <div class="preparing-file-settings__name-format-wrapper">
       <span class="preparing-file-settings__name-format-title">Filename format</span>
-      <span class="preparing-file-settings__name-format-description">xxxx</span>
+      <span class="preparing-file-settings__name-format-description">{{ selectedStream.timestampFormat }}</span>
     </div>
     <div class="preparing-file-settings__actions-wrapper">
       <button type="button" class="button is-rounded cancel" @click.prevent="confirmToClearAllFiles()">Clear all</button>
@@ -12,13 +12,21 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import File from '../../../store/models/File'
+import Stream from '../../../store/models/Stream'
 
 export default {
   props: {
     preparingFiles: Array
   },
   computed: {
+    ...mapState({
+      selectedStreamId: state => state.Stream.selectedStreamId
+    }),
+    selectedStream () {
+      return Stream.find(this.selectedStreamId)
+    },
     readyToUploadFiles () {
       return this.preparingFiles.filter(file => file.isPreparing)
     }
