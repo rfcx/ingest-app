@@ -42,10 +42,12 @@
       </tbody>
     </table>
     <!-- TODO: add empty view -->
+    <empty-folder v-if="files.length === 0" :isDragging="isDragging"></empty-folder>
   </div>
 </template>
 
 <script>
+import EmptyFolder from '../EmptyFolder'
 import File from '../../../store/models/File'
 import FileState from '../../../../../utils/fileState'
 import dateHelper from '../../../../../utils/dateHelper'
@@ -61,10 +63,11 @@ export default {
   },
   props: {
     allFiles: Array,
-    selectedTab: String
+    selectedTab: String,
+    isDragging: Boolean
   },
   components: {
-    FontAwesomeIcon
+    FontAwesomeIcon, EmptyFolder
   },
   computed: {
     files () {

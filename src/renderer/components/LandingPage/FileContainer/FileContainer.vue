@@ -3,7 +3,7 @@
     <header-view></header-view>
     <tab :files="files" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
-    <file-list :allFiles="files" :selectedTab="selectedTab"></file-list>
+    <file-list :allFiles="files" :selectedTab="selectedTab" :isDragging="isDragging"></file-list>
   </div>
 </template>
 
@@ -18,6 +18,9 @@ import FileState from '../../../../../utils/fileState'
 // import FileList from '../FileList'
 
 export default {
+  props: {
+    isDragging: Boolean
+  },
   components: {
     HeaderView, Tab, FileNameFormatInfo, FileList
   },

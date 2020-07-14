@@ -8,12 +8,12 @@
         <div class="column content is-desktop" v-if="streams && streams.length > 0" :class="{ 'dark-mode': isDarkTheme === true  }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <!-- <file-list v-else></file-list> -->
-          <file-container v-else></file-container>
+          <file-container v-else :isDragging="isDragging"></file-container>
         </div>
         <div class="column content is-desktop" v-else :class="{ 'dark-mode': isDarkTheme === true }">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <!-- <file-list v-else></file-list> -->
-          <file-container v-else></file-container>
+          <file-container v-else :isDragging="isDragging"></file-container>
         </div>
       </section>
       <global-progress></global-progress>
@@ -68,6 +68,9 @@
         let dt = e.dataTransfer
         let files = dt.files
         this.handleFiles(files)
+        const tabObject = {}
+        tabObject[this.selectedStreamId] = 'Prepared'
+        this.$store.dispatch('setSelectedTab', tabObject)
       },
       handleFiles (files) {
         console.log('handleFiles', files)
@@ -586,9 +589,9 @@
   }
 
   .drag-active {
-    border: 4px solid #cac5c5 !important;
+    border: 2px solid #cac5c5 !important;
     background-color: #cac5c5 !important;
-    opacity: 0.3 !important;
+    opacity: 0.5 !important;
   }
 
 </style>

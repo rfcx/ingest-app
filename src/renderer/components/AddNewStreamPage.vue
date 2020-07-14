@@ -56,12 +56,6 @@
     background-color: white;
   }
 
-  .container-box.empty {
-    margin: 16px auto;
-    padding: 16px;
-    max-width: 300px;
-  }
-
   .box-title {
     margin-bottom: 1rem;
   }
