@@ -53,10 +53,7 @@ export default {
   components: { Map },
   computed: {
     hasPassedValidation () {
-      if (!(this.name && this.selectedLatitude && this.selectedLongitude)) {
-        return false
-      }
-      return true
+      return this.name && this.selectedLatitude && this.selectedLongitude
     }
   },
   methods: {
