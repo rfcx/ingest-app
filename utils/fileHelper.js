@@ -67,7 +67,7 @@ const getFileSize = (filePath) => {
 }
 
 const getFileDuration = (filePath) => {
-  getAudioDurationInSeconds(filePath).then(duration => {
+  return getAudioDurationInSeconds(filePath).then(duration => {
     return Promise.resolve(duration)
   }).catch(error => {
     console.error(error)
