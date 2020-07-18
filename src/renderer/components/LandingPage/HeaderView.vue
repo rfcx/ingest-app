@@ -228,31 +228,20 @@ export default {
     },
     redirectToStreamWeb () {
       console.log('user redirected to the Client Stream Web', this.selectedStream)
-      let url = 'https://client-stream.rfcx.org/'
+      let url = this.getExplorerWebUrl(this.isProductionEnv())
       if (this.selectedStream) {
         if (this.selectedStream.env) {
-          if (this.selectedStream.env === 'production') {
-            url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
-          } else if (this.selectedStream.env === 'staging') {
-            url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.id}`
-          } else {
-            url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
-          }
+          url = this.getExplorerWebUrl(this.selectedStream.env !== 'staging', this.selectedStream.id)
         } else {
-          if (this.isProductionEnv()) {
-            url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
-          } else {
-            url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.id}`
-          }
-        }
-      } else {
-        if (this.isProductionEnv()) {
-          url = `https://client-stream.rfcx.org/streams`
-        } else {
-          url = `https://staging-client-stream.rfcx.org/streams`
+          url = this.getExplorerWebUrl(this.isProductionEnv(), this.selectedStream.id)
         }
       }
       this.$electron.shell.openExternal(url)
+    },
+    getExplorerWebUrl (isProd, streamId = null) {
+      let baseUrl = isProd ? 'https://explorer.rfcx.org/' : 'https://staging-explorer.rfcx.org/'
+      let query = streamId ? `?stream=${streamId}` : ''
+      return baseUrl + query
     }
   },
   watch: {
