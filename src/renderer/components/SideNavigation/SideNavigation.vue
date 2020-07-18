@@ -10,7 +10,7 @@
         </button>
       </div>
       <div class="header-user-pic" @click="toggleUserMenu()">
-        <img title="Menu" class="user-pic" :src="getUserPicture()" alt="">
+        <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)">
       </div>
     </div>
     <div class="user-stat-wrapper" v-if="showUserMenu">
