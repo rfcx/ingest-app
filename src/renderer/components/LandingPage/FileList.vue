@@ -73,7 +73,7 @@
         <tr v-for="file in files" :key="file.id" :class="{ 'file-disable': file.disabled }">
           <td class="file-status file-list-table__cell file-list-table__cell_status"><img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)"><span class="file-status-state">{{ file.state }}</span></td>
           <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError}" >{{ file.name }}</td>
-          <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">{{ getTimestamp(file) }}</td>
+          <td class="file-row file-list-disabled file-list-table__cell_info" v-if="!file.isError">{{ getTimestamp(file) }}</td>
           <td colspan="2" class="is-error file-row file-list-table__cell file-list-table__cell_info" v-if="file.isError">{{ file.stateMessage }}</td>
           <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!file.isError">{{ file.fileDuration }}</td>
           <td class="file-row file-list-table__cell file-list-table__cell_controls" v-if="!file.isError">{{ file.fileSize }}</td>
@@ -252,35 +252,6 @@
 
 <style lang="scss">
 
-  .file-list {
-    height: 100% !important;
-    padding-top: 20px !important;
-    background: rgb(19, 21, 37);
-  }
-
-  thead {
-    text-transform: uppercase;
-    font-weight: $title-font-weight;
-  }
-
-  thead td, thead th {
-    color: $body-text-color !important;
-  }
-
-  td.is-error {
-    color: $body-text-color;
-  }
-
-  .dark-mode {
-    thead td, thead th {
-      color: $body-text-color-dark !important;
-    }
-
-    td.is-error {
-      color: $body-text-color-dark;
-    }
-  }
-
   .stream-info-container {
     padding: 0 16px;
   }
@@ -455,12 +426,6 @@
     opacity: 0.3;
   }
 
-  .iconRedo {
-    color: black;
-    font-size: 13px;
-    cursor: pointer;
-  }
-
   .iconHide {
     vertical-align: middle;
     color: black;
@@ -469,48 +434,10 @@
     margin-left: 3px;
   }
 
-  .file-row-icons {
-    text-align: center !important;
-  }
-
   .faExternal {
     color: #2FB04A;
     font-size: 24px;
     cursor: pointer;
-  }
-
-  .file-disable {
-    opacity: 0.5;
-  }
-
-  .file-list-table {
-    &_head {
-      margin-bottom: 0 !important;
-      .file-list-table {
-        &__cell {
-          white-space: nowrap;
-        }
-      }
-    }
-    &__cell {
-      &_status {
-        width: 10%;
-      }
-      &_name {
-        width: 35%;
-      }
-      &_info {
-        width: 10%;
-      }
-      &_controls {
-        width: 15%;
-        text-align: center !important;
-      }
-    }
-  }
-
-  .table tbody {
-    overflow-y: auto !important;
   }
 
   .file-list-notice {

@@ -69,6 +69,10 @@ const canRedo = function (state, message) {
   return (state === 'failed' || state === 'server_error') && !message.toLowerCase().includes('duplicate')
 }
 
+const canRemove = function (state) {
+  return isError(state) || isInPreparedGroup(state)
+}
+
 export default {
   getStatePriority,
   getName,
@@ -81,5 +85,6 @@ export default {
   isError,
   isDuplicated,
   isCompleted,
-  canRedo
+  canRedo,
+  canRemove
 }
