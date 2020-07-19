@@ -1,5 +1,5 @@
 <template>
-  <div class="global-progress__content-wrapper" :class="shouldShowProgress ? '' : 'hidden'">
+  <div class="global-progress__content-wrapper" v-if="shouldShowProgress" :class="shouldShowProgress ? '' : 'hidden'">
     <div class="global-progress__text-wrapper">
       <div class="global-progress__progress-title">Uploading</div>
       <div class="global-progress__progress-subtitle is-size-7">{{getState()}}</div>
