@@ -116,8 +116,11 @@ export default {
       return FileState.isError(file.state)
     },
     repeatUploading (file) {
+      // if there is an active session id then reuse that, otherwise generate a new one
+      const sessionId = this.$store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
+      this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
       File.update({ where: file.id,
-        data: { state: 'waiting', stateMessage: '' }
+        data: { state: 'waiting', stateMessage: '', sessionId: sessionId }
       })
     },
     remove (file) {
