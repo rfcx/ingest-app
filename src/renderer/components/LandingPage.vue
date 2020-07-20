@@ -407,15 +407,10 @@
     background-color: #292a3b !important;
     border-color: #292a3b !important;
   }
-  .btn-edit-cancel {
-    background: #45485d;
-    border-color: #45485d;
-    color: #fff;
-  }
-  .btn-edit-cancel:hover {
-    border-color: #3b3e53;
-    color: #fff;
-    background: #3b3e53;
+  .is-cancel:hover {
+    border-color: #3b3e53 !important;
+    color: #fff !important;
+    background: #3b3e53 !important;
   }
   .empty {
     background-color: #131525 !important;

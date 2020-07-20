@@ -10,6 +10,7 @@ $body-text-color-dark: #a1a1a7;
 $backgroud-color: #131525;
 $backgroud-color-dark: #131525;
 $box-color: #292a3b;
+$button-background-color: #45485d;
 $title-font-weight: 600;
 $navbar-height: 0rem;
 $default-padding-margin: 0.75em;
@@ -48,6 +49,13 @@ $dropdown-content-background-color: #232436;
 $dropdown-item-color: $body-text-color;
 $dropdown-item-hover-color: $body-text-color;
 $dropdown-item-hover-background-color: $box-color;
+
+// -- Button
+$button-color: $title-text-color;
+$button-background-color: $button-background-color;
+$button-border-color: $button-background-color;
+$button-hover-color: $title-text-color;
+$button-hover-border-color: #3b3e53;
 
 @import "~bulma/";
 
