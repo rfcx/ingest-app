@@ -143,7 +143,8 @@
     computed: {
       ...mapState({
         selectedStreamId: state => state.Stream.selectedStreamId,
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
+        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess,
+        currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
       }),
       streams () {
         return Stream.all()
@@ -151,12 +152,12 @@
       selectedStream () {
         return Stream.find(this.selectedStreamId)
       },
-      shouldShowProgress () {
-        return this.uploadingFiles.length > 0
+      allFilesInTheSession () {
+        return File.query().where('sessionId', this.currentUploadingSessionId).get()
       },
-      uploadingFiles () {
-        const files = File.all()
-        return files.filter(f => f.state === 'uploading')
+      shouldShowProgress () {
+        const allFiles = this.allFilesInTheSession
+        return allFiles.length !== allFiles.filter(file => file.isInCompletedGroup).length
       },
       isDarkTheme () {
         let darkMode = settings.get('settings.darkMode')

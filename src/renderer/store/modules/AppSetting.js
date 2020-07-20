@@ -1,16 +1,23 @@
 const state = {
-  selectedTabs: {}
+  selectedTabs: {},
+  currentUploadingSessionId: null
 }
 
 const mutations = {
   SET_SELECTED_TAB (state, tabObject) {
     state.selectedTabs = Object.assign({}, state.selectedTabs, tabObject)
+  },
+  SET_UPLOADING_SESSION_ID (state, id) {
+    state.currentUploadingSessionId = id
   }
 }
 
 const actions = {
   setSelectedTab ({ commit }, tabObject) {
     commit('SET_SELECTED_TAB', tabObject)
+  },
+  setCurrentUploadingSessionId ({ commit }, id) {
+    commit('SET_UPLOADING_SESSION_ID', id)
   }
 }
 
