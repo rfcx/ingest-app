@@ -228,20 +228,15 @@ export default {
     },
     redirectToStreamWeb () {
       console.log('user redirected to the Client Stream Web', this.selectedStream)
-      let url = this.getExplorerWebUrl(this.isProductionEnv())
+      let url = api.explorerWebUrl(this.isProductionEnv())
       if (this.selectedStream) {
         if (this.selectedStream.env) {
-          url = this.getExplorerWebUrl(this.selectedStream.env !== 'staging', this.selectedStream.id)
+          url = api.explorerWebUrl(this.selectedStream.env !== 'staging', this.selectedStream.id)
         } else {
-          url = this.getExplorerWebUrl(this.isProductionEnv(), this.selectedStream.id)
+          url = api.explorerWebUrl(this.isProductionEnv(), this.selectedStream.id)
         }
       }
       this.$electron.shell.openExternal(url)
-    },
-    getExplorerWebUrl (isProd, streamId = null) {
-      let baseUrl = isProd ? 'https://explorer.rfcx.org/' : 'https://staging-explorer.rfcx.org/'
-      let query = streamId ? `?stream=${streamId}` : ''
-      return baseUrl + query
     }
   },
   watch: {
