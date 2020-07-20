@@ -29,10 +29,13 @@ $tabs-link-hover-color: #ffffff;
 $tabs-border-bottom-width: 2px;
 
 // -- Table
-// $table-color: $body-text-color;
-// $table-background-color: $backgroud-color;
-// $table-cell-border: 1px solid #45485d;
-// $table-row-hover-background-color: $box-color;
+$table-color: $body-text-color;
+$table-head-cell-color: $body-text-color;
+$table-background-color: $backgroud-color;
+$table-row-hover-background-color: $box-color;
+$table-cell-border: 1px solid;
+$border: #45485d;
+$table-cell-border-width: 0 0 2px 0;
 
 // -- Input
 $input-background-color: $box-color;

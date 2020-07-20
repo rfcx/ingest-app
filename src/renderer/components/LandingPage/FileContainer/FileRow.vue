@@ -76,18 +76,7 @@ export default {
 <style lang="scss" scoped>
 
   td.is-error {
-    color: $body-text-color;
-  }
-
-  .dark-mode {
-    thead td,
-    thead th {
-      color: $body-text-color;
-    }
-
-    td.is-error {
-      color: $body-text-color;
-    }
+    color: $secondary-text-color;
   }
 
   .iconRedo {

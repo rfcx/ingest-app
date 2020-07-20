@@ -394,29 +394,8 @@
   .modal-card-title {
     color: white !important;
   }
-  .table {
-    background-color: #131525;
-    color: white;
-  }
-  table td {
-    border-color: #292a3b;
-    border-width: 0 0 2px !important;
-  }
-  .content table td, .content table th {
-    border: 1px solid #45485d;
-  }
-  table tr:hover {
-    background-color: #292a3b !important;
-  }
-  .table thead td {
-    color: white !important;
-    opacity: 1;
-  }
   .title-container-edit {
     color: white;
-  }
-  .is-error {
-    color: #ccc;
   }
   .active {
     border: 4px solid #131525 !important;
@@ -446,9 +425,6 @@
   }
   .stream-info-container {
     background-color: #131525;
-  }
-  .file-list-table__head {
-    background-color: #131525 !important;
   }
   .modal.is-active {
     z-index: 200;
