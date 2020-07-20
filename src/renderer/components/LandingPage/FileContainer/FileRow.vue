@@ -82,11 +82,11 @@ export default {
   .dark-mode {
     thead td,
     thead th {
-      color: $body-text-color-dark !important;
+      color: $body-text-color;
     }
 
     td.is-error {
-      color: $body-text-color-dark;
+      color: $body-text-color;
     }
   }
 

@@ -71,7 +71,7 @@ export default {
       display: block;
     }
     &__name-format-description {
-      color: $body-text-color-dark;
+      color: $secondary-text-color;
       display: block;
     }
   }

@@ -1,5 +1,5 @@
 <template>
-  <div class="update-popup" :class="{ 'dark-tray': isDark }">
+  <div class="update-popup">
     <div class="update-popup-title-wrapper">
      <span class="update-popup-title">{{ newVersion ? 'Update Available' : 'You use Latest Release'}}</span>
     </div>
@@ -18,25 +18,15 @@
 </template>
 
 <script>
-  import settings from 'electron-settings'
   import VueMarkdown from 'vue-markdown'
   const { remote } = window.require('electron')
 
   export default {
     data () {
       return {
-        isDark: null,
         notes: null,
         platform: null,
-        isLoading: false,
-        darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
-          this.isDark = newValue
-          console.log('isDarkTheme', this.isDark)
-          let html = document.getElementsByTagName('html')[0]
-          if (html && this.isDark) {
-            html.style.backgroundColor = '#131525'
-          }
-        })
+        isLoading: false
       }
     },
     components: { VueMarkdown },
@@ -59,18 +49,13 @@
     },
     created () {
       console.log('Update page')
-      this.isDark = settings.get('settings.darkMode')
       this.platform = remote.getGlobal('platform')
-      let html = document.getElementsByTagName('html')[0]
-      if (html && this.isDark) {
-        html.style.backgroundColor = '#131525'
-      }
       this.getNotes()
     }
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
   .update-popup-title-wrapper {
     padding: 10px 1em 10px;
@@ -105,13 +90,6 @@
   .update-popup {
     margin: auto;
     overflow: hidden;
-    background-color: #ffffff !important;
-    color: #000 !important;
-  }
-
-  .dark-tray {
-    background-color: #131525 !important;
-    color: #fff !important;
   }
 
   ::-webkit-scrollbar-thumb {

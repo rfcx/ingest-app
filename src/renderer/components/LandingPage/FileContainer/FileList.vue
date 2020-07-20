@@ -112,6 +112,11 @@ export default {
 </script>
 
 <style lang="scss">
+.table {
+  background-color: #131525;
+  color: white;
+}
+
 thead {
   text-transform: uppercase;
   font-weight: $title-font-weight;

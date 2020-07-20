@@ -70,6 +70,7 @@ function createWindow (openedAsHidden = false) {
     width: 1000,
     height: 563,
     minWidth: 400,
+    backgroundColor: '#131525',
     webPreferences: { nodeIntegration: true }
   })
 
@@ -277,16 +278,6 @@ function createMenu () {
     {
       label: 'File',
       submenu: [
-        { label: 'Dark mode',
-          type: 'checkbox',
-          checked: settings.get('settings.darkMode'),
-          click: async () => {
-            settings.set('settings.darkMode', !settings.get('settings.darkMode'))
-            let darkMode = settings.get('settings.darkMode')
-            console.log('dark mode', darkMode)
-            mainWindow.webContents.send('switchDarkMode', darkMode)
-          }
-        },
         { label: 'Clear data',
           click: async () => {
             console.log('clear data')
@@ -421,9 +412,6 @@ function initialSettings () {
       auto_update_app: true,
       onLine: true
     })
-  }
-  if (settings.get('settings.darkMode') === undefined) {
-    settings.set('settings.darkMode', true)
   }
   if (settings.get('settings.auto_update_app') === undefined) {
     settings.set('settings.auto_update_app', true)
