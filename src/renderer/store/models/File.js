@@ -79,4 +79,8 @@ export default class File extends Model {
   get canRedo () {
     return FileState.canRedo(this.state, this.stateMessage)
   }
+
+  get canRemove () {
+    return FileState.canRemove(this.state)
+  }
 }

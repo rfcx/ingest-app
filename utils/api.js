@@ -14,6 +14,12 @@ const apiUrl = (proEnvironment) => {
   // return 'https://192.168.154.144:3030' // return 'https://localhost:3030'
 }
 
+const explorerWebUrl = (isProd, streamId = null) => {
+  let baseUrl = isProd ? 'https://explorer.rfcx.org/' : 'https://staging-explorer.rfcx.org/'
+  let query = streamId ? `?stream=${streamId}` : ''
+  return baseUrl + query
+}
+
 const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
   return requestUploadUrl(env, fileName, filePath, streamId, timestamp, idToken)
     .then((data) => {
@@ -180,6 +186,7 @@ const getExistingStreams = (env, idToken) => {
 }
 
 export default {
+  explorerWebUrl,
   createStream,
   uploadFile,
   checkStatus,

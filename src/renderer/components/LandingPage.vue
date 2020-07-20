@@ -351,12 +351,6 @@
     background-color: #fafafa;
   }
 
-  .menu div.is-active {
-    border-left: 0.35em solid $brand-primary;
-    background-color: transparent;
-    padding-left: 0.4em;
-  }
-
   .menu div.is-active .stream-title {
     font-weight: $title-font-weight;
   }

@@ -9,11 +9,21 @@
           {{ productionEnv ? 'production' : 'staging' }}
         </button>
       </div>
-      <div class="header-user-pic" @click="toggleUserMenu()">
-        <img title="Menu" class="user-pic" :src="getUserPicture()" alt="">
+      <div class="dropdown header-user-pic is-right" :class="{ 'is-active': showDropDown }" @click="toggleDropDown()" title="User menu: you can log out here">
+        <div class="dropdown-trigger">
+          <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)" aria-haspopup="true" aria-controls="dropdown-menu">
+        </div>
+        <div class="dropdown-menu" id="dropdown-menu" role="menu">
+          <div class="dropdown-content">
+            <a href="#" title="Logout" class="dropdown-item" @click="logOut()">Log out</a>
+          </div>
+        </div>
       </div>
+      <!-- <div class="header-user-pic" @click="toggleUserMenu()">
+        <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)">
+      </div> -->
     </div>
-    <div class="user-stat-wrapper" v-if="showUserMenu">
+    <!-- <div class="user-stat-wrapper" v-if="showUserMenu">
       <div class="user-stat-name">{{ userName }}</div>
       <button class="button user-stat-btn" @click="logOut()">Log out</button>
       <div class="user-stat-info-wrapper">
@@ -30,7 +40,7 @@
           <div>{{getAllFilesSize()}}</div><div>{{mesure}} used</div>
         </div>
       </div>
-    </div>
+    </div> -->
     <div class="menu-container side-menu-title">
       <div class="menu-label">Streams</div>
       <div class="side-menu-controls-wrapper">
@@ -83,6 +93,7 @@
         mesure: '',
         showUserMenu: false,
         toggleSearch: false,
+        showDropDown: false,
         userName: this.getUserName(),
         productionEnv: this.isProductionEnv()
       }
@@ -164,6 +175,9 @@
       },
       toggleUserMenu () {
         this.showUserMenu = !this.showUserMenu
+      },
+      toggleDropDown () {
+        this.showDropDown = !this.showDropDown
       },
       getUserName () {
         let userName = remote.getGlobal('firstname')
@@ -412,7 +426,7 @@
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
   .header {
     padding: 0 8px 0 16px;
@@ -516,6 +530,21 @@
     height: 100%;
     height: 32px;
     width: auto;
+  }
+
+  .dropdown-menu {
+    min-width: 20px;
+  }
+
+  .dropdown-content {
+    background-color: #232436 !important;
+  }
+  .dropdown-item {
+    color: white;
+  }
+  .dropdown-item:hover {
+    background-color: #2e3145 !important;
+    color: white !important;
   }
 
   .side-menu-title {

@@ -290,8 +290,7 @@ function createMenu () {
         { label: 'Clear data',
           click: async () => {
             console.log('clear data')
-            File.deleteAll()
-            Stream.deleteAll()
+            clearAllData()
           }
         },
         { label: 'Auto start',
@@ -545,6 +544,7 @@ async function refreshTokens () {
 
 async function logOut () {
   await authService.logout()
+  clearAllData()
   if (mainWindow) {
     isLogOut = true
     mainWindow.close()
@@ -558,6 +558,11 @@ async function logOut () {
     trayWindow = null
   }
   idToken = null
+}
+
+function clearAllData () {
+  File.deleteAll()
+  Stream.deleteAll()
 }
 
 function removeTray () {

@@ -7,6 +7,7 @@
       :localGeocoder="coordinatesGeocoder"
       :limit="1"
       :zoom="10"
+      :minLength="3"
       :autocomplete="false"
       :localGeocoderOnly="true"
       placeholder="search by latitude, longitude"
