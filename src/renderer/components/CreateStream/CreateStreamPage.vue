@@ -123,4 +123,8 @@ export default {
     max-width: 500px;
   }
 }
+.notification {
+  background: #3b3e53 !important;
+  color: white;
+}
 </style>

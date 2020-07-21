@@ -44,10 +44,10 @@
     <div class="menu-container side-menu-title">
       <div class="menu-label">Streams</div>
       <div class="side-menu-controls-wrapper">
-        <button title="Filter" class="side-menu-search-btn" v-on:click="onFocusInput()">
+        <!-- <button title="Filter" class="side-menu-search-btn" v-on:click="onFocusInput()">
           <img v-if="!toggleSearch" src="~@/assets/ic-search.svg">
           <img v-if="toggleSearch" src="~@/assets/ic-search-active.svg">
-        </button>
+        </button> -->
         <router-link title="Add new stream" to="/add"><img class="side-menu-add-btn" src="~@/assets/ic-add-stream.svg"></router-link>
       </div>
     </div>
