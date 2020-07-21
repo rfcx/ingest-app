@@ -17,7 +17,7 @@
     <div class="field is-grouped">
       <p class="control control-btn">
         <router-link class="control-btn" to="/">
-          <button type="button" class="button is-rounded cancel">Cancel</button>
+          <button type="button" class="button is-rounded is-cancel">Cancel</button>
         </router-link>
       </p>
       <p class="control control-btn">

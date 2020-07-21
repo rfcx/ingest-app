@@ -3,11 +3,14 @@
 
 $brand-primary: #2FB04A;
 $brand-primary-dark: #31984f;
-$title-text-color: black;
-$body-text-color: #6D6F72;
+$title-text-color: #fff;
+$body-text-color: #fff;
+$secondary-text-color: #a1a1a7;
 $body-text-color-dark: #a1a1a7;
-$backgroud-color: #ffffff;
+$backgroud-color: #131525;
 $backgroud-color-dark: #131525;
+$box-color: #292a3b;
+$button-background-color: #45485d;
 $title-font-weight: 600;
 $navbar-height: 0rem;
 $default-padding-margin: 0.75em;
@@ -19,15 +22,53 @@ $global-progress-height: 75px;
 $primary: $brand-primary;
 $family-sans-serif: 'Lato', sans-serif;
 $link: $brand-primary;
-$tabs-border-bottom-color: #2e3145;
+
+// -- Tab
+$tabs-border-bottom-color: $box-color;
 $tabs-link-color: #ffffff;
 $tabs-link-hover-color: #ffffff;
 $tabs-border-bottom-width: 2px;
 
-// black
-$input-background-color: #292a3b;
-$input-border-color: #292a3b;
-$input-color: white;
-$label-color: white;
+// -- Table
+$table-color: $body-text-color;
+$table-head-cell-color: $body-text-color;
+$table-background-color: $backgroud-color;
+$table-row-hover-background-color: $box-color;
+$table-cell-border: 1px solid;
+$border: #45485d;
+$table-cell-border-width: 0 0 2px 0;
+
+// -- Input
+$input-background-color: $box-color;
+$input-border-color: $box-color;
+$input-color: $body-text-color;
+$label-color: $title-text-color;
+
+// -- Dropdown
+$dropdown-content-background-color: #232436;
+$dropdown-item-color: $body-text-color;
+$dropdown-item-hover-color: $body-text-color;
+$dropdown-item-hover-background-color: $box-color;
+
+// -- Button
+$button-color: $title-text-color;
+$button-background-color: $button-background-color;
+$button-border-color: $button-background-color;
+$button-hover-color: $title-text-color;
+$button-hover-border-color: #3b3e53;
 
 @import "~bulma/";
+
+// global styles
+
+html,
+body {
+  background-color: $backgroud-color;
+  color: $body-text-color;
+}
+
+// menu -- shared between side navigation & tray page
+
+.stream-title {
+  color: $title-text-color;
+}

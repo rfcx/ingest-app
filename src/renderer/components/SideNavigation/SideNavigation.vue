@@ -426,7 +426,12 @@
   }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+
+  .menu-item:hover,
+  .menu-item_active {
+    background-color: #2e3145;
+  }
 
   .header {
     padding: 0 8px 0 16px;
@@ -534,17 +539,6 @@
 
   .dropdown-menu {
     min-width: 20px;
-  }
-
-  .dropdown-content {
-    background-color: #232436 !important;
-  }
-  .dropdown-item {
-    color: white;
-  }
-  .dropdown-item:hover {
-    background-color: #2e3145 !important;
-    color: white !important;
   }
 
   .side-menu-title {

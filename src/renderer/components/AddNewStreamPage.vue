@@ -1,12 +1,12 @@
 <template>
-  <div id="wrapper-add-new-stream-page" :class="{ 'dark-page': isDark }">
-    <navigation :class="{ 'dark-mode': isDark }"></navigation>
-    <div class="container-box is-fullhd" :class="{ 'dark-page': isDark }">
+  <div id="wrapper-add-new-stream-page">
+    <navigation></navigation>
+    <div class="container-box is-fullhd">
       <div class="box-title">
         <h1 class="is-size-4 has-text-weight-bold">Create a new stream</h1>
         <span>A stream is a set of non-overlapping audio files at a location. Each audio file must have a timestamp in its filename</span>
       </div>
-      <add-new-stream-form :class="{ 'dark-page': isDark }"></add-new-stream-form>
+      <add-new-stream-form></add-new-stream-form>
     </div>
   </div>
 </template>
@@ -14,35 +14,12 @@
 <script>
   import Navigation from './Navigation/Navigation'
   import AddNewStreamForm from './AddNewStreamPage/AddNewStreamForm'
-  import settings from 'electron-settings'
 
   export default {
     name: 'add-new-stream-page',
-    data () {
-      return {
-        isDark: null,
-        darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
-          this.isDark = newValue
-          let html = document.getElementsByTagName('html')[0]
-          if (html && this.isDark) {
-            html.style.backgroundColor = '#131525'
-          } else {
-            html.style.backgroundColor = '#fff'
-          }
-          console.log('isDarkTheme', this.isDark)
-        })
-      }
-    },
     components: { Navigation, AddNewStreamForm },
     created () {
       console.log('addNewStreamForm created')
-      this.isDark = settings.get('settings.darkMode')
-      let html = document.getElementsByTagName('html')[0]
-      if (html && this.isDark) {
-        html.style.backgroundColor = '#131525'
-      } else {
-        html.style.backgroundColor = '#fff'
-      }
     }
   }
 </script>

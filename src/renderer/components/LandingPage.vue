@@ -1,16 +1,16 @@
 <template>
-  <div id="wrapper-landing-page" :class="{ 'dark-mode': isDarkTheme === true, 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop"
+  <div id="wrapper-landing-page" :class="{ 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop"
      @dragover.prevent @dragleave="outDrag">
     <div v-if="hasAccessToApp()">
       <!-- <navigation :class="{ 'dark-mode': isDarkTheme === true }"></navigation> -->
       <section class="main-content columns is-mobile">
-        <side-navigation :class="{ 'dark-mode': isDarkTheme, 'dark-aside': isDarkTheme , 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
-        <div class="column content is-desktop" v-if="streams && streams.length > 0" :class="{ 'dark-mode': isDarkTheme === true  }">
+        <side-navigation :class="{ 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
+        <div class="column content is-desktop" v-if="streams && streams.length > 0">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <!-- <file-list v-else></file-list> -->
           <file-container v-else :isDragging="isDragging"></file-container>
         </div>
-        <div class="column content is-desktop" v-else :class="{ 'dark-mode': isDarkTheme === true }">
+        <div class="column content is-desktop" v-else>
           <empty-stream v-if="isEmptyStream()"></empty-stream>
           <!-- <file-list v-else></file-list> -->
           <file-container v-else :isDragging="isDragging"></file-container>
@@ -29,7 +29,6 @@
   import FileList from './LandingPage/FileList'
   import FileContainer from './LandingPage/FileContainer/FileContainer'
   import { mapState } from 'vuex'
-  import settings from 'electron-settings'
   import File from '../store/models/File'
   import Stream from '../store/models/Stream'
   import fileHelper from '../../../utils/fileHelper'
@@ -43,7 +42,6 @@
       return {
         uploadingProcessText: 'The uploading process has been paused',
         executed: false,
-        darkTheme: settings.get('settings.darkMode'),
         isDragging: false
       }
     },
@@ -158,67 +156,18 @@
       shouldShowProgress () {
         const allFiles = this.allFilesInTheSession
         return allFiles.length !== allFiles.filter(file => file.isInCompletedGroup).length
-      },
-      isDarkTheme () {
-        let darkMode = settings.get('settings.darkMode')
-        let listener = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('switchDarkMode', listener)
-          darkMode = arg
-          console.log('darkMode from listener', darkMode)
-          this.darkTheme = darkMode
-          return darkMode
-        }
-        this.$electron.ipcRenderer.on('switchDarkMode', listener)
-        console.log('darkMode from initial settings', darkMode, 'darkTheme', this.darkTheme)
-        if (darkMode === true) return true
-        else return false
       }
     },
     created () {
       console.log('view loaded')
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
-      let isDark = settings.get('settings.darkMode')
-      if (html && isDark) {
-        html.style.backgroundColor = '#131525'
-      }
       this.sendVersionOfApp()
-      // settings.set('settings.production_env', true)
     }
   }
 </script>
 
 <style lang="scss">
-
-  html {
-    overflow: hidden;
-    background-color: white;
-    color: #000;
-  }
-
-  html.has-navbar-fixed-top, body.has-navbar-fixed-top {
-    padding-top: $navbar-height;
-  }
-
-  .navbar {
-    padding: 0 $default-padding-margin;
-  }
-
-  .navbar-brand span {
-    font-weight: $title-font-weight;
-  }
-
-  .navbar-item.tag {
-    margin: auto 0 !important;
-  }
-
-  .user-info-nav {
-    text-align: right;
-  }
-
-  .user-info-nav .name {
-    font-weight: $title-font-weight;
-  }
 
   .user-info-name {
     padding: 1rem;
@@ -236,27 +185,14 @@
   }
 
   #wrapper-landing-page {
-    background-color: #fdfdfd;
     padding: 0;
     position: absolute;
     top: $navbar-height;
     bottom: 0;
     left: 0;
     right: 0;
-  }
-
-  #wrapper-landing-page.has-fixed-sidebar {
-    overflow: hidden;
-    position: inherit;
-  }
-
-  #wrapper-landing-page {
     overflow: auto;
     overflow-y: auto;
-  }
-
-  #wrapper-landing-page.has-fixed-sidebar {
-    overflow: hidden;
   }
 
   .main-content {
@@ -284,6 +220,10 @@
     padding-top: 20px !important;
   }
 
+  aside {
+    background-color: #232436;
+  }
+
   .content {
     position: absolute;
     top: $navbar-height;
@@ -291,15 +231,10 @@
     bottom: 0;
     left: $sidebar-width;
     right: 0;
-    background-color: white;
   }
 
   ::-webkit-scrollbar {
     width: 4px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: #f1f1f1;
   }
 
   ::-webkit-scrollbar-thumb {
@@ -308,10 +243,6 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background: $grey-lighter;
-  }
-
-  .menu {
-    background-color: #fff;
   }
 
   .menu-container {
@@ -345,10 +276,6 @@
 
   .menu .menu-item {
     padding: $default-padding-margin;
-  }
-
-  .menu .menu-item:hover {
-    background-color: #fafafa;
   }
 
   .menu div.is-active .stream-title {
@@ -458,129 +385,59 @@
     .navbar-item {
       display: flex;
     }
-
-    .stream-info-container {
-      background: #fff;
-    }
-    .file-list-table__head {
-      background-color: #fff !important;
-    }
   }
-
-  .dark-mode {
+  
+  .modal-card-body,
+  .modal-card-foot {
+    background-color: #292a3b !important;
+  }
+  .modal-card-title {
+    color: white !important;
+  }
+  .title-container-edit {
+    color: white;
+  }
+  .active {
+    border: 4px solid #131525 !important;
     background-color: #131525 !important;
+    opacity: 0.8 !important;
+  }
+  .edit-container-item-input {
     color: #fff !important;
-    aside {
-      background-color: #232436 !important;
-    }
-    .navbar-item {
-      color: white;
-    }
-    .stream-title {
-      color: white;
-    }
-    .menu-item:hover,
-    .menu-item_active {
-      background-color: #2e3145 !important;
-    }
-    .iconRedo {
-      color: #ccc;
-    }
-    .iconHide {
-      color: #ccc;
-      font-size: 14px;
-    }
-    .dropdown-content {
-      background-color: #232436;
-    }
-    .dropdown-item {
-      color: white;
-    }
-    .dropdown-item:hover {
-      background-color: #2e3145 !important;
-      color: white;
-    }
-    .modal-card-body,
-    .modal-card-foot {
-      background-color: #292a3b !important;
-    }
-    .modal-card-title {
-      color: white !important;
-    }
-    .table {
-      background-color: #131525;
-      color: white;
-    }
-    table td {
-      border-color: #292a3b;
-      border-width: 0 0 2px !important;
-    }
-    .content table td, .content table th {
-      border: 1px solid #45485d;
-    }
-    table tr:hover {
-      background-color: #292a3b !important;
-    }
-    .table thead td {
-      color: white !important;
-      opacity: 1;
-    }
-    .title-container-edit {
-      color: white;
-    }
-    .is-error {
-      color: #ccc;
-    }
-    .active {
-      border: 4px solid #131525 !important;
-      background-color: #131525 !important;
-      opacity: 0.8 !important;
-    }
-    .edit-container-item-input {
-      color: #fff !important;
-      background-color: #292a3b !important;
-      border-color: #292a3b !important;
-    }
-    .btn-edit-cancel {
-      background: #45485d;
-      border-color: #45485d;
-      color: #fff;
-    }
-    .btn-edit-cancel:hover {
-      border-color: #3b3e53;
-      color: #fff;
-      background: #3b3e53;
-    }
-    .empty {
-      background-color: #131525 !important;
-    }
-    .state-progress span {
-      color: $body-text-color-dark;
-    }
-    .stream-info-container {
-      background-color: #131525;
-    }
-    .file-list-table__head {
-      background-color: #131525 !important;
-    }
-    .modal.is-active {
-      z-index: 200;
-    }
-    .modal-background {
-      z-index: 150;
-    }
-    .modal-card {
-      z-index: 200;
-    }
-    ::-webkit-scrollbar-thumb {
-      background-color: gray;
-    }
-    ::-webkit-scrollbar-track {
-      background-color: #52566e;
-    }
-    ::-webkit-scrollbar {
-      width: 6px;
-    }
+    background-color: #292a3b !important;
+    border-color: #292a3b !important;
+  }
+  .is-cancel:hover {
+    border-color: #3b3e53 !important;
+    color: #fff !important;
+    background: #3b3e53 !important;
+  }
+  .empty {
+    background-color: #131525 !important;
+  }
+  .state-progress span {
+    color: $body-text-color;
+  }
+  .stream-info-container {
+    background-color: #131525;
+  }
+  .modal.is-active {
+    z-index: 200;
+  }
+  .modal-background {
+    z-index: 150;
+  }
+  .modal-card {
+    z-index: 200;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: gray;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: #52566e;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
   }
 
   .drag-active {

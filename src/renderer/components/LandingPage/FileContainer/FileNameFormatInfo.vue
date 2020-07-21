@@ -5,7 +5,7 @@
       <span class="preparing-file-settings__name-format-description">{{ selectedStream.timestampFormat }}</span>
     </div>
     <div class="preparing-file-settings__actions-wrapper">
-      <button type="button" class="button is-rounded cancel" @click.prevent="confirmToClearAllFiles()">Clear all</button>
+      <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()">Clear all</button>
       <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="readyToUploadFiles.length < 1">Start upload ({{readyToUploadFiles.length}})</button>
     </div>
   </div>
@@ -71,7 +71,7 @@ export default {
       display: block;
     }
     &__name-format-description {
-      color: $body-text-color-dark;
+      color: $secondary-text-color;
       display: block;
     }
   }

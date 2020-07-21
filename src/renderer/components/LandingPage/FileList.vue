@@ -293,7 +293,6 @@
 
   .modal-card-head, .modal-card-foot {
     border: 0px !important;
-    background-color: white !important;
   }
 
   .modal-card-foot {
