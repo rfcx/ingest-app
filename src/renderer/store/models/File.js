@@ -33,6 +33,7 @@ export default class File extends Model {
   }
 
   get fileDuration () {
+    if (this.durationInSecond < 0) { return '-' }
     var date = new Date(0)
     date.setSeconds(this.durationInSecond)
     var timeString = date.toISOString().substr(11, 8)

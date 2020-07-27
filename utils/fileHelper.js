@@ -71,7 +71,7 @@ const getFileDuration = (filePath) => {
     return Promise.resolve(duration)
   }).catch(error => {
     console.error(error)
-    return Promise.resolve(0)
+    return Promise.resolve(-2)
   })
 }
 

@@ -53,6 +53,13 @@ class FileProvider {
     return File.query().where('streamId', selectedStream.id).orderBy('name').get()
   }
 
+  async updateFileDuration (file) {
+    const duration = await fileHelper.getFileDuration(file.path) || -2
+    File.update({ where: file.id,
+      data: { durationInSecond: duration }
+    })
+  }
+
   async newFilePath (newFilePath, selectedStream) {
     if (this.fileIsExist(newFilePath)) return
     console.log('New file for uploading', newFilePath)
@@ -81,7 +88,6 @@ class FileProvider {
     // const hash = data.hash
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
-    const duration = await fileHelper.getFileDuration(filePath)
     let isoDate
     if (stream.timestampFormat === 'Auto-detect') {
       isoDate = dateHelper.parseTimestampAuto(fileName)
@@ -99,7 +105,7 @@ class FileProvider {
       path: filePath,
       extension: fileExt,
       sizeInByte: size,
-      durationInSecond: duration,
+      durationInSecond: -1,
       timestamp: isoDate,
       streamId: stream.id,
       state: state.state,
