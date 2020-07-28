@@ -13,53 +13,8 @@
       </thead>
       <tbody>
         <file-row v-for="file in files" :key="file.id" :file="file"></file-row>
-        <!-- <tr v-for="file in files" :key="file.id" :class="{ 'file-disable': file.disabled }">
-          <td class="file-status file-list-table__cell file-list-table__cell_status">
-            <img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)" />
-            <span class="file-status-state">{{ getStateName(file) }}</span>
-          </td>
-          <td
-            class="file-row file-list-table__cell file-list-table__cell_name"
-            :class="{ 'is-error': file.isError }"
-          >{{ file.name }}</td>
-          <td
-            class="file-row file-list-table__cell file-list-table__cell_info"
-            v-if="!file.isError"
-          >{{ getTimestamp(file) }}</td>
-          <td
-            class="is-error file-row file-list-table__cell file-list-table__cell_info"
-            colspan="3"
-            v-if="file.isError"
-          >{{ file.stateMessage }}</td>
-          <td
-            class="file-row file-list-table__cell file-list-table__cell_controls"
-            v-if="!file.isError"
-          >{{ file.fileDuration }}</td>
-          <td
-            class="file-row file-list-table__cell file-list-table__cell_controls"
-            v-if="!file.isError"
-          >{{ file.fileSize }}</td>
-          <td
-            class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls"
-            v-if="file.isError && selectedTab === 'Completed'"
-          >
-            <font-awesome-icon
-              v-show="file.canRedo"
-              class="iconRedo"
-              :icon="iconRedo"
-              @click="repeatUploading(file)"
-            ></font-awesome-icon>
-          </td>
-          <td
-            class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls"
-            v-if="isInPreparedGroup(file)"
-          >
-            <font-awesome-icon class="iconTrash" :icon="iconTrash" @click="remove(file)"></font-awesome-icon>
-          </td>
-        </tr>-->
       </tbody>
     </table>
-    <!-- TODO: add empty view -->
     <empty-folder v-if="files.length === 0" :isDragging="isDragging"></empty-folder>
   </div>
 </template>
