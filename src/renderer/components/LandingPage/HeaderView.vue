@@ -37,7 +37,7 @@
       <div class="modal-background"></div>
       <div class="modal-card">
         <div class="modal-card-body">
-          <p class="modal-card-title">Are you sure to delete this stream?</p>
+          <p class="modal-card-title">Are you sure you want to delete this stream?</p>
         </div>
         <footer class="modal-card-foot">
           <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>

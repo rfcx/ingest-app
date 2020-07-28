@@ -2,8 +2,16 @@
   <div class="file-tab__wrapper">
     <div class="tabs is-fullwidth">
       <ul>
-        <li v-for="tab in tabGroups" :key="tab" :class="{ 'is-active': selectedTab ? tab === selectedTab : tab === 'Prepared' }" @click="setActive(tab)">
-          <a><span>{{tab}} ({{getNumberOfFiles(tab)}})</span></a>
+        <li
+          v-for="tab in tabGroups"
+          :key="tab"
+          :class="{ 'is-active': selectedTab ? tab === selectedTab : tab === 'Prepared' }"
+          @click="setActive(tab)"
+        >
+          <a>
+            <img class="file-tab__fail-icon" :src="require(`../../../assets/ic-state-failed.svg`)" v-if="hasFailedFiles(tab)" />
+            <span>{{tab}} ({{getNumberOfFiles(tab)}})</span>
+          </a>
         </li>
       </ul>
     </div>
@@ -26,19 +34,31 @@ export default {
   },
   computed: {
     ...mapState({
-      selectedStreamId: state => state.Stream.selectedStreamId
+      selectedStreamId: (state) => state.Stream.selectedStreamId
     })
   },
   methods: {
-    getNumberOfFiles (tab) {
+    getFiles (tab) {
       switch (tab) {
         case 'Prepared':
-          return this.files.filter(file => FileState.isInPreparedGroup(file.state)).length
+          return this.files.filter((file) =>
+            FileState.isInPreparedGroup(file.state)
+          )
         case 'Queued':
-          return this.files.filter(file => FileState.isInQueuedGroup(file.state)).length
+          return this.files.filter((file) =>
+            FileState.isInQueuedGroup(file.state)
+          )
         case 'Completed':
-          return this.files.filter(file => FileState.isInCompletedGroup(file.state)).length
+          return this.files.filter((file) =>
+            FileState.isInCompletedGroup(file.state)
+          )
       }
+    },
+    getNumberOfFiles (tab) {
+      return this.getFiles(tab).length
+    },
+    hasFailedFiles (tab) {
+      return this.getFiles(tab).filter((file) => file.isError).length > 0
     },
     setActive (tab) {
       const tabObject = {}
@@ -50,20 +70,23 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
-    .file-tab {
-      &__wrapper {
-        padding-bottom: $default-padding-margin;
-      }
-    }
-
-  .tabs {
-    ul {
-      margin-left: 0px !important;
-    }
-    .is-active {
-      font-weight: $title-font-weight;
-    }
+.file-tab {
+  &__wrapper {
+    padding-bottom: $default-padding-margin;
   }
+  &__fail-icon {
+    padding-right: $default-padding-margin;
+  }
+}
+
+.tabs {
+  ul {
+    margin-left: 0px !important;
+  }
+  .is-active {
+    font-weight: $title-font-weight;
+  }
+}
+
 
 </style>
