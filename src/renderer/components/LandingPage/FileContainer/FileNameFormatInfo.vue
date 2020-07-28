@@ -5,8 +5,8 @@
       <span class="preparing-file-settings__name-format-description">{{ selectedStream.timestampFormat }}</span>
     </div>
     <div class="preparing-file-settings__actions-wrapper">
-      <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()">Clear all</button>
-      <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="readyToUploadFiles.length < 1">Start upload ({{readyToUploadFiles.length}})</button>
+      <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
+      <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="readyToUploadFiles.length < 1 || isDeletingAllFiles">Start upload ({{readyToUploadFiles.length}})</button>
     </div>
   </div>
 </template>
@@ -19,6 +19,11 @@ import Stream from '../../../store/models/Stream'
 export default {
   props: {
     preparingFiles: Array
+  },
+  data () {
+    return {
+      isDeletingAllFiles: false
+    }
   },
   computed: {
     ...mapState({
@@ -47,9 +52,11 @@ export default {
       this.clearAllFiles()
     },
     clearAllFiles () {
+      this.isDeletingAllFiles = true
       this.preparingFiles.forEach(file => {
         File.delete(file.id)
       })
+      // the component will be removed once delete successfully, and isDeletingAllFiles will be automatically changed to be 'false' automatically
     }
   }
 }
