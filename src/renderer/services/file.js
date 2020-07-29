@@ -69,7 +69,7 @@ class FileProvider {
     // insert converted files into db
     this.insertNewFiles(allFileObjects, selectedStream)
     // update file duration
-    // this.updateFilesDuration(allFileObjects)
+    this.updateFilesDuration(allFileObjects)
   }
 
   getFileObjectsFromFolder (folder, selectedStream, existingFileObjects = null) {
@@ -94,10 +94,23 @@ class FileProvider {
     return File.query().where('streamId', selectedStream.id).orderBy('name').get()
   }
 
-  async updateFileDuration (file) {
-    const duration = await fileHelper.getFileDuration(file.path) || -2
-    File.update({ where: file.id,
-      data: { durationInSecond: duration }
+  async updateFilesDuration (files) {
+    const getUpdatedData = async () => {
+      return Promise.all(files.map(async file => {
+        let item = { id: file.id,
+          durationInSecond: await fileHelper.getFileDuration(file.path) || -2
+        }
+        if (item.durationInSecond === -2) { // set state to error
+          item = {...item, state: 'local_error', stateMessage: 'Can\'t read duration of the file'}
+        }
+        return item
+      })
+      )
+    }
+    getUpdatedData().then(updatedData => {
+      File.update({
+        data: updatedData
+      })
     })
   }
 

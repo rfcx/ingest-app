@@ -130,13 +130,8 @@
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
       },
-      updateFilesDuration () {
-        // TODO: call this function when new files added
-        const files = this.noDurationFiles
-        files.forEach(file => {
-          console.log('updateFileDuration => ', file.name)
-          this.$file.updateFileDuration(file)
-        })
+      async updateFilesDuration () {
+        this.$file.updateFilesDuration(this.noDurationFiles)
       },
       checkAfterSuspended () {
         return this.getSuspendedFiles()
