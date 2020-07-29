@@ -7,6 +7,7 @@ import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 
 class FileProvider {
+  // API -- wrapper
   uploadFile (file, idToken) {
     console.log('\nupload file ', file)
     if (!fileHelper.isExist(file.path)) {
@@ -49,6 +50,46 @@ class FileProvider {
     return settings.get('settings.production_env')
   }
 
+  // DB -- wrapper
+  // Convert dropped files (from drag&drop) to database file objects
+  writeDroppedFilesToDatabase (droppedFiles, selectedStream) {
+    console.log('writeDroppedFilesToDatabase', droppedFiles, selectedStream)
+    let fileObjects = []
+    let fileObjectsInFolder = []
+    if (!droppedFiles) { return } // no files
+    ([...droppedFiles]).forEach(file => {
+      if (fileHelper.isFolder(file.path)) {
+        fileObjectsInFolder = this.getFileObjectsFromFolder(file, selectedStream, null)
+      } else {
+        fileObjects.push(this.createFileObject(file.path, selectedStream))
+      }
+    })
+    const allFileObjects = fileObjects.concat(fileObjectsInFolder)
+    console.log('current handleFiles fileObjects', allFileObjects.length)
+    // insert converted files into db
+    this.insertNewFiles(allFileObjects, selectedStream)
+    // update file duration
+    // this.updateFilesDuration(allFileObjects)
+  }
+
+  getFileObjectsFromFolder (folder, selectedStream, existingFileObjects = null) {
+    // see all stuff in the directory
+    const stuffInDirectory = fileHelper.getFilesFromDirectoryPath(folder.path).map(name => {
+      return { name: name, path: folder.path + '/' + name }
+    })
+    // get the files in the directory
+    const files = stuffInDirectory.filter(file => !fileHelper.isFolder(file.path))
+    // write file into file object array
+    let fileObjects = existingFileObjects || []
+    files.forEach(file => {
+      fileObjects.push(this.createFileObject(file.path, selectedStream))
+    })
+    // get subfolders
+    const subfolders = stuffInDirectory.filter(file => fileHelper.isFolder(file.path))
+    subfolders.forEach(folder => this.getFileObjectsFromFolder(folder, selectedStream, fileObjects))
+    return fileObjects
+  }
+
   async getFiles (selectedStream) {
     return File.query().where('streamId', selectedStream.id).orderBy('name').get()
   }
@@ -81,7 +122,7 @@ class FileProvider {
     return !!File.find(this.getFileId(filePath))
   }
 
-  async createFileObject (filePath, stream) {
+  createFileObject (filePath, stream) {
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
     // const data = fileHelper.getMD5Hash(filePath)
