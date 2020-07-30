@@ -59,7 +59,7 @@ class FileProvider {
     if (!droppedFiles) { return } // no files
     ([...droppedFiles]).forEach(file => {
       if (fileHelper.isFolder(file.path)) {
-        fileObjectsInFolder = this.getFileObjectsFromFolder(file, selectedStream, null)
+        fileObjectsInFolder = fileObjectsInFolder.concat(this.getFileObjectsFromFolder(file, selectedStream, null))
       } else {
         fileObjects.push(this.createFileObject(file.path, selectedStream))
       }
@@ -69,7 +69,7 @@ class FileProvider {
     // insert converted files into db
     this.insertNewFiles(allFileObjects, selectedStream)
     // update file duration
-    this.updateFilesDuration(allFileObjects)
+    this.updateFilesDuration(allFileObjects.filter(file => fileHelper.isSupportedFileExtension(file.extension)))
   }
 
   getFileObjectsFromFolder (folder, selectedStream, existingFileObjects = null) {
@@ -168,10 +168,10 @@ class FileProvider {
   }
 
   getState (momentDate, fileExt) {
-    if (!momentDate.isValid()) {
-      return {state: 'local_error', message: 'Filename does not match with a filename format'}
-    } else if (!fileHelper.isSupportedFileExtension(fileExt)) {
+    if (!fileHelper.isSupportedFileExtension(fileExt)) {
       return {state: 'local_error', message: 'File extension is not supported'}
+    } else if (!momentDate.isValid()) {
+      return {state: 'local_error', message: 'Filename does not match with a filename format'}
     } else {
       return {state: 'preparing', message: ''}
     }

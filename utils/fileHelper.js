@@ -70,7 +70,7 @@ const getFileDuration = (filePath) => {
   return getAudioDurationInSeconds(filePath).then(duration => {
     return Promise.resolve(duration)
   }).catch(error => {
-    console.error(error)
+    console.log(error)
     return Promise.resolve(-2)
   })
 }
