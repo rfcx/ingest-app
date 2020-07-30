@@ -3,7 +3,7 @@
     <header-view></header-view>
     <tab :files="files" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
-    <file-list :allFiles="files" :selectedTab="selectedTab" :isDragging="isDragging"></file-list>
+    <file-list :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab" :isDragging="isDragging"></file-list>
   </div>
 </template>
 
