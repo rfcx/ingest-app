@@ -51,14 +51,15 @@ Add this information to your package.json of the app:
         “certificatePassword”: “######”
     }
 ```
-2. Create a simple Node.js server with 5000 port which serves static files from the previous build. Paste them into ./node-server/public. After every build, we should put 4 files with the last version in the folder: `./node-server/public` and includes following files: RELEASES, .exe, *-delta.nupkg and -full.nupkg (If a new version of the app v1.1.1 you should put v1.1.0 to the folder).
+2. Paste static files from the previous build into `./node-server/public`. After every build, we should put 4 files with the last version in the folder: `./node-server/public` and includes following files: RELEASES, .exe, *-delta.nupkg and -full.nupkg (If a new version of the app v1.1.1 you should put v1.1.0 to the folder).
+3. Run ```npm run start``` in `./node-server` to start serving those static files from the previous build.
 3. Check you Node.js port  to the package.json of the app:
 ``` bash
     “squirrelWindows”: {
         “remoteReleases”: “http://localhost:5000/public”
     }
 ```
-4. Use ```npm run build``` command for building the app.
+4. Use ```npm run build``` command for building the app in another terminal.
 5. After building we you see two folders for windows in the `./app/build` folder:
     - squirrel windows
     - squirrel-windows-ia32
@@ -66,6 +67,12 @@ These folders keep a new release for WinX64 and WinX86.
 6. Upload assets for releases to the GitHub: __RELEASES, .exe, *-delta.nupkg and -full.nupkg__.
 For supporting the WinX86 system we should only publish one version for the 32-bit system. Both assets files (ia32, x64) have similar names, but the 32-bit system doesn’t support a 64-bit system.
 
+## Build Windows on Mac
+1. Install required library (ffprobe) that needed on Windows by running ```npm install --force```
+2. Make sure the `@ffprobe-installer` folder in `node_modules` has got the Windows related folders: `win32-ia32` `win32-x64`
+3. Follow steps in "Build the app on Windows" above, but use ```npm run build:win``` instead of normal ```npm run build``` in #4 step.
+
+## Linting
 
 Lint all JS/Vue component files in `src/`
 ``` bash

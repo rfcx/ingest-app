@@ -5,6 +5,7 @@
 <script>
   import { mapState } from 'vuex'
   import File from '../store/models/File'
+  
   const workerTimeoutMaximum = 10000
   const workerTimeoutMinimum = 3000
 
@@ -17,8 +18,13 @@
     },
     computed: {
       ...mapState({
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
-      })
+        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess,
+        currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
+      }),
+      filesInUploadingSession () {
+        if (!this.currentUploadingSessionId) return []
+        return File.query().where('sessionId', this.currentUploadingSessionId).get()
+      }
     },
     watch: {
       isUploadingProcessEnabled (val, oldVal) {
@@ -26,6 +32,11 @@
         if (val === oldVal) return
         this.checkStatusWorkerTimeout = workerTimeoutMinimum
         this.tickCheckStatus()
+      },
+      filesInUploadingSession (val, oldVal) {
+        if (val === oldVal) return
+        // all files in the session has completed
+        this.checkFilesInUploadingSessionId(val)
       }
     },
     methods: {
@@ -132,6 +143,17 @@
               this.$electron.ipcRenderer.on('sendIdToken', listener)
             }
           })
+      },
+      checkFilesInUploadingSessionId (files) {
+        console.log('checkFilesInUploadingSessionId', files)
+        if (files.length === 0) return
+        const completedFiles = files.filter(file => file.isInCompletedGroup)
+        if (files.length === completedFiles.length) {
+          this.resetUploadingSessionId() // reset session id when all files has completed
+        }
+      },
+      resetUploadingSessionId () {
+        this.$store.dispatch('setCurrentUploadingSessionId', null)
       }
     },
     mounted () {
@@ -151,6 +173,7 @@
         this.tickUpload()
       }, workerTimeoutMinimum)
       this.tickCheckStatus()
+      this.checkFilesInUploadingSessionId(this.filesInUploadingSession)
     },
     beforeDestroy () {
       console.log('\nclearInterval')

@@ -14,6 +14,12 @@ const apiUrl = (proEnvironment) => {
   // return 'https://192.168.154.144:3030' // return 'https://localhost:3030'
 }
 
+const explorerWebUrl = (isProd, streamId = null) => {
+  let baseUrl = isProd ? 'https://explorer.rfcx.org/' : 'https://staging-explorer.rfcx.org/'
+  let query = streamId ? `?stream=${streamId}` : ''
+  return baseUrl + query
+}
+
 const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
   return requestUploadUrl(env, fileName, filePath, streamId, timestamp, idToken)
     .then((data) => {
@@ -33,9 +39,9 @@ const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestam
 }
 
 // Part 0: Create stream
-const createStream = (env, streamName, siteGuid, visibility, idToken) => {
-  console.log('creating stream api:', streamName, 'site:', siteGuid)
-  return axios.post(apiUrl(env) + '/streams', { name: streamName, site: siteGuid, visibility: visibility }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+const createStream = (env, streamName, latitude, longitude, visibility, idToken) => {
+  console.log('creating stream api:', streamName)
+  return axios.post(apiUrl(env) + '/streams', { name: streamName, latitude: latitude, longitude: longitude, is_public: visibility }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const streamId = response.data.id
       return streamId
@@ -100,7 +106,7 @@ const checkStatus = (env, uploadId, idToken) => {
 }
 
 const renameStream = (env, streamId, streamName, streamSite, idToken) => {
-  return axios.post(apiUrl(env) + `/streams/${streamId}`, { name: streamName, site: streamSite }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return axios.patch(apiUrl(env) + `/streams/${streamId}`, { name: streamName, site: streamSite }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -180,6 +186,7 @@ const getExistingStreams = (env, idToken) => {
 }
 
 export default {
+  explorerWebUrl,
   createStream,
   uploadFile,
   checkStatus,

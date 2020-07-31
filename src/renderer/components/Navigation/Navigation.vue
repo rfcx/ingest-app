@@ -121,7 +121,27 @@
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+
+  .navbar {
+    padding: 0 $default-padding-margin;
+  }
+
+  .navbar-brand span {
+    font-weight: $title-font-weight;
+  }
+
+  .navbar-item.tag {
+    margin: auto 0 !important;
+  }
+
+  .user-info-nav {
+    text-align: right;
+  }
+
+  .user-info-nav .name {
+    font-weight: $title-font-weight;
+  }
 
   .dropdown-nav {
     vertical-align: middle !important;

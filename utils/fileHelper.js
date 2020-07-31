@@ -29,7 +29,7 @@ const getExtension = (fileName) => {
 
 const getFilesFromDirectoryPath = (directoryPath) => {
   if (fs.existsSync(directoryPath)) {
-    return fs.readdirSync(directoryPath)
+    return fs.readdirSync(directoryPath).filter(item => !(/(^|\/)\.[^/.]/g).test(item))
   }
   return undefined
 }
@@ -67,7 +67,7 @@ const getFileSize = (filePath) => {
 }
 
 const getFileDuration = (filePath) => {
-  getAudioDurationInSeconds(filePath).then(duration => {
+  return getAudioDurationInSeconds(filePath).then(duration => {
     return Promise.resolve(duration)
   }).catch(error => {
     console.error(error)

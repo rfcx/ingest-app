@@ -1,5 +1,5 @@
 <template>
-  <div class="preferences-popup" :class="{ 'dark-tray': isDark }">
+  <div class="preferences-popup">
     <div class="tabs">
       <ul>
         <li class="preferences-popup-tab" :class="{ 'is-active': (currentTab === 'update') }"><a @click="changeCurrentTab('update')">Update</a></li>
@@ -16,6 +16,7 @@
         <div class="preferences-popup-update-auto-descr">RFCx Ingest automatically checks for new app versions, downloads then and installs on app's restart.</div>
       </div>
     </div>
+    <!-- TODO: reuse component from About page -->
     <div class="preferences-popup-about-wrapper" v-if="currentTab === 'about'">
       <img class="about-logo" src="~@/assets/rfcx-logo.png">
       <div class="about-app">RFCx Ingest</div>
@@ -31,15 +32,6 @@
   export default {
     data () {
       return {
-        isDark: null,
-        darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
-          this.isDark = newValue
-          console.log('isDarkTheme', this.isDark)
-          let html = document.getElementsByTagName('html')[0]
-          if (html && this.isDark) {
-            html.style.backgroundColor = '#131525'
-          }
-        }),
         currentTab: 'update' | 'about',
         version: this.getVersion(),
         isAutoUpdateApp: null
@@ -65,12 +57,7 @@
     },
     created () {
       console.log('Update page')
-      this.isDark = settings.get('settings.darkMode')
       this.isAutoUpdateApp = settings.get('settings.auto_update_app')
-      let html = document.getElementsByTagName('html')[0]
-      if (html && this.isDark) {
-        html.style.backgroundColor = '#131525'
-      }
       this.currentTab = 'update'
     }
   }
@@ -108,16 +95,6 @@
   .update-popup {
     margin: auto;
     overflow: hidden;
-    background-color: #ffffff !important;
-    color: #000 !important;
-  }
-
-  .preferences-popup-tab a {
-    color: #000 !important;
-  }
-
-  .preferences-popup-tab.is-active {
-    color: #2FB04A !important;
   }
 
   .preferences-popup-about-wrapper {
@@ -130,21 +107,7 @@
   .preferences-popup-checkbox {
     &:hover,
     &:active {
-      color: #000;
-    }
-  }
-
-  .dark-tray {
-    background-color: #131525 !important;
-    color: #fff !important;
-    .preferences-popup-tab a {
-      color: #fff !important;
-    }
-    .preferences-popup-checkbox {
-      &:hover,
-      &:active {
-        color: #fff;
-      }
+      color: #fff;
     }
   }
 

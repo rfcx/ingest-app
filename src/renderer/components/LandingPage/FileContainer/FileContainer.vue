@@ -1,9 +1,9 @@
 <template>
   <div class="file-container__wrapper">
     <header-view></header-view>
-    <tab :files="files"></tab>
+    <tab :files="files" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
-    <file-list :allFiles="files"></file-list>
+    <file-list :allFiles="files" :selectedTab="selectedTab" :isDragging="isDragging"></file-list>
   </div>
 </template>
 
@@ -18,14 +18,20 @@ import FileState from '../../../../../utils/fileState'
 // import FileList from '../FileList'
 
 export default {
+  props: {
+    isDragging: Boolean
+  },
   components: {
     HeaderView, Tab, FileNameFormatInfo, FileList
   },
   computed: {
     ...mapState({
-      selectedStreamId: state => state.Stream.selectedStreamId,
-      selectedTab: state => state.AppSetting.selectedTab
+      selectedStreamId: state => state.Stream.selectedStreamId
     }),
+    selectedTab () {
+      const savedSelectedTab = this.$store.getters.getSelectedTabByStreamId(this.selectedStreamId)
+      return savedSelectedTab || this.getDefaultSelectedTab()
+    },
     files () {
       return File.query().where('streamId', this.selectedStreamId).get()
         .sort((fileA, fileB) => {
@@ -36,6 +42,20 @@ export default {
     },
     preparingFiles () {
       return this.files.filter(file => FileState.isInPreparedGroup(file.state))
+    },
+    queuingFiles () {
+      return this.files.filter(file => FileState.isInQueuedGroup(file.state))
+    },
+    completedFiles () {
+      return this.files.filter(file => FileState.isInCompletedGroup(file.state))
+    }
+  },
+  methods: {
+    getDefaultSelectedTab () {
+      if (this.preparingFiles.length > 0) { return 'Prepared' }
+      if (this.queuingFiles.length > 0) { return 'Queued' }
+      if (this.completedFiles.length > 0) { return 'Completed' }
+      return 'Prepared'
     }
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <aside class="column menu side-menu side-menu-column" :class="{ 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop" @dragover.prevent @dragleave="outDrag">
+  <aside class="column menu side-menu side-menu-column">
     <div class="header">
       <div class="header-logo">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
@@ -9,11 +9,21 @@
           {{ productionEnv ? 'production' : 'staging' }}
         </button>
       </div>
-      <div class="header-user-pic" @click="toggleUserMenu()">
-        <img title="Menu" class="user-pic" :src="getUserPicture()" alt="">
+      <div class="dropdown header-user-pic is-right" :class="{ 'is-active': showDropDown }" @click="toggleDropDown()" title="User menu: you can log out here">
+        <div class="dropdown-trigger">
+          <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)" aria-haspopup="true" aria-controls="dropdown-menu">
+        </div>
+        <div class="dropdown-menu" id="dropdown-menu" role="menu">
+          <div class="dropdown-content">
+            <a href="#" title="Logout" class="dropdown-item" @click="logOut()">Log out</a>
+          </div>
+        </div>
       </div>
+      <!-- <div class="header-user-pic" @click="toggleUserMenu()">
+        <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)">
+      </div> -->
     </div>
-    <div class="user-stat-wrapper" v-if="showUserMenu">
+    <!-- <div class="user-stat-wrapper" v-if="showUserMenu">
       <div class="user-stat-name">{{ userName }}</div>
       <button class="button user-stat-btn" @click="logOut()">Log out</button>
       <div class="user-stat-info-wrapper">
@@ -30,14 +40,14 @@
           <div>{{getAllFilesSize()}}</div><div>{{mesure}} used</div>
         </div>
       </div>
-    </div>
+    </div> -->
     <div class="menu-container side-menu-title">
       <div class="menu-label">Streams</div>
       <div class="side-menu-controls-wrapper">
-        <button title="Filter" class="side-menu-search-btn" v-on:click="onFocusInput()">
+        <!-- <button title="Filter" class="side-menu-search-btn" v-on:click="onFocusInput()">
           <img v-if="!toggleSearch" src="~@/assets/ic-search.svg">
           <img v-if="toggleSearch" src="~@/assets/ic-search-active.svg">
-        </button>
+        </button> -->
         <router-link title="Add new stream" to="/add"><img class="side-menu-add-btn" src="~@/assets/ic-add-stream.svg"></router-link>
       </div>
     </div>
@@ -51,7 +61,7 @@
     </div>
     <ul class="menu-list">
       <li v-for="stream in streams" :key="stream.id">
-        <div class="menu-item" v-on:click="selectItem(stream)" :class="{'menu-item_active': isActive(stream), 'drop-hover': isDragging}">
+        <div class="menu-item" v-on:click="selectItem(stream)" :class="{'menu-item_active': isActive(stream)}">
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="stream-title">{{ stream.name }}</div>
             <font-awesome-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
@@ -68,7 +78,6 @@
   import settings from 'electron-settings'
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
-  import fileHelper from '../../../../utils/fileHelper'
   import FileState from '../../../../utils/fileState'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
@@ -82,9 +91,9 @@
         timeoutKeyboard: {},
         searchStr: '',
         mesure: '',
-        isDragging: false,
         showUserMenu: false,
         toggleSearch: false,
+        showDropDown: false,
         userName: this.getUserName(),
         productionEnv: this.isProductionEnv()
       }
@@ -167,6 +176,9 @@
       toggleUserMenu () {
         this.showUserMenu = !this.showUserMenu
       },
+      toggleDropDown () {
+        this.showDropDown = !this.showDropDown
+      },
       getUserName () {
         let userName = remote.getGlobal('firstname')
         if (userName) return userName
@@ -210,42 +222,6 @@
             // TODO: find a stream
           }
         }, 500)
-      },
-      outDrag (e) {
-        // FIX dropleave event
-        // e.preventDefault()
-        // this.isDragging = false
-      },
-      handleDrag (e) {
-        this.isDragging = true
-      },
-      handleDrop (e) {
-        console.log('e', e)
-        let dt = e.dataTransfer
-        let files = dt.files
-        this.handleFiles(files)
-      },
-      handleFiles (files) {
-        let arrPath = []
-        this.isDragging = false
-        if (files && files.length === 1) {
-          ([...files]).forEach((file) => {
-            if (fileHelper.isFolder(file.path)) {
-              console.log('file', file)
-              this.$router.push({ path: '/add', query: { folderPath: file.path, name: fileHelper.getFileNameFromFilePath(file.path) } })
-            }
-          })
-        } else if (files && files.length > 1) {
-          ([...files]).forEach((file) => {
-            if (fileHelper.isFolder(file.path)) {
-              console.log('file', file)
-              arrPath.push(file.path)
-            }
-          })
-          if (arrPath && arrPath.length) {
-            this.$router.push({ path: '/add', query: { folderPaths: arrPath } })
-          }
-        }
       },
       getUploadingProcessIcon (enabled) {
         const state = enabled ? 'pause' : 'play'
@@ -452,6 +428,11 @@
 
 <style lang="scss" scoped>
 
+  .menu-item:hover,
+  .menu-item_active {
+    background-color: #2e3145;
+  }
+
   .header {
     padding: 0 8px 0 16px;
     margin-bottom: 7px;
@@ -556,6 +537,10 @@
     width: auto;
   }
 
+  .dropdown-menu {
+    min-width: 20px;
+  }
+
   .side-menu-title {
     padding: 2px 8px 2px 16px;
   }
@@ -654,12 +639,6 @@
   }
   .btn-remove-active {
     opacity: 1;
-  }
-
-  .drag-active {
-    border: 4px solid #cac5c5 !important;
-    background-color: #cac5c5 !important;
-    opacity: 0.3 !important;
   }
 
   .drop-hover {

@@ -8,7 +8,7 @@
       <div class="edit-container" v-if="isRenaming">
         <input class="input edit-container-item-input" v-model="newStreamName" type="text" placeholder="">
         <div class="edit-container-item-control">
-          <button class="button is-rounded btn btn-edit-cancel" @click="cancel()">Cancel</button>
+          <button class="button is-rounded btn is-cancel" @click="cancel()">Cancel</button>
           <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!isNewStreamNameValid && (newStreamName && newStreamName.length > 0)" @click="saveStream()">Save</button>
           <span class="edit-container-error" v-show="error">{{ error }}</span>
         </div>
@@ -16,14 +16,13 @@
       <div class="notification is-danger is-light notice file-list-notice" v-if="errorMessage">
         <strong>{{ errorMessage }}</strong>
       </div>
-      <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()" title="The stream’s menu to help you delete, rename or redirect you to RFCx Client Stream Web App. If you have any problems with recognition of your folder with audio you can click on 'Rescan the folder'">
+      <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()" title="The stream’s menu to help you delete, rename or redirect you to RFCx Client Stream Web App.">
         <div class="dropdown-trigger">
           <img src="~@/assets/ic-menu.svg" aria-haspopup="true" aria-controls="dropdown-menu">
         </div>
         <div class="dropdown-menu" id="dropdown-menu" role="menu">
           <div class="dropdown-content">
             <a href="#" title="Rename the stream" class="dropdown-item" @click="renameStream()">Rename</a>
-            <a href="#" title="Rescan the folder" class="dropdown-item" @click="refreshStream()">Rescan the folder</a>
             <a href="#" title="Redirect to Web App" class="dropdown-item" @click="redirectToStreamWeb()">Redirect to RFCx Client Stream Web App</a>
             <a href="#" title="Delete the stream" class="dropdown-item has-text-danger" @click="showConfirmToDeleteStreamModal()">{{ ((files && !files.length) || isFilesUploading) ? 'Delete' : 'Move to Trash List'}}</a>
           </div>
@@ -31,21 +30,14 @@
       </div>
     </div>
     <div class="subtitle-container">
-      <img src="~@/assets/ic-pin.svg"><span v-if="selectedStream" class="file-list-span">{{ selectedStream.siteGuid }}</span>
-      <img src="~@/assets/ic-timestamp.svg"><span v-if="selectedStream">{{ selectedStream.timestampFormat }}</span>
-      <div class="folder-area" v-if="selectedStream" :class="{ 'btn-open-empty': isEmptyFolder() }">
-        <a title="Open selected folder" v-show="!isEmptyFolder()" class="button is-circle btn-open" @click="openFolder(selectedStream.folderPath)">
-          <img class="img-open-folder" src="~@/assets/ic-folder-open.svg">
-        </a>
-        {{ selectedStream.folderPath }}
-      </div>
+      <img src="~@/assets/ic-pin.svg"><span v-if="selectedStream" class="file-list-span">{{ selectedStream.siteGuid || `${selectedStream.latitude}, ${selectedStream.longitude}` }}</span>
     </div>
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
       <div class="modal-background"></div>
       <div class="modal-card">
         <div class="modal-card-body">
-          <p class="modal-card-title">Are you sure to delete this stream?</p>
+          <p class="modal-card-title">Are you sure you want to delete this stream?</p>
         </div>
         <footer class="modal-card-foot">
           <button class="button" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
@@ -61,8 +53,6 @@
 import Stream from '../../store/models/Stream'
 import File from '../../store/models/File'
 import api from '../../../../utils/api'
-import fileWatcher from '../../../main/services/file-watcher'
-import fileHelper from '../../../../utils/fileHelper'
 import settings from 'electron-settings'
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 
@@ -91,16 +81,12 @@ export default {
       return this.newStreamName.trim().length && this.newStreamName.trim().length >= 3 && this.newStreamName.trim().length <= 40
     },
     isSelectedStreamFailed () {
-      let stream = Stream.query().with('files').where('$id', this.selectedStreamId).get()
-      let count = 0
-      if (stream) {
-        stream[0].files.forEach(file => {
-          if (file.isError) {
-            count++
-          }
-        })
-        if (count === stream[0].files.length) return true
-      }
+      let streams = Stream.query().with('files').where('$id', this.selectedStreamId).get()
+      if (!streams) { return false } // no stream
+      const allFiles = streams[0].files // files of that stream
+      const failedItems = allFiles.filter(file => file.isError)
+      if (allFiles.length > 0 && failedItems.length === allFiles.length) return true // all files are failed
+      return false
     },
     files () {
       return File.query().where('streamId', this.selectedStreamId).get()
@@ -116,9 +102,6 @@ export default {
     }
   },
   methods: {
-    isEmptyFolder () {
-      return this.files && this.files.length === 0
-    },
     // Dropdown menu
     toggleDropDown () {
       this.shouldShowDropDown = !this.shouldShowDropDown
@@ -196,15 +179,18 @@ export default {
       this.$electron.ipcRenderer.on('sendIdToken', listener)
     },
     async removeStreamFromVuex (selectedStreamId) {
-      let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
-        console.log('files deleted')
-        Stream.delete(selectedStreamId)
-        fileWatcher.closeWatcher(selectedStreamId)
-      }
       let ids = this.files.map((file) => { return file.id })
-      this.$electron.ipcRenderer.send('deleteFiles', ids)
-      this.$electron.ipcRenderer.on('filesDeleted', listen)
+      if (ids && ids.length > 0) {
+        let listen = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
+          console.log('files deleted')
+          Stream.delete(selectedStreamId)
+        }
+        this.$electron.ipcRenderer.send('deleteFiles', ids)
+        this.$electron.ipcRenderer.on('filesDeleted', listen)
+      } else {
+        Stream.delete(selectedStreamId)
+      }
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true
@@ -236,61 +222,18 @@ export default {
         this.errorMessage = `You don't have permissions to delete non-empty stream.`
       } else { this.errorMessage = isDeleting ? 'Error while deleting stream.' : 'Error while moving stream to trash.' }
     },
-    // Go to folder
-    openFolder (link) {
-      this.$electron.ipcRenderer.send('focusFolder', link)
-      if (this.files && this.files.length) {
-        this.files.forEach((file) => {
-          if (file.state === 'completed') {
-            File.update({ where: file.id,
-              data: { notified: true }
-            })
-          }
-        })
-      }
-    },
-    // Refresh
-    async refreshStream () {
-      let files = File.query().where('streamId', this.selectedStream.id).orderBy('name').get()
-      console.log('files for refreshing stream', files)
-      await this.checkFilesExistense(files)
-      fileWatcher.subscribeStream(this.selectedStream)
-    },
-    async checkFilesExistense (files) {
-      for (const file of files) {
-        if (!fileHelper.isExist(file.path)) {
-          await File.delete(file.id)
-        }
-      }
-    },
     // Go to Stream Web
     isProductionEnv () {
       return settings.get('settings.production_env')
     },
     redirectToStreamWeb () {
       console.log('user redirected to the Client Stream Web', this.selectedStream)
-      let url = 'https://client-stream.rfcx.org/'
+      let url = api.explorerWebUrl(this.isProductionEnv())
       if (this.selectedStream) {
         if (this.selectedStream.env) {
-          if (this.selectedStream.env === 'production') {
-            url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
-          } else if (this.selectedStream.env === 'staging') {
-            url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.id}`
-          } else {
-            url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
-          }
+          url = api.explorerWebUrl(this.selectedStream.env !== 'staging', this.selectedStream.id)
         } else {
-          if (this.isProductionEnv()) {
-            url = `https://client-stream.rfcx.org/streams/${this.selectedStream.id}`
-          } else {
-            url = `https://staging-client-stream.rfcx.org/streams/${this.selectedStream.id}`
-          }
-        }
-      } else {
-        if (this.isProductionEnv()) {
-          url = `https://client-stream.rfcx.org/streams`
-        } else {
-          url = `https://staging-client-stream.rfcx.org/streams`
+          url = api.explorerWebUrl(this.isProductionEnv(), this.selectedStream.id)
         }
       }
       this.$electron.shell.openExternal(url)

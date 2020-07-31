@@ -1,6 +1,6 @@
 <template>
   <div>
-    <aside class="column menu tray-menu" :class="{ 'dark-tray': isDark }">
+    <aside class="column menu tray-menu">
       <div class="tray-container">
         <div class="menu-container side-menu-title">
           <div class="menu-label">Streams</div>
@@ -18,7 +18,7 @@
         </ul>
       </div>
     </aside>
-    <footer class="card-footer" :class="{ 'dark-tray': isDark }">
+    <footer class="card-footer">
     <a href="#" class="card-footer-item" @click="openApp()">Open Application</a>
   </footer>
   </div>
@@ -28,17 +28,11 @@
   import { mapState } from 'vuex'
   import Stream from '../store/models/Stream'
   import fileState from '../../../utils/fileState'
-  import settings from 'electron-settings'
 
   export default {
     data () {
       return {
-        menuTitle: 'Uploading Streams',
-        isDark: null,
-        darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
-          this.isDark = newValue
-          console.log('isDarkTheme', this.isDark)
-        })
+        menuTitle: 'Uploading Streams'
       }
     },
     computed: {
@@ -161,7 +155,6 @@
     },
     created () {
       console.log('Tray page')
-      this.isDark = settings.get('settings.darkMode')
     }
   }
 </script>
@@ -207,19 +200,19 @@
     text-align: right;
   }
 
-  .dark-tray {
-    background-color: #232436 !important;
-    color: #fff !important;
-    .menu {
-      background-color: #232436 !important;
-      color: #fff !important;
-    }
-    .stream-title {
-      color: white;
-    }
-    .menu-item:hover {
-     background-color: #2e3145 !important;
-    }
-  }
+  // .dark-tray {
+  //   background-color: #232436 !important;
+  //   color: #fff !important;
+  //   .menu {
+  //     background-color: #232436 !important;
+  //     color: #fff !important;
+  //   }
+  //   .stream-title {
+  //     color: white;
+  //   }
+  //   .menu-item:hover {
+  //    background-color: #2e3145 !important;
+  //   }
+  // }
 
 </style>

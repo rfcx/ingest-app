@@ -1,5 +1,5 @@
 <template>
-  <div id="wrapper-access-denied-page" class="access-denied-page" :class="{ 'dark-mode': isDark }">
+  <div id="wrapper-access-denied-page" class="access-denied-page">
     <a class="button is-default access-denied-page__logout-btn" @click="logOut()">Log out</a>
     <div class="access-denied-page-label" v-if="hasRFCxRole === false">You don't have required permissions to access this app. Ask admin@rfcx.org for details.</div>
     <div class="access-denied-page__terms-form" v-if="consentGiven === false">
@@ -55,11 +55,6 @@
         errorMessage: '',
         isLoading: false,
         hasAccessToSendCode: false,
-        isDark: null,
-        darkThemeForm: settings.watch('settings.darkMode', (newValue, oldValue) => {
-          this.isDark = newValue
-          console.log('isDarkTheme', this.isDark)
-        }),
         roles: null,
         hasRFCxRole: null,
         consentGiven: null,
@@ -153,7 +148,6 @@
     },
     created () {
       console.log('Access-denied page created')
-      this.isDark = settings.get('settings.darkMode')
       this.roles = remote.getGlobal('roles') || []
       this.hasRFCxRole = this.roles.includes('rfcxUser')
       this.consentGiven = remote.getGlobal('consentGiven') || false

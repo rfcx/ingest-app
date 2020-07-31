@@ -13,7 +13,7 @@ export default new Router({
     {
       path: '/add',
       name: 'add-new-stream-page',
-      component: require('@/components/AddNewStreamPage').default,
+      component: require('@/components/CreateStream/CreateStreamPage').default,
       props: (route) => ({ query: route.query })
     },
     {

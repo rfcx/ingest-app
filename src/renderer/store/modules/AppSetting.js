@@ -1,21 +1,33 @@
 const state = {
-  selectedTab: null
+  selectedTabs: {},
+  currentUploadingSessionId: null
 }
 
 const mutations = {
-  SET_SELECTED_TAB (state, tab) {
-    state.selectedTab = tab
+  SET_SELECTED_TAB (state, tabObject) {
+    state.selectedTabs = Object.assign({}, state.selectedTabs, tabObject)
+  },
+  SET_UPLOADING_SESSION_ID (state, id) {
+    state.currentUploadingSessionId = id
   }
 }
 
 const actions = {
-  setSelectedTab ({ commit }, tab) {
-    commit('SET_SELECTED_TAB', tab)
+  setSelectedTab ({ commit }, tabObject) {
+    commit('SET_SELECTED_TAB', tabObject)
+  },
+  setCurrentUploadingSessionId ({ commit }, id) {
+    commit('SET_UPLOADING_SESSION_ID', id)
   }
+}
+
+const getters = {
+  getSelectedTabByStreamId: state => streamId => state.selectedTabs[streamId]
 }
 
 export default {
   state,
   actions,
-  mutations
+  mutations,
+  getters
 }

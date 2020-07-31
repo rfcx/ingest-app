@@ -1,5 +1,5 @@
 <template>
-  <div class="global-progress__content-wrapper" :class="shouldShowProgress ? '' : 'hidden'">
+  <div class="global-progress__content-wrapper" v-if="shouldShowProgress" :class="shouldShowProgress ? '' : 'hidden'">
     <div class="global-progress__text-wrapper">
       <div class="global-progress__progress-title">Uploading</div>
       <div class="global-progress__progress-subtitle is-size-7">{{getState()}}</div>
@@ -14,33 +14,30 @@ import File from '../../store/models/File'
 export default {
   computed: {
     ...mapState({
-      isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
+      isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess,
+      currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
     }),
     shouldShowProgress () {
-      return this.uploadingFiles.length > 0
-    },
-    uploadingFiles () {
-      const files = this.getAllFiles()
-      return files.filter(f => f.state === 'uploading')
+      const allFiles = this.getAllFilesInTheSession()
+      return allFiles.length !== allFiles.filter(file => file.isInCompletedGroup).length
     },
     completedFiles () {
-      const files = this.getAllFiles()
-      return files.filter(f => f.state === 'ingested')
+      const files = this.getAllFilesInTheSession()
+      return files.filter(f => f.isInCompletedGroup)
     }
   },
   methods: {
-    getAllFiles () {
-      return File.all()
+    getAllFilesInTheSession () {
+      return File.query().where('sessionId', this.currentUploadingSessionId).get()
     },
     getState () {
-      const files = this.getAllFiles()
-      console.log(files)
-      const waiting = files.filter(f => f.state === 'waiting').length
-      const uploading = this.uploadingFiles.length
+      const files = this.getAllFilesInTheSession()
       const completed = this.completedFiles.length
-      const error = files.filter(f => f.state === 'failed' || f.state === 'duplicated').length
-      const total = uploading + completed + waiting
-      return `${completed}/${total} files ${error} ${error <= 1 ? 'error' : 'errors'}`
+      const error = files.filter(f => f.isError).length
+      const total = files.length
+      let text = `${completed}/${total} files`
+      text += error > 0 ? ` ${error} ${error <= 1 ? 'error' : 'errors'}` : ''
+      return text
     },
     getUploadingProcessIcon (enabled) {
       const state = enabled ? 'pause' : 'play'

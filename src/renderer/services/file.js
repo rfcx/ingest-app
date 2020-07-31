@@ -9,12 +9,17 @@ import cryptoJS from 'crypto-js'
 class FileProvider {
   uploadFile (file, idToken) {
     console.log('\nupload file ', file)
+    if (!fileHelper.isExist(file.path)) {
+      return File.update({ where: file.id,
+        data: {state: 'local_error', stateMessage: 'File is not exist'}
+      })
+    }
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.timestamp,
       file.sizeInByte, idToken, (progress) => {
       // FIX progress scale when we will start work with google cloud
-      // File.update({ where: file.id,
-      //   data: {state: 'uploading', stateMessage: progress, progress: progress}
-      // })
+        File.update({ where: file.id,
+          data: {state: 'uploading'}
+        })
       }).then((uploadId) => {
       console.log('\nfile uploaded to the temp folder S3')
       File.update({ where: file.id, data: {uploaded: true} })

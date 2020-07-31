@@ -27,7 +27,8 @@ export default class File extends Model {
       disabled: this.boolean(false),
       notified: this.boolean(false),
       retries: this.number(0),
-      uploaded: this.boolean(false)
+      uploaded: this.boolean(false),
+      sessionId: this.attr('')
     }
   }
 
@@ -77,5 +78,9 @@ export default class File extends Model {
 
   get canRedo () {
     return FileState.canRedo(this.state, this.stateMessage)
+  }
+
+  get canRemove () {
+    return FileState.canRemove(this.state)
   }
 }

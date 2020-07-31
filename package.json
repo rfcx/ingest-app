@@ -1,6 +1,6 @@
 {
   "name": "ingest-app",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "author": "RFCx",
   "private": true,
   "description": "Desktop application for ingesting audio to RFCx platform",
@@ -11,6 +11,7 @@
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
+    "build:win": "node .electron-vue/build.js && electron-builder build --win",
     "dev": "node .electron-vue/dev-runner.js",
     "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter src",
     "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src",
@@ -60,7 +61,9 @@
     "win": {
       "icon": "build/icons/ingest-windows.ico",
       "certificateFile": "./build/certs/certificate.p12",
+      "certificatePassword": "<YOUR_PASSWORD>",
       "publisherName": "RFCx",
+      "timeStampServer": "http://timestamp.globalsign.com/scripts/timstamp.dll",
       "target": [
         {
           "target": "squirrel",
@@ -87,6 +90,7 @@
     "@fortawesome/free-regular-svg-icons": "5.11.2",
     "@fortawesome/free-solid-svg-icons": "5.11.2",
     "@fortawesome/vue-fontawesome": "0.1.8",
+    "@mapbox/mapbox-gl-geocoder": "^4.5.1",
     "@types/electron-store": "^3.2.0",
     "@vuex-orm/core": "^0.32.2",
     "axios": "^0.18.0",
@@ -103,12 +107,14 @@
     "js-sha1": "^0.6.0",
     "jwt-decode": "2.2.0",
     "keytar": "^5.4.0",
+    "mapbox-gl": "^1.11.0",
     "moment": "^2.24.0",
     "node-localstorage": "2.1.5",
     "querystring": "^0.2.0",
     "sox": "^0.1.0",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",
+    "vue-mapbox": "^0.4.1",
     "vue-router": "^3.0.1",
     "vuex": "^3.1.2",
     "vuex-electron": "git+https://github.com/rassokhin-s/vuex-electron.git"
@@ -155,6 +161,7 @@
     "multispinner": "^0.2.1",
     "node-loader": "^0.6.0",
     "node-sass": "^4.12.0",
+    "prettier-eslint": "^11.0.0",
     "sass-loader": "^7.3.1",
     "style-loader": "^0.21.0",
     "url-loader": "^1.0.1",
