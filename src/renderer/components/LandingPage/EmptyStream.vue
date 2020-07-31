@@ -14,8 +14,8 @@
   }
 
   .container-box.empty {
-    margin: 16px auto;
-    padding: 16px;
+    margin: $default-padding-margin auto;
+    padding: $default-padding-margin;
     max-width: 300px;
     transform: translateY(50%);
   }
