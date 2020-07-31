@@ -130,7 +130,7 @@ mgl-map {
   float: none;
   width: 362px;
   border-radius: 4px;
-  background-color: rgba(46, 49, 69, 0.9);
+  background-color: rgba(46, 49, 69, 0.97);
   &--icon-search,
   &--icon-close,
   &--icon-loading {
@@ -145,7 +145,7 @@ mgl-map {
     }
   }
   &--button {
-    background-color: rgba(46, 49, 69, 0.9);
+    background-color: rgba(46, 49, 69, 0.97);
   }
   &--input {
     font-size: 16px;
