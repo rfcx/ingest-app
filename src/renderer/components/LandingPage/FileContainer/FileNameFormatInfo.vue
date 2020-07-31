@@ -3,25 +3,37 @@
     <div class="preparing-file-settings__name-format-wrapper">
       <span class="preparing-file-settings__name-format-title">Filename format</span>
       <span class="preparing-file-settings__name-format-description">{{ selectedStream.timestampFormat }}</span>
+      <span class="preparing-file-settings__edit-button" title="Edit filename format"><font-awesome-icon :icon="iconPencil" @click="openFileNameFormatSettingModal()"></font-awesome-icon></span>
     </div>
     <div class="preparing-file-settings__actions-wrapper">
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
       <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="readyToUploadFiles.length < 1 || isDeletingAllFiles">Start upload ({{readyToUploadFiles.length}})</button>
     </div>
+    <div class="preparing-file-settings__timestamp-modal modal" :class="{ 'is-active': showSettingModal }">
+      <div class="modal-background"></div>
+      <file-name-format-settings @onClose="closeFileNameFormatSettingModal"></file-name-format-settings>
+    <button class="modal-close is-large" aria-label="close"></button>
+  </div>
   </div>
 </template>
 
 <script>
+
 import { mapState } from 'vuex'
 import File from '../../../store/models/File'
 import Stream from '../../../store/models/Stream'
+import FileNameFormatSettings from './FileNameFormatSettings'
+import { faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 
 export default {
   props: {
     preparingFiles: Array
   },
+  components: { FileNameFormatSettings },
   data () {
     return {
+      iconPencil: faPencilAlt,
+      showSettingModal: false,
       isDeletingAllFiles: false
     }
   },
@@ -57,6 +69,13 @@ export default {
         File.delete(file.id)
       })
       // the component will be removed once delete successfully, and isDeletingAllFiles will be automatically changed to be 'false' automatically
+    },
+    openFileNameFormatSettingModal () {
+      this.showSettingModal = true
+    },
+    closeFileNameFormatSettingModal () {
+      console.log('closeFileNameFormatSettingModal')
+      this.showSettingModal = false
     }
   }
 }
@@ -79,7 +98,12 @@ export default {
     }
     &__name-format-description {
       color: $secondary-text-color;
-      display: block;
+      display: inline-block;
+    }
+    &__edit-button {
+      color: #9B9B9B !important;
+      font-size: 14px;
+      cursor: pointer;
     }
   }
 </style>
