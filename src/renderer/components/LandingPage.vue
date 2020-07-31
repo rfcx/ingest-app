@@ -125,7 +125,6 @@
         } else {
           console.log('hasAccessToApp', hasAccessToApp)
           this.$router.push('/access-denied-page')
-          this.$electron.ipcRenderer.send('removeTray')
           // this.$store.dispatch('setUploadingProcess', false)
         }
       },
@@ -342,16 +341,6 @@
 
   .button.is-primary {
     font-weight: $title-font-weight;
-  }
-
-  .tray-container {
-    height: 300px;
-  }
-
-  .tray-menu {
-    height: 300px;
-    padding: 0 !important;
-    padding-top: 20px !important;
   }
 
   .uploading-process-status {
