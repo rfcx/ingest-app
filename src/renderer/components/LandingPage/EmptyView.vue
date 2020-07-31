@@ -1,7 +1,6 @@
 <template>
     <div class="container-box empty has-text-centered">
-        <img :src="stateIcon" style="margin-bottom: 0.75em"><br>
-        <!-- <p>No files in completed</p> -->
+        <img :src="stateIcon"><br>
         <span>{{ stateStatus }}</span>
     </div>
 </template>
@@ -30,18 +29,6 @@
         return require('../../assets/ic-file.svg')
       }
     }
-    // watch: {
-    //   isDragging (value) {
-    //     if (value === true) {
-    //       this.imageUrl = require('../../assets/ic-file-fill.svg')
-    //     } else {
-    //       this.imageUrl = this.getStateIcon()
-    //     }
-    //   },
-    //   queuingFiles (f1, f2) {
-    //     console.log('p', f1, f2)
-    //   }
-    // }
   }
 </script>
 
@@ -55,11 +42,12 @@
   img {
     width: 40px;
     height: 40px;
+    margin-bottom: $default-padding-margin;
   }
 
   .container-box.empty {
-    margin: 16px auto;
-    padding: 16px;
+    margin: $default-padding-margin auto;
+    padding: $default-padding-margin;
     max-width: 300px;
   }
   
