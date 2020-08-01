@@ -153,6 +153,15 @@
         }
       },
       resetUploadingSessionId () {
+        // TODO: send notification
+        let notificationCompleted = {
+          title: 'Ingest App',
+          body: 'Stream uploaded successfully'
+        }
+        let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
+        myNotificationCompleted.onshow = () => {
+          console.log('show notification')
+        }
         this.$store.dispatch('setCurrentUploadingSessionId', null)
       }
     },

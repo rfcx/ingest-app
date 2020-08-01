@@ -242,18 +242,6 @@
       shouldShowProgress (stream) {
         return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed' && this.getState(stream) !== 'duplicated'
       },
-      sendNotification (status) {
-        let notificationCompleted = {
-          title: 'Ingest App',
-          body: 'Stream uploaded successfully'
-        }
-        if (status === 'completed') {
-          let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
-          myNotificationCompleted.onshow = () => {
-            console.log('show notification')
-          }
-        }
-      },
       getState (stream) {
         if (stream.files && !stream.files.length) {
           return 'waiting'
@@ -274,12 +262,6 @@
         const isDuplicated = hasFiles && total === duplicatedFiles
         const isIngesting = hasFiles && total === ingestingFiles
         if (isCompleted) {
-          if (!!this.uploadingStreams[stream.id] && this.uploadingStreams[stream.id] !== 'completed') {
-            const notifiedStream = stream.files && stream.files.length && stream.files.every(file => file.notified === true)
-            if (!notifiedStream) {
-              this.sendNotification('completed')
-            }
-          }
           this.uploadingStreams[stream.id] = 'completed'
           stream.completed = true
           return 'completed'
