@@ -1,10 +1,9 @@
 'use strict'
 
-import { app, BrowserWindow, Menu, Tray, nativeImage, ipcMain, dialog, autoUpdater, powerMonitor } from 'electron'
+import { app, BrowserWindow, Menu, ipcMain, dialog, autoUpdater, powerMonitor } from 'electron'
 import '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
-import trayContainer from 'electron-tray-window'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
@@ -26,8 +25,8 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-let mainWindow, backgroundAPIWindow, trayWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
-let menu, tray, idToken, isManualUpdateCheck
+let mainWindow, backgroundAPIWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
+let menu, idToken, isManualUpdateCheck
 let refreshIntervalTimeout, expires, updateIntervalTimeout
 let willQuitApp = false
 let isLogOut = false
@@ -41,10 +40,6 @@ const winURL = process.env.NODE_ENV === 'development'
 const backgroundAPIURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/api-service`
   : `file://${__dirname}/index.html#/api-service`
-
-const trayURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080/#/tray`
-  : `file://${__dirname}/index.html#/tray`
 
 const aboutURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/about`
@@ -139,38 +134,6 @@ function createWindow (openedAsHidden = false) {
   backgroundAPIWindow.loadURL(backgroundAPIURL)
   createAboutUrl(false)
   createPreferencesPopupWindow(false)
-  trayWindow = new BrowserWindow({
-    width: 300,
-    height: 350,
-    show: false,
-    frame: false,
-    fullscreenable: false,
-    resizable: false,
-    transparent: true,
-    useContentSize: true,
-    webPreferences: { nodeIntegration: true }
-  })
-  trayWindow.loadURL(trayURL)
-
-  trayWindow.on('blur', () => {
-    if (!trayWindow.webContents.isDevToolsOpened()) {
-      trayWindow.hide()
-    }
-  })
-
-  trayWindow.on('close', () => {
-    console.log('tray close')
-    trayWindow = null
-    tray = null
-  })
-
-  trayWindow.on('closed', () => {
-    console.log('tray closed')
-    trayWindow = null
-    tray = null
-  })
-
-  createTray(process.platform)
 
   powerMonitor.on('suspend', () => {
     console.log('------------The system is going to suspend----------')
@@ -302,14 +265,6 @@ function createMenu () {
               isLogOut = true
               mainWindow.close()
             }
-            if (tray) {
-              tray.destroy()
-              tray = null
-            }
-            if (trayWindow) {
-              trayWindow.destroy()
-              trayWindow = null
-            }
             idToken = null
           }
         },
@@ -373,14 +328,6 @@ function createMenu () {
   ]
   menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
-}
-
-function createTray (platform) {
-  const iconPath = platform === 'darwin' ? path.join(__static, 'rfcx-logo.png') : path.join(__static, 'rfcx-logo-win.png')
-  var trayIcon = nativeImage.createFromPath(iconPath)
-  trayIcon = trayIcon.resize({ width: 12, height: 17 })
-  tray = new Tray(trayIcon)
-  trayContainer.setOptions({tray: tray, window: trayWindow})
 }
 
 function showMainWindow () {
@@ -537,31 +484,12 @@ async function logOut () {
     isLogOut = true
     mainWindow.close()
   }
-  if (tray) {
-    tray.destroy()
-    tray = null
-  }
-  if (trayWindow) {
-    trayWindow.destroy()
-    trayWindow = null
-  }
   idToken = null
 }
 
 function clearAllData () {
   File.deleteAll()
   Stream.deleteAll()
-}
-
-function removeTray () {
-  if (tray) {
-    tray.destroy()
-    tray = null
-  }
-  if (trayWindow) {
-    trayWindow.destroy()
-    trayWindow = null
-  }
 }
 
 async function createRefreshInterval () {
@@ -713,19 +641,11 @@ app.on('activate', () => {
 
 ipcMain.on('openMainWindow', (event, data) => {
   showMainWindow()
-  if (trayWindow) {
-    trayWindow.hide()
-  }
 })
 
 ipcMain.on('logOut', (event, data) => {
   console.log('logOut')
   logOut()
-})
-
-ipcMain.on('removeTray', (event, data) => {
-  console.log('removeTray')
-  removeTray()
 })
 
 let listenerOfToken = (event, args) => {

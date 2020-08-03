@@ -24,6 +24,9 @@
       filesInUploadingSession () {
         if (!this.currentUploadingSessionId) return []
         return File.query().where('sessionId', this.currentUploadingSessionId).get()
+      },
+      noDurationFiles () {
+        return File.query().where(file => { return file.state === 'preparing' && file.durationInSecond === -1 }).orderBy('timestamp').get()
       }
     },
     watch: {
@@ -127,6 +130,9 @@
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
       },
+      async updateFilesDuration () {
+        this.$file.updateFilesDuration(this.noDurationFiles)
+      },
       checkAfterSuspended () {
         return this.getSuspendedFiles()
           .then((files) => {
@@ -181,6 +187,7 @@
     created () {
       console.log('API Service')
       this.checkAfterSuspended()
+      this.updateFilesDuration()
       this.checkWaitingFilesInterval = setInterval(() => {
         this.tickUpload()
       }, workerTimeoutMinimum)

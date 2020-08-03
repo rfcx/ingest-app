@@ -287,7 +287,7 @@
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
   .menu-item:hover,
   .menu-item_active {

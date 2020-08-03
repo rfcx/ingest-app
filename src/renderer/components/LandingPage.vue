@@ -31,7 +31,6 @@
   import { mapState } from 'vuex'
   import File from '../store/models/File'
   import Stream from '../store/models/Stream'
-  import fileHelper from '../../../utils/fileHelper'
   import Analytics from 'electron-ga'
   const { remote } = window.require('electron')
 
@@ -71,36 +70,9 @@
         this.$store.dispatch('setSelectedTab', tabObject)
       },
       handleFiles (files) {
-        console.log('handleFiles', files)
         this.isDragging = false
-        // let subfolder = []
-        if (!files) { return } // no files
-        ([...files]).forEach(file => {
-          if (fileHelper.isFolder(file.path)) {
-            this.handleFolder(file)
-          } else {
-            this.saveFile(file)
-          }
-        })
-      },
-      handleFolder (folder) {
-        // see all stuff in the directory
-        const stuffInDirectory = fileHelper.getFilesFromDirectoryPath(folder.path).map(name => {
-          return { name: name, path: folder.path + '/' + name }
-        })
-        // get the files in the directory
-        const files = stuffInDirectory.filter(file => !fileHelper.isFolder(file.path))
-        console.log(`stuffInDirectory ${stuffInDirectory}`)
-        // save files to the db
-        files.forEach(file => {
-          this.saveFile(file)
-        })
-        // get subfolders
-        const subfolders = stuffInDirectory.filter(file => fileHelper.isFolder(file.path))
-        subfolders.forEach(folder => this.handleFolder(folder))
-      },
-      saveFile (file) {
-        this.$file.newFilePath(file.path, this.selectedStream)
+        if (!files) { return }
+        this.$file.writeDroppedFilesToDatabase(files, this.selectedStream)
       },
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
@@ -125,7 +97,6 @@
         } else {
           console.log('hasAccessToApp', hasAccessToApp)
           this.$router.push('/access-denied-page')
-          this.$electron.ipcRenderer.send('removeTray')
           // this.$store.dispatch('setUploadingProcess', false)
         }
       },
@@ -342,16 +313,6 @@
 
   .button.is-primary {
     font-weight: $title-font-weight;
-  }
-
-  .tray-container {
-    height: 300px;
-  }
-
-  .tray-menu {
-    height: 300px;
-    padding: 0 !important;
-    padding-top: 20px !important;
   }
 
   .uploading-process-status {
