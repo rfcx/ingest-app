@@ -1,20 +1,19 @@
 @import url('https://fonts.googleapis.com/css?family=Lato:300,400,700');
-@import url('https://fonts.googleapis.com/css?family=Avenir:300,400,700,900');
 
 $brand-primary: #2FB04A;
 $brand-primary-dark: #31984f;
 $title-text-color: #fff;
 $body-text-color: #fff;
 $secondary-text-color: #a1a1a7;
-$body-text-color-dark: #a1a1a7;
 $backgroud-color: #131525;
 $backgroud-color-dark: #131525;
 $box-color: #292a3b;
 $button-background-color: #45485d;
-$title-font-weight: 600;
+$title-font-weight: 700;
 $navbar-height: 0rem;
 $default-padding-margin: 0.75em;
-$default-font-size: 1rem;
+$default-font-size: 14px;
+$default-subtitle-font-size: 12px;
 $sidebar-width: 200px;
 $global-progress-height: 75px;
 
@@ -65,10 +64,6 @@ html,
 body {
   background-color: $backgroud-color;
   color: $body-text-color;
-}
-
-// menu -- shared between side navigation & tray page
-
-.stream-title {
-  color: $title-text-color;
+  font-size: $default-font-size;
+  letter-spacing: 0.2px;
 }

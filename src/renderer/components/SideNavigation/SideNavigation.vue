@@ -294,6 +294,10 @@
     background-color: #2e3145;
   }
 
+  .menu-item_active {
+    font-weight: $title-font-weight;
+  }
+
   .header {
     padding: 0 8px 0 16px;
     margin-bottom: 7px;
@@ -432,20 +436,20 @@
   }
 
   .menu-item {
-    padding: 9px 16px 8px 16px !important;
+    padding: 9px 16px 8px 16px;
+    height: 42px;
   }
 
   .menu-label {
-    font-family: Avenir !important;
-    font-size: 10px !important;
-    font-weight: 900 !important;
-    font-stretch: normal;
+    font-size: $default-font-size;
     font-style: normal;
     line-height: normal;
-    letter-spacing: normal !important;
     color: #ffffff !important;
     margin: 0 !important;
     align-self: center;
+    font-weight: $title-font-weight;
+    text-transform: none;
+    letter-spacing: 0.2px;
   }
 
   .search-wrapper {
@@ -525,7 +529,6 @@
 
   .menu-container-left,
   .menu-container-right {
-    font-family: Avenir;
     font-size: 11px;
     font-weight: 500;
     font-stretch: normal;

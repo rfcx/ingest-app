@@ -232,6 +232,7 @@
 
   .menu-container-failed {
     margin-right: 4px;
+    margin-top: 4px;
   }
 
   .menu-container-failed img {
@@ -245,25 +246,9 @@
     height: 17px;
   }
 
-  .menu .menu-item {
-    padding: $default-padding-margin;
-  }
-
-  .menu div.is-active .stream-title {
-    font-weight: $title-font-weight;
-  }
-
   .menu .stream-title {
-    color: $title-text-color;
     text-overflow: ellipsis;
     overflow: hidden;
-    font-family: Avenir;
-    font-size: 14px !important;
-    font-weight: 900 !important;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: normal !important;
-    letter-spacing: normal !important;
     margin-right: 3px;
     align-self: center;
   }
@@ -323,7 +308,7 @@
     height: 20px;
     text-align: center;
     background-color: $progress-bar-background-color;
-    font-size: 0.75rem;
+    font-size: $default-font-size;
   }
 
   .alert .modal-card-body {

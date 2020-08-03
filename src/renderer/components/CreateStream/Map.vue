@@ -148,7 +148,7 @@ mgl-map {
     background-color: rgba(46, 49, 69, 0.97);
   }
   &--input {
-    font-size: 16px;
+    font-size: $default-font-size;
     font-weight: 500;
     font-stretch: normal;
     font-style: normal;
@@ -184,7 +184,7 @@ mgl-map {
 :-ms-input-placeholder {
   opacity: 0.57;
   font-family: Lato;
-  font-size: 17px;
+  font-size: $default-font-size;
   font-weight: normal;
   font-stretch: normal;
   font-style: normal;

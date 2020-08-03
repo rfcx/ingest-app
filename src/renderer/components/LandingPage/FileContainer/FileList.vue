@@ -46,15 +46,14 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 thead {
   text-transform: uppercase;
-  font-weight: $title-font-weight;
 }
 
 thead td,
 thead th {
-  color: $body-text-color !important;
+  color: $secondary-text-color !important;
 }
 
 .file-list-table {
