@@ -28,7 +28,7 @@
 
 <script>
 import File from '../../../store/models/File'
-import FileState from '../../../../../utils/fileState'
+import fileState from '../../../../../utils/fileState'
 import dateHelper from '../../../../../utils/dateHelper'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faRedo, faTrash } from '@fortawesome/free-solid-svg-icons'
@@ -46,12 +46,12 @@ export default {
   components: { FontAwesomeIcon },
   methods: {
     getStateName (file) {
-      return FileState.getName(file.state, file.stateMessage)
+      return fileState.getName(file.state, file.stateMessage)
     },
     getStateImgUrl (state) {
-      if (state === 'preparing') return ''
-      const s = state.includes('error') ? 'failed' : state
-      return require(`../../../assets/ic-state-${s}.svg`)
+      if (fileState.isPreparing(state)) return ''
+      const iconName = fileState.getIconName(state)
+      return require(`../../../assets/${iconName}`)
     },
     getTimestamp (file) {
       const isoDate = file.timestamp

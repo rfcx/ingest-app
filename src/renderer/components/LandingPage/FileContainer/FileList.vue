@@ -22,8 +22,6 @@
 <script>
 import EmptyView from '../EmptyView'
 import FileRow from './FileRow'
-import FileState from '../../../../../utils/fileState'
-import dateHelper from '../../../../../utils/dateHelper'
 
 export default {
   props: {
@@ -43,22 +41,6 @@ export default {
         case 'Queued': return this.queuingFiles
         case 'Completed': return this.completedFiles
       }
-    }
-  },
-  methods: {
-    getStateName (file) {
-      return FileState.getName(file.state, file.stateMessage)
-    },
-    getStateImgUrl (state) {
-      if (state === 'preparing') return ''
-      const s = state.includes('error') ? 'failed' : state
-      return require(`../../../assets/ic-state-${s}.svg`)
-    },
-    getTimestamp (file) {
-      const isoDate = file.timestamp
-      const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-      const appDate = dateHelper.convertMomentDateToAppDate(momentDate)
-      return appDate
     }
   }
 }
