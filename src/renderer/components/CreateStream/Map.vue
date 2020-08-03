@@ -5,11 +5,9 @@
       :input.sync="defaultInput"
       :mapboxgl="mapbox"
       :localGeocoder="coordinatesGeocoder"
-      :limit="1"
       :zoom="10"
       :minLength="3"
       :autocomplete="false"
-      :localGeocoderOnly="true"
       placeholder="search by latitude, longitude"
       position="bottom-right"
       @result="onSelected"
@@ -132,7 +130,7 @@ mgl-map {
   float: none;
   width: 362px;
   border-radius: 4px;
-  background-color: rgba(46, 49, 69, 0.9);
+  background-color: rgba(46, 49, 69, 0.97);
   &--icon-search,
   &--icon-close,
   &--icon-loading {
@@ -147,7 +145,7 @@ mgl-map {
     }
   }
   &--button {
-    background-color: rgba(46, 49, 69, 0.9);
+    background-color: rgba(46, 49, 69, 0.97);
   }
   &--input {
     font-size: 16px;
