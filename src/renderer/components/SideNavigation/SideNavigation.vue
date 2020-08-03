@@ -218,7 +218,7 @@
         return require(`../../assets/ic-uploading-${state}-green.svg`)
       },
       getStateImgUrl (state) {
-        if (fileState.isPreparing(state)) return ''
+        if (state === '') return ''
         const iconName = fileState.getIconName(state)
         return require(`../../assets/${iconName}`)
       },
