@@ -65,7 +65,7 @@
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="stream-title">{{ stream.name }}</div>
             <font-awesome-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
-            <img v-if="stream.isUploading || stream.isError" :src="getStateImgUrl(stream.state)">
+            <img :src="getStateImgUrl(stream.state)">
           </div>
         </div>
       </li>
@@ -78,7 +78,7 @@
   import settings from 'electron-settings'
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
-  import FileState from '../../../../utils/fileState'
+  import fileState from '../../../../utils/fileState'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
   const { remote } = window.require('electron')
@@ -113,7 +113,7 @@
       },
       streams () {
         return Stream.query().with('files').get().sort((streamA, streamB) => {
-          return this.getStatePriority(streamA) - this.getStatePriority(streamB)
+          return fileState.getStatePriority(streamA) - fileState.getStatePriority(streamB)
         })
       },
       allFiles () {
@@ -132,16 +132,6 @@
       },
       isInprogessOfUploading () {
         return this.getUnsyncedFiles.length > 0 || this.getUploadedFiles.length > 0
-      },
-      isDuplicated () {
-        let count = 0
-        this.files.forEach(file => {
-          if (FileState.isDuplicated(file.state)) {
-            count++
-          }
-        })
-        if (count === this.files.length) return true
-        else return false
       },
       isRequiredSymbols () {
         return this.searchStr && this.searchStr.length > 0 && this.searchStr.length < 3
@@ -228,9 +218,9 @@
         return require(`../../assets/ic-uploading-${state}-green.svg`)
       },
       getStateImgUrl (state) {
-        if (FileState.isPreparing(state)) return ''
-        const s = FileState.isError(state) ? 'failed' : state
-        return require(`../../assets/ic-state-${s}.svg`)
+        if (state === '') return ''
+        const iconName = fileState.getIconName(state)
+        return require(`../../assets/${iconName}`)
       },
       selectItem (stream) {
         this.$store.dispatch('setSelectedStreamId', stream.id)
@@ -238,83 +228,6 @@
       isActive (stream) {
         if (this.selectedStream === null) return false
         return stream.id === this.selectedStream.id
-      },
-      shouldShowProgress (stream) {
-        return this.getState(stream) !== 'completed' && this.getState(stream) !== 'failed' && this.getState(stream) !== 'duplicated'
-      },
-      sendNotification (status) {
-        let notificationCompleted = {
-          title: 'Ingest App',
-          body: 'Stream uploaded successfully'
-        }
-        if (status === 'completed') {
-          let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
-          myNotificationCompleted.onshow = () => {
-            console.log('show notification')
-          }
-        }
-      },
-      getState (stream) {
-        if (stream.files && !stream.files.length) {
-          return 'waiting'
-        }
-        if (stream.completed === true) {
-          return 'completed'
-        }
-        const hasFiles = stream.files && stream.files.length
-        const total = stream.files.length
-        const completedFiles = stream.files.filter(file => file.state === 'completed').length
-        const waitingFiles = stream.files.filter(file => file.state === 'waiting').length
-        const failedFiles = stream.files.filter(file => file.state === 'failed').length
-        const duplicatedFiles = stream.files.filter(file => file.state === 'duplicated').length
-        const ingestingFiles = stream.files.filter(file => file.state === 'ingesting').length
-        const isCompleted = hasFiles && total === completedFiles
-        const isWaiting = hasFiles && total === waitingFiles
-        const isFailed = hasFiles && failedFiles > 0 && total === (failedFiles + duplicatedFiles)
-        const isDuplicated = hasFiles && total === duplicatedFiles
-        const isIngesting = hasFiles && total === ingestingFiles
-        if (isCompleted) {
-          if (!!this.uploadingStreams[stream.id] && this.uploadingStreams[stream.id] !== 'completed') {
-            const notifiedStream = stream.files && stream.files.length && stream.files.every(file => file.notified === true)
-            if (!notifiedStream) {
-              this.sendNotification('completed')
-            }
-          }
-          this.uploadingStreams[stream.id] = 'completed'
-          stream.completed = true
-          return 'completed'
-        } else if (isWaiting) {
-          this.uploadingStreams[stream.id] = 'waiting'
-          stream.completed = false
-          return 'waiting'
-        } else if (isFailed) {
-          this.uploadingStreams[stream.id] = 'failed'
-          stream.completed = false
-          return 'failed'
-        } else if (isDuplicated) {
-          this.uploadingStreams[stream.id] = 'duplicated'
-          stream.completed = false
-          return 'duplicated'
-        } else if (isIngesting) {
-          this.uploadingStreams[stream.id] = 'ingesting'
-          stream.completed = false
-          return 'ingesting'
-        } else {
-          this.uploadingStreams[stream.id] = 'uploading'
-          stream.completed = false
-          return 'uploading'
-        }
-      },
-      hidePause (streams) {
-        let count = 0
-        streams.forEach(stream => {
-          if (stream.isCompleted || stream.isError) {
-            count++
-          } else if (this.getState(stream) === 'uploading' && this.checkWarningLoad(stream)) {
-            count++
-          }
-        })
-        if (count === streams.length) return true
       },
       checkWarningLoad (stream) {
         let countFailed = 0
@@ -342,58 +255,6 @@
         })
         if (count === stream.files.length) return true
         else return false
-      },
-      getStatePriority (stream) {
-        const state = this.getState(stream)
-        switch (state) {
-          case 'waiting': return 0
-          case 'uploading': return 1
-          case 'ingesting': return 2
-          case 'failed': return 3
-          case 'duplicated': return 4
-          case 'completed': return 5
-        }
-      },
-      getProgress (stream) {
-        const state = this.getState(stream)
-        if (state === 'completed') return 100
-        else if (state === 'waiting' || state === 'failed' || state === 'duplicated') return 0
-        else if (this.checkWarningLoad(stream)) return 100
-        else if (this.isFilesHidden(stream)) return 100
-        const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
-        const uploadedFiles = stream.files.filter(file => { return file.state === 'ingesting' || file.state === 'completed' })
-        const completedPercentage = completedFiles.length / (stream.files.length * 2) * 100
-        const uploadedPercentage = uploadedFiles.length / (stream.files.length * 2) * 100
-        return completedPercentage + uploadedPercentage
-      },
-      getStateStatus (stream) {
-        const state = this.getState(stream)
-        if (state === 'duplicated') {
-          const duplicatedFiles = stream.files.filter(file => { return file.state === 'duplicated' })
-          return `0/${duplicatedFiles.length} ingested | ${duplicatedFiles.length} ${duplicatedFiles.length > 1 ? 'errors' : 'error'}`
-        } else if (state === 'failed') {
-          const failedFiles = stream.files.filter(file => { return file.state === 'failed' })
-          return `0/${failedFiles.length} ingested | ${failedFiles.length} ${failedFiles.length > 1 ? 'errors' : 'error'}`
-        } else if (state === 'completed') {
-          const successedFiles = stream.files.filter(file => { return file.state === 'completed' })
-          return `${successedFiles.length}/${successedFiles.length} ingested | 0 errors`
-        } else if (state === 'waiting') return stream.files.length + (stream.files.length > 1 ? '+ files' : ' file')
-        const completedFiles = stream.files.filter(file => { return file.state === 'completed' })
-        const errorFiles = stream.files.filter(file => { return file.state === 'failed' || file.state === 'duplicated' })
-        if (errorFiles.length < 1) return `${completedFiles.length}/${stream.files.length} ingested`
-        if (this.isFilesHidden(stream)) {
-          let count = 0
-          stream.files.forEach(file => {
-            if (file.state === 'completed') {
-              count++
-            }
-          })
-          return `${completedFiles.length}/${count} ingested`
-        }
-        return `${completedFiles.length}/${stream.files.length} ingested | ${errorFiles.length} ${errorFiles.length > 1 ? 'errors' : 'error'}`
-      },
-      toggleUploadingProcess () {
-        this.$store.dispatch('setUploadingProcess', !this.isUploadingProcessEnabled)
       },
       getFailedFiles (streamId) {
         return new Promise((resolve, reject) => {
@@ -431,6 +292,11 @@
   .menu-item:hover,
   .menu-item_active {
     background-color: #2e3145;
+    cursor: pointer;
+  }
+
+  .menu-item_active {
+    font-weight: $title-font-weight;
   }
 
   .header {
@@ -571,20 +437,24 @@
   }
 
   .menu-item {
-    padding: 9px 16px 8px 16px !important;
+    padding: 9px 16px 8px 16px;
+    height: 42px;
+  }
+
+  .menu-item .menu-container {
+    height: 25px;
   }
 
   .menu-label {
-    font-family: Avenir !important;
-    font-size: 10px !important;
-    font-weight: 900 !important;
-    font-stretch: normal;
+    font-size: $default-font-size;
     font-style: normal;
     line-height: normal;
-    letter-spacing: normal !important;
     color: #ffffff !important;
     margin: 0 !important;
     align-self: center;
+    font-weight: $title-font-weight;
+    text-transform: none;
+    letter-spacing: 0.2px;
   }
 
   .search-wrapper {
@@ -664,7 +534,6 @@
 
   .menu-container-left,
   .menu-container-right {
-    font-family: Avenir;
     font-size: 11px;
     font-weight: 500;
     font-stretch: normal;

@@ -23,12 +23,15 @@ export default class Stream extends Model {
   }
 
   get state () {
-    const errorFiles = this.files.filter(file => FileState.canRedo(file.state, file.stateMessage))
+    if (this.files.length === 0) { return '' }
+    const errorFiles = this.files.filter(file => FileState.isError(file.state, file.stateMessage))
+    const preparingFiles = this.files.filter(file => FileState.isInPreparedGroup(file.state))
     const uploadingFiles = this.files.filter(file => FileState.isInQueuedGroup(file.state))
     const completedFiles = this.files.filter(file => FileState.isInCompletedGroup(file.state))
     const isCompleted = this.files.length === completedFiles.length
     if (uploadingFiles.length > 0) return 'uploading'
     if (errorFiles.length > 0) return 'failed'
+    if (preparingFiles.length > 0) return 'preparing'
     if (isCompleted) return 'completed'
     return ''
     // if (this.files && !this.files.length) {
@@ -71,7 +74,7 @@ export default class Stream extends Model {
   }
 
   get canRedo () {
-    return this.state.includes('error') && !this.isDuplicated
+    return this.files.filter(file => FileState.canRedo(file.state, file.stateMessage)).length > 0
   }
 
   stateIsDuplicated () {

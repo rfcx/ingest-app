@@ -14,7 +14,6 @@ const getStatePriority = function (state, message) {
 }
 
 const getName = function (state, message) {
-  if (!message) return ''
   switch (state) {
     case 'preparing': return ''
     case 'waiting': return 'waiting'
@@ -22,9 +21,30 @@ const getName = function (state, message) {
     case 'ingesting': return 'ingesting'
     case 'local_error': return 'failed'
     case 'server_error':
+      if (!message) return ''
       if (message && message.toLowerCase().includes('duplicate')) return 'duplicated'
       else return 'failed'
     case 'completed': return 'completed'
+  }
+}
+
+const getIconName = function (state) {
+  switch (state) {
+    case 'preparing':
+    case 'waiting':
+      return 'ic-state-waiting.svg'
+    case 'uploading':
+    case 'uploaded':
+      return 'ic-state-uploading.svg'
+    case 'ingesting':
+      return 'ic-state-ingesting.svg'
+    case 'local_error':
+    case 'server_error':
+    case 'failed':
+    case 'duplicated':
+      return 'ic-state-failed.svg'
+    case 'completed':
+      return 'ic-state-completed.svg'
   }
 }
 
@@ -76,6 +96,7 @@ const canRemove = function (state) {
 export default {
   getStatePriority,
   getName,
+  getIconName,
   isInPreparedGroup,
   isInQueuedGroup,
   isInCompletedGroup,

@@ -154,8 +154,21 @@
         console.log('checkFilesInUploadingSessionId', files)
         if (files.length === 0) return
         const completedFiles = files.filter(file => file.isInCompletedGroup)
-        if (files.length === completedFiles.length) {
-          this.resetUploadingSessionId() // reset session id when all files has completed
+        if (files.length === completedFiles.length) { // all files has completed
+          this.sendCompleteNotification(completedFiles.length)
+          this.resetUploadingSessionId()
+        }
+      },
+      sendCompleteNotification (numberOfCompletedFiles) {
+        // const text = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'}`
+        const text = 'Streams'
+        let notificationCompleted = {
+          title: 'RFCx Ingest',
+          body: `${text} uploaded successfully`
+        }
+        let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
+        myNotificationCompleted.onshow = () => {
+          console.log('show notification')
         }
       },
       resetUploadingSessionId () {
