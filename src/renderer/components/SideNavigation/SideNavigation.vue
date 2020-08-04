@@ -441,6 +441,10 @@
     height: 42px;
   }
 
+  .menu-item .menu-container {
+    height: 25px;
+  }
+
   .menu-label {
     font-size: $default-font-size;
     font-style: normal;

@@ -232,13 +232,12 @@
 
   .menu-container-failed {
     margin-right: 4px;
-    margin-top: 4px;
   }
 
   .menu-container-failed img {
     width: 16px !important;
     height: 16px !important;
-    margin-left: 5px;
+    margin: 5px 0;
   }
 
   .side-menu-controls-btn {
