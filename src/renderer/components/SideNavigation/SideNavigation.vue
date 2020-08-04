@@ -292,6 +292,7 @@
   .menu-item:hover,
   .menu-item_active {
     background-color: #2e3145;
+    cursor: pointer;
   }
 
   .menu-item_active {
