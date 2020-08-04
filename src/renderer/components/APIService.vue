@@ -160,7 +160,8 @@
         }
       },
       sendCompleteNotification (numberOfCompletedFiles) {
-        const text = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'}`
+        // const text = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'}`
+        const text = 'Streams'
         let notificationCompleted = {
           title: 'RFCx Ingest',
           body: `${text} uploaded successfully`
