@@ -97,11 +97,12 @@ class FileProvider {
   async updateFilesDuration (files) {
     // get updated data
     Promise.all(files.map(async file => {
-      const durationInSecond = await fileHelper.getFileDuration(file.path)
-      if (durationInSecond === undefined) {
-        return {id: file.id, state: 'local_error', stateMessage: 'Can\'t read duration of the file'}
+      try {
+        const durationInSecond = await fileHelper.getFileDuration(file.path)
+        return { id: file.id, durationInSecond: durationInSecond }
+      } catch (error) {
+        return { id: file.id, state: 'local_error', stateMessage: `Can't read file duration (${error.shortMessage})` }
       }
-      return { id: file.id, durationInSecond: durationInSecond }
     })
     ).then(updatedData => {
       File.update({ data: updatedData })
