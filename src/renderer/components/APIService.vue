@@ -153,18 +153,19 @@
       checkFilesInUploadingSessionId (files) {
         console.log('checkFilesInUploadingSessionId', files)
         if (files.length === 0) return
-        const completedFiles = files.filter(file => file.isInCompletedGroup)
-        if (files.length === completedFiles.length) { // all files has completed
-          this.sendCompleteNotification(completedFiles.length)
+        const completedFiles = files.filter(file => file.isInCompletedGroup && !file.isError)
+        const failedFiles = files.filter(file => file.isInCompletedGroup && file.isError)
+        if (files.length === completedFiles.length + failedFiles.length) { // all files has completed
+          this.sendCompleteNotification(completedFiles.length, failedFiles.length)
           this.resetUploadingSessionId()
         }
       },
-      sendCompleteNotification (numberOfCompletedFiles) {
-        // const text = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'}`
-        const text = 'Streams'
+      sendCompleteNotification (numberOfCompletedFiles, numberOfFailedFiles) {
+        const completedText = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'} uploaded`
+        const failText = `${numberOfFailedFiles} ${numberOfFailedFiles > 1 ? 'files' : 'file'} failed`
         let notificationCompleted = {
-          title: 'RFCx Ingest',
-          body: `${text} uploaded successfully`
+          title: 'Ingest Completed',
+          body: `${numberOfCompletedFiles > 0 ? completedText + ', ' : ''}${numberOfFailedFiles > 0 ? failText : ''}`
         }
         let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
         myNotificationCompleted.onshow = () => {
