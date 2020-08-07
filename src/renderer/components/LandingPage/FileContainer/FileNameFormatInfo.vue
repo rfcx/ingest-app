@@ -2,8 +2,13 @@
   <div class="preparing-file-settings__wrapper">
     <div class="preparing-file-settings__name-format-wrapper">
       <span class="preparing-file-settings__name-format-title">Filename format</span>
-      <span class="preparing-file-settings__name-format-description">{{ selectedStream.timestampFormat }}</span>
-      <span class="preparing-file-settings__edit-button" title="Edit filename format"><font-awesome-icon :icon="iconPencil" @click="openFileNameFormatSettingModal()"></font-awesome-icon></span>
+      <div class="d-flex flex-row">
+          <div class="preparing-file-settings__name-format-description">{{ selectedStream.timestampFormat }}</div>
+          <div class="preparing-file-settings__edit-button" title="Edit filename format">
+            <font-awesome-icon :icon="iconPencil" @click="openFileNameFormatSettingModal()"></font-awesome-icon>
+          </div>
+      </div>
+      
     </div>
     <div class="preparing-file-settings__actions-wrapper">
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
@@ -11,7 +16,7 @@
     </div>
     <div class="preparing-file-settings__timestamp-modal modal" :class="{ 'is-active': showSettingModal }">
       <div class="modal-background"></div>
-      <file-name-format-settings @onClose="closeFileNameFormatSettingModal"></file-name-format-settings>
+      <file-name-format-settings @onClose="closeFileNameFormatSettingModal" @save="onFormatSave"/>
     <button class="modal-close is-large" aria-label="close"></button>
   </div>
   </div>
@@ -79,6 +84,10 @@ export default {
     closeFileNameFormatSettingModal () {
       console.log('closeFileNameFormatSettingModal')
       this.showSettingModal = false
+    },
+    async onFormatSave (format) {
+      this.closeFileNameFormatSettingModal()
+      console.log("onFormatSave", format)
     }
   }
 }
@@ -108,5 +117,9 @@ export default {
       font-size: 14px;
       cursor: pointer;
     }
+  }
+
+  .preparing-file-settings__edit-button {
+    padding-left: 8px;
   }
 </style>
