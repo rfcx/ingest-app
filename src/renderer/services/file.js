@@ -6,6 +6,8 @@ import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 
+const FORMAT_AUTO_DETECT = "Auto-detect"
+
 class FileProvider {
   // API -- wrapper
   uploadFile (file, idToken) {
@@ -138,7 +140,7 @@ class FileProvider {
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
     let isoDate
-    if (stream.timestampFormat === 'Auto-detect') {
+    if (stream.timestampFormat === FORMAT_AUTO_DETECT) {
       isoDate = dateHelper.parseTimestampAuto(fileName)
     } else {
       isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
@@ -255,6 +257,50 @@ class FileProvider {
       }).catch((error) => {
         console.log('error', error)
       })
+  }
+
+  /**
+   * Update preparing file format
+   * @param {*} format string of format
+   * @param {*} fileObjectList list of files
+   * @param {*} stream file's stream
+   */
+  async updateFilesFormat (stream, fileObjectList, format = FORMAT_AUTO_DETECT) {
+    const updatedFiles = []
+    if (Array.isArray(fileObjectList) && fileObjectList.length > 0) {
+      for await (const file of fileObjectList) {
+        const isoDate = format === FORMAT_AUTO_DETECT ? dateHelper.parseTimestampAuto(file.name) : dateHelper.parseTimestamp(file.name, format)
+        const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+
+        const stateObj = this.getState(momentDate, file.extension)
+        const state = stateObj.state
+        const newFile = {...file}
+        // update fields
+        newFile.state = state
+        newFile.timestamp = isoDate
+
+        updatedFiles.push(newFile)
+
+        try {
+          await File.update({ where: file.id,
+            data: { state, timestamp: isoDate },
+            update: ["state", "timestamp"]
+          })
+        } catch (e) {
+          console.log(`Update file '${file.id}' error`, e)
+        }
+      }
+
+      console.log(`Updated ${fileObjectList.length} files with format '${format}'`)
+    }
+
+    await Stream.update({ where: stream.id,
+      data: { files: updatedFiles, timestampFormat: format },
+      update: ["timestampFormat", "files"]
+    })
+
+    console.log(`Updated ${updatedFiles.length} file(s) to stream '${stream.id}'`)
+    console.log(`Updated timestampFormat '${format}' to stream '${stream.id}'`)
   }
 }
 

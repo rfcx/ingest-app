@@ -88,6 +88,8 @@ export default {
     async onFormatSave (format) {
       this.closeFileNameFormatSettingModal()
       console.log("onFormatSave", format)
+      const objectFiles = this.preparingFiles || []
+      await this.$file.updateFilesFormat(this.selectedStream, objectFiles, format)
     }
   }
 }
