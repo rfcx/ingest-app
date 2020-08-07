@@ -5,6 +5,7 @@ import Stream from '../store/models/Stream'
 import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
+import store from '../store'
 
 class FileProvider {
   // API -- wrapper
@@ -51,6 +52,18 @@ class FileProvider {
   }
 
   // DB -- wrapper
+  putFilesIntoUploadingQueue (files) {
+    console.log('putFilesIntoUploadingQueue')
+    // if there is an active session id then reuse that, otherwise generate a new one
+    const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
+    store.dispatch('setCurrentUploadingSessionId', sessionId)
+    files.forEach(file => {
+      File.update({ where: file.id,
+        data: { state: 'waiting', stateMessage: '', sessionId: sessionId }
+      })
+    })
+  }
+
   // Convert dropped files (from drag&drop) to database file objects
   writeDroppedFilesToDatabase (droppedFiles, selectedStream) {
     console.log('writeDroppedFilesToDatabase', droppedFiles, selectedStream)
