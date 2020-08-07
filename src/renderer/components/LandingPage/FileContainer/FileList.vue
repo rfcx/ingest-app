@@ -15,66 +15,45 @@
         <file-row v-for="file in files" :key="file.id" :file="file"></file-row>
       </tbody>
     </table>
-    <empty-folder v-if="files.length === 0" :isDragging="isDragging"></empty-folder>
+    <empty-view v-if="files.length === 0" :hasFileInQueued="queuingFiles.length > 0" :isDragging="isDragging"></empty-view>
   </div>
 </template>
 
 <script>
-import EmptyFolder from '../EmptyFolder'
+import EmptyView from '../EmptyView'
 import FileRow from './FileRow'
-import FileState from '../../../../../utils/fileState'
-import dateHelper from '../../../../../utils/dateHelper'
 
 export default {
   props: {
-    allFiles: Array,
+    preparingFiles: Array,
+    queuingFiles: Array,
+    completedFiles: Array,
     selectedTab: String,
     isDragging: Boolean
   },
   components: {
-    EmptyFolder, FileRow
+    EmptyView, FileRow
   },
   computed: {
     files () {
-      if (!this.allFiles) return []
       switch (this.selectedTab) {
-        case 'Prepared':
-          return this.allFiles.filter(file => FileState.isInPreparedGroup(file.state))
-        case 'Queued':
-          return this.allFiles.filter(file => FileState.isInQueuedGroup(file.state))
-        case 'Completed':
-          return this.allFiles.filter(file => FileState.isInCompletedGroup(file.state))
+        case 'Prepared': return this.preparingFiles
+        case 'Queued': return this.queuingFiles
+        case 'Completed': return this.completedFiles
       }
-    }
-  },
-  methods: {
-    getStateName (file) {
-      return FileState.getName(file.state, file.stateMessage)
-    },
-    getStateImgUrl (state) {
-      if (state === 'preparing') return ''
-      const s = state.includes('error') ? 'failed' : state
-      return require(`../../../assets/ic-state-${s}.svg`)
-    },
-    getTimestamp (file) {
-      const isoDate = file.timestamp
-      const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-      const appDate = dateHelper.convertMomentDateToAppDate(momentDate)
-      return appDate
     }
   }
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 thead {
   text-transform: uppercase;
-  font-weight: $title-font-weight;
 }
 
 thead td,
 thead th {
-  color: $body-text-color !important;
+  color: $secondary-text-color !important;
 }
 
 .file-list-table {

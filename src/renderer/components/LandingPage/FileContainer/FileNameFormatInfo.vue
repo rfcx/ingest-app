@@ -59,6 +59,9 @@ export default {
           data: { state: 'waiting', stateMessage: '', sessionId: sessionId }
         })
       })
+      const tabObject = {}
+      tabObject[this.selectedStreamId] = 'Queued'
+      this.$store.dispatch('setSelectedTab', tabObject)
     },
     confirmToClearAllFiles () {
       this.clearAllFiles()

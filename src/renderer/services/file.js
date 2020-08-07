@@ -7,6 +7,7 @@ import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 
 class FileProvider {
+  // API -- wrapper
   uploadFile (file, idToken) {
     console.log('\nupload file ', file)
     if (!fileHelper.isExist(file.path)) {
@@ -49,8 +50,63 @@ class FileProvider {
     return settings.get('settings.production_env')
   }
 
+  // DB -- wrapper
+  // Convert dropped files (from drag&drop) to database file objects
+  writeDroppedFilesToDatabase (droppedFiles, selectedStream) {
+    console.log('writeDroppedFilesToDatabase', droppedFiles, selectedStream)
+    let fileObjects = []
+    let fileObjectsInFolder = []
+    if (!droppedFiles) { return } // no files
+    ([...droppedFiles]).forEach(file => {
+      if (fileHelper.isFolder(file.path)) {
+        fileObjectsInFolder = fileObjectsInFolder.concat(this.getFileObjectsFromFolder(file, selectedStream, null))
+      } else {
+        fileObjects.push(this.createFileObject(file.path, selectedStream))
+      }
+    })
+    const allFileObjects = fileObjects.concat(fileObjectsInFolder)
+    console.log('current handleFiles fileObjects', allFileObjects.length)
+    // insert converted files into db
+    this.insertNewFiles(allFileObjects, selectedStream)
+    // update file duration
+    this.updateFilesDuration(allFileObjects.filter(file => fileHelper.isSupportedFileExtension(file.extension)))
+  }
+
+  getFileObjectsFromFolder (folder, selectedStream, existingFileObjects = null) {
+    // see all stuff in the directory
+    const stuffInDirectory = fileHelper.getFilesFromDirectoryPath(folder.path).map(name => {
+      return { name: name, path: folder.path + '/' + name }
+    })
+    // get the files in the directory
+    const files = stuffInDirectory.filter(file => !fileHelper.isFolder(file.path))
+    // write file into file object array
+    let fileObjects = existingFileObjects || []
+    files.forEach(file => {
+      fileObjects.push(this.createFileObject(file.path, selectedStream))
+    })
+    // get subfolders
+    const subfolders = stuffInDirectory.filter(file => fileHelper.isFolder(file.path))
+    subfolders.forEach(folder => this.getFileObjectsFromFolder(folder, selectedStream, fileObjects))
+    return fileObjects
+  }
+
   async getFiles (selectedStream) {
     return File.query().where('streamId', selectedStream.id).orderBy('name').get()
+  }
+
+  async updateFilesDuration (files) {
+    // get updated data
+    Promise.all(files.map(async file => {
+      try {
+        const durationInSecond = await fileHelper.getFileDuration(file.path)
+        return { id: file.id, durationInSecond: durationInSecond }
+      } catch (error) {
+        return { id: file.id, state: 'local_error', stateMessage: `Can't read file duration (${error.shortMessage})` }
+      }
+    })
+    ).then(updatedData => {
+      File.update({ data: updatedData })
+    })
   }
 
   async newFilePath (newFilePath, selectedStream) {
@@ -74,14 +130,13 @@ class FileProvider {
     return !!File.find(this.getFileId(filePath))
   }
 
-  async createFileObject (filePath, stream) {
+  createFileObject (filePath, stream) {
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
     // const data = fileHelper.getMD5Hash(filePath)
     // const hash = data.hash
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
-    const duration = await fileHelper.getFileDuration(filePath)
     let isoDate
     if (stream.timestampFormat === 'Auto-detect') {
       isoDate = dateHelper.parseTimestampAuto(fileName)
@@ -99,7 +154,7 @@ class FileProvider {
       path: filePath,
       extension: fileExt,
       sizeInByte: size,
-      durationInSecond: duration,
+      durationInSecond: -1,
       timestamp: isoDate,
       streamId: stream.id,
       state: state.state,
@@ -108,10 +163,10 @@ class FileProvider {
   }
 
   getState (momentDate, fileExt) {
-    if (!momentDate.isValid()) {
-      return {state: 'local_error', message: 'Filename does not match with a filename format'}
-    } else if (!fileHelper.isSupportedFileExtension(fileExt)) {
+    if (!fileHelper.isSupportedFileExtension(fileExt)) {
       return {state: 'local_error', message: 'File extension is not supported'}
+    } else if (!momentDate.isValid()) {
+      return {state: 'local_error', message: 'Filename does not match with a filename format'}
     } else {
       return {state: 'preparing', message: ''}
     }

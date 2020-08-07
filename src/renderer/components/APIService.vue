@@ -24,6 +24,9 @@
       filesInUploadingSession () {
         if (!this.currentUploadingSessionId) return []
         return File.query().where('sessionId', this.currentUploadingSessionId).get()
+      },
+      noDurationFiles () {
+        return File.query().where(file => { return file.state === 'preparing' && file.durationInSecond === -1 }).orderBy('timestamp').get()
       }
     },
     watch: {
@@ -127,6 +130,9 @@
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
       },
+      async updateFilesDuration () {
+        this.$file.updateFilesDuration(this.noDurationFiles)
+      },
       checkAfterSuspended () {
         return this.getSuspendedFiles()
           .then((files) => {
@@ -148,8 +154,21 @@
         console.log('checkFilesInUploadingSessionId', files)
         if (files.length === 0) return
         const completedFiles = files.filter(file => file.isInCompletedGroup)
-        if (files.length === completedFiles.length) {
-          this.resetUploadingSessionId() // reset session id when all files has completed
+        if (files.length === completedFiles.length) { // all files has completed
+          this.sendCompleteNotification(completedFiles.length)
+          this.resetUploadingSessionId()
+        }
+      },
+      sendCompleteNotification (numberOfCompletedFiles) {
+        // const text = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'}`
+        const text = 'Streams'
+        let notificationCompleted = {
+          title: 'RFCx Ingest',
+          body: `${text} uploaded successfully`
+        }
+        let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
+        myNotificationCompleted.onshow = () => {
+          console.log('show notification')
         }
       },
       resetUploadingSessionId () {
@@ -169,6 +188,7 @@
     created () {
       console.log('API Service')
       this.checkAfterSuspended()
+      this.updateFilesDuration()
       this.checkWaitingFilesInterval = setInterval(() => {
         this.tickUpload()
       }, workerTimeoutMinimum)

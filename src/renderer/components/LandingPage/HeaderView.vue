@@ -252,3 +252,51 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+
+  .title-container-text {
+    font-weight: $title-font-weight;
+    margin-bottom: 6px !important;
+    max-width: 80%;
+  }
+
+  .subtitle-container {
+    font-size: $default-subtitle-font-size;
+  }
+
+  .edit-container {
+    vertical-align: middle !important;
+    width: 595px !important;
+  }
+
+  .edit-container-error {
+    margin-left: 3px;
+    font-size: 12px;
+    color: #a1a1a7;
+    vertical-align: middle;
+  }
+
+  .edit-container-item-input {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    width: 40%;
+    margin: $default-padding-margin;
+    margin-left: 0;
+    font-size: 14px !important;
+  }
+
+  .edit-container-item-control {
+    display: inline-block !important;
+    vertical-align: middle !important;
+    width: 56% !important;
+  }
+
+  .title-container-edit {
+    margin-left: 10px !important;
+    color: #9B9B9B !important;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+</style>

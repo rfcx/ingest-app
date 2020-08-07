@@ -308,7 +308,7 @@
 
   .file-status-state {
     display: block;
-    font-size: 8px;
+    font-size: 9px;
     height: auto;
     line-height: 1 !important;
   }
@@ -331,63 +331,12 @@
     vertical-align: middle !important;
   }
 
-  .edit-container {
-    vertical-align: middle !important;
-    width: 595px !important;
-  }
-
-  .edit-container-error {
-    margin-left: 3px;
-    font-size: 10px;
-    color: #a1a1a7;
-    vertical-align: middle;
-  }
-
-  .edit-container-item-input {
-    display: inline-block !important;
-    vertical-align: middle !important;
-    width: 40% !important;
-    margin-right: 10px !important;
-    font-size: 12px !important;
-  }
-
-  .edit-container-item-control {
-    display: inline-block !important;
-    vertical-align: middle !important;
-    width: 56% !important;
-  }
-
-  .title-container-edit {
-    margin-left: 10px !important;
-    color: #9B9B9B !important;
-    font-size: 14px;
-    cursor: pointer;
-  }
-
   .btn {
     width: 90px !important;
     height: 30px !important;
     line-height: 1 !important;
     margin-right: 8px !important;
-    font-size: 12px !important;
-  }
-
-  .title-container-text {
-    margin-bottom: 6px !important;
-    max-width: 80%;
-  }
-
-  .title-container-text .stream-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    font-family: Avenir;
-    font-size: 14px;
-    font-weight: 900;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: #ffffff;
+    font-size: 13px !important;
   }
 
   .folder-area {

@@ -15,7 +15,7 @@ export default class File extends Model {
       sha1: this.attr(''),
       path: this.string(''),
       sizeInByte: this.number(0),
-      durationInSecond: this.number(0),
+      durationInSecond: this.number(-1), // -1: unknown (default value) -2: error, no duration
       extension: this.string(''),
       timestamp: this.attr(null),
       state: this.string(''), // state: preparing, local_error, waiting, uploading, ingesting, completed, server_error
@@ -33,6 +33,7 @@ export default class File extends Model {
   }
 
   get fileDuration () {
+    if (this.durationInSecond < 0) { return '-' }
     var date = new Date(0)
     date.setSeconds(this.durationInSecond)
     var timeString = date.toISOString().substr(11, 8)

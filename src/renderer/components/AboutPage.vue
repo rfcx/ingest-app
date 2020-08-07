@@ -32,7 +32,7 @@
   }
 
   .about-app {
-    font-size: 16px;
+    font-size: $default-font-size;
     margin: 5px auto;
   }
 

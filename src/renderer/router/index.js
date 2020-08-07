@@ -27,11 +27,6 @@ export default new Router({
       component: require('@/components/FSService').default
     },
     {
-      path: '/tray',
-      name: 'tray-page',
-      component: require('@/components/TrayPage').default
-    },
-    {
       path: '/about',
       name: 'about-page',
       component: require('@/components/AboutPage').default
