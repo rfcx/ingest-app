@@ -7,52 +7,11 @@ import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 
 class FileProvider {
-  // API -- wrapper
-  uploadFile (file, idToken) {
-    console.log('\nupload file ', file)
-    if (!fileHelper.isExist(file.path)) {
-      return File.update({ where: file.id,
-        data: {state: 'local_error', stateMessage: 'File is not exist'}
-      })
-    }
-    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.timestamp,
-      file.sizeInByte, idToken, (progress) => {
-      // FIX progress scale when we will start work with google cloud
-        File.update({ where: file.id,
-          data: {state: 'uploading'}
-        })
-      }).then((uploadId) => {
-      console.log('\nfile uploaded to the temp folder S3')
-      File.update({ where: file.id, data: {uploaded: true} })
-    }).catch((error) => {
-      console.log('ERROR UPLOAD FILE', error, error.message)
-      if (error.message === 'Request body larger than maxBodyLength limit') {
-        return File.update({ where: file.id,
-          data: {state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB'}
-        })
-      } else if (file.retries < 3) {
-        return File.update({ where: file.id,
-          data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
-        })
-      } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
-        return File.update({ where: file.id,
-          data: {state: 'server_error', stateMessage: 'Network Error'}
-        })
-      } else {
-        return File.update({ where: file.id,
-          data: {state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.'}
-        })
-      }
-    })
-  }
-
-  isProductionEnv () {
-    return settings.get('settings.production_env')
-  }
-
-  // DB -- wrapper
-  // Convert dropped files (from drag&drop) to database file objects
-  writeDroppedFilesToDatabase (droppedFiles, selectedStream) {
+  /* -- Import files -- */
+  handleDroppedFiles (droppedFiles, selectedStream) {
+    // 1. Convert dropped files (from drag&drop) to database file objects
+    // 2. Insert files to database
+    // 3. Get file duration
     console.log('writeDroppedFilesToDatabase', droppedFiles, selectedStream)
     let fileObjects = []
     let fileObjectsInFolder = []
@@ -95,10 +54,6 @@ class FileProvider {
     return fileObjects
   }
 
-  async getFiles (selectedStream) {
-    return File.query().where('streamId', selectedStream.id).orderBy('name').get()
-  }
-
   async updateFilesDuration (files) {
     // get updated data
     Promise.all(files.map(async file => {
@@ -114,18 +69,126 @@ class FileProvider {
     })
   }
 
-  async newFilePath (newFilePath, selectedStream) {
-    if (this.fileIsExist(newFilePath)) return
-    console.log('New file for uploading', newFilePath)
-    const file = await this.createFileObject(newFilePath, selectedStream)
-    await this.insertFile(file)
-    await this.insertFilesToStream([file], selectedStream)
+  // 2. Upload files
+  // - Upload
+  // - check status
+
+  /* -- API Wrapper -- */
+  uploadFile (file, idToken) {
+    console.log('\nupload file ', file)
+    if (!fileHelper.isExist(file.path)) {
+      return File.update({ where: file.id,
+        data: {state: 'local_error', stateMessage: 'File is not exist'}
+      })
+    }
+    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.timestamp,
+      file.sizeInByte, idToken, (progress) => {
+      // FIX progress scale when we will start work with google cloud
+        File.update({ where: file.id,
+          data: {state: 'uploading'}
+        })
+      }).then((uploadId) => {
+      console.log('\nfile uploaded to the temp folder S3')
+      File.update({ where: file.id, data: {uploaded: true} })
+    }).catch((error) => {
+      console.log('ERROR UPLOAD FILE', error, error.message)
+      if (error.message === 'Request body larger than maxBodyLength limit') {
+        return File.update({ where: file.id,
+          data: {state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB'}
+        })
+      } else if (file.retries < 3) {
+        return File.update({ where: file.id,
+          data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
+        })
+      } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
+        return File.update({ where: file.id,
+          data: {state: 'server_error', stateMessage: 'Network Error'}
+        })
+      } else {
+        return File.update({ where: file.id,
+          data: {state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.'}
+        })
+      }
+    })
   }
+
+  checkStatus (file, idToken, isSuspended) {
+    return api.checkStatus(this.isProductionEnv(), file.uploadId, idToken)
+      .then((data) => {
+        const status = data.status
+        const failureMessage = data.failureMessage
+        console.log('Ingest status = ' + status)
+        switch (status) {
+          case 0:
+            if (isSuspended) {
+              // If the app suspends/loses internet connection the uploading file changes the status to waiting
+              return File.update({ where: file.id,
+                data: {state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: 0}
+              })
+            }
+            return
+          case 10:
+            return File.update({ where: file.id,
+              data: {state: 'ingesting', stateMessage: '', progress: 100}
+            })
+          case 20:
+            return File.update({ where: file.id,
+              data: {state: 'completed', stateMessage: '', progress: 100}
+            })
+          case 30:
+            if (failureMessage.includes('is zero')) {
+              return File.update({ where: file.id,
+                data: {state: 'server_error', stateMessage: 'Corrupted file'}
+              })
+            } else if (file.retries < 3) {
+              return File.update({ where: file.id,
+                data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
+              })
+            } else {
+              return File.update({ where: file.id,
+                data: {state: 'server_error', stateMessage: failureMessage}
+              })
+            }
+          case 31:
+            return File.update({ where: file.id,
+              data: {state: 'server_error', stateMessage: failureMessage}
+            })
+          default: break
+        }
+      }).catch((error) => {
+        console.log('error', error)
+      })
+  }
+
+  isProductionEnv () {
+    return settings.get('settings.production_env')
+  }
+
+  /* -- Database wrapper -- */
+
+  // DB -- wrapper
+  // Convert dropped files (from drag&drop) to database file objects
 
   async insertNewFiles (files, selectedStream) {
     await this.insertFiles(files)
     await this.insertFilesToStream(files, selectedStream)
   }
+
+  async insertFiles (files) {
+    await File.insert({ data: files })
+    console.log('insert files: ', files)
+  }
+
+  // This function supports only @vuex-orm/core@0.32.2 version.
+  async insertFilesToStream (files, stream) {
+    await Stream.update({ where: stream.id,
+      data: { files: files },
+      insert: ['files']
+    })
+    console.log('insert files to stream:', files)
+  }
+
+  /* -- Helper -- */
 
   fileIsExist (filePath, streamId) {
     const file = File.query().where((file) => {
@@ -192,82 +255,6 @@ class FileProvider {
 
   getFileId (filePath) {
     return cryptoJS.MD5(filePath).toString() + '_' + Math.random().toString(36).substr(2, 9)
-  }
-
-  async insertFile (file) {
-    await File.insert({ data: file })
-    console.log('insert file: ', file)
-  }
-
-  async insertFiles (files) {
-    await File.insert({ data: files })
-    console.log('insert files: ', files)
-  }
-
-  updateFile (fileId, path) {
-    let fileName = fileHelper.getFileNameFromFilePath(path)
-    if (fileName) {
-      File.update({ where: fileId,
-        data: { name: fileName, path: path }
-      })
-    }
-  }
-
-  // This function supports only @vuex-orm/core@0.32.2 version.
-  async insertFilesToStream (files, stream) {
-    await Stream.update({ where: stream.id,
-      data: { files: files },
-      insert: ['files']
-    })
-    console.log('insert files to stream:', files)
-  }
-
-  checkStatus (file, idToken, isSuspended) {
-    return api.checkStatus(this.isProductionEnv(), file.uploadId, idToken)
-      .then((data) => {
-        const status = data.status
-        const failureMessage = data.failureMessage
-        console.log('Ingest status = ' + status)
-        switch (status) {
-          case 0:
-            if (isSuspended) {
-              // If the app suspends/loses internet connection the uploading file changes the status to waiting
-              return File.update({ where: file.id,
-                data: {state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: 0}
-              })
-            }
-            return
-          case 10:
-            return File.update({ where: file.id,
-              data: {state: 'ingesting', stateMessage: '', progress: 100}
-            })
-          case 20:
-            return File.update({ where: file.id,
-              data: {state: 'completed', stateMessage: '', progress: 100}
-            })
-          case 30:
-            if (failureMessage.includes('is zero')) {
-              return File.update({ where: file.id,
-                data: {state: 'server_error', stateMessage: 'Corrupted file'}
-              })
-            } else if (file.retries < 3) {
-              return File.update({ where: file.id,
-                data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
-              })
-            } else {
-              return File.update({ where: file.id,
-                data: {state: 'server_error', stateMessage: failureMessage}
-              })
-            }
-          case 31:
-            return File.update({ where: file.id,
-              data: {state: 'server_error', stateMessage: failureMessage}
-            })
-          default: break
-        }
-      }).catch((error) => {
-        console.log('error', error)
-      })
   }
 }
 
