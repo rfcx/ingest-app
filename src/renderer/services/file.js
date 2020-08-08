@@ -61,11 +61,13 @@ class FileProvider {
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(this.getFileObjectsFromFolder(file, selectedStream, null))
       } else {
-        fileObjects.push(this.createFileObject(file.path, selectedStream))
+        const fileObject = this.createFileObject(file.path, selectedStream)
+        if (fileObject) {
+          fileObjects.push(fileObject)
+        }
       }
     })
     const allFileObjects = fileObjects.concat(fileObjectsInFolder)
-    console.log('current handleFiles fileObjects', allFileObjects.length)
     // insert converted files into db
     this.insertNewFiles(allFileObjects, selectedStream)
     // update file duration
@@ -82,7 +84,10 @@ class FileProvider {
     // write file into file object array
     let fileObjects = existingFileObjects || []
     files.forEach(file => {
-      fileObjects.push(this.createFileObject(file.path, selectedStream))
+      const fileObject = this.createFileObject(file.path, selectedStream)
+      if (fileObject) {
+        fileObjects.push(fileObject)
+      }
     })
     // get subfolders
     const subfolders = stuffInDirectory.filter(file => fileHelper.isFolder(file.path))
@@ -122,15 +127,27 @@ class FileProvider {
     await this.insertFilesToStream(files, selectedStream)
   }
 
-  removedFilePath (path) {
-    this.deleteFile(this.getFileId(path))
+  fileIsExist (filePath, streamId) {
+    const file = File.query().where((file) => {
+      return file.path === filePath && file.streamId === streamId
+    }).get()
+    return file.length > 0
   }
 
-  fileIsExist (filePath) {
-    return !!File.find(this.getFileId(filePath))
+  hasUploadedBefore (filePath, streamId) {
+    const file = File.query().where((file) => {
+      return file.path === filePath && file.streamId === streamId
+    }).get()
+    console.log('check hasUploadedBefore', filePath, streamId, file)
+    if (!this.fileIsExist(filePath, streamId)) return false
+    return !(file[0].isInPreparedGroup)
   }
 
   createFileObject (filePath, stream) {
+    if (this.fileIsExist(filePath, stream.id) && !this.hasUploadedBefore(filePath, stream.id)) {
+      console.log('this file is already in prepare tab')
+      return
+    }
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
     // const data = fileHelper.getMD5Hash(filePath)
@@ -144,8 +161,7 @@ class FileProvider {
       isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
     }
     const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-    const state = this.getState(momentDate, fileExt)
-    console.log('createFileObject, stream.id', stream.id)
+    const state = this.getState(momentDate, fileExt, filePath, stream.id)
     return {
       id: this.getFileId(filePath),
       name: fileName,
@@ -162,18 +178,20 @@ class FileProvider {
     }
   }
 
-  getState (momentDate, fileExt) {
+  getState (momentDate, fileExt, filePath, streamId) {
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
       return {state: 'local_error', message: 'File extension is not supported'}
     } else if (!momentDate.isValid()) {
       return {state: 'local_error', message: 'Filename does not match with a filename format'}
+    } else if (this.hasUploadedBefore(filePath, streamId)) {
+      return {state: 'local_error', message: 'Duplicate file'}
     } else {
       return {state: 'preparing', message: ''}
     }
   }
 
   getFileId (filePath) {
-    return cryptoJS.MD5(filePath).toString()
+    return cryptoJS.MD5(filePath).toString() + '_' + Math.random().toString(36).substr(2, 9)
   }
 
   async insertFile (file) {
@@ -193,11 +211,6 @@ class FileProvider {
         data: { name: fileName, path: path }
       })
     }
-  }
-
-  deleteFile (fileId) {
-    console.log('remove file: ', fileId)
-    File.delete(fileId)
   }
 
   // This function supports only @vuex-orm/core@0.32.2 version.

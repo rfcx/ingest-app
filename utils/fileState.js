@@ -19,7 +19,7 @@ const getName = function (state, message) {
     case 'waiting': return 'waiting'
     case 'uploading': return 'uploading'
     case 'ingesting': return 'ingesting'
-    case 'local_error': return 'failed'
+    case 'local_error':
     case 'server_error':
       if (!message) return ''
       if (message && message.toLowerCase().includes('duplicate')) return 'duplicated'
