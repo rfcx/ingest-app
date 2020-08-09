@@ -101,7 +101,7 @@ class FileProvider {
         const durationInSecond = await fileHelper.getFileDuration(file.path)
         return { id: file.id, durationInSecond: durationInSecond }
       } catch (error) {
-        return { id: file.id, state: 'local_error', stateMessage: `Can't read file duration (${error.shortMessage})` }
+        return { id: file.id, state: 'local_error', stateMessage: `File duration is not found` }
       }
     })
     ).then(updatedData => {
