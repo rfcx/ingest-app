@@ -70,7 +70,10 @@ For supporting the WinX86 system we should only publish one version for the 32-b
 ## Build Windows on Mac
 1. Install required library (ffprobe) that needed on Windows by running ```npm install --force```
 2. Make sure the `@ffprobe-installer` folder in `node_modules` has got the Windows related folders: `win32-ia32` `win32-x64`
-3. Follow steps in "Build the app on Windows" above, but use ```npm run build:win``` instead of normal ```npm run build``` in #4 step.
+3. Temporary remove `"afterSign": "./after-sign-hook.js",` line out from `package.json` file
+4. Follow steps in "Build the app on Windows" above, but use ```npm run build:win``` instead of normal ```npm run build``` in #4 step.
+
+Note: You have to remove `node_modules` folder and do `npm install` again before you start your development after built Windows app successfully.
 
 ## Linting
 

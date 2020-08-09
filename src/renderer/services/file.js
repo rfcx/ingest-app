@@ -5,6 +5,7 @@ import Stream from '../store/models/Stream'
 import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
+import store from '../store'
 
 class FileProvider {
   /* -- Import files -- */
@@ -61,11 +62,23 @@ class FileProvider {
         const durationInSecond = await fileHelper.getFileDuration(file.path)
         return { id: file.id, durationInSecond: durationInSecond }
       } catch (error) {
-        return { id: file.id, state: 'local_error', stateMessage: `Can't read file duration (${error.shortMessage})` }
+        return { id: file.id, state: 'local_error', stateMessage: `File duration is not found` }
       }
     })
     ).then(updatedData => {
       File.update({ data: updatedData })
+    })
+  }
+
+  putFilesIntoUploadingQueue (files) {
+    console.log('putFilesIntoUploadingQueue')
+    // if there is an active session id then reuse that, otherwise generate a new one
+    const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
+    store.dispatch('setCurrentUploadingSessionId', sessionId)
+    files.forEach(file => {
+      File.update({ where: file.id,
+        data: { state: 'waiting', stateMessage: '', sessionId: sessionId }
+      })
     })
   }
 
