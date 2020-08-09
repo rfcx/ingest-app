@@ -19,7 +19,7 @@ const getName = function (state, message) {
     case 'waiting': return 'waiting'
     case 'uploading': return 'uploading'
     case 'ingesting': return 'ingesting'
-    case 'local_error': return 'failed'
+    case 'local_error':
     case 'server_error':
       if (!message) return ''
       if (message && message.toLowerCase().includes('duplicate')) return 'duplicated'
@@ -86,7 +86,7 @@ const isCompleted = function (state) {
 
 const canRedo = function (state, message) {
   if (!message) return false
-  return (state === 'failed' || state === 'server_error') && !message.toLowerCase().includes('duplicate')
+  return (state === 'failed' || state === 'server_error') && !message.toLowerCase().includes('duplicate') && !message.toLowerCase().includes('corrupt')
 }
 
 const canRemove = function (state) {

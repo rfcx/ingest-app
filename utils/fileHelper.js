@@ -1,7 +1,7 @@
+import getAudioDurationInSeconds from './fileDurationHelper'
 const fs = require('fs')
 const path = require('path')
 const cryptoJS = require('crypto-js')
-const { getAudioDurationInSeconds } = require('get-audio-duration')
 
 const getFilePath = (directoryPath, fileName) => {
   return path.join(directoryPath, fileName)
@@ -67,10 +67,7 @@ const getFileSize = (filePath) => {
 }
 
 const getFileDuration = (filePath) => {
-  return getAudioDurationInSeconds(filePath).catch(error => {
-    console.log(error)
-    return Promise.resolve(0)
-  })
+  return getAudioDurationInSeconds(filePath)
 }
 
 const isSupportedFileExtension = (fileExtension) => {

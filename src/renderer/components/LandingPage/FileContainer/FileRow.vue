@@ -61,9 +61,7 @@ export default {
     },
     repeatUploading (file) {
       if (!file.canRedo) return
-      File.update({ where: file.id,
-        data: { state: 'waiting', stateMessage: '' }
-      })
+      this.$file.putFilesIntoUploadingQueue([file])
     },
     remove (file) {
       if (!file.canRemove) return

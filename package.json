@@ -1,6 +1,6 @@
 {
   "name": "ingest-app",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "author": "RFCx",
   "private": true,
   "description": "Desktop application for ingesting audio to RFCx platform",
@@ -102,7 +102,6 @@
     "electron-log": "^4.0.7",
     "electron-settings": "^3.2.0",
     "electron-squirrel-startup": "^1.0.0",
-    "get-audio-duration": "^2.0.2",
     "is-online": "^8.2.1",
     "js-sha1": "^0.6.0",
     "jwt-decode": "2.2.0",
@@ -117,7 +116,10 @@
     "vue-mapbox": "^0.4.1",
     "vue-router": "^3.0.1",
     "vuex": "^3.1.2",
-    "vuex-electron": "git+https://github.com/rassokhin-s/vuex-electron.git"
+    "vuex-electron": "git+https://github.com/rassokhin-s/vuex-electron.git",
+    "@ffprobe-installer/ffprobe": "^1.0.12",
+    "execa": "^4.0.2",
+    "is-stream": "^2.0.0"
   },
   "devDependencies": {
     "ajv": "^6.5.0",

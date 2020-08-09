@@ -72,7 +72,7 @@
       handleFiles (files) {
         this.isDragging = false
         if (!files) { return }
-        this.$file.writeDroppedFilesToDatabase(files, this.selectedStream)
+        this.$file.handleDroppedFiles(files, this.selectedStream)
       },
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
