@@ -86,7 +86,7 @@ const isCompleted = function (state) {
 
 const canRedo = function (state, message) {
   if (!message) return false
-  return (state === 'failed' || state === 'server_error') && !message.toLowerCase().includes('duplicate')
+  return (state === 'failed' || state === 'server_error') && !message.toLowerCase().includes('duplicate') && !message.toLowerCase().includes('corrupt')
 }
 
 const canRemove = function (state) {
