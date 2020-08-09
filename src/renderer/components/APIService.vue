@@ -165,7 +165,7 @@
         const failText = `${numberOfFailedFiles} ${numberOfFailedFiles > 1 ? 'files' : 'file'} failed`
         let notificationCompleted = {
           title: 'Ingest Completed',
-          body: `${numberOfCompletedFiles > 0 ? completedText + ', ' : ''}${numberOfFailedFiles > 0 ? failText : ''}`
+          body: `${numberOfCompletedFiles > 0 ? completedText : ''} ${numberOfFailedFiles > 0 ? failText : ''}`
         }
         let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
         myNotificationCompleted.onshow = () => {
