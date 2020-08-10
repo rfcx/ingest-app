@@ -115,11 +115,13 @@ class FileProvider {
             : dateHelper.parseTimestamp(file.name, format)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
 
-        const stateObj = this.getState(momentDate, file.extension)
+        const stateObj = this.getState(momentDate, file.extension, file.path, stream.id)
         const state = stateObj.state
+        const stateMessage = stateObj.message
         const newFile = { ...file }
         // update fields
         newFile.state = state
+        newFile.stateMessage = stateMessage
         newFile.timestamp = isoDate
 
         updatedFiles.push(newFile)
@@ -127,8 +129,8 @@ class FileProvider {
         try {
           await File.update({
             where: file.id,
-            data: { state, timestamp: isoDate },
-            update: ['state', 'timestamp']
+            data: { state, stateMessage, timestamp: isoDate },
+            update: ['state', 'stateMessage', 'timestamp']
           })
         } catch (e) {
           console.log(`Update file '${file.id}' error`, e)
