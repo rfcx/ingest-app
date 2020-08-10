@@ -54,7 +54,7 @@
 		</section>
 		<footer class="modal-card-foot">
 			<button class="button" @click="closeModal()">Cancel</button>
-			<button class="button is-success" @click="save()" :disabled="isEmpty">Save changes</button>
+			<button class="button is-success" @click="save()" :disabled="isEmpty">Apply</button>
 			<button class="button" @click="autoDetect()">Auto-Detect</button>
 		</footer>
 	</div>
@@ -182,31 +182,31 @@ constructor (v) {
 
 const TIME_FORMAT = {
   /** --------- 12 Hours format ---------- */
-  hours12: (() => {
-    const type = 'hours12'
-    const ex = 'H12'
-    return {
-      label: '12 Hour',
-      type,
-      options: [
-        new TimeFormat('6', 'h', type, ex),
-        new TimeFormat('06', 'hh', type, ex),
-        new TimeFormat('AM/PM', 'A', type, ''),
-        new TimeFormat('A/P', 'A', type, ''),
-        new TimeFormat('am/pm', 'a', type, '')
-      ]
-    }
-  })(),
+  // hours12: (() => {
+  //   const type = 'hours12'
+  //   const ex = 'H12'
+  //   return {
+  //     label: '12 Hour',
+  //     type,
+  //     options: [
+  //       new TimeFormat('6', 'h', type, ex),
+  //       new TimeFormat('06', 'hh', type, ex),
+  //       new TimeFormat('AM/PM', 'A', type, ''),
+  //       new TimeFormat('A/P', 'A', type, ''),
+  //       new TimeFormat('am/pm', 'a', type, '')
+  //     ]
+  //   }
+  // })(),
   /** --------- 24 Hours format ---------- */
   hours24: (() => {
     const type = 'hours24'
     const ex = 'H'
     return {
-      label: '24 Hour',
+      label: 'Hour',
       type,
       options: [
-        new TimeFormat('6', 'H', type, ex),
-        new TimeFormat('06', 'HH', type, ex)
+        new TimeFormat('06', '%H', type, ex)
+        // new TimeFormat('06', 'HH', type, ex)
       ]
     }
   })(),
@@ -219,8 +219,8 @@ const TIME_FORMAT = {
       label: 'Minutes',
       type,
       options: [
-        new TimeFormat('5', 'm', type, ex),
-        new TimeFormat('05', 'mm', type, ex)
+        new TimeFormat('5', '%m', type, ex)
+        // new TimeFormat('05', 'mm', type, ex)
       ]
     }
   })(),
@@ -233,7 +233,7 @@ const TIME_FORMAT = {
       label: 'Seconds',
       type,
       options: [
-        new TimeFormat('05', 'ss', type, ex)
+        new TimeFormat('05', '%s', type, ex)
       ]
     }
   })(),
@@ -243,32 +243,32 @@ const TIME_FORMAT = {
     const type = 'day_number'
     const ex = 'D'
     return {
-      label: 'Day Number',
+      label: 'Day',
       type,
       options: [
-        new TimeFormat('9', 'D', type, ex),
-        new TimeFormat('29', 'DD', type, ex),
-        new TimeFormat('nd', 'Do', type, ex),
-        new TimeFormat('ND', 'Do', type, ex)
+        new TimeFormat('9', '%D', type, ex)
+        // new TimeFormat('29', 'DD', type, ex),
+        // new TimeFormat('nd', 'Do', type, ex),
+        // new TimeFormat('ND', 'Do', type, ex)
       ]
     }
   })(),
 
   /** --------- Day Name format ---------- */
-  day_name: (() => {
-    const type = 'day_name'
-    const ex = 'Day'
-    return {
-      label: 'Day Name',
-      type,
-      options: [
-        new TimeFormat('Fri', 'ddd', type, ex),
-        new TimeFormat('Friday', 'dddd', type, ex),
-        new TimeFormat('F', 'd', type, ex),
-        new TimeFormat('U', 'd', type, ex)
-      ]
-    }
-  })(),
+  // day_name: (() => {
+  //   const type = 'day_name'
+  //   const ex = 'Day'
+  //   return {
+  //     label: 'Day Name',
+  //     type,
+  //     options: [
+  //       new TimeFormat('Fri', 'ddd', type, ex),
+  //       new TimeFormat('Friday', 'dddd', type, ex),
+  //       new TimeFormat('F', 'd', type, ex),
+  //       new TimeFormat('U', 'd', type, ex)
+  //     ]
+  //   }
+  // })(),
 
   /** --------- Month format ---------- */
   month: (() => {
@@ -278,11 +278,12 @@ const TIME_FORMAT = {
       label: 'Month',
       type,
       options: [
-        new TimeFormat('6', 'M', type, ex),
-        new TimeFormat('06', 'MM', type, ex),
-        new TimeFormat('J', 'M', type, ex),
-        new TimeFormat('Jun', 'MMM', type, ex),
-        new TimeFormat('June', 'MMMM', type, ex)
+        // new TimeFormat('6', 'M', type, ex),
+        // new TimeFormat('06', 'MM', type, ex),
+        // new TimeFormat('J', 'M', type, ex),
+        // new TimeFormat('Jun', 'MMM', type, ex),
+        // new TimeFormat('June', 'MMMM', type, ex)
+        new TimeFormat('06', '%M', type, ex)
       ]
     }
   })(),
@@ -295,66 +296,66 @@ const TIME_FORMAT = {
       label: 'Year',
       type,
       options: [
-        new TimeFormat('20', 'YY', type, ex),
-        new TimeFormat('2020', 'YYYY', type, ex)
-      ]
-    }
-  })(),
-
-  /** --------- Timezone format ---------- */
-  timezone: (() => {
-    const type = 'timezone'
-    const ex = 'tz'
-    return {
-      label: 'Timezone',
-      type,
-      options: [
-        new TimeFormat('+1000', '+1000', type, ex),
-        new TimeFormat('PDT', 'PDT', type, ex),
-        new TimeFormat('Pacific Time', 'Pacific Time', type, ex)
-      ]
-    }
-  })(),
-
-  /** --------- Fuzzy clock format ---------- */
-  fuzzy_clock: (() => {
-    const type = 'fuzzy_clock'
-    const ex = ''
-    return {
-      label: 'Fuzzy Clock',
-      type,
-      options: [
-        new TimeFormat('quarter of five', 'fuzzy_clock', type, ex)
-      ]
-    }
-  })(),
-
-  /** --------- Week/Day format ---------- */
-  week_day_of_year: (() => {
-    const type = 'week_day_of_year'
-    const ex = 'W'
-    return {
-      label: 'Week/Day of year',
-      type,
-      options: [
-        new TimeFormat('52', 'W', type, ex),
-        new TimeFormat('365', 'W', type, ex)
-      ]
-    }
-  })(),
-
-  /** --------- System time offset format ---------- */
-  system_time_offset: (() => {
-    const type = 'system_time_offset'
-    const ex = ''
-    return {
-      label: 'System time offset',
-      type,
-      options: [
-        new TimeFormat('+6', AUTO_DETECT, type, ex)
+        new TimeFormat('20', '%y', type, ex),
+        new TimeFormat('2020', '%Y', type, ex)
       ]
     }
   })()
+
+  /** --------- Timezone format ---------- */
+  // timezone: (() => {
+  //   const type = 'timezone'
+  //   const ex = 'tz'
+  //   return {
+  //     label: 'Timezone',
+  //     type,
+  //     options: [
+  //       new TimeFormat('+1000', '+1000', type, ex),
+  //       new TimeFormat('PDT', 'PDT', type, ex),
+  //       new TimeFormat('Pacific Time', 'Pacific Time', type, ex)
+  //     ]
+  //   }
+  // })(),
+
+  // /** --------- Fuzzy clock format ---------- */
+  // fuzzy_clock: (() => {
+  //   const type = 'fuzzy_clock'
+  //   const ex = ''
+  //   return {
+  //     label: 'Fuzzy Clock',
+  //     type,
+  //     options: [
+  //       new TimeFormat('quarter of five', 'fuzzy_clock', type, ex)
+  //     ]
+  //   }
+  // })(),
+
+  // /** --------- Week/Day format ---------- */
+  // week_day_of_year: (() => {
+  //   const type = 'week_day_of_year'
+  //   const ex = 'W'
+  //   return {
+  //     label: 'Week/Day of year',
+  //     type,
+  //     options: [
+  //       new TimeFormat('52', 'W', type, ex),
+  //       new TimeFormat('365', 'W', type, ex)
+  //     ]
+  //   }
+  // })(),
+
+  // /** --------- System time offset format ---------- */
+  // system_time_offset: (() => {
+  //   const type = 'system_time_offset'
+  //   const ex = ''
+  //   return {
+  //     label: 'System time offset',
+  //     type,
+  //     options: [
+  //       new TimeFormat('+6', AUTO_DETECT, type, ex)
+  //     ]
+  //   }
+  // })()
 }
 </script>
 <style lang="scss" scoped>
