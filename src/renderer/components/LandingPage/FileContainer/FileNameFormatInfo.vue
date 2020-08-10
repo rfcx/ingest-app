@@ -29,6 +29,7 @@ import File from '../../../store/models/File'
 import Stream from '../../../store/models/Stream'
 import FileNameFormatSettings from './FileNameFormatSettings'
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons'
+import fileState from '../../../../../utils/fileState'
 
 export default {
   props: {
@@ -80,7 +81,7 @@ export default {
     async onFormatSave (format) {
       this.closeFileNameFormatSettingModal()
       console.log('onFormatSave', format)
-      const objectFiles = this.preparingFiles || []
+      const objectFiles = this.preparingFiles.filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage)) || []
       await this.$file.updateFilesFormat(this.selectedStream, objectFiles, format)
     }
   }

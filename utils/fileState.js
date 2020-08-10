@@ -93,6 +93,10 @@ const canRemove = function (state) {
   return isError(state) || isInPreparedGroup(state)
 }
 
+const canChangeTimestampFormat = function (state, message) {
+  return isInPreparedGroup(state) && !(message.includes('extension') || message.includes('duplicate') || message.includes('duration'))
+}
+
 export default {
   getStatePriority,
   getName,
@@ -107,5 +111,6 @@ export default {
   isDuplicated,
   isCompleted,
   canRedo,
-  canRemove
+  canRemove,
+  canChangeTimestampFormat
 }
