@@ -3,7 +3,7 @@
     <div class="preparing-file-settings__name-format-wrapper">
       <span class="preparing-file-settings__name-format-title">Filename format</span>
       <div class="d-flex flex-row">
-          <div class="preparing-file-settings__name-format-description">{{ selectedStream.timestampFormat }}</div>
+          <div class="preparing-file-settings__name-format-description">{{ (selectedStream.timestampFormat !== 'Auto-detect' ? 'custom ・ ' : '') + selectedStream.timestampFormat }}</div>
           <div class="preparing-file-settings__edit-button" title="Edit filename format">
             <font-awesome-icon :icon="iconPencil" @click="openFileNameFormatSettingModal()"></font-awesome-icon>
           </div>
