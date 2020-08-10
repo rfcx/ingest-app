@@ -113,7 +113,7 @@
       },
       streams () {
         return Stream.query().with('files').get().sort((streamA, streamB) => {
-          return fileState.getStatePriority(streamA) - fileState.getStatePriority(streamB)
+          return streamB.updateAt - streamA.updateAt
         })
       },
       allFiles () {

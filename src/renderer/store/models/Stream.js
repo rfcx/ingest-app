@@ -17,6 +17,8 @@ export default class Stream extends Model {
       latitude: this.number(0),
       longitude: this.number(0),
       files: this.hasMany(File, 'streamId'),
+      createAt: this.attr(Date.now()),
+      updateAt: this.attr(Date.now()),
       env: this.string(''),
       visibility: this.string('')
     }
