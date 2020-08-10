@@ -47,6 +47,12 @@ export default new Router({
       component: require('@/components/AccessDeniedPage').default
     },
     {
+      path: '/edit-stream-location',
+      name: 'edit-stream-location-page',
+      component: require('@/components/EditStreamLocation/EditStreamLocationPage').default,
+      props: (route) => ({ query: route.query })
+    },
+    {
       path: '*',
       redirect: '/'
     }

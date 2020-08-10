@@ -1,7 +1,14 @@
 <template>
-  <MglMap :accessToken="accessToken" :mapStyle="mapStyle" logoPosition="bottom-left">
+  <MglMap
+    :accessToken="accessToken"
+    :mapStyle="mapStyle"
+    :center="center"
+    :zoom="zoom"
+    logoPosition="bottom-left"
+    @click="getPlacePositionByClick">
     <GeocoderControl
       :accessToken="accessToken"
+      :limit="1"
       :input.sync="defaultInput"
       :mapboxgl="mapbox"
       :localGeocoder="coordinatesGeocoder"
@@ -12,8 +19,9 @@
       position="bottom-right"
       @result="onSelected"
     />
-    <MglMarker :coordinates="selectedCoordinates">
-      <div slot="marker" class="map-marker" title="marker">
+    <MglNavigationControl position="top-right" :showZoom="true" :showCompass="false" />
+    <MglMarker v-if="selectedCoordinates && selectedCoordinates.length" :coordinates="selectedCoordinates" :draggable="true" @dragend="getPlacePositionByDrop">
+      <div slot="marker" class="map-marker" :title="getMarkerTitle()">
         <img src="@/assets/ic-map-marker.png" alt class="map-marker__icon" />
       </div>
     </MglMarker>
@@ -22,7 +30,7 @@
 
 <script>
 import Mapbox from 'mapbox-gl'
-import { MglMap, MglMarker } from 'vue-mapbox'
+import { MglMap, MglMarker, MglNavigationControl } from 'vue-mapbox'
 import GeocoderControl from './GeocoderControl'
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
 
@@ -34,16 +42,50 @@ export default {
       mapStyle: 'mapbox://styles/rfcx/ck9g6dci83g3x1io8dl27r7aq',
       defaultInput: '',
       searchLimit: 1,
-      selectedCoordinates: [0, 0]
+      center: [15, 30],
+      zoom: 2,
+      closeMapZoom: 8,
+      selectedCoordinates: [],
+      isDraggable: false
     }
   },
-  components: { MglMap, GeocoderControl, MglMarker },
+  components: { MglMap, GeocoderControl, MglMarker, MglNavigationControl },
+  props: ['title', 'lngLat'],
   methods: {
+    getMarkerTitle () {
+      return this.title ? this.title : 'marker'
+    },
     onSelected (event) {
       console.log(`onselected`)
       console.log(event)
       this.selectedCoordinates = event.result.center
+      this.updateMapCoordinatesForMarker(event.result.center[0], event.result.center[1])
       this.$emit('locationSelected', this.selectedCoordinates)
+    },
+    getPlacePositionByDrop (event) {
+      this.isDraggable = true
+      var lngLat = event.marker.getLngLat()
+      this.selectedCoordinates = [lngLat.lng, lngLat.lat]
+      this.updateMapCoordinatesForMarker(lngLat.lng, lngLat.lat)
+      this.$emit('locationSelected', this.selectedCoordinates)
+      setTimeout(() => { this.isDraggable = false }, 100)
+    },
+    getPlacePositionByClick (event) {
+      if (this.isDraggable) return
+      if (event.mapboxEvent.lngLat) {
+        this.selectedCoordinates = [event.mapboxEvent.lngLat.lng, event.mapboxEvent.lngLat.lat]
+        this.updateMapCoordinatesForMarker(event.mapboxEvent.lngLat.lng, event.mapboxEvent.lngLat.lat)
+        this.$emit('locationSelected', this.selectedCoordinates)
+      }
+    },
+    updateMapCoordinatesForMarker (lng, lat) {
+      if (lng && lat) {
+        this.center = [lng, lat]
+        this.zoom = this.closeMapZoom
+      } else {
+        this.center = [15, 30]
+        this.zoom = 2
+      }
     },
     coordinatesGeocoder (query) {
       const matches = query.match(/^(-?\d+\.?\d*)[, ]+(-?\d+\.?\d*)[ ]*$/i)
@@ -74,6 +116,11 @@ export default {
   },
   created () {
     this.mapbox = Mapbox
+    if (this.lngLat) {
+      this.selectedCoordinates = this.lngLat
+      this.center = this.lngLat
+      this.zoom = this.closeMapZoom
+    }
   }
 }
 </script>
@@ -214,4 +261,32 @@ mgl-map {
     margin-bottom: 1px;
   }
 }
+
+.mapboxgl-ctrl-top-right {
+  right: 10px;
+  top: 10px;
+}
+
+.mapboxgl-canvas {
+  &:focus {
+    outline: none !important;
+  }
+}
+
+.mapboxgl-ctrl-icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+
+.mapboxgl-ctrl button.mapboxgl-ctrl-zoom-in .mapboxgl-ctrl-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='29' height='29' viewBox='0 0 29 29' xmlns='http://www.w3.org/2000/svg' fill='%23333'%3E%3Cpath d='M14.5 8.5c-.75 0-1.5.75-1.5 1.5v3h-3c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h3v3c0 .75.75 1.5 1.5 1.5S16 19.75 16 19v-3h3c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13h-3v-3c0-.75-.75-1.5-1.5-1.5z'/%3E%3C/svg%3E");
+}
+
+.mapboxgl-ctrl button.mapboxgl-ctrl-zoom-out .mapboxgl-ctrl-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='29' height='29' viewBox='0 0 29 29' xmlns='http://www.w3.org/2000/svg' fill='%23333'%3E%3Cpath d='M10 13c-.75 0-1.5.75-1.5 1.5S9.25 16 10 16h9c.75 0 1.5-.75 1.5-1.5S19.75 13 19 13h-9z'/%3E%3C/svg%3E");
+}
+
 </style>

@@ -30,7 +30,9 @@
       </div>
     </div>
     <div class="subtitle-container">
-      <img src="~@/assets/ic-pin.svg"><span v-if="selectedStream" class="file-list-span">{{ selectedStream.siteGuid || `${selectedStream.latitude}, ${selectedStream.longitude}` }}</span>
+      <router-link title="Edit stream location" to="/edit-stream-location">
+        <img src="~@/assets/ic-pin.svg">
+        <span v-if="selectedStream" class="file-list-span">{{ selectedStream.siteGuid || `${selectedStream.latitude}, ${selectedStream.longitude}` }}</span></router-link>
     </div>
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
@@ -263,6 +265,15 @@ export default {
 
   .subtitle-container {
     font-size: $default-subtitle-font-size;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: normal;
+    letter-spacing: normal;
+    color: $secondary-text-color !important;
+  }
+
+  .file-list-span {
+    color: $secondary-text-color !important;
   }
 
   .edit-container {
