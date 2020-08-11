@@ -36,7 +36,10 @@ import fileState from '../../../../../utils/fileState'
 
 export default {
   props: {
-    preparingFiles: Array
+    preparingFiles: {
+      type: Array,
+      default: () => []
+    }
   },
   components: { FileNameFormatSettings },
   data () {
@@ -81,11 +84,18 @@ export default {
       console.log('closeFileNameFormatSettingModal')
       this.showSettingModal = false
     },
-    async onFormatSave (format) {
+    async onFormatSave (format = '') {
       this.closeFileNameFormatSettingModal()
       console.log('onFormatSave', format)
       const objectFiles = this.preparingFiles.filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage)) || []
-      await this.$file.updateFilesFormat(this.selectedStream, objectFiles, format)
+
+      try {
+        await this.$file.updateFilesFormat(this.selectedStream, objectFiles, format)
+      } catch (e) {
+        console.log(`Error update files format '${format}'`, e.message)
+
+        // TODO: Show notify error to user
+      }
     }
   }
 }

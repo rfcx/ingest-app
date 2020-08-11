@@ -142,8 +142,8 @@ export default {
           if (this.isAutoDetect) {
             return
           }
-          // check format item is already selected
-          const isSelected = this.selectedItems.some(si => (si instanceof TimeFormat && item.type === type && item.format === si.format && item.label === si.label))
+          // check format type is already selected
+          const isSelected = this.selectedItems.findIndex(si => (si instanceof TimeFormat && si.type === item.type)) > -1
           if (!isSelected) {
             if (this.lastInputText !== '') {
               this.selectedItems.push(new CustomInputFormat(this.lastInputText))
