@@ -8,7 +8,7 @@
 
 			<!-- Custom file input picker -->
 			<div class="d-flex w100 input-container">
-				<div class="field is-grouped is-grouped-multiline" @click="fieldClick()">
+				<div class="field is-grouped is-grouped-multiline" @click.stop="fieldClick($event)">
 					<template v-for="(item, idx) in selectedItems">
 						<div class="control" v-if="isFormatItem(item)" :key="'item-' + idx">
 							<div class="tags has-addons">
@@ -19,9 +19,19 @@
 								<a class="tag is-delete" @click="deleteSelectedFormatItem(item)"></a>
 							</div>
 						</div>
+            <!-- <input
+              @blur="customInputBlur($event, idx)"
+              v-model="item.value"
+              :key="'format-input-' + idx"
+              v-else
+              :size="item.value.length"
+              class="custom-input"
+              @keydown="customInputKeydown($event, idx)"
+              /> -->
 						<div v-else class="input-text" :key="'format-input-' + idx">{{ item.value }}</div>
 					</template>
 					<input
+            :disabled="isAutoDetect"
 						:size="lastInputText.length"
 						@keydown="keydown($event)"
 						type="text"
@@ -55,7 +65,6 @@
 		<footer class="modal-card-foot">
 			<button class="button" @click="closeModal()">Cancel</button>
 			<button class="button is-success" @click="save()" :disabled="isEmpty">Apply</button>
-			<button class="button" @click="autoDetect()">Auto-Detect</button>
 		</footer>
 	</div>
 </template>
@@ -64,21 +73,26 @@
 import * as far from '@fortawesome/free-regular-svg-icons'
 const AUTO_DETECT = 'Auto-detect'
 export default {
+  props: {
+    format: {
+      type: String,
+      default: ''
+    }
+  },
   data: () => ({
     selectedItems: [],
     lastInputText: ''
   }),
+  mounted () {
+    this.checkRestoreFormatToField()
+  },
   methods: {
-    autoDetect () {
-      this.$emit('save', AUTO_DETECT)
-    },
     async save () {
-      // this.closeModal()
-      const format = this.selectedItems.reduce((acc, currentItem) => {
-        if (currentItem instanceof TimeFormat) {
-          return acc + currentItem.format
-        } else if (currentItem instanceof CustomInputFormat) {
-          return acc + currentItem.value
+      const format = this.selectedItems.reduce((acc, item) => {
+        if (item instanceof TimeFormat) {
+          return acc + item.format
+        } else if (item instanceof CustomInputFormat) {
+          return acc + item.value
         }
         return acc
       }, '') + this.lastInputText.trim()
@@ -102,7 +116,6 @@ export default {
       }
     },
     keydown (e) {
-      console.log('keydown', e.keyCode)
       if (e.keyCode === 8 && this.lastInputText === '') {
         e.preventDefault()
         const s = this.selectedItems.length
@@ -111,15 +124,33 @@ export default {
         }
       }
     },
+    customInputKeydown (e, idx) {
+      const item = this.selectedItems[idx]
+      if (item instanceof CustomInputFormat && e.keyCode === 8 && item.value === '') {
+        console.log('todo delete')
+      }
+    },
+    customInputBlur (e, idx) {
+      console.log('customInputBlur', e, idx)
+    },
     formatItemClick (type, item) {
       if (item instanceof TimeFormat) {
-        if (!this.selectedItems.some(si => item.type === type && item.format === si.format && item.label === si.label)) {
-          if (this.lastInputText !== '') {
-            this.selectedItems.push(new CustomInputFormat(this.lastInputText))
-
-            this.lastInputText = ''
+        if (item.format === AUTO_DETECT) {
+          this.selectedItems = [item]
+          this.lastInputText = ''
+        } else {
+          if (this.isAutoDetect) {
+            return
           }
-          this.selectedItems.push(item)
+          // check format item is already selected
+          const isSelected = this.selectedItems.some(si => (si instanceof TimeFormat && item.type === type && item.format === si.format && item.label === si.label))
+          if (!isSelected) {
+            if (this.lastInputText !== '') {
+              this.selectedItems.push(new CustomInputFormat(this.lastInputText))
+              this.lastInputText = ''
+            }
+            this.selectedItems.push(item)
+          }
         }
       }
     },
@@ -137,13 +168,68 @@ export default {
     isInputItem (item) {
       return item instanceof CustomInputFormat
     },
-    fieldClick () {
-      const input = this.$refs.fieldInput
-      input.focus()
+    fieldClick (e) {
+      const tagName = String(e.target.tagName).toUpperCase()
+      if (e.target) {
+        if (tagName === 'INPUT') {
+          e.target.focus()
+        } else {
+          const input = this.$refs.fieldInput
+          input.focus()
+        }
+      }
     },
     clearSelectedItem () {
       this.selectedItems = []
       this.lastInputText = ''
+    },
+    checkRestoreFormatToField () {
+      const { format } = this
+      console.log(`restoring format '${format}'`)
+      if (format === AUTO_DETECT) {
+        // Select auto detect item
+        this.selectedItems = [TIME_FORMAT.auto_detect.options[0]]
+      } else {
+        const size = format.length
+        if (size > 0) {
+          const selectFormat = formatText => {
+            for (const formatItem of Object.values(TIME_FORMAT)) {
+              const option = formatItem.options.find(op => op.format === formatText)
+              if (option) {
+                this.selectedItems.push(option)
+                return
+              }
+            }
+          }
+
+          let idx = 0
+          let count = 0
+          this.selectedItems = []
+          while (idx < size) {
+            if (format[idx] === '%' && idx + 1 < size) {
+              const fm = format.substr(idx, 2)
+              idx += 2
+              selectFormat(fm)
+            } else {
+              const strIdx = format.indexOf('%', idx)
+              if (strIdx > -1) {
+                const text = format.substring(idx, strIdx)
+                this.selectedItems.push(new CustomInputFormat(text))
+                idx += strIdx - idx
+              } else {
+                const text = format.substring(idx, size)
+                this.selectedItems.push(new CustomInputFormat(text))
+                console.log('3', text)
+                idx += (size - idx)
+              }
+            }
+            count++
+            if (count > 50) {
+              break
+            }
+          }
+        }
+      }
     }
   },
   computed: {
@@ -151,33 +237,36 @@ export default {
     TIME_FORMAT: () => TIME_FORMAT,
     isEmpty () {
       return this.lastInputText.trim() === '' && this.selectedItems.length === 0
+    },
+    isAutoDetect () {
+      return this.selectedItems.some(si => (si instanceof TimeFormat) && si.format === AUTO_DETECT)
     }
   }
 }
 
 class TimeFormat {
-format = ''
-label = ''
-type = ''
-example = ''
+  format = ''
+  label = ''
+  type = ''
+  example = ''
 
-constructor (label, format, type, ex) {
-  this.label = label
-  this.format = format
-  this.type = type
-  this.example = ex
-}
+  constructor (label, format, type, ex) {
+    this.label = label
+    this.format = format
+    this.type = type
+    this.example = ex
+  }
 }
 
 class CustomInputFormat {
-value = ''
-get type () {
-  return 'input'
-}
+  value = ''
+  get type () {
+    return 'input'
+  }
 
-constructor (v) {
-  this.value = v
-}
+  constructor (v) {
+    this.value = v
+  }
 }
 
 const TIME_FORMAT = {
@@ -300,6 +389,18 @@ const TIME_FORMAT = {
         new TimeFormat('2020', '%Y', type, ex)
       ]
     }
+  })(),
+
+  /** --------- Year format ---------- */
+  auto_detect: (() => {
+    const type = 'auto_detect'
+    return {
+      label: 'Auto detect',
+      type,
+      options: [
+        new TimeFormat('Auto detect', AUTO_DETECT, type, '')
+      ]
+    }
   })()
 
   /** --------- Timezone format ---------- */
@@ -360,7 +461,7 @@ const TIME_FORMAT = {
 </script>
 <style lang="scss" scoped>
 .modal-card {
-	width: 840px !important;
+	width: 640px !important;
 }
 .pl-2 {
 	padding-left: 12px;
@@ -391,27 +492,24 @@ const TIME_FORMAT = {
 			font-size: 16px;
 			color: white;
 			margin-bottom: $field-offset;
-            &:focus {
-                border: 0 !important;
-                outline: unset !important;
-            }
+          &:focus {
+              border: 0 !important;
+              outline: unset !important;
+          }
 
-            &.last-input {
-				// flex-grow: 1;
-				
-				&[size="0"] {
-					width: 4px !important;
-				}
-            }
-        }
+          &[size="0"] {
+            width: 4px !important;
+            margin-right: 8px;
+          }
+    }
 
-        .input-text {
-            display: flex;
-			align-items: center;
-			padding-right: 8px;
-			font-size: 16px;
-			height: 24px;
-			margin-bottom: $field-offset;
+    .input-text {
+      display: flex;
+      align-items: center;
+      padding-right: 8px;
+      font-size: 16px;
+      height: 24px;
+      margin-bottom: $field-offset;
 		}
 		
 		$tag-size: 24px;

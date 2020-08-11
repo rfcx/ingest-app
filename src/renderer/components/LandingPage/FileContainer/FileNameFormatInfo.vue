@@ -14,11 +14,14 @@
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
       <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="readyToUploadFiles.length < 1 || isDeletingAllFiles">Start upload ({{readyToUploadFiles.length}})</button>
     </div>
-    <div class="preparing-file-settings__timestamp-modal modal" :class="{ 'is-active': showSettingModal }">
+    <div class="preparing-file-settings__timestamp-modal modal is-active" v-if="showSettingModal">
       <div class="modal-background"></div>
-      <file-name-format-settings @onClose="closeFileNameFormatSettingModal" @save="onFormatSave"/>
-    <button class="modal-close is-large" aria-label="close"></button>
-  </div>
+      <file-name-format-settings
+        :format="selectedStream.timestampFormat"
+        @onClose="closeFileNameFormatSettingModal"
+        @save="onFormatSave"/>
+      <button class="modal-close is-large" aria-label="close"></button>
+    </div>
   </div>
 </template>
 

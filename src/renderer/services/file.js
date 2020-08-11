@@ -321,7 +321,7 @@ class FileProvider {
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
     let isoDate
-    if (stream.timestampFormat === 'Auto-detect') {
+    if (stream.timestampFormat === FORMAT_AUTO_DETECT) {
       isoDate = dateHelper.parseTimestampAuto(fileName)
     } else {
       isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
