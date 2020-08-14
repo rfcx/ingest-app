@@ -42,15 +42,13 @@
       </div>
     </div> -->
     <div class="menu-container side-menu-title">
-      <div class="menu-label">Streams</div>
-      <div class="side-menu-controls-wrapper">
-        <!-- <button title="Filter" class="side-menu-search-btn" v-on:click="onFocusInput()">
-          <img v-if="!toggleSearch" src="~@/assets/ic-search.svg">
-          <img v-if="toggleSearch" src="~@/assets/ic-search-active.svg">
-        </button> -->
-        <router-link title="Add new stream" to="/add"><img class="side-menu-add-btn" src="~@/assets/ic-add-stream.svg"></router-link>
-      </div>
+      <router-link title="Add new site" class="side-menu-router-add-btn" to="/add">
+        <button type="button" class="button side-menu-add-btn">
+          <span>+</span>New Site
+        </button>
+      </router-link>
     </div>
+    <div class="menu-label">Sites</div>
     <div v-if="toggleSearch" class="search-wrapper" :class="{ 'search-wrapper_red': isRequiredSymbols }">
       <input type="text" class="input search-input" placeholder="Filter" v-model="searchStr"
         @keyup="onKeyUp($event)" ref="searchStream">
@@ -234,7 +232,7 @@
         stream.files.forEach((file) => {
           if (file.disabled === true) {
             countDisabled++
-          } else if (file.state === 'failed' || file.state === 'duplicated') {
+          } else if (file.state === 'failed' || file.state === 'duplicate') {
             countFailed++
           } else if (file.state === 'completed') {
             countComplited++
@@ -279,7 +277,7 @@
 
   .header {
     padding: 0 8px 0 16px;
-    margin-bottom: 7px;
+    margin-bottom: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -386,7 +384,7 @@
   }
 
   .side-menu-title {
-    padding: 2px 8px 2px 16px;
+    padding: 0 8px;
   }
 
   .side-menu-search-btn {
@@ -407,15 +405,38 @@
     }
   }
 
+  .side-menu-router-add-btn {
+    width: 100%;
+  }
+
   .side-menu-add-btn {
-    img {
-      height: 20px;
-      width: 20px;
+    width: 100%;
+    height: 2em;
+    padding-bottom: calc(0.175em - 1px);
+    padding-top: calc(0.175em - 1px);
+    text-transform: uppercase;
+    background-color: $brand-primary;
+    align-self: center;
+    font-weight: $title-font-weight;
+    font-size: $default-font-size;
+    font-style: normal;
+    line-height: normal;
+    color: #ffffff !important;
+    border: none !important;
+    &:hover,
+    &:active,
+    &:focus {
+      outline: none !important;
+      border: none !important;
+    }
+    span {
+      margin-right: 10px;
+      font-size: 20px;
     }
   }
 
   .menu-item {
-    padding: 9px 16px 8px 16px;
+    padding: 9px 12px 8px 12px;
     height: 42px;
   }
 
@@ -424,7 +445,8 @@
   }
 
   .menu-label {
-    font-size: $default-font-size;
+    padding: 24px 12px 10px 12px;
+    font-size: 16px;
     font-style: normal;
     line-height: normal;
     color: #ffffff !important;
