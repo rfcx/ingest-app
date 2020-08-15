@@ -97,14 +97,14 @@ class FileProvider {
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.timestamp,
       file.sizeInByte, idToken, (progress) => {
       // FIX progress scale when we will start work with google cloud
-        File.update({ where: file.id,
+        return File.update({ where: file.id,
           data: {state: 'uploading'}
         })
       }).then((uploadId) => {
       console.log('\nfile uploaded to the temp folder S3')
-      File.update({ where: file.id, data: {uploaded: true} })
+      return File.update({ where: file.id, data: { uploaded: true } })
     }).catch((error) => {
-      console.log('ERROR UPLOAD FILE', error, error.message)
+      console.log('===> ERROR UPLOAD FILE', error, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
         return File.update({ where: file.id,
           data: {state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB'}
@@ -130,7 +130,7 @@ class FileProvider {
       .then((data) => {
         const status = data.status
         const failureMessage = data.failureMessage
-        console.log('Ingest status = ' + status)
+        console.log(`===> ${file.name} - Ingest status = ${status}`)
         switch (status) {
           case 0:
             if (isSuspended) {
