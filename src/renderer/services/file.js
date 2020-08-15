@@ -195,7 +195,7 @@ class FileProvider {
   // This function supports only @vuex-orm/core@0.32.2 version.
   async insertFilesToStream (files, stream) {
     await Stream.update({ where: stream.id,
-      data: { files: files, updateAt: Date.now() },
+      data: { files: files, updatedAt: Date.now() },
       insert: ['files']
     })
     console.log('insert files to stream:', files)

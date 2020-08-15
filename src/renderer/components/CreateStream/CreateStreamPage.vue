@@ -88,8 +88,8 @@ export default {
               timestampFormat: 'Auto-detect',
               env: this.isProductionEnv() ? 'production' : 'staging',
               visibility: visibility,
-              createAt: Date.now(),
-              updateAt: Date.now()
+              createdAt: Date.now(),
+              updatedAt: Date.now()
             }
             console.log('creating stream', JSON.stringify(stream))
             Stream.insert({ data: stream, insert: ['files'] })

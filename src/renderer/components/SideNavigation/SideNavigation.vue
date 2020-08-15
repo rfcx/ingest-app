@@ -112,9 +112,7 @@
         return Stream.find(this.selectedStreamId)
       },
       streams () {
-        return Stream.query().with('files').get().sort((streamA, streamB) => {
-          return streamB.updateAt - streamA.updateAt
-        })
+        return Stream.query().with('files').orderBy('updatedAt', 'desc').get()
       },
       allFiles () {
         return File.all()
