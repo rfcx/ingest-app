@@ -66,7 +66,7 @@ export default class Stream extends Model {
   }
 
   get isDuplicated () {
-    return this.state === 'duplicated'
+    return this.state === 'duplicate'
   }
 
   get isCompleted () {
@@ -78,6 +78,6 @@ export default class Stream extends Model {
   }
 
   stateIsDuplicated () {
-    return this.state === 'duplicated'
+    return this.state === 'duplicate'
   }
 }

@@ -1,8 +1,8 @@
 <template>
     <div class="container-box empty has-text-centered">
         <img src="~@/assets/ic-file.svg" style="margin-bottom: 0.75em"><br>
-        <p>A stream is a group of audio files.</p>
-        <span>Use  <img src="~@/assets/ic-add-stream.svg" style="vertical-align: sub"/>  button to create your first stream and start uploading files.</span><br>
+        <!-- <p>A stream is a group of audio files.</p> -->
+        <span>Use  <img src="~@/assets/ic-add-stream.svg" style="vertical-align: sub"/>  button to create your first site and start uploading files.</span><br>
     </div>
 </template>
 
