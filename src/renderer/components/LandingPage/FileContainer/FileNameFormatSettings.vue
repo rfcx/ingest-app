@@ -10,7 +10,7 @@
 			<div class="d-flex w100 input-container">
 				<div class="field is-grouped is-grouped-multiline" @click.stop="fieldClick($event)">
 					<template v-for="(item, idx) in selectedItems">
-						<div class="control" v-if="isFormatItem(item)" :key="'item-' + idx">
+						<div class="control" v-if="isFormatItem(item)" :key="'item-' + idx" :data-index="idx">
 							<div class="tags has-addons">
 								<a class="tag is-link tag-label">
 									<span>{{ item.label }}</span>
@@ -19,7 +19,8 @@
 								<a class="tag is-delete" @click="deleteSelectedFormatItem(item)"></a>
 							</div>
 						</div>
-            <!-- <input
+            <input
+              :data-index="idx"
               @blur="customInputBlur($event, idx)"
               v-model="item.value"
               :key="'format-input-' + idx"
@@ -27,8 +28,7 @@
               :size="item.value.length"
               class="custom-input"
               @keydown="customInputKeydown($event, idx)"
-              /> -->
-						<div v-else class="input-text" :key="'format-input-' + idx">{{ item.value }}</div>
+              />
 					</template>
 					<input
             :disabled="isAutoDetect"
@@ -88,14 +88,7 @@ export default {
   },
   methods: {
     async save () {
-      const format = this.selectedItems.reduce((acc, item) => {
-        if (item instanceof TimeFormat) {
-          return acc + item.format
-        } else if (item instanceof CustomInputFormat) {
-          return acc + item.value
-        }
-        return acc
-      }, '') + this.lastInputText.trim()
+      const format = this.selectedFormat
       this.$emit('save', format)
     },
     closeModal () {
@@ -104,16 +97,46 @@ export default {
       this.clearSelectedItem()
     },
     deleteSelectedItem (idx) {
+      // delete current index
       this.$delete(this.selectedItems, idx)
-      const s = this.selectedItems.length
+
+      const size = this.selectedItems.length
       if (this.selectedItems.length > 0) {
-        const last = this.selectedItems[s - 1]
+        // check last element is text then remove the last one
+        const last = this.selectedItems[size - 1]
         if (last instanceof CustomInputFormat) {
-          console.log('last', last.value)
-          this.$delete(this.selectedItems, s - 1)
+          this.$delete(this.selectedItems, size - 1)
           this.lastInputText = last.value || ''
         }
+
+        // check first element is text then remove the first one
+        const first = this.selectedItems[0]
+        if (first instanceof CustomInputFormat && first.value === '') {
+          this.$delete(this.selectedItems, 0)
+        }
       }
+      let newSelected = []
+      const newSize = this.selectedItems.length
+      let index = 0
+      while (index < newSize) {
+        const nxIndex = index + 1
+        const currentItem = this.selectedItems[index]
+        if (nxIndex < newSize) {
+          const nxItem = this.selectedItems[nxIndex]
+
+          if (currentItem instanceof CustomInputFormat && nxItem instanceof CustomInputFormat) {
+            const item = new CustomInputFormat(currentItem.value + nxItem.value)
+            newSelected.push(item)
+            index += 2
+            continue
+          }
+        }
+
+        newSelected.push(currentItem)
+        index++
+      }
+
+      this.selectedItems = newSelected
     },
     keydown (e) {
       if (e.keyCode === 8 && this.lastInputText === '') {
@@ -127,7 +150,9 @@ export default {
     customInputKeydown (e, idx) {
       const item = this.selectedItems[idx]
       if (item instanceof CustomInputFormat && e.keyCode === 8 && item.value === '') {
-        console.log('todo delete')
+        // if (idx > 0) {
+        //   this.deleteSelectedItem(idx - 1)
+        // }
       }
     },
     customInputBlur (e, idx) {
@@ -145,9 +170,13 @@ export default {
           // check format type is already selected
           const isSelected = this.selectedItems.findIndex(si => (si instanceof TimeFormat && si.type === item.type)) > -1
           if (!isSelected) {
-            if (this.lastInputText !== '') {
-              this.selectedItems.push(new CustomInputFormat(this.lastInputText))
-              this.lastInputText = ''
+            if (this.selectedItems.length > 0) {
+              if (this.lastInputText !== '') {
+                this.selectedItems.push(new CustomInputFormat(this.lastInputText))
+                this.lastInputText = ''
+              } else {
+                this.selectedItems.push(new CustomInputFormat(''))
+              }
             }
             this.selectedItems.push(item)
           }
@@ -169,14 +198,13 @@ export default {
       return item instanceof CustomInputFormat
     },
     fieldClick (e) {
-      const tagName = String(e.target.tagName).toUpperCase()
-      if (e.target) {
-        if (tagName === 'INPUT') {
-          e.target.focus()
-        } else {
-          const input = this.$refs.fieldInput
-          input.focus()
-        }
+      const { target } = e
+      const tagName = String(target.tagName).toLowerCase()
+      if (tagName === 'input') {
+        target.focus()
+      } else if (target.classList.contains('field')) {
+        const input = this.$refs.fieldInput
+        input.focus()
       }
     },
     clearSelectedItem () {
@@ -191,12 +219,14 @@ export default {
         this.selectedItems = [TIME_FORMAT.auto_detect.options[0]]
       } else {
         const size = format.length
+        const selectedItems = []
         if (size > 0) {
           const selectFormat = formatText => {
             for (const formatItem of Object.values(TIME_FORMAT)) {
               const option = formatItem.options.find(op => op.format === formatText)
               if (option) {
-                this.selectedItems.push(option)
+                selectedItems.push(option)
+                selectedItems.push(new CustomInputFormat(''))
                 return
               }
             }
@@ -205,29 +235,42 @@ export default {
           let idx = 0
           let count = 0
           this.selectedItems = []
+          const CHAR = '%'
           while (idx < size) {
-            if (format[idx] === '%' && idx + 1 < size) {
+            if (format[idx] === CHAR && idx + 1 < size) {
               const fm = format.substr(idx, 2)
               idx += 2
               selectFormat(fm)
             } else {
-              const strIdx = format.indexOf('%', idx)
+              const strIdx = format.indexOf(CHAR, idx)
+              let text = ''
               if (strIdx > -1) {
-                const text = format.substring(idx, strIdx)
-                this.selectedItems.push(new CustomInputFormat(text))
+                text = format.substring(idx, strIdx)
                 idx += strIdx - idx
               } else {
-                const text = format.substring(idx, size)
-                this.selectedItems.push(new CustomInputFormat(text))
-                console.log('3', text)
+                text = format.substring(idx, size)
                 idx += (size - idx)
+              }
+
+              if (selectedItems[selectedItems.length - 1] instanceof CustomInputFormat) {
+                selectedItems[selectedItems.length - 1].value = text
+              } else {
+                selectedItems.push(new CustomInputFormat(text))
               }
             }
             count++
+            // prevent infinite loop
             if (count > 50) {
               break
             }
           }
+
+          const lastItem = selectedItems[selectedItems.length - 1]
+          if (lastItem instanceof CustomInputFormat && lastItem.value === '') {
+            selectedItems.splice(selectedItems.length - 1, 1)
+          }
+
+          this.selectedItems = selectedItems
         }
       }
     }
@@ -240,6 +283,16 @@ export default {
     },
     isAutoDetect () {
       return this.selectedItems.some(si => (si instanceof TimeFormat) && si.format === AUTO_DETECT)
+    },
+    selectedFormat () {
+      return this.selectedItems.reduce((acc, item) => {
+        if (item instanceof TimeFormat) {
+          return acc + item.format
+        } else if (item instanceof CustomInputFormat) {
+          return acc + item.value
+        }
+        return acc
+      }, '') + this.lastInputText.trim()
     }
   }
 }
@@ -476,30 +529,38 @@ const TIME_FORMAT = {
         border-radius: 8px;
         border: 1px solid #b2bec3;
         min-height: 40px;
-		position: relative;
-		padding-left: $field-offset;
-		padding-right: $field-offset;
+        position: relative;
+        padding-left: $field-offset;
+        padding-right: $field-offset;
         display: flex;
-		flex-direction: row;
-		align-items: center;
-		margin-bottom: 0 !important;
-		padding-top: $field-offset;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 0 !important;
+        padding-top: $field-offset;
 
         input {
-			height: 24px;
-			background: transparent !important;
-			border: 0 !important;
-			font-size: 16px;
-			color: white;
-			margin-bottom: $field-offset;
+          height: 24px;
+          background: transparent !important;
+          border: 0 !important;
+          font-size: 16px;
+          color: white;
+          margin-bottom: $field-offset;
+          min-width: 10px;
+
+          &.custom-input {
+            text-align: center;
+          }
           &:focus {
               border: 0 !important;
               outline: unset !important;
           }
 
           &[size="0"] {
-            width: 4px !important;
-            margin-right: 8px;
+            width: 10px !important;
+          }
+
+          &.last-input {
+            margin-left: 8px;
           }
     }
 
@@ -515,7 +576,8 @@ const TIME_FORMAT = {
 		$tag-size: 24px;
 		.control {
 			margin-bottom: $field-offset !important;
-			height: $tag-size;
+      height: $tag-size;
+      margin-right: 0 !important;
 			.tags {
 				a {
 					margin-bottom: 0 !important;
