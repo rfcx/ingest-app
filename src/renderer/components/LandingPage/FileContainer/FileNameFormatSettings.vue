@@ -43,14 +43,14 @@
 			
 			<div class="columns is-multiline is-gapless">
 				<div class="column is-half" v-for="(formatItem, index) in TIME_FORMAT" :key="'time-format-' + index" :data-type="formatItem.type">
-					<div class="d-flex flex-row align-center">
+					<div class="is-flex flex-row align-center">
 						<table class="w100 time-format-table">
 							<tr>
 								<td class="label-col">
 									<span>{{ formatItem.label }}</span>
 								</td>
 								<td class="col-options">
-									<div class="d-flex flex-row">
+									<div class="is-flex flex-row">
 										<button @click="formatItemClick(formatItem.type, option)" class="button is-light is-small option-btn" v-for="(option, optIdx) in formatItem.options" :key="'format-btn-' + formatItem.type + '-' + optIdx">
 											<span>{{ option.label }}</span>
 										</button>
@@ -624,5 +624,9 @@ table.time-format-table {
 
 .modal-card-head {
 	padding-bottom: 8px !important;
+}
+
+.flex-row {
+  flex-direction: row;
 }
 </style>
