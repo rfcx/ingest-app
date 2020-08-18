@@ -8,7 +8,7 @@ const getStatePriority = function (state, message) {
     case 'server_error':
       if (message && message.toLowerCase().includes('duplicate')) return 4
       else return 5
-    case 'duplicate': return 6
+    case 'duplicated': return 6
     case 'completed': return 7
   }
 }
@@ -41,7 +41,7 @@ const getIconName = function (state) {
     case 'local_error':
     case 'server_error':
     case 'failed':
-    case 'duplicate':
+    case 'duplicated':
       return 'ic-state-failed.svg'
     case 'completed':
       return 'ic-state-completed.svg'
@@ -77,7 +77,7 @@ const isError = function (state) {
 }
 
 const isDuplicated = function (state) {
-  return state === 'duplicate'
+  return state === 'duplicated'
 }
 
 const isCompleted = function (state) {

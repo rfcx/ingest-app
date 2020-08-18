@@ -232,7 +232,7 @@
         stream.files.forEach((file) => {
           if (file.disabled === true) {
             countDisabled++
-          } else if (file.state === 'failed' || file.state === 'duplicate') {
+          } else if (file.state === 'failed' || file.state === 'duplicated') {
             countFailed++
           } else if (file.state === 'completed') {
             countComplited++
