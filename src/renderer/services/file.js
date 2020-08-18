@@ -203,24 +203,25 @@ class FileProvider {
 
   /* -- Helper -- */
 
-  fileIsExist (filePath, streamId) {
-    const file = File.query().where((file) => {
+  existingSameFilePathsInStream (filePath, streamId) {
+    return File.query().where((file) => {
       return file.path === filePath && file.streamId === streamId
     }).get()
-    return file.length > 0
+  }
+
+  fileIsExist (filePath, streamId) {
+    return this.existingSameFilePathsInStream(filePath, streamId).length > 0
   }
 
   hasUploadedBefore (filePath, streamId) {
-    const file = File.query().where((file) => {
-      return file.path === filePath && file.streamId === streamId
-    }).get()
-    console.log('check hasUploadedBefore', filePath, streamId, file)
-    if (!this.fileIsExist(filePath, streamId)) return false
-    return !(file[0].isInPreparedGroup)
+    const existingFiles = this.existingSameFilePathsInStream(filePath, streamId)
+    if (existingFiles.length === 0) return false
+    return !(existingFiles[0].isInPreparedGroup)
   }
 
   createFileObject (filePath, stream) {
-    if (this.fileIsExist(filePath, stream.id) && !this.hasUploadedBefore(filePath, stream.id)) {
+    const hasUploadedBefore = this.hasUploadedBefore(filePath, stream.id)
+    if (this.fileIsExist(filePath, stream.id) && !hasUploadedBefore) {
       console.log('this file is already in prepare tab')
       return
     }
@@ -237,7 +238,7 @@ class FileProvider {
       isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
     }
     const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-    const state = this.getState(momentDate, fileExt, filePath, stream.id)
+    const state = this.getState(momentDate, fileExt, hasUploadedBefore)
     return {
       id: this.getFileId(filePath),
       name: fileName,
@@ -254,12 +255,12 @@ class FileProvider {
     }
   }
 
-  getState (momentDate, fileExt, filePath, streamId) {
+  getState (momentDate, fileExt, hasUploadedBefore) {
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
       return {state: 'local_error', message: 'File extension is not supported'}
     } else if (!momentDate.isValid()) {
       return {state: 'local_error', message: 'Filename does not match with a filename format'}
-    } else if (this.hasUploadedBefore(filePath, streamId)) {
+    } else if (hasUploadedBefore) {
       return {state: 'local_error', message: 'Duplicate file'}
     } else {
       return {state: 'preparing', message: ''}
