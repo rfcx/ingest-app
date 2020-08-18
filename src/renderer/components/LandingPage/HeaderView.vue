@@ -3,7 +3,7 @@
     <div class="title-container">
       <div class="title-container-text" v-if="selectedStream && !isRenaming">
       <span class="stream-name">{{ selectedStream.name }}</span>
-      <span v-if="!isSelectedStreamFailed" class="title-container-edit" title="Rename the stream"><font-awesome-icon :icon="iconPencil" @click="renameStream()"></font-awesome-icon></span>
+      <span v-if="!isSelectedStreamFailed" class="title-container-edit" title="Rename the site"><font-awesome-icon :icon="iconPencil" @click="renameStream()"></font-awesome-icon></span>
       </div>
       <div class="edit-container" v-if="isRenaming">
         <input class="input edit-container-item-input" v-model="newStreamName" type="text" placeholder="">
@@ -30,7 +30,7 @@
       </div>
     </div>
     <div class="subtitle-container">
-      <router-link title="Edit stream location" to="/edit-stream-location">
+      <router-link title="Edit site location" to="/edit-stream-location">
         <img src="~@/assets/ic-pin.svg">
         <span v-if="selectedStream" class="file-list-span">{{ selectedStream.siteGuid || `${selectedStream.latitude}, ${selectedStream.longitude}` }}</span></router-link>
     </div>

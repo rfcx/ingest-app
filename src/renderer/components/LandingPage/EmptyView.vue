@@ -6,7 +6,7 @@
 </template>
 
 <script>
-  const dropFileDefaultMessage = 'Drop audio files here and press start upload to start uploading the audio files to the stream.'
+  const dropFileDefaultMessage = 'Drop audio files here and press start upload to start uploading the audio files to the site.'
   export default {
     props: {
       isDragging: Boolean,
