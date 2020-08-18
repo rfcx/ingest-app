@@ -42,20 +42,12 @@ function createAuthWindow () {
                 let titleSignUp = document.getElementsByTagName('h3')[1]
                 if (titleSignUp) { titleSignUp.textContent= 'Rainforest Connection' }
                 if (titleSignUp && ${isDarkMode}) { titleSignUp.style.color = "#fff" }
-                let head = document.getElementsByTagName('head')[0]
-                let link = document.createElement('link')
-                link.rel = 'stylesheet'
-                head.appendChild(link)
-                link.href = 'https://fonts.googleapis.com/css?family=Lato:300,400,700'
                 let html = document.getElementsByTagName('html')[0]
                 if (html && ${isDarkMode})
                 { html.style.backgroundColor = '#131525' }
                 let body = document.getElementsByTagName('body')[0]
                 if (body && ${isDarkMode})
-                { body.style.backgroundColor = '#131525'; body.style.setProperty('font-family', "'Lato', sans-serif", 'important') }
-                document.querySelectorAll('input').forEach(el => el.style.setProperty('font-family', "'Lato', sans-serif", 'important'))
-                document.querySelectorAll('h3').forEach(el => el.style.setProperty('font-family', "'Lato', sans-serif", 'important'))
-                document.querySelectorAll('button').forEach(el => el.style.setProperty('font-family', "'Lato', sans-serif", 'important'))`
+                { body.style.backgroundColor = '#131525' }`
     win.webContents.executeJavaScript(code)
   })
   win.webContents.on('did-redirect-navigation', (event, url) => {

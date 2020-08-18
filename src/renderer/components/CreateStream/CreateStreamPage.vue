@@ -5,7 +5,7 @@
       {{ error }}
     </div>
     <div class="field field-stream-name">
-      <label for="name" class="label">Site name</label>
+      <label for="name" class="label">Stream name</label>
       <div class="control">
         <input v-model="name" class="input" type="text" placeholder="Jaguar 1" />
       </div>

@@ -6,7 +6,7 @@
 </template>
 
 <script>
-  const dropFileDefaultMessage = 'Drop audio files here and press start upload to start uploading the audio files to the site.'
+  const dropFileDefaultMessage = 'Drop audio files here and press start upload to start uploading the audio files to the stream.'
   export default {
     props: {
       isDragging: Boolean,
@@ -15,7 +15,7 @@
     computed: {
       stateStatus () {
         if (this.hasFileInQueued) {
-          return 'Your audio is being uploaded.\n\nYou can still drop files here to upload more!'
+          return 'Your audios are being uploaded.\n\nYou can still drop files here to upload more!'
         }
         return dropFileDefaultMessage
       },
@@ -50,5 +50,5 @@
     padding: $default-padding-margin;
     max-width: 300px;
   }
-
+  
 </style>
