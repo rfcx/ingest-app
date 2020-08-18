@@ -43,7 +43,7 @@
     </div> -->
     <div class="menu-container side-menu-title">
       <router-link title="Add new site" class="side-menu-router-add-btn" to="/add">
-        <button type="button" class="button side-menu-add-btn">
+        <button type="button" class="button is-rounded side-menu-add-btn">
           <span>+</span>New Site
         </button>
       </router-link>
