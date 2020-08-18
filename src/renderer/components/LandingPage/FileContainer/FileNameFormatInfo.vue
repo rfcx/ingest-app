@@ -2,26 +2,50 @@
   <div class="preparing-file-settings__wrapper">
     <div class="preparing-file-settings__name-format-wrapper">
       <span class="preparing-file-settings__name-format-title">Filename format</span>
-      <span class="preparing-file-settings__name-format-description">{{ selectedStream.timestampFormat }}</span>
+      <div class="is-flex flex-row align-center">
+          <div class="preparing-file-settings__name-format-description">{{ (selectedStream.timestampFormat !== 'Auto-detect' ? 'custom ・ ' : '') + selectedStream.timestampFormat }}</div>
+          <div class="preparing-file-settings__edit-button" title="Edit filename format">
+            <font-awesome-icon :icon="iconPencil" @click="openFileNameFormatSettingModal()"></font-awesome-icon>
+          </div>
+      </div>
+      
     </div>
     <div class="preparing-file-settings__actions-wrapper">
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
       <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="readyToUploadFiles.length < 1 || isDeletingAllFiles">Start upload ({{readyToUploadFiles.length}})</button>
     </div>
+    <div class="preparing-file-settings__timestamp-modal modal is-active" v-if="showSettingModal">
+      <div class="modal-background"></div>
+      <file-name-format-settings
+        :format="selectedStream.timestampFormat"
+        @onClose="closeFileNameFormatSettingModal"
+        @save="onFormatSave"/>
+      <button class="modal-close is-large" aria-label="close"></button>
+    </div>
   </div>
 </template>
 
 <script>
+
 import { mapState } from 'vuex'
 import File from '../../../store/models/File'
 import Stream from '../../../store/models/Stream'
+import FileNameFormatSettings from './FileNameFormatSettings'
+import { faPencilAlt } from '@fortawesome/free-solid-svg-icons'
+import fileState from '../../../../../utils/fileState'
 
 export default {
   props: {
-    preparingFiles: Array
+    preparingFiles: {
+      type: Array,
+      default: () => []
+    }
   },
+  components: { FileNameFormatSettings },
   data () {
     return {
+      iconPencil: faPencilAlt,
+      showSettingModal: false,
       isDeletingAllFiles: false
     }
   },
@@ -52,6 +76,26 @@ export default {
         File.delete(file.id)
       })
       // the component will be removed once delete successfully, and isDeletingAllFiles will be automatically changed to be 'false' automatically
+    },
+    openFileNameFormatSettingModal () {
+      this.showSettingModal = true
+    },
+    closeFileNameFormatSettingModal () {
+      console.log('closeFileNameFormatSettingModal')
+      this.showSettingModal = false
+    },
+    async onFormatSave (format = '') {
+      this.closeFileNameFormatSettingModal()
+      console.log('onFormatSave', format)
+      const objectFiles = this.preparingFiles.filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage)) || []
+
+      try {
+        await this.$file.updateFilesFormat(this.selectedStream, objectFiles, format)
+      } catch (e) {
+        console.log(`Error update files format '${format}'`, e.message)
+
+        // TODO: Show notify error to user
+      }
     }
   }
 }
@@ -74,7 +118,22 @@ export default {
     }
     &__name-format-description {
       color: $secondary-text-color;
-      display: block;
+      display: inline-block;
     }
+    &__edit-button {
+      color: #9B9B9B !important;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  }
+
+  .preparing-file-settings__edit-button {
+    padding-left: 8px;
+  }
+  .flex-row {
+    flex-direction: row;
+  }
+  .align-center {
+    align-items: center;
   }
 </style>

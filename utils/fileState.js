@@ -22,7 +22,7 @@ const getName = function (state, message) {
     case 'local_error':
     case 'server_error':
       if (!message) return ''
-      if (message && message.toLowerCase().includes('duplicate')) return 'duplicated'
+      if (message && message.toLowerCase().includes('duplicate')) return 'duplicate'
       else return 'failed'
     case 'completed': return 'completed'
   }
@@ -93,6 +93,10 @@ const canRemove = function (state) {
   return isError(state) || isInPreparedGroup(state)
 }
 
+const canChangeTimestampFormat = function (state, message) {
+  return isInPreparedGroup(state) && !(message.includes('extension') || message.includes('duplicate') || message.includes('duration'))
+}
+
 export default {
   getStatePriority,
   getName,
@@ -107,5 +111,6 @@ export default {
   isDuplicated,
   isCompleted,
   canRedo,
-  canRemove
+  canRemove,
+  canChangeTimestampFormat
 }
