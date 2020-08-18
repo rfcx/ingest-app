@@ -7,6 +7,8 @@ import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 import store from '../store'
 
+const FORMAT_AUTO_DETECT = 'Auto-detect'
+
 class FileProvider {
   /* -- Import files -- */
   handleDroppedFiles (droppedFiles, selectedStream) {
@@ -16,10 +18,14 @@ class FileProvider {
     console.log('writeDroppedFilesToDatabase', droppedFiles, selectedStream)
     let fileObjects = []
     let fileObjectsInFolder = []
-    if (!droppedFiles) { return } // no files
-    ([...droppedFiles]).forEach(file => {
+    if (!droppedFiles) {
+      return
+    } // no files
+    [...droppedFiles].forEach((file) => {
       if (fileHelper.isFolder(file.path)) {
-        fileObjectsInFolder = fileObjectsInFolder.concat(this.getFileObjectsFromFolder(file, selectedStream, null))
+        fileObjectsInFolder = fileObjectsInFolder.concat(
+          this.getFileObjectsFromFolder(file, selectedStream, null)
+        )
       } else {
         const fileObject = this.createFileObject(file.path, selectedStream)
         if (fileObject) {
@@ -31,16 +37,24 @@ class FileProvider {
     // insert converted files into db
     this.insertNewFiles(allFileObjects, selectedStream)
     // update file duration
-    this.updateFilesDuration(allFileObjects.filter(file => fileHelper.isSupportedFileExtension(file.extension)))
+    this.updateFilesDuration(
+      allFileObjects.filter((file) =>
+        fileHelper.isSupportedFileExtension(file.extension)
+      )
+    )
   }
 
   getFileObjectsFromFolder (folder, selectedStream, existingFileObjects = null) {
     // see all stuff in the directory
-    const stuffInDirectory = fileHelper.getFilesFromDirectoryPath(folder.path).map(name => {
-      return { name: name, path: folder.path + '/' + name }
-    })
+    const stuffInDirectory = fileHelper
+      .getFilesFromDirectoryPath(folder.path)
+      .map((name) => {
+        return { name: name, path: folder.path + '/' + name }
+      })
     // get the files in the directory
-    const files = stuffInDirectory.filter(file => !fileHelper.isFolder(file.path))
+    const files = stuffInDirectory.filter(
+      (file) => !fileHelper.isFolder(file.path)
+    )
     // write file into file object array
     let fileObjects = existingFileObjects || []
     files.forEach(file => {
@@ -50,11 +64,14 @@ class FileProvider {
       }
     })
     // get subfolders
-    const subfolders = stuffInDirectory.filter(file => fileHelper.isFolder(file.path))
-    subfolders.forEach(folder => this.getFileObjectsFromFolder(folder, selectedStream, fileObjects))
+    const subfolders = stuffInDirectory.filter((file) =>
+      fileHelper.isFolder(file.path)
+    )
+    subfolders.forEach((folder) =>
+      this.getFileObjectsFromFolder(folder, selectedStream, fileObjects)
+    )
     return fileObjects
   }
-
   async updateFilesDuration (files) {
     // get updated data
     Promise.all(files.map(async file => {
@@ -80,6 +97,61 @@ class FileProvider {
         data: { state: 'waiting', stateMessage: '', sessionId: sessionId }
       })
     })
+  }
+
+  /**
+   * Update preparing file format
+   * @param {*} format string of format
+   * @param {*} fileObjectList list of files
+   * @param {*} stream file's stream
+   */
+  async updateFilesFormat (stream, fileObjectList, format = FORMAT_AUTO_DETECT) {
+    const updatedFiles = []
+    if (Array.isArray(fileObjectList) && fileObjectList.length > 0) {
+      for await (const file of fileObjectList) {
+        const isoDate =
+          format === FORMAT_AUTO_DETECT
+            ? dateHelper.parseTimestampAuto(file.name)
+            : dateHelper.parseTimestamp(file.name, format)
+        const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+
+        const stateObj = this.getState(momentDate, file.extension, file.path, stream.id)
+        const state = stateObj.state
+        const stateMessage = stateObj.message
+        const newFile = { ...file }
+        // update fields
+        newFile.state = state
+        newFile.stateMessage = stateMessage
+        newFile.timestamp = isoDate
+
+        updatedFiles.push(newFile)
+
+        try {
+          await File.update({
+            where: file.id,
+            data: { state, stateMessage, timestamp: isoDate },
+            update: ['state', 'stateMessage', 'timestamp']
+          })
+        } catch (e) {
+          console.log(`Update file '${file.id}' error`, e)
+        }
+      }
+
+      console.log(
+        `Updated ${fileObjectList.length} files with format '${format}'`
+      )
+    }
+
+    await Stream.update({
+      where: stream.id,
+      data: { files: updatedFiles, timestampFormat: format },
+      update: ['timestampFormat', 'files']
+    })
+
+    console.log(
+      `Updated ${updatedFiles.length} file(s) to stream '${stream.id}'`
+    )
+    console.log(`Updated timestampFormat '${format}' to stream '${stream.id}'`)
   }
 
   // 2. Upload files
@@ -126,7 +198,8 @@ class FileProvider {
   }
 
   checkStatus (file, idToken, isSuspended) {
-    return api.checkStatus(this.isProductionEnv(), file.uploadId, idToken)
+    return api
+      .checkStatus(this.isProductionEnv(), file.uploadId, idToken)
       .then((data) => {
         const status = data.status
         const failureMessage = data.failureMessage
@@ -135,40 +208,61 @@ class FileProvider {
           case 0:
             if (isSuspended) {
               // If the app suspends/loses internet connection the uploading file changes the status to waiting
-              return File.update({ where: file.id,
-                data: {state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: 0}
+              return File.update({
+                where: file.id,
+                data: {
+                  state: 'waiting',
+                  uploadId: '',
+                  stateMessage: '',
+                  progress: 0,
+                  retries: 0
+                }
               })
             }
             return
           case 10:
-            return File.update({ where: file.id,
-              data: {state: 'ingesting', stateMessage: '', progress: 100}
+            return File.update({
+              where: file.id,
+              data: { state: 'ingesting', stateMessage: '', progress: 100 }
             })
           case 20:
-            return File.update({ where: file.id,
-              data: {state: 'completed', stateMessage: '', progress: 100}
+            return File.update({
+              where: file.id,
+              data: { state: 'completed', stateMessage: '', progress: 100 }
             })
           case 30:
             if (failureMessage.includes('is zero')) {
-              return File.update({ where: file.id,
-                data: {state: 'server_error', stateMessage: 'Corrupted file'}
+              return File.update({
+                where: file.id,
+                data: { state: 'server_error', stateMessage: 'Corrupted file' }
               })
             } else if (file.retries < 3) {
-              return File.update({ where: file.id,
-                data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
+              return File.update({
+                where: file.id,
+                data: {
+                  state: 'waiting',
+                  uploadId: '',
+                  stateMessage: '',
+                  progress: 0,
+                  retries: file.retries + 1
+                }
               })
             } else {
-              return File.update({ where: file.id,
-                data: {state: 'server_error', stateMessage: failureMessage}
+              return File.update({
+                where: file.id,
+                data: { state: 'server_error', stateMessage: failureMessage }
               })
             }
           case 31:
-            return File.update({ where: file.id,
-              data: {state: 'server_error', stateMessage: failureMessage}
+            return File.update({
+              where: file.id,
+              data: { state: 'server_error', stateMessage: failureMessage }
             })
-          default: break
+          default:
+            break
         }
-      }).catch((error) => {
+      })
+      .catch((error) => {
         console.log('error', error)
       })
   }
@@ -178,10 +272,6 @@ class FileProvider {
   }
 
   /* -- Database wrapper -- */
-
-  // DB -- wrapper
-  // Convert dropped files (from drag&drop) to database file objects
-
   async insertNewFiles (files, selectedStream) {
     await this.insertFiles(files)
     await this.insertFilesToStream(files, selectedStream)
@@ -232,7 +322,7 @@ class FileProvider {
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
     let isoDate
-    if (stream.timestampFormat === 'Auto-detect') {
+    if (stream.timestampFormat === FORMAT_AUTO_DETECT) {
       isoDate = dateHelper.parseTimestampAuto(fileName)
     } else {
       isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)

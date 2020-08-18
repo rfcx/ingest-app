@@ -332,6 +332,7 @@
     }
   }
   
+  .modal-card-head,
   .modal-card-body,
   .modal-card-foot {
     background-color: #292a3b !important;
