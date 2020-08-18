@@ -23,18 +23,10 @@ const explorerWebUrl = (isProd, streamId = null) => {
 const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
   return requestUploadUrl(env, fileName, filePath, streamId, timestamp, idToken)
     .then((data) => {
-      console.log('uploadId', data.uploadId)
       File.update({ where: fileId,
         data: {state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false}
       })
-      return performUpload(data.url, filePath, fileExt, fileSize, progressCallback)
-        .then(() => {
-          return Promise.resolve(data.uploadId)
-        })
-    })
-    .catch(error => {
-      console.log('error', error, error.response)
-      throw error
+      return performUpload(data.url, filePath, fileExt, fileSize, progressCallback).then(() => data.uploadId)
     })
 }
 
@@ -57,7 +49,7 @@ const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, 
   // Make a request for a user with a given ID
   const sha1 = fileHelper.getCheckSum(filePath)
   const params = { filename: originalFilename, checksum: sha1, stream: streamId, timestamp: timestamp }
-  console.log('requestUploadUrl with params', params)
+  console.log('===> requestUploadUrl with params', params)
   return axios.post(apiUrl(env) + '/uploads', params, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const url = response.data.url

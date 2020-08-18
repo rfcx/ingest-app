@@ -112,9 +112,7 @@
         return Stream.find(this.selectedStreamId)
       },
       streams () {
-        return Stream.query().with('files').get().sort((streamA, streamB) => {
-          return fileState.getStatePriority(streamA) - fileState.getStatePriority(streamB)
-        })
+        return Stream.query().with('files').orderBy('updatedAt', 'desc').get()
       },
       allFiles () {
         return File.all()
@@ -256,32 +254,12 @@
         if (count === stream.files.length) return true
         else return false
       },
-      getFailedFiles (streamId) {
-        return new Promise((resolve, reject) => {
-          const files = File.query().where((file) => {
-            return file.state === 'failed' && file.streamId === streamId
-          }).get()
-          if (files != null) {
-            resolve(files)
-          } else {
-            reject(new Error('No failed files'))
-          }
-        })
-      },
       repeatUploading (streamId) {
-        let listener = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-          let idToken = null
-          idToken = arg
-          return this.getFailedFiles(streamId).then((files) => {
-            console.log('files', files)
-            for (let i = 0; i < files.length; i++) {
-              this.$file.uploadFile(files[i], idToken)
-            }
-          })
-        }
-        this.$electron.ipcRenderer.send('getIdToken')
-        this.$electron.ipcRenderer.on('sendIdToken', listener)
+        console.log('repeatUploading')
+        const files = File.query().where((file) => {
+          return file.canRedo && file.streamId === streamId
+        }).get()
+        this.$file.putFilesIntoUploadingQueue(files)
       }
     }
   }
@@ -524,7 +502,7 @@
     color: grey;
     font-size: 13px;
     cursor: pointer;
-    margin-left: 3px !important;
+    margin: 6px 6px 6px 0;
   }
 
   .is-danger {

@@ -8,7 +8,6 @@ import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
 import userService from './services/user-service'
-import fileWatcher from './services/file-watcher'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
@@ -670,15 +669,6 @@ ipcMain.on('focusFolder', (event, data) => {
 
 ipcMain.on('setUploadingProcess', (event, data) => {
   console.log('setUploadingProcess', data)
-})
-
-ipcMain.on('subscribeToFileWatcher', async function (event, streams) {
-  console.log('subscribeToFileWatcher', streams)
-  if (streams && streams.length) {
-    for (let stream of streams) {
-      await fileWatcher.subscribeStream(stream)
-    }
-  }
 })
 
 ipcMain.on('deleteFiles', async function (event, ids) {

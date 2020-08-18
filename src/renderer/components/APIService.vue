@@ -13,7 +13,8 @@
     data: () => {
       return {
         checkStatusWorkerTimeout: workerTimeoutMinimum,
-        checkWaitingFilesInterval: null
+        checkWaitingFilesInterval: null,
+        isQueuing: false
       }
     },
     computed: {
@@ -69,6 +70,12 @@
           }
         })
       },
+      getUnsyncedFiles () {
+        return File.query().where('state', 'waiting')
+          .orderBy('retries', 'desc')
+          .orderBy('timestamp', 'asc')
+          .limit(10).get()
+      },
       getUploadedFile () {
         return new Promise((resolve, reject) => {
           const file = File.query().where((file) => {
@@ -81,20 +88,32 @@
           }
         })
       },
-      uploadFile (file) {
-        let listener = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-          let idToken = null
-          idToken = arg
-          return this.$file.uploadFile(file, idToken)
-        }
-        this.$electron.ipcRenderer.send('getIdToken')
-        this.$electron.ipcRenderer.on('sendIdToken', listener)
+      getUploadedFiles () {
+        return File.query().where((file) => {
+          return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== '' && file.uploaded === true
+        }).orderBy('timestamp').limit(5).get()
       },
-      queueFileToUpload () {
-        return this.getUnsyncedFile().then((file) => {
-          return this.uploadFile(file)
+      uploadFile (file) {
+        return new Promise((resolve, reject) => {
+          let listener = (event, arg) => {
+            this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+            let idToken = null
+            idToken = arg
+            return this.$file.uploadFile(file, idToken).then(resolve).catch(reject)
+          }
+          this.$electron.ipcRenderer.send('getIdToken')
+          this.$electron.ipcRenderer.on('sendIdToken', listener)
+        })
+      },
+      // queue 10 files to upload each time
+      queueFilesToUpload () {
+        const unsyncedFiles = this.getUnsyncedFiles()
+        if (unsyncedFiles.length <= 0 || this.isQueuing) { return }
+        this.isQueuing = true
+        return Promise.all(unsyncedFiles.map((file) => this.uploadFile(file))).then(() => {
+          this.isQueuing = false
         }).catch((err) => {
+          this.isQueuing = false
           console.log(err)
         })
       },
@@ -103,7 +122,7 @@
           let listener = (event, arg) => {
             this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
             let idToken = arg
-            return this.$file.checkStatus(file, idToken, false)
+            return Promise.all(this.getUploadedFiles().map(file => this.$file.checkStatus(file, idToken, false)))
           }
           this.$electron.ipcRenderer.send('getIdToken')
           this.$electron.ipcRenderer.on('sendIdToken', listener)
@@ -111,13 +130,7 @@
       },
       tickUpload () {
         if (!this.isUploadingProcessEnabled) return
-        return this.getUploadingFiles()
-          .then((files) => {
-            if (!files.length) {
-              console.log('\nNo uploading files', files)
-              this.queueFileToUpload()
-            }
-          })
+        this.queueFilesToUpload()
       },
       tickCheckStatus () {
         if (!this.isUploadingProcessEnabled) return
@@ -141,9 +154,9 @@
               let listener = (event, arg) => {
                 this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
                 let idToken = arg
-                for (let file of files) {
+                return files.forEach(file => {
                   return this.$file.checkStatus(file, idToken, true)
-                }
+                })
               }
               this.$electron.ipcRenderer.send('getIdToken')
               this.$electron.ipcRenderer.on('sendIdToken', listener)
@@ -153,18 +166,19 @@
       checkFilesInUploadingSessionId (files) {
         console.log('checkFilesInUploadingSessionId', files)
         if (files.length === 0) return
-        const completedFiles = files.filter(file => file.isInCompletedGroup)
-        if (files.length === completedFiles.length) { // all files has completed
-          this.sendCompleteNotification(completedFiles.length)
+        const completedFiles = files.filter(file => file.isInCompletedGroup && !file.isError)
+        const failedFiles = files.filter(file => file.isInCompletedGroup && file.isError)
+        if (files.length === completedFiles.length + failedFiles.length) { // all files has completed
+          this.sendCompleteNotification(completedFiles.length, failedFiles.length)
           this.resetUploadingSessionId()
         }
       },
-      sendCompleteNotification (numberOfCompletedFiles) {
-        // const text = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'}`
-        const text = 'Streams'
+      sendCompleteNotification (numberOfCompletedFiles, numberOfFailedFiles) {
+        const completedText = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'} uploaded`
+        const failText = `${numberOfFailedFiles} ${numberOfFailedFiles > 1 ? 'files' : 'file'} failed`
         let notificationCompleted = {
-          title: 'RFCx Ingest',
-          body: `${text} uploaded successfully`
+          title: 'Ingest Completed',
+          body: `${numberOfCompletedFiles > 0 ? completedText : ''} ${numberOfFailedFiles > 0 ? failText : ''}`
         }
         let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
         myNotificationCompleted.onshow = () => {

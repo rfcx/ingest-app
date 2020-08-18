@@ -87,7 +87,9 @@ export default {
               longitude: longitude,
               timestampFormat: 'Auto-detect',
               env: this.isProductionEnv() ? 'production' : 'staging',
-              visibility: visibility
+              visibility: visibility,
+              createdAt: Date.now(),
+              updatedAt: Date.now()
             }
             console.log('creating stream', JSON.stringify(stream))
             Stream.insert({ data: stream, insert: ['files'] })
