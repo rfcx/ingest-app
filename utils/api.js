@@ -97,6 +97,16 @@ const checkStatus = (env, uploadId, idToken) => {
     })
 }
 
+const updateStream = (env, streamId, opts, idToken) => {
+  return axios.patch(apiUrl(env) + `/streams/${streamId}`, opts, { headers: { 'Authorization': 'Bearer ' + idToken } })
+    .then(function (response) {
+      return response.data
+    }).catch(error => {
+      console.log('error', error.response)
+      throw error.response
+    })
+}
+
 const renameStream = (env, streamId, streamName, streamSite, idToken) => {
   return axios.patch(apiUrl(env) + `/streams/${streamId}`, { name: streamName, site: streamSite }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
@@ -180,6 +190,7 @@ const getExistingStreams = (env, idToken) => {
 export default {
   explorerWebUrl,
   createStream,
+  updateStream,
   uploadFile,
   checkStatus,
   renameStream,
