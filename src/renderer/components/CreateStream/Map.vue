@@ -59,23 +59,17 @@ export default {
       console.log(`onselected`)
       console.log(event)
       this.selectedCoordinates = event.result.center
-      this.updateMapCoordinatesForMarker(event.result.center[0], event.result.center[1])
-      this.$emit('locationSelected', this.selectedCoordinates)
     },
     getPlacePositionByDrop (event) {
       this.isDraggable = true
       var lngLat = event.marker.getLngLat()
       this.selectedCoordinates = [lngLat.lng, lngLat.lat]
-      this.updateMapCoordinatesForMarker(lngLat.lng, lngLat.lat)
-      this.$emit('locationSelected', this.selectedCoordinates)
       setTimeout(() => { this.isDraggable = false }, 100)
     },
     getPlacePositionByClick (event) {
       if (this.isDraggable) return
       if (event.mapboxEvent.lngLat) {
         this.selectedCoordinates = [event.mapboxEvent.lngLat.lng, event.mapboxEvent.lngLat.lat]
-        this.updateMapCoordinatesForMarker(event.mapboxEvent.lngLat.lng, event.mapboxEvent.lngLat.lat)
-        this.$emit('locationSelected', this.selectedCoordinates)
       }
     },
     updateMapCoordinatesForMarker (lng, lat) {
@@ -112,6 +106,14 @@ export default {
       }
 
       return geocodes
+    }
+  },
+  watch: {
+    selectedCoordinates (val, oldVal) {
+      if (val === oldVal) return
+      console.log('new location selected', val)
+      this.updateMapCoordinatesForMarker(val[0], val[1])
+      this.$emit('locationSelected', val)
     }
   },
   created () {
