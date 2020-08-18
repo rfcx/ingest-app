@@ -110,7 +110,7 @@ export default {
   },
   watch: {
     selectedCoordinates (val, oldVal) {
-      if (val === oldVal) return
+      if (val === oldVal || val.length !== 2) return
       console.log('new location selected', val)
       this.updateMapCoordinatesForMarker(val[0], val[1])
       this.$emit('locationSelected', val)
