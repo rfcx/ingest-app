@@ -6,7 +6,7 @@
     </td>
     <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError, 'is-editing': isEdit }" >
       <div class="is-flex flex-row filename-content">
-        <template v-if="isEdit">
+        <template v-if="isEdit && canEdit">
           <!-- filename input -->
           <div class="file-name-input-container">
             <input @keypress="onInputKeyPress($event)" :disabled="isDisabled" ref="inputFileName" v-model="fileName" type="text" placeholder="File name" class="input file-name-input" />
@@ -31,7 +31,7 @@
         </template>
         <template v-else>
           <div class="cell-file-name" v-text="file.name" />
-          <button class="button edit-file-name-btn" @click="editClick()" title="Edit file name">
+          <button class="button edit-file-name-btn" @click="editClick()" title="Edit file name" v-if="canEdit">
             <fa-icon class="icon-redo" :icon="icons.edit" />
           </button>
         </template>
@@ -150,6 +150,9 @@ export default {
         return false
       }
       return String(this.file.extension).toLowerCase() === String(arr[arr.length - 1]).toLowerCase()
+    },
+    canEdit () {
+      return ['local_error', 'preparing'].includes(this.file.state)
     }
   }
 }
