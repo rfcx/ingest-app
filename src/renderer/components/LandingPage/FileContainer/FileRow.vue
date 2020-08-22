@@ -1,13 +1,13 @@
 <template>
   <tr>
-    <td class="file-status file-list-table__cell file-list-table__cell_status">
+    <td class="file-status file-list-table__cell file-list-table__cell_status" v-if="!isPreparedTab">
       <img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)">
       <span class="file-status-state">{{ getStateName(file) }}</span>
     </td>
     <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError }" >
       {{ file.name }}
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
+    <td class="file-row file-list-table__cell file-list-table__cell_timestamp" v-if="!file.isError">
       {{ getTimestamp(file) }}
     </td>
     <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
@@ -41,9 +41,15 @@ export default {
     }
   },
   props: {
-    file: File
+    file: File,
+    selectedTab: String
   },
   components: { FontAwesomeIcon },
+  computed: {
+    isPreparedTab () {
+      if (this.selectedTab === 'Prepared') return true
+    }
+  },
   methods: {
     getStateName (file) {
       return fileState.getName(file.state, file.stateMessage)
@@ -76,7 +82,6 @@ export default {
   td.is-error {
     color: $secondary-text-color;
   }
-
   .iconRedo {
     color: #ffffff;
     font-size: 13px;
