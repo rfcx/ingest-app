@@ -5,9 +5,10 @@
 <script>
   import { mapState } from 'vuex'
   import File from '../store/models/File'
-  
+
   const workerTimeoutMaximum = 10000
   const workerTimeoutMinimum = 3000
+  const dayInMs = 1000 * 60 * 60 * 24
 
   export default {
     data: () => {
@@ -139,6 +140,7 @@
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         }).catch((err) => {
           console.log(err)
+          if (this.checkStatusWorkerTimeout > dayInMs * 30) return
           this.checkStatusWorkerTimeout = Math.min(2 * this.checkStatusWorkerTimeout, workerTimeoutMaximum)
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
