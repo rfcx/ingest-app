@@ -259,12 +259,8 @@ function createMenu () {
         { label: 'Log out',
           type: 'checkbox',
           click: async () => {
-            await authService.logout()
-            if (mainWindow) {
-              isLogOut = true
-              mainWindow.close()
-            }
-            idToken = null
+            console.log('logOut')
+            logOut()
           }
         },
         { label: 'Quit',
@@ -478,6 +474,7 @@ async function refreshTokens () {
 
 async function logOut () {
   await authService.logout()
+  settings.set('settings.production_env', true)
   clearAllData()
   if (mainWindow) {
     isLogOut = true
