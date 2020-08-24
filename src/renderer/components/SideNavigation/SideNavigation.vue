@@ -72,7 +72,6 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
   import settings from 'electron-settings'
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
@@ -100,9 +99,6 @@
       FontAwesomeIcon
     },
     computed: {
-      ...mapState({
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
-      }),
       selectedStreamId () {
         return this.$store.state.Stream.selectedStreamId
       },
