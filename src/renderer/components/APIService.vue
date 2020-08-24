@@ -35,8 +35,7 @@
       isUploadingProcessEnabled (val, oldVal) {
         console.log('isUploadingProcessEnabled', val, oldVal)
         if (val === oldVal) return
-        this.checkStatusWorkerTimeout = workerTimeoutMinimum
-        this.tickCheckStatus()
+        this.restartCheckStatusFunction()
       },
       filesInUploadingSession (val, oldVal) {
         if (val === oldVal) return
@@ -145,6 +144,10 @@
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
       },
+      restartCheckStatusFunction () {
+        this.checkStatusWorkerTimeout = workerTimeoutMinimum
+        this.tickCheckStatus()
+      },
       async updateFilesDuration () {
         this.$file.updateFilesDuration(this.noDurationFiles)
       },
@@ -168,6 +171,7 @@
       checkFilesInUploadingSessionId (files) {
         console.log('checkFilesInUploadingSessionId', files)
         if (files.length === 0) return
+        this.restartCheckStatusFunction()
         const completedFiles = files.filter(file => file.isInCompletedGroup && !file.isError)
         const failedFiles = files.filter(file => file.isInCompletedGroup && file.isError)
         if (files.length === completedFiles.length + failedFiles.length) { // all files has completed
