@@ -259,12 +259,7 @@ function createMenu () {
         { label: 'Log out',
           type: 'checkbox',
           click: async () => {
-            await authService.logout()
-            if (mainWindow) {
-              isLogOut = true
-              mainWindow.close()
-            }
-            idToken = null
+            logOut()
           }
         },
         { label: 'Quit',
