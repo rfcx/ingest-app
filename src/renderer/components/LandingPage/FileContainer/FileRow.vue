@@ -4,7 +4,7 @@
       <img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)">
       <span class="file-status-state">{{ getStateName(file) }}</span>
     </td>
-    <td :colspan="isEdit ? 6 : 0" class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError, 'is-editing': isEdit }" >
+    <td :colspan="isEdit ? 5 : ''" class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError, 'is-editing': isEdit }" >
       <div class="is-flex flex-row filename-content">
         <template v-if="isEdit && canEdit">
           <!-- filename input -->
@@ -191,7 +191,6 @@ export default {
     }
 
     .file-name-input-container {
-      margin-right: 8px;
       flex-grow: 1;
       min-width: 180px;
       max-width: 320px;
