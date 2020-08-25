@@ -85,6 +85,7 @@
     }
   },
   "dependencies": {
+    "@ffprobe-installer/ffprobe": "^1.0.12",
     "@fortawesome/fontawesome-svg-core": "1.2.25",
     "@fortawesome/free-brands-svg-icons": "5.11.2",
     "@fortawesome/free-regular-svg-icons": "5.11.2",
@@ -102,7 +103,9 @@
     "electron-log": "^4.0.7",
     "electron-settings": "^3.2.0",
     "electron-squirrel-startup": "^1.0.0",
+    "execa": "^4.0.2",
     "is-online": "^8.2.1",
+    "is-stream": "^2.0.0",
     "js-sha1": "^0.6.0",
     "jwt-decode": "2.2.0",
     "keytar": "^5.4.0",
@@ -117,9 +120,7 @@
     "vue-router": "^3.0.1",
     "vuex": "^3.1.2",
     "vuex-electron": "git+https://github.com/rassokhin-s/vuex-electron.git",
-    "@ffprobe-installer/ffprobe": "^1.0.12",
-    "execa": "^4.0.2",
-    "is-stream": "^2.0.0"
+    "wavefile": "^11.0.0"
   },
   "devDependencies": {
     "ajv": "^6.5.0",

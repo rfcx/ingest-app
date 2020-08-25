@@ -6,12 +6,27 @@ import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 import store from '../store'
+import fs from 'fs'
+import { WaveFile } from 'wavefile'
 
 const FORMAT_AUTO_DETECT = 'Auto-detect'
+
+const getFileInfo = file => {
+  const buffer = fs.readFileSync(file.path)
+  const wav = new WaveFile(buffer)
+  const comment = wav.getTag('ICMT') || ''
+  const authors = wav.getTag('IART') || ''
+  return {
+    comment,
+    authors
+  }
+}
 
 class FileProvider {
   /* -- Import files -- */
   handleDroppedFiles (droppedFiles, selectedStream) {
+    // read file header
+
     // 1. Convert dropped files (from drag&drop) to database file objects
     // 2. Insert files to database
     // 3. Get file duration
@@ -22,6 +37,13 @@ class FileProvider {
       return
     } // no files
     [...droppedFiles].forEach((file) => {
+      const info = getFileInfo(file)
+
+      console.log('info', info)
+
+      // TODO read data from info
+      /** if comment avilable then get data from comment and create file object */
+
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
           this.getFileObjectsFromFolder(file, selectedStream, null)
