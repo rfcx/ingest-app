@@ -4,7 +4,7 @@
       <img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)">
       <span class="file-status-state">{{ getStateName(file) }}</span>
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError, 'is-editing': isEdit }" >
+    <td :colspan="isEdit ? 6 : 0" class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError, 'is-editing': isEdit }" >
       <div class="is-flex flex-row filename-content">
         <template v-if="isEdit && canEdit">
           <!-- filename input -->
@@ -12,22 +12,24 @@
             <input @keypress="onInputKeyPress($event)" :disabled="isDisabled" ref="inputFileName" v-model="fileName" type="text" placeholder="File name" class="input file-name-input" />
           </div>
 
-          <!-- cancel edit button -->
-          <button
-            class="button is-rounded cancel-edit-filename-btn is-cancel"
-            @click="isEdit = false"
-            :disabled="isDisabled">
-            Cancel
-          </button>
+          <div class="rename-action">
+            <!-- cancel edit button -->
+            <button
+              class="button is-rounded cancel-edit-filename-btn is-cancel"
+              @click="isEdit = false"
+              :disabled="isDisabled">
+              Cancel
+            </button>
 
-          <!-- save filename button -->
-          <button
-            class="button is-rounded save-edit-filename-btn is-primary"
-            :disabled="isDisabled || !canSave || !fileExtensionValid"
-            @click="saveEditFileName()"
-            :class="{'is-loading': loading }">
-            Save
-          </button>
+            <!-- save filename button -->
+            <button
+              class="button is-rounded save-edit-filename-btn is-primary"
+              :disabled="isDisabled || !canSave || !fileExtensionValid"
+              @click="saveEditFileName()"
+              :class="{'is-loading': loading }">
+              Save
+            </button>
+          </div>
         </template>
         <template v-else>
           <div class="cell-file-name" v-text="file.name" />
@@ -37,22 +39,25 @@
         </template>
       </div>
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
-      {{ getTimestamp(file) }}
-    </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
-      {{ file.fileDuration }}
-    </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
-      {{ file.fileSize }}
-    </td>
-    <td class="is-error file-row file-list-table__cell file-list-table__cell_error" colspan="3" v-if="file.isError">
-      {{ file.stateMessage }}
-    </td>
-    <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls">
-      <fa-icon v-if="file.canRedo" class="icon-redo" :icon="icons.redo" @click="repeatUploading(file)" />
-      <fa-icon v-if="file.canRemove" class="icon-trash" :icon="icons.trash" @click="remove(file)" />
-    </td>
+
+    <template v-if="!isEdit">
+      <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
+        {{ getTimestamp(file) }}
+      </td>
+      <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
+        {{ file.fileDuration }}
+      </td>
+      <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
+        {{ file.fileSize }}
+      </td>
+      <td class="is-error file-row file-list-table__cell file-list-table__cell_error" colspan="3" v-if="file.isError">
+        {{ file.stateMessage }}
+      </td>
+      <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls">
+        <fa-icon v-if="file.canRedo" class="icon-redo" :icon="icons.redo" @click="repeatUploading(file)" />
+        <fa-icon v-if="file.canRemove" class="icon-trash" :icon="icons.trash" @click="remove(file)" />
+      </td>
+    </template>
   </tr>
 </template>
 
@@ -186,8 +191,9 @@ export default {
     }
 
     .file-name-input-container {
+      margin-right: 8px;
       flex-grow: 1;
-      min-width: 40px;
+      min-width: 180px;
       max-width: 320px;
       input {
         width: 100%;
@@ -203,7 +209,7 @@ export default {
     }
 
     .edit-file-name-btn {
-      margin-left: 8px;
+      margin-right: 8px;
       background-color: transparent;
       height: 20px;
       width: 20px;
