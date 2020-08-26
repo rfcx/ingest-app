@@ -331,7 +331,7 @@
       display: flex;
     }
   }
-  
+
   .modal-card-head,
   .modal-card-body,
   .modal-card-foot {
