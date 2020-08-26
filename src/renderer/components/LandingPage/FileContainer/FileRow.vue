@@ -94,4 +94,7 @@ export default {
     margin-left: 4px;
     cursor: pointer;
   }
+  .table td {
+    padding: 0.5em $default-padding !important;
+  }
 </style>

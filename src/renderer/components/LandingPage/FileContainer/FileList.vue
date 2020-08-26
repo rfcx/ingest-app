@@ -92,6 +92,9 @@ thead th {
     }
   }
 }
+.table td {
+  padding: 0.5em $default-padding !important;
+}
 .table tbody {
   overflow-y: auto !important;
 }

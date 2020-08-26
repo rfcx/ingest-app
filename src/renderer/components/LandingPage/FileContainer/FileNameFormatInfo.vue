@@ -103,7 +103,7 @@ export default {
 <style lang="scss" scoped>
   .preparing-file-settings {
     &__wrapper {
-      padding: $default-padding-margin 12px;
+      padding: $default-padding;
       display: flex;
       justify-content: space-between;
       align-self: center;
