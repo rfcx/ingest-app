@@ -259,7 +259,7 @@
   }
 
   .header {
-    padding: 0 8px 0 16px;
+    padding: 0 12px 0 $default-padding;
     margin-bottom: 16px;
     display: flex;
     justify-content: space-between;
@@ -409,7 +409,7 @@
   }
 
   .menu-item {
-    padding: 9px 12px 8px 12px;
+    padding: 9px $default-padding 8px;
     height: 42px;
   }
 
@@ -418,7 +418,7 @@
   }
 
   .menu-label {
-    padding: 24px 12px 10px 12px;
+    padding: 24px $default-padding 10px;
     font-size: 16px;
     font-style: normal;
     line-height: normal;
