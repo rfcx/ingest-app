@@ -61,10 +61,10 @@ function createAuthWindow () {
   win.webContents.on('did-redirect-navigation', (event, url) => {
     if (currentUrl !== url) {
       if (url.includes('https://rfcx.eu.auth0.com/login')) {
-        menu.items[0].submenu.items[2].enabled = false
+        menu.items[0].submenu.items[1].enabled = false
         return
       }
-      menu.items[0].submenu.items[2].enabled = true
+      menu.items[0].submenu.items[1].enabled = true
       createBackButton()
     }
   })
@@ -136,8 +136,14 @@ function createMenu () {
           type: 'checkbox',
           click: function () {
             win.loadURL(authService.getAuthenticationURL(), { userAgent: 'Chrome' })
-            menu.items[0].submenu.items[2].enabled = false
-            menu.items[0].submenu.items[2].checked = false
+            menu.items[0].submenu.items[1].enabled = false
+            menu.items[0].submenu.items[1].checked = false
+          }
+        },
+        { label: 'Enable staging mode',
+          type: 'checkbox',
+          click: async (item) => {
+            settings.set('settings.production_env', !item.checked)
           }
         },
         { label: 'Quit',
@@ -160,7 +166,7 @@ function createMenu () {
     }
   ]
   menu = Menu.buildFromTemplate(template)
-  menu.items[0].submenu.items[2].enabled = false
+  menu.items[0].submenu.items[1].enabled = false
   Menu.setApplicationMenu(menu)
 }
 

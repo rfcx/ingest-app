@@ -4,11 +4,6 @@
       <div class="header-logo">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
       </div>
-      <div class="header-env">
-        <button class="button" :class="{ 'is-primary': productionEnv, 'is-dark': !productionEnv }" @click="switchEnvironment()">
-          {{ productionEnv ? 'production' : 'staging' }}
-        </button>
-      </div>
       <div class="dropdown header-user-pic is-right" :class="{ 'is-active': showDropDown }" @click="toggleDropDown()" title="User menu: you can log out here">
         <div class="dropdown-trigger">
           <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -73,7 +68,6 @@
 
 <script>
   import { mapState } from 'vuex'
-  import settings from 'electron-settings'
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
   import fileState from '../../../../utils/fileState'
@@ -92,8 +86,7 @@
         showUserMenu: false,
         toggleSearch: false,
         showDropDown: false,
-        userName: this.getUserName(),
-        productionEnv: this.isProductionEnv()
+        userName: this.getUserName()
       }
     },
     components: {
@@ -148,16 +141,6 @@
         var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
         this.mesure = sizes[i]
         return Math.round(bytes / Math.pow(1024, i), 2)
-      },
-      switchEnvironment () {
-        if (this.isInprogessOfUploading) {
-          return
-        }
-        settings.set('settings.production_env', !this.isProductionEnv())
-        this.productionEnv = this.isProductionEnv()
-      },
-      isProductionEnv () {
-        return settings.get('settings.production_env')
       },
       toggleUserMenu () {
         this.showUserMenu = !this.showUserMenu
@@ -285,7 +268,6 @@
   }
 
   .header-logo,
-  .header-env,
   .header-user-pic {
     cursor: pointer;
   }
@@ -305,15 +287,6 @@
       text-decoration: none;
       border: none;
       outline: none;
-    }
-  }
-
-  .header-env {
-    button {
-      height: 1.8em;
-      font-size: 12px;
-      padding-top: calc(0.1em - 0px);
-      padding-bottom: calc(0.175em - 0px);
     }
   }
 
