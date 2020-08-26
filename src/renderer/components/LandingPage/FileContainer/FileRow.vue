@@ -4,19 +4,19 @@
       <img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)">
       <span class="file-status-state">{{ getStateName(file) }}</span>
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError, 'italic': !this.isProductionEnv() }" >
+    <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError }" >
       {{ file.name }}
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_info" :class="{ 'italic': !this.isProductionEnv() }" v-if="!file.isError">
+    <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
       {{ getTimestamp(file) }}
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_info" :class="{ 'italic': !this.isProductionEnv() }" v-if="!file.isError">
+    <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
       {{ file.fileDuration }}
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_info" :class="{ 'italic': !this.isProductionEnv() }" v-if="!file.isError">
+    <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
       {{ file.fileSize }}
     </td>
-    <td class="is-error file-row file-list-table__cell file-list-table__cell_error" colspan="3" :class="{ 'italic': !this.isProductionEnv() }" v-if="file.isError">
+    <td class="is-error file-row file-list-table__cell file-list-table__cell_error" colspan="3" v-if="file.isError">
       {{ file.stateMessage }}
     </td>
     <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls">
@@ -30,7 +30,6 @@
 import File from '../../../store/models/File'
 import fileState from '../../../../../utils/fileState'
 import dateHelper from '../../../../../utils/dateHelper'
-import settings from 'electron-settings'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faRedo, faTrash } from '@fortawesome/free-solid-svg-icons'
 
@@ -67,9 +66,6 @@ export default {
     remove (file) {
       if (!file.canRemove) return
       File.delete(file.id)
-    },
-    isProductionEnv () {
-      return settings.get('settings.production_env')
     }
   }
 }
@@ -89,8 +85,5 @@ export default {
   .iconTrash {
     margin-left: 4px;
     cursor: pointer;
-  }
-  .italic {
-    font-style: italic !important;
   }
 </style>
