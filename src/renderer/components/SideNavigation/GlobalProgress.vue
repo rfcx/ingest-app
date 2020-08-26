@@ -8,6 +8,9 @@
       </div>
       <a class="global-progress__button" :title="isUploadingProcessEnabled ? 'Pause uploading process' : 'Continue uploading process'" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
     </div>
+    <a class="global-progress__button" :title="isUploadingProcessEnabled ? 'Pause uploading process' : 'Continue uploading process'"
+      href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn"
+      :src="getUploadingProcessIcon(isUploadingProcessEnabled)"></a>
   </div>
 </template>
 
@@ -15,9 +18,13 @@
 import { mapState } from 'vuex'
 import File from '../../store/models/File'
 export default {
+  data () {
+    return {
+      isUploadingProcessEnabled: true
+    }
+  },
   computed: {
     ...mapState({
-      isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess,
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
     }),
     shouldShowProgress () {
@@ -27,6 +34,16 @@ export default {
     completedFiles () {
       const files = this.getAllFilesInTheSession()
       return files.filter(f => f.isInCompletedGroup)
+    },
+    isUploadingEnabled () {
+      const files = this.getAllFilesInTheSession()
+      return files.every(file => { return !file.paused })
+    }
+  },
+  watch: {
+    isUploadingEnabled (val, oldVal) {
+      if (val === oldVal) return
+      this.isUploadingProcessEnabled = val
     }
   },
   methods: {
@@ -47,7 +64,13 @@ export default {
       return require(`../../assets/ic-uploading-${state}-green.svg`)
     },
     toggleUploadingProcess () {
-      this.$store.dispatch('setUploadingProcess', !this.isUploadingProcessEnabled)
+      this.isUploadingProcessEnabled = !this.isUploadingProcessEnabled
+      const files = this.getAllFilesInTheSession()
+      files.forEach(file => {
+        File.update({ where: file.id,
+          data: { paused: !this.isUploadingProcessEnabled }
+        })
+      })
     },
     getProgressPercent () {
       const files = this.getAllFilesInTheSession()

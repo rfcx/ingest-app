@@ -10,6 +10,7 @@
 <script>
   import File from './store/models/File'
   import settings from 'electron-settings'
+  import { mapState } from 'vuex'
   const isOnline = require('is-online')
 
   export default {
@@ -23,22 +24,38 @@
       window.addEventListener('online', this.updateOnlineStatus)
       window.addEventListener('offline', this.updateOnlineStatus)
     },
+    computed: {
+      ...mapState({
+        currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
+      })
+    },
     methods: {
+      getAllFilesInTheSession () {
+        return File.query().where('sessionId', this.currentUploadingSessionId).get()
+      },
       updateOnlineStatus (e) {
         const { type } = e
         this.onLine = type === 'online'
         if (!this.onLine) {
           console.log('\nupdateOnlineStatus', this.onLine)
-          this.$store.dispatch('setUploadingProcess', this.onLine)
+          this.updateUploadingProcess(this.onLine)
           settings.set('settings.onLine', this.onLine)
           this.checkAfterSuspended()
         } else {
           isOnline().then(online => {
             console.log('\nupdateOnlineStatus', online)
-            this.$store.dispatch('setUploadingProcess', online)
+            this.updateUploadingProcess(online)
             settings.set('settings.onLine', online)
           })
         }
+      },
+      updateUploadingProcess (arg) {
+        const files = this.getAllFilesInTheSession()
+        files.forEach(file => {
+          File.update({ where: file.id,
+            data: { paused: !arg }
+          })
+        })
       },
       checkAfterSuspended () {
         return this.getSuspendedFiles()

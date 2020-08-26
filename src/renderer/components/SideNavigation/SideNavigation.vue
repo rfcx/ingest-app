@@ -67,7 +67,6 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
   import fileState from '../../../../utils/fileState'
@@ -93,9 +92,6 @@
       FontAwesomeIcon
     },
     computed: {
-      ...mapState({
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
-      }),
       selectedStreamId () {
         return this.$store.state.Stream.selectedStreamId
       },
