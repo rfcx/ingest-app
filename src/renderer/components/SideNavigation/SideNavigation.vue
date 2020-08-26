@@ -264,17 +264,14 @@
 </script>
 
 <style lang="scss" scoped>
-
   .menu-item:hover,
   .menu-item_active {
     background-color: #2e3145;
     cursor: pointer;
   }
-
   .menu-item_active {
     font-weight: $title-font-weight;
   }
-
   .header {
     padding: 0 8px 0 16px;
     margin-bottom: 16px;
@@ -283,13 +280,11 @@
     align-items: center;
     height: 37px;
   }
-
   .header-logo,
   .header-env,
   .header-user-pic {
     cursor: pointer;
   }
-
   .header-logo {
     margin-right: 10px;
     height: 37px;
@@ -298,7 +293,6 @@
       width: auto;
     }
   }
-
   .icon-logo {
     &:hover,
     &:focus {
@@ -307,7 +301,6 @@
       outline: none;
     }
   }
-
   .header-env {
     button {
       height: 1.8em;
@@ -316,11 +309,9 @@
       padding-bottom: calc(0.175em - 0px);
     }
   }
-
   .header-user-pic {
     margin-left: auto;
   }
-
   .user-stat-wrapper {
     padding: 0 8px 0 16px;
     margin-bottom: 7px;
@@ -334,11 +325,9 @@
     animation-duration: 4s;
     animation-delay: 2s;
   }
-
   .user-stat-name {
     margin-bottom: 5px;
   }
-
   .user-stat-btn {
     font-family: Lato !important;
     font-weight: normal !important;
@@ -352,12 +341,10 @@
     padding-top: 0 !important;
     padding-bottom: 0 !important;
   }
-
   .user-stat-info-wrapper {
     margin: 0;
     padding: 0;
   }
-
   .user-stat-info {
     display: flex;
     justify-content: flex-start;
@@ -371,22 +358,18 @@
       }
     }
   }
-
   .user-pic {
     border-radius: 50%;
-    height: 100%;
+    height: $full-height;
     height: 32px;
     width: auto;
   }
-
   .dropdown-menu {
     min-width: 20px;
   }
-
   .side-menu-title {
     padding: 0 8px;
   }
-
   .side-menu-search-btn {
     background-color: transparent;
     border: none !important;
@@ -404,13 +387,11 @@
       width: 15px;
     }
   }
-
   .side-menu-router-add-btn {
-    width: 100%;
+    width: $full-width;
   }
-
   .side-menu-add-btn {
-    width: 100%;
+    width: $full-width;
     height: 2em;
     padding-bottom: calc(0.175em - 1px);
     padding-top: calc(0.175em - 1px);
@@ -421,7 +402,7 @@
     font-size: $default-font-size;
     font-style: normal;
     line-height: normal;
-    color: #ffffff !important;
+    color: $white-color !important;
     border: none !important;
     &:hover,
     &:active,
@@ -434,32 +415,28 @@
       font-size: 20px;
     }
   }
-
   .menu-item {
     padding: 9px 12px 8px 12px;
     height: 42px;
   }
-
   .menu-item .menu-container {
     height: 25px;
   }
-
   .menu-label {
     padding: 24px 12px 10px 12px;
     font-size: 16px;
     font-style: normal;
     line-height: normal;
-    color: #ffffff !important;
+    color: $white-color !important;
     margin: 0 !important;
     align-self: center;
     font-weight: $title-font-weight;
     text-transform: none;
     letter-spacing: 0.2px;
   }
-
   .search-wrapper {
     border-radius: 3px;
-    border: solid 1px #ffffff;
+    border: solid 1px $white-color;
     display: inline-block;
     vertical-align: middle;
     width: 98%;
@@ -471,7 +448,6 @@
       border: solid 1px red;
     }
   }
-
   .search-input {
     display: inline-block !important;
     vertical-align: top !important;
@@ -485,16 +461,15 @@
     font-style: normal;
     line-height: normal !important;
     letter-spacing: 0.67px;
-    background-color: #232436 !important;
-    color: #ffffff !important;
+    background-color: $dropdown-content-background-color !important;
+    color: $white-color !important;
     border: none !important;
     box-shadow: none !important;
   }
-
   .btn-remove {
     background-color: transparent;
     border: none !important;
-    color: #ffffff;
+    color: $white-color;
     text-align: right;
     opacity: 0.2;
     padding: 0;
@@ -510,28 +485,23 @@
   .btn-remove-active {
     opacity: 1;
   }
-
   .drop-hover {
     background-color: transparent !important;
   }
-
   .right {
     text-align: right !important;
     justify-content: flex-end !important;
   }
-
   .iconRedo {
     color: grey;
     font-size: 13px;
     cursor: pointer;
     margin: 6px 6px 6px 0;
   }
-
   .is-danger {
-    background-color: #f14668 !important;
+    background-color: $danger-color !important;
     border-color: transparent;
   }
-
   .menu-container-left,
   .menu-container-right {
     font-size: 11px;
@@ -545,29 +515,25 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-
   .menu-container-left {
     width: 35%;
     text-align: left;
   }
-
   .menu-container-right {
     width: 64%;
     text-align: right;
   }
-
   input[type="text"]::-webkit-input-placeholder {
-    color: #52566e !important;
+    color: $input-placeholder !important;
     opacity: 1;
   }
   :-ms-input-placeholder {
-    color: #52566e;
+    color: $input-placeholder;
   }
   ::-moz-placeholder {
-    color: #52566e;
+    color: $input-placeholder;
   }
   :-moz-placeholder {
-    color: #52566e;
+    color: $input-placeholder;
   }
-
 </style>

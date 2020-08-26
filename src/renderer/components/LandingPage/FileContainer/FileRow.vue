@@ -2,7 +2,7 @@
   <tr>
     <td class="file-status file-list-table__cell file-list-table__cell_status">
       <img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)">
-      <span class="file-status-state">{{ getStateName(file) }}</span>
+      <span class="file-status__state">{{ getStateName(file) }}</span>
     </td>
     <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError }" >
       {{ file.name }}
@@ -72,13 +72,31 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
   td.is-error {
     color: $secondary-text-color;
   }
-
+  .file-status {
+    text-align: center !important;
+    padding: 0.4rem 0.75rem 0.7rem 0 !important;
+    &__state {
+      display: block;
+      font-size: 9px;
+      height: auto;
+      line-height: 1 !important;
+    }
+    img {
+      display: block;
+      margin: 0 auto;
+    }
+  }
+  .file-failed {
+    margin: 7px auto 5px !important;
+  }
+  .file-row {
+    vertical-align: middle !important;
+  }
   .iconRedo {
-    color: #ffffff;
+    color: $white-color;
     font-size: 13px;
     cursor: pointer;
   }

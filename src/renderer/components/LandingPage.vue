@@ -7,12 +7,10 @@
         <side-navigation :class="{ 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
         <div class="column content is-desktop" v-if="streams && streams.length > 0">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <!-- <file-list v-else></file-list> -->
           <file-container v-else :isDragging="isDragging"></file-container>
         </div>
         <div class="column content is-desktop" v-else>
           <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <!-- <file-list v-else></file-list> -->
           <file-container v-else :isDragging="isDragging"></file-container>
         </div>
       </section>
@@ -26,7 +24,6 @@
   import Navigation from './Navigation/Navigation'
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyStream from './LandingPage/EmptyStream'
-  import FileList from './LandingPage/FileList'
   import FileContainer from './LandingPage/FileContainer/FileContainer'
   import { mapState } from 'vuex'
   import File from '../store/models/File'
@@ -192,7 +189,7 @@
   }
 
   aside {
-    background-color: #232436;
+    background-color: $dropdown-content-background-color;
   }
 
   .content {
@@ -331,7 +328,7 @@
       display: flex;
     }
   }
-  
+
   .modal-card-head,
   .modal-card-body,
   .modal-card-foot {
@@ -354,9 +351,9 @@
     border-color: #292a3b !important;
   }
   .is-cancel:hover {
-    border-color: #3b3e53 !important;
+    border-color: $button-hover-border-color !important;
     color: #fff !important;
-    background: #3b3e53 !important;
+    background: $button-hover-border-color !important;
   }
   .empty {
     background-color: #131525 !important;

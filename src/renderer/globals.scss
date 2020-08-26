@@ -4,11 +4,15 @@ $brand-primary: #2FB04A;
 $brand-primary-dark: #31984f;
 $title-text-color: #fff;
 $body-text-color: #fff;
+$white-color: #ffffff;
 $secondary-text-color: #a1a1a7;
 $backgroud-color: #131525;
 $backgroud-color-dark: #131525;
 $box-color: #292a3b;
 $button-background-color: #45485d;
+$input-placeholder: #52566e;
+$danger-color: #f14668;
+$edit-icon-color: #9B9B9B;
 $title-font-weight: 700;
 $navbar-height: 0rem;
 $default-padding-margin: 0.75em;
@@ -16,6 +20,8 @@ $default-font-size: 14px;
 $default-subtitle-font-size: 12px;
 $sidebar-width: 200px;
 $global-progress-height: 67px;
+$full-height: 100%;
+$full-width: 100%;
 
 // Update Bulma's global variables
 $primary: $brand-primary;
@@ -55,6 +61,11 @@ $button-background-color: $button-background-color;
 $button-border-color: $button-background-color;
 $button-hover-color: $title-text-color;
 $button-hover-border-color: #3b3e53;
+
+// -- Fieldset
+$fieldset-width: 500px;
+$fieldset-margin: 32px auto;
+$fieldset-padding: 16px;
 
 @import "~bulma/";
 

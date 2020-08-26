@@ -47,46 +47,44 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-thead {
-  text-transform: uppercase;
-}
-
-thead td,
-thead th {
-  color: $secondary-text-color !important;
-}
-
-.file-list-table {
-  &_head {
-    margin-bottom: 0 !important;
-    .file-list-table {
-      &__cell {
-        white-space: nowrap;
-      }
-    }
+  thead {
+    text-transform: uppercase;
+  }
+  thead td,
+  thead th {
+    color: $secondary-text-color !important;
   }
   .file-list-table {
-    &__cell {
-      &_status {
-        width: 10%;
-        vertical-align: middle !important;
+    &_head {
+      margin-bottom: 0 !important;
+      .file-list-table {
+        &__cell {
+          white-space: nowrap;
+        }
       }
-      &_name,
-      &_error {
-        width: 35%;
-      }
-      &_info {
-        width: 15%;
-      }
-      &_controls {
-        width: 10%;
-        text-align: right !important;
-        padding-right: 24px !important;
+    }
+    .file-list-table {
+      &__cell {
+        &_status {
+          width: 10%;
+          vertical-align: middle !important;
+        }
+        &_name,
+        &_error {
+          width: 35%;
+        }
+        &_info {
+          width: 15%;
+        }
+        &_controls {
+          width: 10%;
+          text-align: right !important;
+          padding-right: 24px !important;
+        }
       }
     }
   }
-}
-.table tbody {
-  overflow-y: auto !important;
-}
+  .table tbody {
+    overflow-y: auto !important;
+  }
 </style>

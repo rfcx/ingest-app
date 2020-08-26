@@ -1,19 +1,19 @@
 <template>
-  <div class="stream-info-container">
-    <div class="title-container">
-      <div class="title-container-text" v-if="selectedStream && !isRenaming">
-      <span class="stream-name">{{ selectedStream.name }}</span>
-      <span v-if="!isSelectedStreamFailed" class="title-container-edit" title="Rename the site"><font-awesome-icon :icon="iconPencil" @click="renameStream()"></font-awesome-icon></span>
+  <div class="stream-info">
+    <div class="stream-info__title">
+      <div class="stream-info__stream-name-wrapper" v-if="selectedStream && !isRenaming">
+        <span>{{ selectedStream.name }}</span>
+        <span v-if="!isSelectedStreamFailed" class="stream-info__edit-icon" title="Rename the site"><font-awesome-icon :icon="iconPencil" @click="renameStream()"></font-awesome-icon></span>
       </div>
-      <div class="edit-container" v-if="isRenaming">
-        <input class="input edit-container-item-input" v-model="newStreamName" type="text" placeholder="">
-        <div class="edit-container-item-control">
-          <button class="button is-rounded btn is-cancel" @click="cancel()">Cancel</button>
-          <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!isNewStreamNameValid && (newStreamName && newStreamName.length > 0)" @click="saveStream()">Save</button>
-          <span class="edit-container-error" v-show="error">{{ error }}</span>
+      <div class="stream-info__edit-container" v-if="isRenaming">
+        <input class="input stream-info__edit-container-input" v-model="newStreamName" type="text" placeholder="">
+        <div class="stream-info__edit-container-controls">
+          <button class="button is-rounded stream-info__btn is-cancel" @click="cancel()">Cancel</button>
+          <button class="button is-rounded is-primary stream-info__btn" :class="{ 'is-loading': isLoading }" :disabled="!isNewStreamNameValid && (newStreamName && newStreamName.length > 0)" @click="saveStream()">Save</button>
+          <span class="stream-info__error-message" v-show="error">{{ error }}</span>
         </div>
       </div>
-      <div class="notification is-danger is-light notice file-list-notice" v-if="errorMessage">
+      <div class="notification is-danger is-light notice stream-info__notification" v-if="errorMessage">
         <strong>{{ errorMessage }}</strong>
       </div>
       <div class="dropdown is-right" :class="{ 'is-active': shouldShowDropDown }" @click="toggleDropDown()" title="The stream’s menu to help you delete, rename or redirect you to RFCx Client Stream Web App.">
@@ -29,10 +29,10 @@
         </div>
       </div>
     </div>
-    <div class="subtitle-container">
+    <div class="stream-info__subtitle-container">
       <router-link title="Edit site location" to="/edit-stream-location">
         <img src="~@/assets/ic-pin.svg">
-        <span v-if="selectedStream" class="file-list-span">{{ selectedStream.siteGuid || `${selectedStream.latitude}, ${selectedStream.longitude}` }}</span></router-link>
+        <span v-if="selectedStream" class="stream-info__coordinates">{{ selectedStream.siteGuid || `${selectedStream.latitude}, ${selectedStream.longitude}` }}</span></router-link>
     </div>
     <!-- Modal -->
     <div class="modal alert" :class="{ 'is-active': shouldShowConfirmToDeleteModal }">
@@ -256,58 +256,97 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
-  .title-container-text {
-    font-weight: $title-font-weight;
-    margin-bottom: 6px !important;
-    max-width: 80%;
+  .stream-info {
+    padding: 0 16px;
+    &__stream-name-wrapper {
+      font-weight: $title-font-weight;
+      margin-bottom: 6px !important;
+      max-width: 80%;
+    }
+    &__title {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+    }
+    &__edit-icon {
+      margin-left: 10px !important;
+      color: $edit-icon-color !important;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    &__edit-container {
+      vertical-align: middle !important;
+      width: 595px !important;
+    }
+    &__error-message {
+      margin-left: 3px;
+      font-size: 12px;
+      color: $secondary-text-color;
+      vertical-align: middle;
+    }
+    &__edit-container-input {
+      display: inline-block !important;
+      vertical-align: middle !important;
+      width: 40%;
+      margin: $default-padding-margin;
+      margin-left: 0;
+      font-size: 14px !important;
+    }
+    &__edit-container-controls {
+      display: inline-block !important;
+      vertical-align: middle !important;
+      width: 56% !important;
+    }
+    &__coordinates {
+      color: $secondary-text-color !important;
+    }
+    &__subtitle-container {
+      font-size: $default-subtitle-font-size;
+      font-stretch: normal;
+      font-style: normal;
+      line-height: normal;
+      letter-spacing: normal;
+      color: $secondary-text-color !important;
+      width: 95%;
+      img {
+        width: 1em;
+        height: 1em;
+        padding-right: 0.25em;
+      }
+    }
+    &__notification {
+      left: 30% !important;
+    }
+    &__btn {
+      width: 90px !important;
+      height: 30px !important;
+      line-height: 1 !important;
+      margin-right: 8px !important;
+      font-size: 13px !important;
+    }
+    .modal-card {
+      text-align: center;
+    }
+    .modal-card-head, .modal-card-foot {
+      border: 0px !important;
+    }
+    .modal-card-foot {
+      justify-content: center !important;
+      text-align: center;
+      padding-top: 0px !important;
+    }
+    .modal-card-title {
+      margin-bottom: 0px !important;
+      font-size: $default-font-size !important;
+    }
+    .dropdown {
+      padding-left: $default-padding-margin;
+      padding-right: $default-padding-margin;
+      cursor: pointer;
+    }
+    .dropdown.is-right .dropdown-menu {
+      z-index: 100 !important;
+      top: 25px !important;
+    }
   }
-
-  .subtitle-container {
-    font-size: $default-subtitle-font-size;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    color: $secondary-text-color !important;
-  }
-
-  .file-list-span {
-    color: $secondary-text-color !important;
-  }
-
-  .edit-container {
-    vertical-align: middle !important;
-    width: 595px !important;
-  }
-
-  .edit-container-error {
-    margin-left: 3px;
-    font-size: 12px;
-    color: #a1a1a7;
-    vertical-align: middle;
-  }
-
-  .edit-container-item-input {
-    display: inline-block !important;
-    vertical-align: middle !important;
-    width: 40%;
-    margin: $default-padding-margin;
-    margin-left: 0;
-    font-size: 14px !important;
-  }
-
-  .edit-container-item-control {
-    display: inline-block !important;
-    vertical-align: middle !important;
-    width: 56% !important;
-  }
-
-  .title-container-edit {
-    margin-left: 10px !important;
-    color: #9B9B9B !important;
-    font-size: 14px;
-    cursor: pointer;
-  }
-
 </style>

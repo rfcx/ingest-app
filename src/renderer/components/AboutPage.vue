@@ -1,8 +1,8 @@
 <template>
-  <div class="about">
-    <img class="about-logo" src="~@/assets/rfcx-logo.png">
-    <div class="about-app">RFCx Ingest</div>
-    <div class="about-text" v-if="version">Version {{version}}</div>
+  <div class="about-page">
+    <img class="about-page__logo" src="~@/assets/rfcx-logo.png">
+    <div class="about-page__title">RFCx Ingest</div>
+    <div class="about-page__version" v-if="version">Version {{version}}</div>
   </div>
 </template>
 
@@ -23,30 +23,25 @@
   }
 </script>
 
-<style lang="scss" scoped>
-
-  .about-logo {
-    margin-top: 10px;
-    width: 35px;
-    height: 50px;
-  }
-
-  .about-app {
-    font-size: $default-font-size;
-    margin: 5px auto;
-  }
-
-  .about-text {
-    font-size: 12px;
-  }
-
-  .about {
+<style lang="scss">
+  .about-page {
     text-align: center;
     margin: auto;
     padding: 20px;
-    overflow: hidden;
+    overflow: hidden !important;
+    &__logo {
+      margin-top: 10px;
+      width: 35px;
+      height: 50px;
+    }
+    &__title {
+      font-size: $default-font-size;
+      margin: 5px auto;
+    }
+    &__version {
+      font-size: 12px;
+    }
   }
-
   ::-webkit-scrollbar-thumb {
     background-color: transparent;
   }
@@ -56,5 +51,4 @@
   ::-webkit-scrollbar {
     width: 1px;
   }
-
 </style>

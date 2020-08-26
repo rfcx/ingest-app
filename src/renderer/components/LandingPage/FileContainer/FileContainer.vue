@@ -64,9 +64,9 @@ export default {
 <style lang="scss" scoped>
   .file-container {
     &__wrapper {
-      height: 100% !important;
+      height: $full-height !important;
       padding-top: $default-padding-margin !important;
-      background: rgb(19, 21, 37);
+      background: $backgroud-color-dark;
     }
   }
 </style>

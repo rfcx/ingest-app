@@ -8,7 +8,7 @@
             <font-awesome-icon :icon="iconPencil" @click="openFileNameFormatSettingModal()"></font-awesome-icon>
           </div>
       </div>
-      
+
     </div>
     <div class="preparing-file-settings__actions-wrapper">
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
@@ -121,14 +121,11 @@ export default {
       display: inline-block;
     }
     &__edit-button {
-      color: #9B9B9B !important;
+      padding-left: 8px;
+      color: $edit-icon-color !important;
       font-size: 14px;
       cursor: pointer;
     }
-  }
-
-  .preparing-file-settings__edit-button {
-    padding-left: 8px;
   }
   .flex-row {
     flex-direction: row;

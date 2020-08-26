@@ -63,7 +63,7 @@ export default {
       bottom: 0;
       width: $sidebar-width;
       height: $global-progress-height;
-      background: #232436;
+      background: $dropdown-content-background-color;
     }
     &__progress-title {
       font-weight: $title-font-weight;

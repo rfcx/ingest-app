@@ -1,10 +1,10 @@
 <template>
   <fieldset class="fieldset__wrapper">
-    <div class="notification" v-show="error">
+    <div class="notification fieldset__notification" v-show="error">
       <button class="delete" @click="onCloseAlert()"></button>
       {{ error }}
     </div>
-    <div class="field field-stream-location">
+    <div class="field fieldset__location">
       <label for="location" class="label">Edit Stream Location</label>
       <Map class="map-wrapper" @locationSelected="onSelectLocation" :title="getStreamTitle()" :lngLat="getStreamCoordinates()"></Map>
     </div>
@@ -27,7 +27,7 @@ import Map from '../CreateStream/Map'
 export default {
   data () {
     return {
-      name: '',
+      name: 'edit-stream-location-page',
       selectedLatitude: null,
       selectedLongitude: null,
       isLoading: false,
@@ -96,9 +96,16 @@ export default {
 <style lang="scss">
 .fieldset {
   &__wrapper {
-    margin: 32px auto;
-    padding: 16px;
-    max-width: 500px;
+    margin: $fieldset-margin;
+    padding: $fieldset-padding;
+    max-width: $fieldset-width;
+  }
+  &__notification {
+    background: $button-hover-border-color !important;
+    color: white;
+  }
+  &__location {
+    position: relative;
   }
 }
 .map-wrapper {
@@ -107,12 +114,5 @@ export default {
   .mapboxgl-canvas {
     height: 300px !important;
   }
-}
-.notification {
-  background: #3b3e53 !important;
-  color: white;
-}
-.field-stream-location {
-  position: relative;
 }
 </style>

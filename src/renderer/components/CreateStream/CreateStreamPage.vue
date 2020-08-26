@@ -1,6 +1,6 @@
 <template>
   <fieldset class="fieldset__wrapper">
-    <div class="notification" v-show="error">
+    <div class="notification fieldset__notification" v-show="error">
       <button class="delete" @click="onCloseAlert()"></button>
       {{ error }}
     </div>
@@ -120,13 +120,13 @@ export default {
 <style lang="scss" scoped>
 .fieldset {
   &__wrapper {
-    margin: 32px auto;
-    padding: 16px;
-    max-width: 500px;
+    margin: $fieldset-margin;
+    padding: $fieldset-padding;
+    max-width: $fieldset-width;
   }
-}
-.notification {
-  background: #3b3e53 !important;
-  color: white;
+  &__notification {
+    background: $button-hover-border-color !important;
+    color: white;
+  }
 }
 </style>

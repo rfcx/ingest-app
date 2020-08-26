@@ -129,8 +129,8 @@ export default {
 
 <style lang="scss">
 mgl-map {
-  width: 100%;
-  height: 100%;
+  width: $full-width;
+  height: $full-height;
   position: relative;
   z-index: 1;
 }
@@ -138,7 +138,7 @@ mgl-map {
 .mapboxgl-map {
   &:after {
     bottom: 0;
-    background: rgb(19, 21, 37);
+    background: $backgroud-color-dark;
     background: -moz-linear-gradient(
       90deg,
       rgba(19, 21, 37, 0) 0%,
@@ -183,13 +183,13 @@ mgl-map {
   &--icon-search,
   &--icon-close,
   &--icon-loading {
-    fill: #ffffff;
+    fill: $white-color;
   }
   &--suggestion {
-    color: #ffffff;
+    color: $white-color;
     &:hover,
     &:active {
-      background-color: #3b3e53 !important;
+      background-color: $button-hover-border-color !important;
       color: rgb(192, 189, 189) !important;
     }
   }
@@ -203,7 +203,7 @@ mgl-map {
     font-style: normal;
     line-height: 0.86;
     letter-spacing: normal;
-    color: #9b9b9b !important;
+    color: $edit-icon-color !important;
   }
   .suggestions {
     top: auto;
@@ -213,7 +213,7 @@ mgl-map {
     background-color: rgba(46, 49, 69, 0.9);
     text-align: left;
     .active a {
-      background-color: #3b3e53 !important;
+      background-color: $button-hover-border-color !important;
       color: rgb(192, 189, 189) !important;
       margin-bottom: 2px;
     }
@@ -221,7 +221,7 @@ mgl-map {
     a {
       &:hover,
       &:active {
-        background-color: #3b3e53 !important;
+        background-color: $button-hover-border-color !important;
         color: rgb(192, 189, 189) !important;
       }
     }
@@ -239,7 +239,7 @@ mgl-map {
   font-style: normal;
   line-height: normal;
   letter-spacing: normal;
-  color: #ffffff;
+  color: $white-color;
 }
 
 .mapboxgl-ctrl {
@@ -277,8 +277,8 @@ mgl-map {
 
 .mapboxgl-ctrl-icon {
   display: block;
-  width: 100%;
-  height: 100%;
+  width: $full-width;
+  height: $full-height;
   background-repeat: no-repeat;
   background-position: 50%;
 }

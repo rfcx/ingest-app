@@ -1,7 +1,7 @@
 <template>
-  <div id="wrapper-access-denied-page" class="access-denied-page">
+  <div class="access-denied-page">
     <a class="button is-default access-denied-page__logout-btn" @click="logOut()">Log out</a>
-    <div class="access-denied-page-label" v-if="hasRFCxRole === false">You don't have required permissions to access this app. Ask admin@rfcx.org for details.</div>
+    <div class="access-denied-page__label" v-if="hasRFCxRole === false">You don't have required permissions to access this app. Ask admin@rfcx.org for details.</div>
     <div class="access-denied-page__terms-form" v-if="consentGiven === false">
       <input type="checkbox" id="terms-checkbox" v-model="acceptTermsChecked" class="checkbox-form">
       <span class="checkbox-span">
@@ -11,16 +11,16 @@
         <button class="button is-primary" :class="{ 'is-loading': isLoading }" :disabled="!acceptTermsChecked || isLoading || showSuccessMessage" v-if="hasRFCxRole === true" @click="sendAcceptTerms()">Submit</button>
       </div>
       <div v-if="hasRFCxRole === true && errorMessage">
-        <p class="error-message">{{errorMessage}}</p>
+        <p class="access-denied-page__error-message">{{errorMessage}}</p>
       </div>
-      <p class="success-message" v-if="hasRFCxRole === true && showSuccessMessage">
+      <p class="access-denied-page__success-message" v-if="hasRFCxRole === true && showSuccessMessage">
         <span>Redirecting to homepage...</span>
       </p>
     </div>
-    <div class="user-code" v-if="hasAccessToSendCode && hasRFCxRole === false">
-      <p class="user-code-label">Have an invite code? Paste is here:</p>
+    <div class="access-denied-page__user-code" v-if="hasAccessToSendCode && hasRFCxRole === false">
+      <p class="access-denied-page__user-code-label">Have an invite code? Paste is here:</p>
       <fieldset>
-        <div class="form">
+        <div class="access-denied-page__form">
           <div class="field has-addons">
             <div class="control is-expanded">
               <input id="userCode" v-model="code" class="input" type="text" name="code" placeholder="Code" :disabled="isLoading || showSuccessMessage" required>
@@ -30,11 +30,11 @@
             </div>
           </div>
           <div v-if="errorMessage">
-            <p class="error-message">{{errorMessage}}</p>
+            <p class="access-denied-page__error-message">{{errorMessage}}</p>
           </div>
         </div>
       </fieldset>
-      <p class="success-message" v-if="showSuccessMessage">
+      <p class="access-denied-page__success-message" v-if="showSuccessMessage">
         <span>You have got access. Please, wait a moment.</span>
       </p>
     </div>
@@ -172,8 +172,7 @@
   }
 </script>
 
-<style lang="scss">
-
+<style lang="scss" scoped>
   .access-denied-page {
     padding-top: 150px;
     text-align: center;
@@ -205,59 +204,43 @@
     &__accept-terms-btn-wrapper {
       margin-top: 10px;
     }
+    &__label {
+      width: 90%;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 300;
+      line-height: 4.8rem;
+      color: grey;
+      margin: 0 auto;
+      color: #fff;
+    }
+    &__user-code {
+      text-align: center;
+      margin-top: 20px;
+    }
+    &__user-code-label {
+      width: 90%;
+      text-align: center;
+      font-size: 14px;
+      color: grey;
+      margin: 0 auto 5px;
+      color: #fff;
+    }
+    &__success-message {
+      margin-top: 1rem;
+      width: 90%;
+      margin: 1rem auto 0;
+      font-size: 14px;
+    }
+    &__error-message {
+      text-align: center;
+      font-size: 14px;
+      color: $danger-color;
+    }
+    &__form {
+      width: 90%;
+      max-width: 350px;
+      margin: 0 auto;
+    }
   }
-
-  .access-denied-page-label {
-    width: 90%;
-    text-align: center;
-    font-size: 22px;
-    font-weight: 300;
-    line-height: 4.8rem;
-    color: grey;
-    margin: 0 auto;
-    color: #fff;
-  }
-
-  .user-code {
-   text-align: center;
-   margin-top: 20px;
-  }
-
-  .user-code-label {
-    width: 90%;
-    text-align: center;
-    font-size: 14px;
-    color: grey;
-    margin: 0 auto 5px;
-    color: #fff;
-  }
-
-  .form {
-    width: 90%;
-    max-width: 350px;
-    margin: 0 auto;
-  }
-
-  .error-message {
-    text-align: center;
-    font-size: 14px;
-    color: #f14668;
-  }
-
-  .success-message {
-    margin-top: 1rem;
-    width: 90%;
-    margin: 1rem auto 0;
-    font-size: 14px;
-  }
-
-  .button_small {
-    margin: 0 3px;
-  }
-
-  .dark-mode {
-    background-color: #131525 !important;
-    color: #fff !important;
-  }
-
 </style>
