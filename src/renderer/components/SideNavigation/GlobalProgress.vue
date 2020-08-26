@@ -1,8 +1,12 @@
 <template>
   <div class="global-progress__content-wrapper" v-if="shouldShowProgress" :class="shouldShowProgress ? '' : 'hidden'">
-    <div class="global-progress__text-wrapper">
-      <div class="global-progress__progress-title">Uploading</div>
-      <div class="global-progress__progress-subtitle is-size-7">{{getState()}}</div>
+    <progress class="progress is-success global-progress__progress-bar" :value="getProgressPercent()" max="100"></progress>
+    <div class="global-progress__content">
+      <div class="global-progress__text-wrapper">
+        <div class="global-progress__progress-title">Uploading</div>
+        <div class="global-progress__progress-subtitle is-size-7">{{getState()}}</div>
+      </div>
+      <a class="global-progress__button" :title="isUploadingProcessEnabled ? 'Pause uploading process' : 'Continue uploading process'" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
     </div>
     <a class="global-progress__button" :title="isUploadingProcessEnabled ? 'Pause uploading process' : 'Continue uploading process'"
       href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn"
@@ -67,6 +71,11 @@ export default {
           data: { paused: !this.isUploadingProcessEnabled }
         })
       })
+    },
+    getProgressPercent () {
+      const files = this.getAllFilesInTheSession()
+      if (!files.length || !this.completedFiles.length) return 0
+      else return ((this.completedFiles.length / files.length) * 100)
     }
   }
 }
@@ -75,11 +84,7 @@ export default {
 <style lang="scss" scoped>
   .global-progress {
     &__content-wrapper {
-      display: flex;
-      padding: 16px;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 0.5px solid rgba(83, 86, 110, .6);
+      padding: 0 0 16px;
       position: absolute;
       left: 0;
       bottom: 0;
@@ -87,11 +92,21 @@ export default {
       height: $global-progress-height;
       background: #232436;
     }
+    &__content {
+      display: flex;
+      padding: 9px 16px 0;
+      justify-content: space-between;
+      align-items: center;
+    }
     &__progress-title {
       font-weight: $title-font-weight;
     }
     &__button {
       margin: auto 0;
+    }
+    &__progress-bar {
+      display: block;
+      margin-top: 0 !important;
     }
   }
   .hidden {

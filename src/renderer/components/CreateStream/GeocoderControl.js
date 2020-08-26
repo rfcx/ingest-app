@@ -9,6 +9,11 @@ const geocoderEvents = {
   error: 'error'
 }
 
+// TODO:
+// If user searches for coordinates like "34,", the lib will return 422 error, which actually not affect on the UI/UX.
+// It's not something we can fix on our side. So we need to get back to the following issue after some time:
+// https://github.com/mapbox/mapbox-gl-geocoder/issues/274
+
 export default {
   name: 'GeocoderControl',
   mixins: [$helpers.asControl],
@@ -124,13 +129,8 @@ export default {
       this.mapbox.accessToken = this.accessToken
     }
     this.control = new MapboxGeocoder(this.$props)
-    this.control.on('results', this.$_updateInput)
 
     this.$_deferredMount()
-  },
-
-  beforeDestroy () {
-    this.control.off('results', this.$_updateInput)
   },
 
   methods: {
@@ -161,13 +161,6 @@ export default {
 
     $_emitControlEvent (eventName, eventData) {
       return this.$_emitSelfEvent({ type: eventName }, eventData)
-    },
-
-    $_updateInput (results) {
-      if (!this.initial) {
-        const input = results.query ? results.query.join(' ') : ' '
-        this.$emit('update:input', input)
-      }
     },
 
     query (query) {

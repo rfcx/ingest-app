@@ -8,7 +8,6 @@
     @click="getPlacePositionByClick">
     <GeocoderControl
       :accessToken="accessToken"
-      :limit="1"
       :input.sync="defaultInput"
       :mapboxgl="mapbox"
       :localGeocoder="coordinatesGeocoder"
@@ -41,7 +40,6 @@ export default {
         'pk.eyJ1IjoicmZjeCIsImEiOiJoMEptMnlJIn0.LPKrjG_3AeYB5cqsyLpcrg',
       mapStyle: 'mapbox://styles/rfcx/ck9g6dci83g3x1io8dl27r7aq',
       defaultInput: '',
-      searchLimit: 1,
       center: [15, 30],
       zoom: 2,
       closeMapZoom: 8,
