@@ -337,11 +337,16 @@ class FileProvider {
     // const hash = data.hash
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
+    const infoDate = info.recordedDate
     let isoDate
-    if (stream.timestampFormat === FORMAT_AUTO_DETECT) {
-      isoDate = dateHelper.parseTimestampAuto(fileName)
+    if (infoDate) {
+      isoDate = infoDate.toISOString()
     } else {
-      isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
+      if (stream.timestampFormat === FORMAT_AUTO_DETECT) {
+        isoDate = dateHelper.parseTimestampAuto(fileName)
+      } else {
+        isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
+      }
     }
     const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
     const state = this.getState(momentDate, fileExt, hasUploadedBefore)
