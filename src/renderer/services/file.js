@@ -320,15 +320,12 @@ class FileProvider {
       return
     }
 
-    let fileName = fileHelper.getFileNameFromFilePath(filePath)
+    const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
 
     // read file header info
     const info = new FileInfo(filePath)
     console.log(info)
-    if (info.fileName) {
-      fileName = `${info.fileName}.${fileExt}`
-    }
 
     const deviceId = info.deviceId
     const deploymentId = info.deployment
@@ -337,18 +334,18 @@ class FileProvider {
     // const hash = data.hash
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
-    const infoDate = info.recordedDate
+    let momentDate = info.recordedDate
     let isoDate
-    if (infoDate) {
-      isoDate = infoDate.toISOString()
+    if (momentDate) {
+      isoDate = momentDate.toISOString()
     } else {
       if (stream.timestampFormat === FORMAT_AUTO_DETECT) {
         isoDate = dateHelper.parseTimestampAuto(fileName)
       } else {
         isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
       }
+      momentDate = dateHelper.getMomentDateFromISODate(isoDate)
     }
-    const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
     const state = this.getState(momentDate, fileExt, hasUploadedBefore)
     return {
       id: this.getFileId(filePath),
