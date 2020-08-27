@@ -6,21 +6,9 @@ import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 import store from '../store'
-import fs from 'fs'
-import { WaveFile } from 'wavefile'
+import FileInfo from './FileInfo'
 
 const FORMAT_AUTO_DETECT = 'Auto-detect'
-
-const getFileInfo = file => {
-  const buffer = fs.readFileSync(file.path)
-  const wav = new WaveFile(buffer)
-  const comment = wav.getTag('ICMT') || ''
-  const authors = wav.getTag('IART') || ''
-  return {
-    comment,
-    authors
-  }
-}
 
 class FileProvider {
   /* -- Import files -- */
@@ -34,16 +22,10 @@ class FileProvider {
     let fileObjects = []
     let fileObjectsInFolder = []
     if (!droppedFiles) {
+      // no files
       return
-    } // no files
+    }
     [...droppedFiles].forEach((file) => {
-      const info = getFileInfo(file)
-
-      console.log('info', info)
-
-      // TODO read data from info
-      /** if comment avilable then get data from comment and create file object */
-
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
           this.getFileObjectsFromFolder(file, selectedStream, null)
@@ -337,8 +319,20 @@ class FileProvider {
       console.log('this file is already in prepare tab')
       return
     }
-    const fileName = fileHelper.getFileNameFromFilePath(filePath)
+
+    let fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
+
+    // read file header info
+    const info = new FileInfo(filePath)
+    console.log(info)
+    if (info.fileName) {
+      fileName = `${info.fileName}.${fileExt}`
+    }
+
+    const deviceId = info.deviceId
+    const deploymentId = info.deployment
+
     // const data = fileHelper.getMD5Hash(filePath)
     // const hash = data.hash
     // const sha1 = data.sha1
@@ -363,7 +357,9 @@ class FileProvider {
       timestamp: isoDate,
       streamId: stream.id,
       state: state.state,
-      stateMessage: state.message
+      stateMessage: state.message,
+      deviceId,
+      deploymentId
     }
   }
 
