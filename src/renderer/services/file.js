@@ -264,6 +264,10 @@ class FileProvider {
       })
       .catch((error) => {
         console.log('error', error)
+        return File.update({
+          where: file.id,
+          data: { state: 'server_error', stateMessage: error.message }
+        })
       })
   }
 
