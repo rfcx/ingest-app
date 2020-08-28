@@ -7,7 +7,7 @@
         <label for="terms-checkbox">I have read and agree with</label> <a v-on:click="openTermsAndConditions()">Terms and Conditions</a>
       </span>
       <div class="access-denied-page__accept-terms-btn-wrapper">
-        <button class="button is-primary" :class="{ 'is-loading': isLoading }" :disabled="!acceptTermsChecked || isLoading || showSuccessMessage" v-if="hasRFCxRole === true" @click="sendAcceptTerms()">Submit</button>
+        <button class="button is-primary is-rounded" :class="{ 'is-loading': isLoading }" :disabled="!acceptTermsChecked || isLoading || showSuccessMessage" v-if="hasRFCxRole === true" @click="sendAcceptTerms()">Submit</button>
       </div>
       <div v-if="hasRFCxRole === true && errorMessage">
         <p class="error-message">{{errorMessage}}</p>
@@ -37,7 +37,7 @@
         <span>You have got access. Please, wait a moment.</span>
       </p>
     </div>
-    <a class="button is-default access-denied-page__logout-btn" @click="logOut()">Log out</a>
+    <a class="button is-default access-denied-page__logout-btn is-rounded" @click="logOut()">Log out</a>
   </div>
 </template>
 
