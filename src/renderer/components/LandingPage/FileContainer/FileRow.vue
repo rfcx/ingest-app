@@ -1,6 +1,6 @@
 <template>
   <tr>
-    <td class="file-status file-list-table__cell file-list-table__cell_status">
+    <td class="file-status file-list-table__cell file-list-table__cell_status" v-if="!isPreparedTab">
       <img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)">
       <span class="file-status-state">{{ getStateName(file) }}</span>
     </td>
@@ -39,7 +39,6 @@
         </template>
       </div>
     </td>
-
     <template v-if="!isEdit">
       <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
         {{ getTimestamp(file) }}
@@ -70,7 +69,8 @@ import { faRedo, faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 
 export default {
   props: {
-    file: File
+    file: File,
+    selectedTab: String
   },
   data: () => ({
     isEdit: false,
@@ -137,6 +137,9 @@ export default {
     }
   },
   computed: {
+    isPreparedTab () {
+      return this.selectedTab === 'Prepared'
+    },
     icons: () => ({
       redo: faRedo,
       trash: faTrash,
@@ -167,6 +170,10 @@ export default {
 
   td.is-error {
     color: $secondary-text-color;
+  }
+
+  .error-message {
+    color: $error-text-color;
   }
 
   .icon-redo {
@@ -231,5 +238,8 @@ export default {
 
   .filename-content {
     align-items: center;
+  }
+  .table td {
+    padding: 0.5em $default-padding !important;
   }
 </style>
