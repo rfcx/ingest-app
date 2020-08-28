@@ -114,8 +114,8 @@ class FileProvider {
             ? dateHelper.parseTimestampAuto(file.name)
             : dateHelper.parseTimestamp(file.name, format)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-
-        const stateObj = this.getState(momentDate, file.extension, file.path, stream.id)
+        const hasUploadedBefore = this.hasUploadedBefore(file.path, stream.id)
+        const stateObj = this.getState(momentDate, file.extension, hasUploadedBefore)
         const state = stateObj.state
         const stateMessage = stateObj.message
         const newFile = { ...file }
@@ -352,10 +352,10 @@ class FileProvider {
   getState (momentDate, fileExt, hasUploadedBefore) {
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
       return {state: 'local_error', message: 'File extension is not supported'}
-    } else if (!momentDate.isValid()) {
-      return {state: 'local_error', message: 'Filename does not match with a filename format'}
     } else if (hasUploadedBefore) {
       return {state: 'local_error', message: 'Duplicate file'}
+    } else if (!momentDate.isValid()) {
+      return {state: 'local_error', message: 'Filename does not match with a filename format'}
     } else {
       return {state: 'preparing', message: ''}
     }
