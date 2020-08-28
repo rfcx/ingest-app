@@ -670,14 +670,10 @@ ipcMain.on('setUploadingProcess', (event, data) => {
 
 ipcMain.on('deleteFiles', async function (event, ids) {
   console.log('deleteFiles', ids)
-  if (ids && ids.length) {
-    await File.delete((file) => {
-      if (ids.includes(file.id)) {
-        return file.id
-      }
-    })
-    event.sender.send('filesDeleted')
-  }
+  ids.forEach(id => {
+    File.delete(id)
+  })
+  event.sender.send('filesDeleted')
 })
 
 ipcMain.on('closeUpdatePopupWindow', () => {
