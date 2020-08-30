@@ -23,7 +23,7 @@
           </router-link>
         </p>
         <p class="control control-btn">
-          <button type="button" class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!hasEditedData" @click.prevent="updateStream">Apply</button>
+          <button type="button" class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!(hasEditedData && isNewStreamNameValid)" @click.prevent="updateStream">Apply</button>
         </p>
       </div>
     </fieldset>
@@ -56,6 +56,9 @@ export default {
     },
     hasEditedData () {
       return this.name !== this.selectedStream.name || this.selectedLatitude !== this.selectedStream.latitude || this.selectedLongitude !== this.selectedStream.longitude
+    },
+    isNewStreamNameValid () {
+      return this.name.trim().length && this.name.trim().length >= 3 && this.name.trim().length <= 40
     }
   },
   methods: {
