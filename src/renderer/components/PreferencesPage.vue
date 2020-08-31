@@ -16,38 +16,25 @@
         <div class="preferences-popup-update-auto-descr">RFCx Ingest automatically checks for new app versions, downloads then and installs on app's restart.</div>
       </div>
     </div>
-    <!-- TODO: reuse component from About page -->
-    <div class="preferences-popup-about-wrapper" v-if="currentTab === 'about'">
-      <img class="about-logo" src="~@/assets/rfcx-logo.png">
-      <div class="about-app">RFCx Ingest</div>
-      <div class="about-text" v-if="version">Version {{version}}</div>
-    </div>
+    <about v-if="currentTab === 'about'"></about>
   </div>
 </template>
 
 <script>
   import settings from 'electron-settings'
-  const { remote } = window.require('electron')
+  import About from './AboutPage'
 
   export default {
     data () {
       return {
         currentTab: 'update' | 'about',
-        version: this.getVersion(),
         isAutoUpdateApp: null
       }
     },
-    computed: {
-      newVersion () {
-        return remote.getGlobal('newVersion')
-      }
-    },
+    components: { About },
     methods: {
       changeCurrentTab (tab) {
         this.currentTab = tab
-      },
-      getVersion () {
-        return remote.getGlobal('version')
       },
       toggleDisabled () {
         this.isAutoUpdateApp = !this.isAutoUpdateApp
