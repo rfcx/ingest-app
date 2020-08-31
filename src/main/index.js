@@ -670,9 +670,7 @@ ipcMain.on('setUploadingProcess', (event, data) => {
 
 ipcMain.on('deleteFiles', async function (event, ids) {
   console.log('deleteFiles', ids)
-  ids.forEach(id => {
-    File.delete(id)
-  })
+  await Promise.all(ids.map(id => File.delete(id)))
   event.sender.send('filesDeleted')
 })
 
