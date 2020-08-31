@@ -272,7 +272,7 @@ class FileProvider {
               uploadId: '',
               stateMessage: '',
               progress: 0,
-              retries: 0
+              retries: file.retries + 1
             }
           })
         } else {
