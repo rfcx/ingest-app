@@ -200,6 +200,10 @@ export default {
       } else {
         Stream.delete(selectedStreamId)
       }
+      // reset session id if all files from the session got removed
+      if (ids.length === this.getAllFilesInTheSession.length) {
+        this.$store.dispatch('setCurrentUploadingSessionId', null)
+      }
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true

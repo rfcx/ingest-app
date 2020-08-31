@@ -9,6 +9,9 @@ const mutations = {
   },
   SET_UPLOADING_SESSION_ID (state, id) {
     state.currentUploadingSessionId = id
+  },
+  RESET (state, object) {
+    state.selectedTabs = object
   }
 }
 
@@ -18,6 +21,9 @@ const actions = {
   },
   setCurrentUploadingSessionId ({ commit }, id) {
     commit('SET_UPLOADING_SESSION_ID', id)
+  },
+  reset ({ commit }, object) {
+    commit('RESET', object)
   }
 }
 
