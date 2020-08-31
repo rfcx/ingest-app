@@ -56,6 +56,7 @@ export default {
   thead td,
   thead th {
     color: $secondary-text-color !important;
+    padding: 0.5em $default-padding !important;
   }
   .file-list-table {
     &__cell {

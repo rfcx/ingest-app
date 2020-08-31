@@ -192,7 +192,7 @@ export default {
     color: $secondary-text-color;
   }
   .table td {
-    padding: 0.5em $default-padding;
+    padding: 0.5em $default-padding !important;
     vertical-align: middle !important;
   }
   .file-status {
