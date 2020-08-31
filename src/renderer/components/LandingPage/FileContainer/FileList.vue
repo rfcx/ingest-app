@@ -58,32 +58,24 @@ export default {
     color: $secondary-text-color !important;
   }
   .file-list-table {
-    &_head {
-      margin-bottom: 0 !important;
-      .file-list-table {
-        &__cell {
-          white-space: nowrap;
-        }
+    &__cell {
+      &_name,
+      &_error {
+        width: 35%;
+        width: 28%;
       }
-    }
-    .file-list-table {
-      &__cell {
-        &_status {
-          width: 10%;
-          vertical-align: middle !important;
-        }
-        &_name,
-        &_error {
-          width: 35%;
-        }
-        &_info {
-          width: 15%;
-        }
-        &_controls {
-          width: 10%;
-          text-align: right !important;
-          padding-right: 24px !important;
-        }
+      &_timestamp {
+        width: 22% !important;
+      }
+      &_info {
+        width: 15%;
+        width: 16%;
+      }
+      &_controls {
+        width: 10%;
+        width: 8%;
+        text-align: right !important;
+        padding-right: 24px !important;
       }
     }
   }
