@@ -387,6 +387,10 @@ class FileProvider {
       })
       .catch((error) => {
         console.log('error', error)
+        return File.update({
+          where: file.id,
+          data: { state: 'server_error', stateMessage: error.message }
+        })
       })
   }
 
@@ -471,10 +475,10 @@ class FileProvider {
   getState (momentDate, fileExt, hasUploadedBefore) {
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
       return {state: 'local_error', message: 'File extension is not supported'}
-    } else if (!momentDate.isValid()) {
-      return {state: 'local_error', message: 'Filename does not match with a filename format'}
     } else if (hasUploadedBefore) {
       return {state: 'local_error', message: 'Duplicate file'}
+    } else if (!momentDate.isValid()) {
+      return {state: 'local_error', message: 'Filename does not match with a filename format'}
     } else {
       return {state: 'preparing', message: ''}
     }
