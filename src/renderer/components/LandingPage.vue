@@ -77,19 +77,12 @@
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
       },
-      pauseUploadingProcess () {
-        this.$store.dispatch('setUploadingProcess', false)
-      },
-      resumeUploadingProcess () {
-        this.$store.dispatch('setUploadingProcess', true)
-      },
       hasAccessToApp () {
         let hasAccessToApp = remote.getGlobal('hasAccessToApp')
         if (hasAccessToApp && !this.executed) {
           // For the first enter to the app for continue the uploading process
           console.log('hasAccessToApp on the first enter', hasAccessToApp)
           this.executed = true
-          // this.$store.dispatch('setUploadingProcess', true)
           return true
         } else if (hasAccessToApp && this.executed) {
           console.log('hasAccessToApp', hasAccessToApp)
@@ -97,7 +90,6 @@
         } else {
           console.log('hasAccessToApp', hasAccessToApp)
           this.$router.push('/access-denied-page')
-          // this.$store.dispatch('setUploadingProcess', false)
         }
       },
       async sendVersionOfApp () {
@@ -112,7 +104,6 @@
     computed: {
       ...mapState({
         selectedStreamId: state => state.Stream.selectedStreamId,
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess,
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
       }),
       streams () {
@@ -331,7 +322,7 @@
       display: flex;
     }
   }
-  
+
   .modal-card-head,
   .modal-card-body,
   .modal-card-foot {

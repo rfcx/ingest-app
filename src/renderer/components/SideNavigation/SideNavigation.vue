@@ -4,11 +4,6 @@
       <div class="header-logo">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
       </div>
-      <div class="header-env">
-        <button class="button" :class="{ 'is-primary': productionEnv, 'is-dark': !productionEnv }" @click="switchEnvironment()">
-          {{ productionEnv ? 'production' : 'staging' }}
-        </button>
-      </div>
       <div class="dropdown header-user-pic is-right" :class="{ 'is-active': showDropDown }" @click="toggleDropDown()" title="User menu: you can log out here">
         <div class="dropdown-trigger">
           <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)" aria-haspopup="true" aria-controls="dropdown-menu">
@@ -72,8 +67,6 @@
 </template>
 
 <script>
-  import { mapState } from 'vuex'
-  import settings from 'electron-settings'
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
   import fileState from '../../../../utils/fileState'
@@ -92,17 +85,13 @@
         showUserMenu: false,
         toggleSearch: false,
         showDropDown: false,
-        userName: this.getUserName(),
-        productionEnv: this.isProductionEnv()
+        userName: this.getUserName()
       }
     },
     components: {
       FontAwesomeIcon
     },
     computed: {
-      ...mapState({
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess
-      }),
       selectedStreamId () {
         return this.$store.state.Stream.selectedStreamId
       },
@@ -148,16 +137,6 @@
         var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
         this.mesure = sizes[i]
         return Math.round(bytes / Math.pow(1024, i), 2)
-      },
-      switchEnvironment () {
-        if (this.isInprogessOfUploading) {
-          return
-        }
-        settings.set('settings.production_env', !this.isProductionEnv())
-        this.productionEnv = this.isProductionEnv()
-      },
-      isProductionEnv () {
-        return settings.get('settings.production_env')
       },
       toggleUserMenu () {
         this.showUserMenu = !this.showUserMenu
@@ -276,7 +255,7 @@
   }
 
   .header {
-    padding: 0 8px 0 16px;
+    padding: 0 12px 0 $default-padding;
     margin-bottom: 16px;
     display: flex;
     justify-content: space-between;
@@ -285,7 +264,6 @@
   }
 
   .header-logo,
-  .header-env,
   .header-user-pic {
     cursor: pointer;
   }
@@ -305,15 +283,6 @@
       text-decoration: none;
       border: none;
       outline: none;
-    }
-  }
-
-  .header-env {
-    button {
-      height: 1.8em;
-      font-size: 12px;
-      padding-top: calc(0.1em - 0px);
-      padding-bottom: calc(0.175em - 0px);
     }
   }
 
@@ -436,7 +405,7 @@
   }
 
   .menu-item {
-    padding: 9px 12px 8px 12px;
+    padding: 9px $default-padding 8px;
     height: 42px;
   }
 
@@ -445,7 +414,7 @@
   }
 
   .menu-label {
-    padding: 24px 12px 10px 12px;
+    padding: 24px $default-padding 10px;
     font-size: 16px;
     font-style: normal;
     line-height: normal;
