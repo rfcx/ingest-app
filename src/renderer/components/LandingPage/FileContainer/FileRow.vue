@@ -37,7 +37,7 @@
             <div class="modal-card">
               <section class="modal-card-body is-flex flex-column justify-center align-center">
                 <div class="error-message">{{ error.message }}</div>
-                <button class="button close-modal-btn" @click="error = null">Close</button>
+                <button class="button close-modal-btn" @click="error = null">OK</button>
               </section>
             </div>
           </div>
