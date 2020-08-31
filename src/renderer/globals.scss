@@ -21,6 +21,7 @@ $global-progress-height: 78px;
 
 // Update Bulma's global variables
 $primary: $brand-primary;
+$danger: $error-text-color;
 $family-sans-serif: 'Lato', sans-serif;
 $link: $brand-primary;
 
@@ -73,4 +74,10 @@ body {
 h1 {
   font-size: 18px;
   margin-bottom: $default-padding-margin;
+}
+
+a.is-button {
+  text-transform: uppercase;
+  color: $title-text-color;
+  font-weight: $title-font-weight;
 }
