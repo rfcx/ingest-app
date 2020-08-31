@@ -118,15 +118,15 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.fieldset {
-  &__wrapper {
-    margin: $fieldset-margin;
-    padding: $fieldset-padding;
-    max-width: $fieldset-width;
+  .fieldset {
+    &__wrapper {
+      margin: $fieldset-margin;
+      padding: $fieldset-padding;
+      max-width: $fieldset-width;
+    }
+    &__notification {
+      background: $button-hover-border-color !important;
+      color: white;
+    }
   }
-  &__notification {
-    background: $button-hover-border-color !important;
-    color: white;
-  }
-}
 </style>

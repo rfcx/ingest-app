@@ -5,7 +5,7 @@
 <script>
   import { mapState } from 'vuex'
   import File from '../store/models/File'
-  
+
   const workerTimeoutMaximum = 10000
   const workerTimeoutMinimum = 3000
 
@@ -19,7 +19,6 @@
     },
     computed: {
       ...mapState({
-        isUploadingProcessEnabled: state => state.Stream.enableUploadingProcess,
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
       }),
       filesInUploadingSession () {
@@ -28,11 +27,14 @@
       },
       noDurationFiles () {
         return File.query().where(file => { return file.state === 'preparing' && file.durationInSecond === -1 }).orderBy('timestamp').get()
+      },
+      isUploadingProcessEnabled () {
+        const files = this.getAllFilesInTheSession()
+        return files.every(file => { return !file.paused })
       }
     },
     watch: {
       isUploadingProcessEnabled (val, oldVal) {
-        console.log('isUploadingProcessEnabled', val, oldVal)
         if (val === oldVal) return
         this.checkStatusWorkerTimeout = workerTimeoutMinimum
         this.tickCheckStatus()
@@ -44,6 +46,9 @@
       }
     },
     methods: {
+      getAllFilesInTheSession () {
+        return File.query().where('sessionId', this.currentUploadingSessionId).get()
+      },
       getUploadingFiles () {
         return new Promise((resolve, reject) => {
           let files = File.query().where('state', 'uploading').orderBy('timestamp').get()
@@ -193,7 +198,12 @@
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('suspendApp', listener)
         // Continue uploading process if the app resumes
-        this.$store.dispatch('setUploadingProcess', arg)
+        const files = this.getAllFilesInTheSession()
+        files.forEach(file => {
+          File.update({ where: file.id,
+            data: { paused: !arg }
+          })
+        })
         this.$electron.ipcRenderer.send('setUploadingProcess', arg)
         if (arg === true) { this.checkAfterSuspended() }
       }

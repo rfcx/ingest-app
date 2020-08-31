@@ -16,38 +16,27 @@
         <div class="preferences-page__descr">RFCx Ingest automatically checks for new app versions, downloads then and installs on app's restart.</div>
       </div>
     </div>
-    <!-- TODO: reuse component from About page -->
-    <div class="preferences-page__about-wrapper" v-if="currentTab === 'about'">
-      <img class="preferences-page__logo" src="~@/assets/rfcx-logo.png">
-      <div class="preferences-page__title">RFCx Ingest</div>
-      <div class="preferences-page__version" v-if="version">Version {{version}}</div>
-    </div>
+    <about-page v-if="currentTab === 'about'"></about-page>
   </div>
 </template>
 
 <script>
   import settings from 'electron-settings'
-  const { remote } = window.require('electron')
+  import AboutPage from './AboutPage'
 
   export default {
     data () {
       return {
         currentTab: 'update' | 'about',
-        version: this.getVersion(),
         isAutoUpdateApp: null
       }
     },
-    computed: {
-      newVersion () {
-        return remote.getGlobal('newVersion')
-      }
+    components: {
+      AboutPage
     },
     methods: {
       changeCurrentTab (tab) {
         this.currentTab = tab
-      },
-      getVersion () {
-        return remote.getGlobal('version')
       },
       toggleDisabled () {
         this.isAutoUpdateApp = !this.isAutoUpdateApp
@@ -87,31 +76,31 @@
       margin-bottom: 10px;
       opacity: 0.5;
     }
-    &__about-wrapper {
-      text-align: center;
-      margin: auto;
-      padding: 20px;
-      overflow: hidden;
-    }
-    &__logo {
-      margin-top: 10px;
-      width: 35px;
-      height: 50px;
-    }
-    &__title {
-      font-size: $default-font-size;
-      margin: 5px auto;
-    }
-    &__version {
-      font-size: 12px;
-    }
-    .update-page {
-      margin: auto;
-      overflow: hidden;
-      &__controls {
-        text-align: right;
-      }
-    }
+    // &__about-wrapper {
+    //   text-align: center;
+    //   margin: auto;
+    //   padding: 20px;
+    //   overflow: hidden;
+    // }
+    // &__logo {
+    //   margin-top: 10px;
+    //   width: 35px;
+    //   height: 50px;
+    // }
+    // &__title {
+    //   font-size: $default-font-size;
+    //   margin: 5px auto;
+    // }
+    // &__version {
+    //   font-size: 12px;
+    // }
+    // .update-page {
+    //   margin: auto;
+    //   overflow: hidden;
+    //   &__controls {
+    //     text-align: right;
+    //   }
+    // }
     ::-webkit-scrollbar-thumb {
       background-color: transparent;
     }

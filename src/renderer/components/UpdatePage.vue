@@ -5,7 +5,7 @@
     </div>
     <div class="update-page__content-wrapper">
       <div class="update-page__version" v-if="newVersion">{{ newVersion }} (Latest)</div>
-      <div class="update-page__ersion" v-if="!newVersion"></div>
+      <div class="update-page__version" v-if="!newVersion"></div>
       <div class="update-page__notes">
         <vue-markdown v-if="notes">{{notes}}</vue-markdown>
       </div>

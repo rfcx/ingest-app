@@ -8,7 +8,6 @@
     @click="getPlacePositionByClick">
     <GeocoderControl
       :accessToken="accessToken"
-      :limit="1"
       :input.sync="defaultInput"
       :mapboxgl="mapbox"
       :localGeocoder="coordinatesGeocoder"
@@ -41,7 +40,6 @@ export default {
         'pk.eyJ1IjoicmZjeCIsImEiOiJoMEptMnlJIn0.LPKrjG_3AeYB5cqsyLpcrg',
       mapStyle: 'mapbox://styles/rfcx/ck9g6dci83g3x1io8dl27r7aq',
       defaultInput: '',
-      searchLimit: 1,
       center: [15, 30],
       zoom: 2,
       closeMapZoom: 8,
@@ -128,38 +126,38 @@ export default {
 </script>
 
 <style lang="scss">
-mgl-map {
-  width: $full-width;
-  height: $full-height;
-  position: relative;
-  z-index: 1;
-}
-
-.mapboxgl-map {
-  &:after {
-    bottom: 0;
-    background: $backgroud-color-dark;
-    background: -moz-linear-gradient(
-      90deg,
-      rgba(19, 21, 37, 0) 0%,
-      rgba(19, 21, 37, 0.9) 85%,
-      rgba(19, 21, 37, 1) 100%
-    );
-    background: -webkit-linear-gradient(
-      90deg,
-      rgba(19, 21, 37, 0) 0%,
-      rgba(19, 21, 37, 0.9) 85%,
-      rgba(19, 21, 37, 1) 100%
-    );
-    background: linear-gradient(
-      90deg,
-      rgba(19, 21, 37, 0) 0%,
-      rgba(19, 21, 37, 0.9) 85%,
-      rgba(19, 21, 37, 1) 100%
-    );
-    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#131525",endColorstr="#131525",GradientType=1);
+  mgl-map {
+    width: $full-width;
+    height: $full-height;
+    position: relative;
+    z-index: 1;
   }
-}
+
+  .mapboxgl-map {
+    &:after {
+      bottom: 0;
+      background: $backgroud-color-dark;
+      background: -moz-linear-gradient(
+        90deg,
+        rgba(19, 21, 37, 0) 0%,
+        rgba(19, 21, 37, 0.9) 85%,
+        rgba(19, 21, 37, 1) 100%
+      );
+      background: -webkit-linear-gradient(
+        90deg,
+        rgba(19, 21, 37, 0) 0%,
+        rgba(19, 21, 37, 0.9) 85%,
+        rgba(19, 21, 37, 1) 100%
+      );
+      background: linear-gradient(
+        90deg,
+        rgba(19, 21, 37, 0) 0%,
+        rgba(19, 21, 37, 0.9) 85%,
+        rgba(19, 21, 37, 1) 100%
+      );
+      filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#131525",endColorstr="#131525",GradientType=1);
+    }
+  }
 
 .mapboxgl-ctrl-bottom-right {
   width: 50%;

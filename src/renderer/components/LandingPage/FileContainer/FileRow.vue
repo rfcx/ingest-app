@@ -1,25 +1,25 @@
 <template>
   <tr>
-    <td class="file-status file-list-table__cell file-list-table__cell_status">
+    <td class="file-status file-list-table__cell file-list-table__cell_status" v-if="!isPreparedTab">
       <img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)">
       <span class="file-status__state">{{ getStateName(file) }}</span>
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError }" >
+    <td class="file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError }" >
       {{ file.name }}
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
+    <td class="file-list-table__cell file-list-table__cell_timestamp" v-if="!file.isError">
       {{ getTimestamp(file) }}
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
+    <td class="file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
       {{ file.fileDuration }}
     </td>
-    <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
+    <td class="file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
       {{ file.fileSize }}
     </td>
-    <td class="is-error file-row file-list-table__cell file-list-table__cell_error" colspan="3" v-if="file.isError">
+    <td class="file-list-table__cell file-list-table__cell_error error-message" colspan="3" v-if="file.isError">
       {{ file.stateMessage }}
     </td>
-    <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls">
+    <td class="file-list-table__cell file-list-table__cell_controls">
       <font-awesome-icon v-if="file.canRedo" class="iconRedo" :icon="iconRedo" @click="repeatUploading(file)"></font-awesome-icon>
       <font-awesome-icon v-if="file.canRemove" class="iconTrash" :icon="iconTrash" @click="remove(file)"></font-awesome-icon>
     </td>
@@ -41,9 +41,15 @@ export default {
     }
   },
   props: {
-    file: File
+    file: File,
+    selectedTab: String
   },
   components: { FontAwesomeIcon },
+  computed: {
+    isPreparedTab () {
+      if (this.selectedTab === 'Prepared') return true
+    }
+  },
   methods: {
     getStateName (file) {
       return fileState.getName(file.state, file.stateMessage)
@@ -75,6 +81,10 @@ export default {
   td.is-error {
     color: $secondary-text-color;
   }
+  .table td {
+    padding: 0.5em $default-padding;
+    vertical-align: middle !important;
+  }
   .file-status {
     text-align: center !important;
     padding: 0.4rem 0.75rem 0.7rem 0 !important;
@@ -82,7 +92,7 @@ export default {
       display: block;
       font-size: 9px;
       height: auto;
-      line-height: 1 !important;
+      line-height: 1;
     }
     img {
       display: block;
@@ -92,8 +102,8 @@ export default {
   .file-failed {
     margin: 7px auto 5px !important;
   }
-  .file-row {
-    vertical-align: middle !important;
+  .error-message {
+    color: $error-text-color;
   }
   .iconRedo {
     color: $white-color;

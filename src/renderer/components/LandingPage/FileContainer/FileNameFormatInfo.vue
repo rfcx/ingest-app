@@ -3,12 +3,11 @@
     <div class="preparing-file-settings__name-format-wrapper">
       <span class="preparing-file-settings__name-format-title">Filename format</span>
       <div class="is-flex flex-row align-center">
-          <div class="preparing-file-settings__name-format-description">{{ (selectedStream.timestampFormat !== 'Auto-detect' ? 'custom ・ ' : '') + selectedStream.timestampFormat }}</div>
-          <div class="preparing-file-settings__edit-button" title="Edit filename format">
-            <font-awesome-icon :icon="iconPencil" @click="openFileNameFormatSettingModal()"></font-awesome-icon>
-          </div>
+        <div class="preparing-file-settings__name-format-description">{{ (selectedStream.timestampFormat !== 'Auto-detect' ? 'custom ・ ' : '') + selectedStream.timestampFormat }}</div>
+        <div class="preparing-file-settings__edit-button" title="Edit filename format">
+          <font-awesome-icon :icon="iconPencil" @click="openFileNameFormatSettingModal()"></font-awesome-icon>
+        </div>
       </div>
-
     </div>
     <div class="preparing-file-settings__actions-wrapper">
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
@@ -104,7 +103,7 @@ export default {
 <style lang="scss" scoped>
   .preparing-file-settings {
     &__wrapper {
-      padding: $default-padding-margin;
+      padding: $default-padding;
       display: flex;
       justify-content: space-between;
       align-self: center;

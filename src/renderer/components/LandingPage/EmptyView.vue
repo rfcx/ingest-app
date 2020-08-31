@@ -1,7 +1,7 @@
 <template>
-  <div class="container-box empty has-text-centered empty-view">
-    <img :src="stateIcon" class="empty-view__state-icon"><br>
-    <span class="empty-view__state-status">{{ stateStatus }}</span>
+  <div class="container empty has-text-centered">
+    <img :src="stateIcon" class="container__state-icon"><br>
+    <span class="container__state-status">{{ stateStatus }}</span>
   </div>
 </template>
 
@@ -33,12 +33,10 @@
 </script>
 
 <style lang="scss" scoped>
-  .container-box {
+  .container {
     margin: 16px auto;
     padding: 16px;
     max-width: 500px;
-  }
-  .empty-view {
     &__state-icon {
       width: 40px;
       height: 40px;
@@ -49,7 +47,7 @@
       white-space: pre-wrap;
     }
   }
-  .container-box.empty {
+  .container.empty {
     margin: $default-padding-margin auto;
     padding: $default-padding-margin;
     max-width: 300px;
