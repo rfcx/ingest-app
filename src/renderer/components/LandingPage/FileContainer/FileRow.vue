@@ -30,6 +30,18 @@
               Save
             </button>
           </div>
+
+          <!-- error rename file modal -->
+          <div class="modal is-active" v-if="error" :data-file="file.id">
+            <div class="modal-background" />
+            <div class="modal-card">
+              <section class="modal-card-body is-flex flex-column justify-center align-center">
+                <div class="error-message">{{ error.message }}</div>
+                <button class="button close-modal-btn" @click="error = null">Close</button>
+              </section>
+            </div>
+          </div>
+
         </template>
         <template v-else>
           <div class="cell-file-name" v-text="file.name" />
@@ -75,7 +87,8 @@ export default {
   data: () => ({
     isEdit: false,
     fileName: '',
-    loading: false
+    loading: false,
+    error: null
   }),
   components: {
     'fa-icon': FontAwesomeIcon
@@ -100,8 +113,16 @@ export default {
         await this.$file.renameFile(this.file, newFilename)
         this.isEdit = false
       } catch (e) {
-        console.log('Save file name error', e)
-        // TODO: notify error
+        let message
+        if (e instanceof Error) {
+          message = e.message
+        } else {
+          message = 'Unknow error'
+        }
+        console.log('Rename file error', message)
+        this.error = {
+          message
+        }
       }
       this.loading = false
     },
@@ -168,6 +189,21 @@ export default {
 
 <style lang="scss" scoped>
 
+  .modal {
+    .modal-card {
+      border-radius: 8px;
+      .error-message {
+        color: white;
+        font-size: 16px;
+      }
+
+      .close-modal-btn {
+        margin-top: 12px;
+        color: white;
+      }
+    }
+  }
+
   td.is-error {
     color: $secondary-text-color;
   }
@@ -188,6 +224,18 @@ export default {
 
   .flex-row {
     flex-direction: row;
+  }
+
+  .flex-column {
+    flex-direction: column;
+  }
+
+  .justify-center {
+    justify-content: center;
+  }
+
+  .align-center {
+    align-items: center;
   }
 
   .file-list-table__cell_name {

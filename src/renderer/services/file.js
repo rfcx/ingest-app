@@ -169,6 +169,22 @@ class FileProvider {
     }
 
     /**
+     * File list from stream
+    */
+    const files = [...(stream.files || [])]
+
+    /**
+     * Check already exists file name
+    */
+    const checkFileAlreadyExists = filePath => {
+      // check new file path in stream & file state on preparing
+      const fileIdx = files.findIndex(f => (f.path === filePath && ['local_error', 'preparing'].includes(f.state)))
+      if (fileIdx > -1 || fs.existsSync(filePath)) {
+        throw new Error(`A file with the same name already exists. specify another name.`)
+      }
+    }
+
+    /**
      * @ function rename file name
      * @ convert callback to promise
     */
@@ -184,6 +200,9 @@ class FileProvider {
       }
 
       if (newPath !== path) {
+        // if file already exists then throw error
+        checkFileAlreadyExists(newPath)
+
         fs.rename(path, newPath, e => {
           if (e) {
             reject(e)
@@ -193,13 +212,17 @@ class FileProvider {
           }
         })
       } else {
-        reject(new Error(`File doesn't need to rename, Because old file name equal to new file name`))
+        console.log(`File doesn't need to rename, Because old file name equal to new file name`)
+        resolve('')
       }
     })
 
     console.log(`Renaming file name...`)
     // update file name
     const newPath = await renameFileOnDisk()
+    if (newPath === '') {
+      return Promise.resolve()
+    }
 
     console.log(`Rename file on disk success`)
 
@@ -224,8 +247,6 @@ class FileProvider {
     newFile.timestamp = isoDate
     newFile.name = filename
     newFile.path = newPath
-
-    const files = [...(stream.files || [])]
 
     // ----- update file on database -----
     const updateFields = {
