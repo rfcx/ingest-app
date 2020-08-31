@@ -8,6 +8,7 @@
 
   const workerTimeoutMaximum = 10000
   const workerTimeoutMinimum = 3000
+  const dayInMs = 1000 * 60 * 60 * 24
 
   export default {
     data: () => {
@@ -36,8 +37,7 @@
     watch: {
       isUploadingProcessEnabled (val, oldVal) {
         if (val === oldVal) return
-        this.checkStatusWorkerTimeout = workerTimeoutMinimum
-        this.tickCheckStatus()
+        this.restartCheckStatusFunction()
       },
       filesInUploadingSession (val, oldVal) {
         if (val === oldVal) return
@@ -144,9 +144,14 @@
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         }).catch((err) => {
           console.log(err)
+          if (this.checkStatusWorkerTimeout > dayInMs * 30) return
           this.checkStatusWorkerTimeout = Math.min(2 * this.checkStatusWorkerTimeout, workerTimeoutMaximum)
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
+      },
+      restartCheckStatusFunction () {
+        this.checkStatusWorkerTimeout = workerTimeoutMinimum
+        this.tickCheckStatus()
       },
       async updateFilesDuration () {
         this.$file.updateFilesDuration(this.noDurationFiles)
@@ -171,6 +176,7 @@
       checkFilesInUploadingSessionId (files) {
         console.log('checkFilesInUploadingSessionId', files)
         if (files.length === 0) return
+        this.restartCheckStatusFunction()
         const completedFiles = files.filter(file => file.isInCompletedGroup && !file.isError)
         const failedFiles = files.filter(file => file.isInCompletedGroup && file.isError)
         if (files.length === completedFiles.length + failedFiles.length) { // all files has completed

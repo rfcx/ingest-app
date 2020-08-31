@@ -264,10 +264,23 @@ class FileProvider {
       })
       .catch((error) => {
         console.log('error', error)
-        return File.update({
-          where: file.id,
-          data: { state: 'server_error', stateMessage: error.message }
-        })
+        if (file.retries < 3) {
+          return File.update({
+            where: file.id,
+            data: {
+              state: 'waiting',
+              uploadId: '',
+              stateMessage: '',
+              progress: 0,
+              retries: 0
+            }
+          })
+        } else {
+          return File.update({
+            where: file.id,
+            data: { state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.' }
+          })
+        }
       })
   }
 
