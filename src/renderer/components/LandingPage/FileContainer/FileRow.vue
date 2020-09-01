@@ -61,7 +61,7 @@
       <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
         {{ file.fileSize }}
       </td>
-      <td class="is-error file-row file-list-table__cell file-list-table__cell_error" colspan="3" v-if="file.isError">
+      <td class="file-row file-list-table__cell file-list-table__cell_error error-message" colspan="3" v-if="file.isError">
         {{ file.stateMessage }}
       </td>
       <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls">
