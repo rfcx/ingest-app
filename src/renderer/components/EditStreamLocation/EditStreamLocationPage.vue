@@ -146,7 +146,7 @@ export default {
           await this.removeStreamFromVuex(this.selectedStream.id)
           this.modalHandler()
         }).catch(error => {
-          console.log('error while deleting stream', error)
+          console.log('error while deleting site', error)
           this.errorHandler(error, true)
         })
       }
@@ -193,8 +193,8 @@ export default {
       if (error.status === 401 || error.data === 'UNAUTHORIZED') {
         this.error = 'You are not authorized.'
       } else if (error.status === 403) {
-        this.error = `You don't have permissions to delete non-empty stream.`
-      } else { this.error = 'Error while deleting stream.' }
+        this.error = `You don't have permissions to delete non-empty site.`
+      } else { this.error = 'Error while deleting site.' }
     },
     redirectToMainScreen () {
       this.$router.push('/')
