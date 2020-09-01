@@ -1,7 +1,7 @@
 'use strict'
 
 import { app, BrowserWindow, Menu, ipcMain, dialog, autoUpdater, powerMonitor } from 'electron'
-import '../renderer/store'
+import store from '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
@@ -486,6 +486,7 @@ async function logOut () {
 function clearAllData () {
   File.deleteAll()
   Stream.deleteAll()
+  store.dispatch('reset', {})
 }
 
 async function createRefreshInterval () {
@@ -670,14 +671,8 @@ ipcMain.on('setUploadingProcess', (event, data) => {
 
 ipcMain.on('deleteFiles', async function (event, ids) {
   console.log('deleteFiles', ids)
-  if (ids && ids.length) {
-    await File.delete((file) => {
-      if (ids.includes(file.id)) {
-        return file.id
-      }
-    })
-    event.sender.send('filesDeleted')
-  }
+  await Promise.all(ids.map(id => File.delete(id)))
+  event.sender.send('filesDeleted')
 })
 
 ipcMain.on('closeUpdatePopupWindow', () => {

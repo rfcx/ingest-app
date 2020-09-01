@@ -6,8 +6,8 @@
   import { mapState } from 'vuex'
   import File from '../store/models/File'
 
-  const workerTimeoutMaximum = 10000
   const workerTimeoutMinimum = 3000
+  const dayInMs = 1000 * 60 * 60 * 24
 
   export default {
     data: () => {
@@ -123,14 +123,34 @@
         })
       },
       queueJobToCheckStatus () {
-        return this.getUploadedFile().then((file) => {
-          let listener = (event, arg) => {
+        return new Promise((resolve, reject) => {
+          let listener = async (event, idToken) => {
             this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-            let idToken = arg
-            return Promise.all(this.getUploadedFiles().map(file => this.$file.checkStatus(file, idToken, false)))
+            try {
+              const files = await Promise.all(this.getUploadedFiles())
+              for (let file of files) {
+                if (file.uploadedTime && Date.now() - parseInt(file.uploadedTime) > dayInMs * 30) {
+                  await File.update({
+                    where: file.id,
+                    data: {
+                      state: 'waiting',
+                      uploadId: '',
+                      stateMessage: '',
+                      progress: 0,
+                      retries: file.retries + 1
+                    }
+                  })
+                } else {
+                  await this.$file.checkStatus(file, idToken, false)
+                }
+              }
+              resolve()
+            } catch (e) {
+              reject(e)
+            }
           }
-          this.$electron.ipcRenderer.send('getIdToken')
           this.$electron.ipcRenderer.on('sendIdToken', listener)
+          this.$electron.ipcRenderer.send('getIdToken')
         })
       },
       tickUpload () {
@@ -144,7 +164,6 @@
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         }).catch((err) => {
           console.log(err)
-          this.checkStatusWorkerTimeout = Math.min(2 * this.checkStatusWorkerTimeout, workerTimeoutMaximum)
           setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
         })
       },

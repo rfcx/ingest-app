@@ -6,11 +6,10 @@
         <div class="global-progress__progress-title">Uploading</div>
         <div class="global-progress__progress-subtitle is-size-7">{{getState()}}</div>
       </div>
-      <a class="global-progress__button" :title="isUploadingProcessEnabled ? 'Pause uploading process' : 'Continue uploading process'" href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn" :src="getUploadingProcessIcon(this.isUploadingProcessEnabled)"></a>
+      <a class="global-progress__button" :title="isUploadingProcessEnabled ? 'Pause uploading process' : 'Continue uploading process'"
+        href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn"
+        :src="getUploadingProcessIcon(isUploadingProcessEnabled)"></a>
     </div>
-    <a class="global-progress__button" :title="isUploadingProcessEnabled ? 'Pause uploading process' : 'Continue uploading process'"
-      href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn"
-      :src="getUploadingProcessIcon(isUploadingProcessEnabled)"></a>
   </div>
 </template>
 

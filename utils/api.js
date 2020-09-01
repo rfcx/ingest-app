@@ -21,10 +21,11 @@ const explorerWebUrl = (isProd, streamId = null) => {
 }
 
 const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
+  const now = Date.now()
   return requestUploadUrl(env, fileName, filePath, streamId, timestamp, idToken)
     .then((data) => {
       File.update({ where: fileId,
-        data: {state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false}
+        data: {state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false, uploadedTime: now}
       })
       return performUpload(data.url, filePath, fileExt, fileSize, progressCallback).then(() => data.uploadId)
     })
