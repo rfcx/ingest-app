@@ -1,7 +1,7 @@
 'use strict'
 
 import { app, BrowserWindow, Menu, ipcMain, dialog, autoUpdater, powerMonitor } from 'electron'
-import '../renderer/store'
+import store from '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
@@ -259,12 +259,8 @@ function createMenu () {
         { label: 'Log out',
           type: 'checkbox',
           click: async () => {
-            await authService.logout()
-            if (mainWindow) {
-              isLogOut = true
-              mainWindow.close()
-            }
-            idToken = null
+            console.log('logOut')
+            logOut()
           }
         },
         { label: 'Quit',
@@ -478,6 +474,7 @@ async function refreshTokens () {
 
 async function logOut () {
   await authService.logout()
+  settings.set('settings.production_env', true)
   clearAllData()
   if (mainWindow) {
     isLogOut = true
@@ -489,6 +486,7 @@ async function logOut () {
 function clearAllData () {
   File.deleteAll()
   Stream.deleteAll()
+  store.dispatch('reset', {})
 }
 
 async function createRefreshInterval () {
@@ -673,14 +671,8 @@ ipcMain.on('setUploadingProcess', (event, data) => {
 
 ipcMain.on('deleteFiles', async function (event, ids) {
   console.log('deleteFiles', ids)
-  if (ids && ids.length) {
-    await File.delete((file) => {
-      if (ids.includes(file.id)) {
-        return file.id
-      }
-    })
-    event.sender.send('filesDeleted')
-  }
+  await Promise.all(ids.map(id => File.delete(id)))
+  event.sender.send('filesDeleted')
 })
 
 ipcMain.on('closeUpdatePopupWindow', () => {

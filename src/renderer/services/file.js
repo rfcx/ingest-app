@@ -6,6 +6,7 @@ import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 import store from '../store'
+import fs from 'fs'
 
 const FORMAT_AUTO_DETECT = 'Auto-detect'
 
@@ -115,7 +116,7 @@ class FileProvider {
             : dateHelper.parseTimestamp(file.name, format)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
 
-        const stateObj = this.getState(momentDate, file.extension, file.path, stream.id)
+        const stateObj = this.getState(momentDate, file.extension, false)
         const state = stateObj.state
         const stateMessage = stateObj.message
         const newFile = { ...file }
@@ -152,6 +153,128 @@ class FileProvider {
       `Updated ${updatedFiles.length} file(s) to stream '${stream.id}'`
     )
     console.log(`Updated timestampFormat '${format}' to stream '${stream.id}'`)
+  }
+
+  /**
+   * @param {*} stream file's stream
+   * @param {*} file target file to rename
+   * @param {*} filename new file name
+   */
+  async renameFile (file, filename) {
+    const streamId = file.streamId
+    const stream = Stream.find(streamId)
+
+    if (!stream) {
+      throw new Error(`Stream not fount`)
+    }
+
+    /**
+     * File list from stream
+    */
+    const files = [...(stream.files || [])]
+
+    /**
+     * Check already exists file name
+    */
+    const checkFileAlreadyExists = filePath => {
+      // check new file path in stream & file state on preparing
+      const fileIdx = files.findIndex(f => (f.path === filePath && ['local_error', 'preparing'].includes(f.state)))
+      if (fileIdx > -1 || fs.existsSync(filePath)) {
+        throw new Error(`A file with the same name already exists. specify another name.`)
+      }
+    }
+
+    /**
+     * @ function rename file name
+     * @ convert callback to promise
+    */
+    const renameFileOnDisk = () => new Promise((resolve, reject) => {
+      const path = file.path
+      const oldFilename = file.name
+      const filenameIdx = path.lastIndexOf(oldFilename)
+
+      let newPath = path
+      if (filenameIdx > -1) {
+        // concat old path with new file name
+        newPath = path.substring(0, filenameIdx) + filename
+      }
+
+      if (newPath !== path) {
+        // if file already exists then throw error
+        checkFileAlreadyExists(newPath)
+
+        fs.rename(path, newPath, e => {
+          if (e) {
+            reject(e)
+          } else {
+            resolve(newPath)
+            console.log(`Rename file '${path}' to '${newPath}' success`)
+          }
+        })
+      } else {
+        console.log(`File doesn't need to rename, Because old file name equal to new file name`)
+        resolve('')
+      }
+    })
+
+    console.log(`Renaming file name...`)
+    // update file name
+    const newPath = await renameFileOnDisk()
+    if (newPath === '') {
+      return Promise.resolve()
+    }
+
+    console.log(`Rename file on disk success`)
+
+    console.log(`Checking file name state`)
+    // checking file status with new file name
+
+    const format = stream.timestampFormat
+    const isoDate =
+          format === FORMAT_AUTO_DETECT
+            ? dateHelper.parseTimestampAuto(filename)
+            : dateHelper.parseTimestamp(filename, format)
+    const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+
+    const stateObj = this.getState(momentDate, file.extension, false)
+    const state = stateObj.state
+    const stateMessage = stateObj.message
+    const newFile = { ...file }
+
+    // update fields
+    newFile.state = state
+    newFile.stateMessage = stateMessage
+    newFile.timestamp = isoDate
+    newFile.name = filename
+    newFile.path = newPath
+
+    // ----- update file on database -----
+    const updateFields = {
+      state,
+      stateMessage,
+      timestamp: isoDate,
+      name: filename,
+      path: newPath
+    }
+    await File.update({
+      where: file.id,
+      data: updateFields,
+      update: Object.keys(updateFields)
+    })
+
+    console.log(`Update file success`)
+
+    const fileIdx = files.findIndex(f => f.id === file.id)
+    if (fileIdx > -1) {
+      files[fileIdx] = newFile
+      await Stream.update({
+        where: stream.id,
+        data: { files },
+        update: ['files']
+      })
+
+      console.log(`Update stream success`)
+    }
   }
 
   // 2. Upload files
@@ -365,10 +488,10 @@ class FileProvider {
   getState (momentDate, fileExt, hasUploadedBefore) {
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
       return {state: 'local_error', message: 'File extension is not supported'}
-    } else if (!momentDate.isValid()) {
-      return {state: 'local_error', message: 'Filename does not match with a filename format'}
     } else if (hasUploadedBefore) {
       return {state: 'local_error', message: 'Duplicate file'}
+    } else if (!momentDate.isValid()) {
+      return {state: 'local_error', message: 'Filename does not match with a filename format'}
     } else {
       return {state: 'preparing', message: ''}
     }

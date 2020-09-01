@@ -56,6 +56,7 @@ import Stream from '../../store/models/Stream'
 import File from '../../store/models/File'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
+import { mapState } from 'vuex'
 import { faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 
 export default {
@@ -73,6 +74,9 @@ export default {
     }
   },
   computed: {
+    ...mapState({
+      currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
+    }),
     selectedStreamId () {
       return this.$store.state.Stream.selectedStreamId
     },
@@ -104,6 +108,9 @@ export default {
     }
   },
   methods: {
+    getAllFilesInTheSession () {
+      return File.query().where('sessionId', this.currentUploadingSessionId).get()
+    },
     // Dropdown menu
     toggleDropDown () {
       this.shouldShowDropDown = !this.shouldShowDropDown
@@ -193,6 +200,10 @@ export default {
       } else {
         Stream.delete(selectedStreamId)
       }
+      // reset session id if all files from the session got removed
+      if (ids.length === this.getAllFilesInTheSession.length) {
+        this.$store.dispatch('setCurrentUploadingSessionId', null)
+      }
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true
@@ -208,7 +219,12 @@ export default {
         this.$store.dispatch('setSelectedStreamId', stream.id)
       }
       // If a stream deleted when the uploading process was paused.
-      this.$store.dispatch('setUploadingProcess', true)
+      const files = this.getAllFilesInTheSession()
+      files.forEach(file => {
+        File.update({ where: file.id,
+          data: { paused: false }
+        })
+      })
       this.isDeleting = false
       this.hideConfirmToDeleteStreamModal()
     },
