@@ -5,7 +5,7 @@
         <router-link title="Edit site location" to="/edit-stream-location">
           <span class="stream-name">{{ selectedStream.name }}</span>
           <span class="title-container-edit" title="Edit the site">
-            <font-awesome-icon :icon="iconPencil" @click="renameStream()"></font-awesome-icon>
+            <font-awesome-icon :icon="iconPencil"></font-awesome-icon>
           </span>
         </router-link>
       </div>
