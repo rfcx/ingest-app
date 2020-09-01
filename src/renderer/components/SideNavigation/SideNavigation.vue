@@ -4,24 +4,16 @@
       <div class="header-logo">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
       </div>
-      <div class="dropdown header-user-pic is-right" :class="{ 'is-active': showDropDown }" @click="toggleDropDown()" title="User menu: you can log out here">
-        <div class="dropdown-trigger">
-          <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)" aria-haspopup="true" aria-controls="dropdown-menu">
-        </div>
-        <div class="dropdown-menu" id="dropdown-menu" role="menu">
-          <div class="dropdown-content">
-            <a href="#" title="Logout" class="dropdown-item" @click="logOut()">Log out</a>
-          </div>
-        </div>
-      </div>
-      <!-- <div class="header-user-pic" @click="toggleUserMenu()">
+      <div class="header-user-pic" @click="toggleUserMenu()">
         <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)">
-      </div> -->
+      </div>
     </div>
-    <!-- <div class="user-stat-wrapper" v-if="showUserMenu">
-      <div class="user-stat-name">{{ userName }}</div>
-      <button class="button user-stat-btn" @click="logOut()">Log out</button>
-      <div class="user-stat-info-wrapper">
+    <div class="user-stat-wrapper" v-if="showUserMenu">
+      <div class="user-stat-name">
+        <span>{{ userName }}</span>
+        <button class="button is-small is-rounded" @click="logOut()">Log out</button>
+      </div>
+      <!-- <div class="user-stat-info-wrapper">
         <div class="user-stat-info">
           <div>{{streams.length}}</div><div>streams created</div>
         </div>
@@ -34,8 +26,8 @@
         <div class="user-stat-info">
           <div>{{getAllFilesSize()}}</div><div>{{mesure}} used</div>
         </div>
-      </div>
-    </div> -->
+      </div> -->
+    </div>
     <div class="menu-container side-menu-title">
       <router-link title="Add new site" class="side-menu-router-add-btn" to="/add">
         <button type="button" class="button is-rounded side-menu-add-btn">
@@ -84,7 +76,6 @@
         mesure: '',
         showUserMenu: false,
         toggleSearch: false,
-        showDropDown: false,
         userName: this.getUserName()
       }
     },
@@ -140,9 +131,6 @@
       },
       toggleUserMenu () {
         this.showUserMenu = !this.showUserMenu
-      },
-      toggleDropDown () {
-        this.showDropDown = !this.showDropDown
       },
       getUserName () {
         let userName = remote.getGlobal('firstname')
@@ -291,13 +279,8 @@
   }
 
   .user-stat-wrapper {
-    padding: 0 8px 0 16px;
-    margin-bottom: 7px;
-    font-family: Lato;
-    font-size: 14px;
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
+    padding: 0 8px 0  16px;
+    margin-bottom: 16px;
     line-height: 1.29;
     letter-spacing: 0.2px;
     animation-duration: 4s;
@@ -305,21 +288,9 @@
   }
 
   .user-stat-name {
-    margin-bottom: 5px;
-  }
-
-  .user-stat-btn {
-    font-family: Lato !important;
-    font-weight: normal !important;
-    font-stretch: normal !important;
-    font-style: normal !important;
-    line-height: 1.29 !important;
-    letter-spacing: 0.2px !important;
-    margin-bottom: 10px;
-    height: 19px !important;
-    font-size: 12px !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .user-stat-info-wrapper {
@@ -346,10 +317,6 @@
     height: 100%;
     height: 32px;
     width: auto;
-  }
-
-  .dropdown-menu {
-    min-width: 20px;
   }
 
   .side-menu-title {
@@ -380,10 +347,8 @@
 
   .side-menu-add-btn {
     width: 100%;
-    height: 2em;
     padding-bottom: calc(0.175em - 1px);
     padding-top: calc(0.175em - 1px);
-    text-transform: uppercase;
     background-color: $brand-primary;
     align-self: center;
     font-weight: $title-font-weight;
