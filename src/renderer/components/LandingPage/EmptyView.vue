@@ -37,6 +37,7 @@
   span {
     width: 100px;
     white-space: pre-wrap;
+    color: $secondary-text-color;
   }
 
   img {

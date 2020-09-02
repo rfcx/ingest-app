@@ -11,6 +11,7 @@
   span {
     width: 100px;
     text-align: center;
+    color: $secondary-text-color;
   }
 
   .container-box.empty {
