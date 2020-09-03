@@ -1,5 +1,5 @@
 <template>
-  <div class="file-list__wrapper">
+  <div>
     <table class="table file-list-table is-hoverable" v-if="files.length > 0">
       <thead>
         <tr>
@@ -58,6 +58,9 @@ export default {
     color: $secondary-text-color !important;
     padding: 0.5em $default-padding !important;
   }
+  .table tbody {
+    overflow-y: auto;
+  }
   .file-list-table {
     &__cell {
       &_name,
@@ -66,7 +69,7 @@ export default {
         width: 28%;
       }
       &_timestamp {
-        width: 22% !important;
+        width: 22%;
       }
       &_info {
         width: 15%;
@@ -75,12 +78,9 @@ export default {
       &_controls {
         width: 10%;
         width: 8%;
-        text-align: right !important;
-        padding-right: 24px !important;
+        text-align: right;
+        padding-right: 24px;
       }
     }
-  }
-  .table tbody {
-    overflow-y: auto !important;
   }
 </style>

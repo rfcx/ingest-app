@@ -1,15 +1,15 @@
 <template>
-  <div class="update-page">
-    <div class="update-page__title-wrapper">
-     <span class="update-page__title">{{ newVersion ? 'Update Available' : 'You use Latest Release'}}</span>
+  <div class="wrapper">
+    <div class="wrapper__title-wrapper">
+     <span class="wrapper__title">{{ newVersion ? 'Update Available' : 'You use Latest Release'}}</span>
     </div>
-    <div class="update-page__content-wrapper">
-      <div class="update-page__version" v-if="newVersion">{{ newVersion }} (Latest)</div>
-      <div class="update-page__version" v-if="!newVersion"></div>
-      <div class="update-page__notes">
+    <div class="wrapper__content-wrapper">
+      <div class="wrapper__version" v-if="newVersion">{{ newVersion }} (Latest)</div>
+      <div class="wrapper__version" v-if="!newVersion"></div>
+      <div class="wrapper__notes">
         <vue-markdown v-if="notes">{{notes}}</vue-markdown>
       </div>
-      <div class="update-page__controls">
+      <div class="wrapper__controls">
         <button class="button is-rounded btn-edit-cancel btn" @click="cancel()">{{ platform === 'mac' ? 'Cancel' : 'Install on quit' }}</button>
         <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!newVersion" @click="update()">Update now</button>
       </div>
@@ -56,7 +56,7 @@
 </script>
 
 <style lang="scss" scoped>
-  .update-page {
+  .wrapper {
     margin: auto;
     overflow: hidden;
     &__title-wrapper {
@@ -83,14 +83,17 @@
     &__controls {
       text-align: right;
     }
-    ::-webkit-scrollbar-thumb {
-      background-color: transparent;
-    }
-    ::-webkit-scrollbar-track {
-      background-color: transparent;
-    }
-    ::-webkit-scrollbar {
-      width: 1px;
-    }
+  }
+</style>
+
+<style lang="scss">
+  ::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 1px;
   }
 </style>

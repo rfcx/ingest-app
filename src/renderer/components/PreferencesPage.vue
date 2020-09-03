@@ -1,19 +1,19 @@
 <template>
-  <div class="preferences-page">
+  <div class="wrapper">
     <div class="tabs">
       <ul>
-        <li class="preferences-page__tab" :class="{ 'is-active': (currentTab === 'update') }"><a @click="changeCurrentTab('update')">Update</a></li>
-        <li class="preferences-page__tab" :class="{ 'is-active': (currentTab === 'about') }"><a @click="changeCurrentTab('about')">About</a></li>
+        <li class="wrapper__tab" :class="{ 'is-active': (currentTab === 'update') }"><a @click="changeCurrentTab('update')">Update</a></li>
+        <li class="wrapper__tab" :class="{ 'is-active': (currentTab === 'about') }"><a @click="changeCurrentTab('about')">About</a></li>
       </ul>
     </div>
-    <div class="preferences-page__wrapper" v-if="currentTab === 'update'">
-      <div class="preferences-page__content">
-        <div class="preferences-page__title">Check for updates automatically</div>
-        <label class="checkbox preferences-page__checkbox">
-          <input type="checkbox" class="checkbox-form" v-model="isAutoUpdateApp" v-on:click="toggleDisabled()">
-          <span class="checkbox-span">Enabled</span>
+    <div class="wrapper__content-wrapper" v-if="currentTab === 'update'">
+      <div class="wrapper__content">
+        <div class="wrapper__title">Check for updates automatically</div>
+        <label class="checkbox wrapper__checkbox">
+          <input type="checkbox" v-model="isAutoUpdateApp" v-on:click="toggleDisabled()">
+          <span>Enabled</span>
         </label>
-        <div class="preferences-page__descr">RFCx Ingest automatically checks for new app versions, downloads then and installs on app's restart.</div>
+        <div class="wrapper__descr">RFCx Ingest automatically checks for new app versions, downloads then and installs on app's restart.</div>
       </div>
     </div>
     <about-page v-if="currentTab === 'about'"></about-page>
@@ -53,8 +53,8 @@
 </script>
 
 <style lang="scss" scoped>
-  .preferences-page {
-    &__wrapper {
+  .wrapper {
+    &__content-wrapper {
       padding: 0 1em 1em;
     }
     &__content {
@@ -76,31 +76,6 @@
       margin-bottom: 10px;
       opacity: 0.5;
     }
-    // &__about-wrapper {
-    //   text-align: center;
-    //   margin: auto;
-    //   padding: 20px;
-    //   overflow: hidden;
-    // }
-    // &__logo {
-    //   margin-top: 10px;
-    //   width: 35px;
-    //   height: 50px;
-    // }
-    // &__title {
-    //   font-size: $default-font-size;
-    //   margin: 5px auto;
-    // }
-    // &__version {
-    //   font-size: 12px;
-    // }
-    // .update-page {
-    //   margin: auto;
-    //   overflow: hidden;
-    //   &__controls {
-    //     text-align: right;
-    //   }
-    // }
     ::-webkit-scrollbar-thumb {
       background-color: transparent;
     }

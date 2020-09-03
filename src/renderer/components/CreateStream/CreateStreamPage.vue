@@ -1,36 +1,39 @@
 <template>
-  <fieldset class="fieldset__wrapper">
-    <div class="notification fieldset__notification" v-show="error">
-      <button class="delete" @click="onCloseAlert()"></button>
-      {{ error }}
-    </div>
-    <div class="field field-stream-name">
-      <label for="name" class="label">Site name</label>
-      <div class="control">
-        <input v-model="name" class="input" type="text" placeholder="Jaguar 1" />
+  <div class="wrapper">
+    <h1>Create site</h1>
+    <fieldset>
+      <div class="notification" v-show="error">
+        <button class="delete" @click="onCloseAlert()"></button>
+        {{ error }}
       </div>
-    </div>
-    <div class="field field-stream-name">
-      <label for="location" class="label">Location</label>
-      <Map @locationSelected="onSelectLocation"></Map>
-    </div>
-    <div class="field is-grouped">
-      <p class="control control-btn">
-        <router-link class="control-btn" to="/">
-          <button type="button" class="button is-rounded is-cancel">Cancel</button>
-        </router-link>
-      </p>
-      <p class="control control-btn">
-        <button
-          type="button"
-          class="button is-rounded is-primary"
-          :class="{ 'is-loading': isLoading }"
-          :disabled="!hasPassedValidation"
-          @click.prevent="createStream"
-        >Create</button>
-      </p>
-    </div>
-  </fieldset>
+      <div class="field">
+        <label for="name" class="label">Site name</label>
+        <div class="control">
+          <input v-model="name" class="input" type="text" placeholder="Jaguar 1" />
+        </div>
+      </div>
+      <div class="field">
+        <label for="location" class="label">Location</label>
+        <Map class="map-wrapper" @locationSelected="onSelectLocation"></Map>
+      </div>
+      <div class="field is-grouped">
+        <p class="control control-btn">
+          <router-link class="control-btn" to="/">
+            <button type="button" class="button is-rounded is-cancel">Cancel</button>
+          </router-link>
+        </p>
+        <p class="control control-btn">
+          <button
+            type="button"
+            class="button is-rounded is-primary"
+            :class="{ 'is-loading': isLoading }"
+            :disabled="!hasPassedValidation"
+            @click.prevent="createStream"
+          >Create</button>
+        </p>
+      </div>
+    </fieldset>
+  </div>
 </template>
 
 <script>
@@ -118,15 +121,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .fieldset {
-    &__wrapper {
-      margin: $fieldset-margin;
-      padding: $fieldset-padding;
-      max-width: $fieldset-width;
-    }
-    &__notification {
-      background: $button-hover-border-color !important;
-      color: white;
+  .wrapper {
+    margin: $wrapper-margin;
+    padding: $default-padding-margin;
+    max-width: $wrapper-width;
+  }
+</style>
+
+<style lang="scss">
+  .map-wrapper {
+    height: 300px;
+    width: $wrapper-width;
+    margin-bottom: $default-padding-margin;
+    .mapboxgl-canvas {
+      height: 300px !important;
     }
   }
 </style>

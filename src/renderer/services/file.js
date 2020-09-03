@@ -116,7 +116,8 @@ class FileProvider {
             : dateHelper.parseTimestamp(file.name, format)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
 
-        const stateObj = this.getState(momentDate, file.extension, false)
+        const hasUploadedBefore = this.hasUploadedBefore(file.path, stream.id)
+        const stateObj = this.getState(momentDate, file.extension, hasUploadedBefore)
         const state = stateObj.state
         const stateMessage = stateObj.message
         const newFile = { ...file }
@@ -395,7 +396,7 @@ class FileProvider {
               uploadId: '',
               stateMessage: '',
               progress: 0,
-              retries: 0
+              retries: file.retries + 1
             }
           })
         } else {

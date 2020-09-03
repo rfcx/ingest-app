@@ -94,7 +94,7 @@ const canRemove = function (state) {
 }
 
 const canChangeTimestampFormat = function (state, message) {
-  return isInPreparedGroup(state) && !(message.includes('extension') || message.includes('duplicate') || message.includes('duration'))
+  return isInPreparedGroup(state) && !(message.toLowerCase().includes('extension') || message.toLowerCase().includes('duplicate') || message.toLowerCase().includes('duration'))
 }
 
 export default {

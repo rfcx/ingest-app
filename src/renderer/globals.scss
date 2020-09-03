@@ -27,6 +27,7 @@ $full-width: 100%;
 
 // Update Bulma's global variables
 $primary: $brand-primary;
+$danger: $error-text-color;
 $family-sans-serif: 'Lato', sans-serif;
 $link: $brand-primary;
 
@@ -64,10 +65,9 @@ $button-border-color: $button-background-color;
 $button-hover-color: $title-text-color;
 $button-hover-border-color: #3b3e53;
 
-// -- Fieldset
-$fieldset-width: 500px;
-$fieldset-margin: 32px auto;
-$fieldset-padding: 16px;
+// -- Wrapper
+$wrapper-width: 500px;
+$wrapper-margin: 32px auto;
 
 @import "~bulma/";
 
@@ -79,4 +79,15 @@ body {
   color: $body-text-color;
   font-size: $default-font-size;
   letter-spacing: 0.2px;
+}
+
+h1 {
+  font-size: 18px;
+  margin-bottom: $default-padding-margin;
+}
+
+a.is-button {
+  text-transform: uppercase;
+  color: $title-text-color;
+  font-weight: $title-font-weight;
 }

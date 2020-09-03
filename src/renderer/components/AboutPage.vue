@@ -1,12 +1,14 @@
 <template>
-  <div class="about-page">
-    <img class="about-page__logo" src="~@/assets/rfcx-logo.png">
-    <div class="about-page__title">RFCx Ingest</div>
-    <div class="about-page__version" v-if="version">Version {{version}}</div>
+  <div class="wrapper">
+    <img class="wrapper__logo" src="~@/assets/rfcx-logo.png">
+    <div class="wrapper__title">RFCx Ingest</div>
+    <div class="wrapper__version" v-if="version">Version {{version}}</div>
+    <div class="wrapper__version is-size-7">({{getEnv()}})</div>
   </div>
 </template>
 
 <script>
+  import settings from 'electron-settings'
   const { remote } = window.require('electron')
 
   export default {
@@ -18,13 +20,16 @@
     methods: {
       getVersion () {
         return remote.getGlobal('version')
+      },
+      getEnv () {
+        return settings.get('settings.production_env') ? '' : 'staging'
       }
     }
   }
 </script>
 
-<style lang="scss">
-  .about-page {
+<style lang="scss" scoped>
+  .wrapper {
     text-align: center;
     margin: auto;
     padding: 20px;
@@ -42,6 +47,9 @@
       font-size: 12px;
     }
   }
+</style>
+
+<style lang="scss">
   ::-webkit-scrollbar-thumb {
     background-color: transparent;
   }

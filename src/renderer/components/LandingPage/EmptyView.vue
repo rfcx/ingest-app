@@ -35,8 +35,8 @@
 <style lang="scss" scoped>
   .container {
     margin: 16px auto;
-    padding: 16px;
-    max-width: 500px;
+    padding: $default-padding;
+    max-width: $wrapper-width;
     &__state-icon {
       width: 40px;
       height: 40px;

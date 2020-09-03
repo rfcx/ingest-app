@@ -128,21 +128,6 @@
 
 <style lang="scss">
 
-  .user-info-name {
-    padding: 1rem;
-    display: inline-block;
-    vertical-align: middle;
-  }
-
-  .user-info-image {
-    margin: auto;
-    text-align: center;
-    height: 30px;
-    max-width: 30px;
-    max-height: 30px;
-    width: 30px;
-  }
-
   #wrapper-landing-page {
     padding: 0;
     position: absolute;
@@ -204,42 +189,6 @@
     background: $grey-lighter;
   }
 
-  .menu-container {
-    display: flex;
-    justify-content: space-between;
-    align-self: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .menu-container svg {
-    margin-left: auto !important;
-    margin-right: 3px;
-  }
-
-  .menu-container-failed {
-    margin-right: 4px;
-  }
-
-  .menu-container-failed img {
-    width: 16px !important;
-    height: 16px !important;
-    margin: 5px 0;
-  }
-
-  .side-menu-controls-btn {
-    width: 17px;
-    height: 17px;
-  }
-
-  .menu .stream-title {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    margin-right: 3px;
-    align-self: center;
-  }
-
   .progress {
     margin: 4px auto !important;
     height: 3px !important;
@@ -266,16 +215,6 @@
       height: 25px !important;
       width: 25px !important;
       padding: 0 !important;
-    }
-  }
-
-  .btn-extirnal-link {
-    right: 2em !important;
-    cursor: pointer;
-    &:active,
-    &:hover,
-    &:focus {
-      border-color: transparent !important;
     }
   }
 
@@ -328,18 +267,10 @@
   .modal-card-title {
     color: white !important;
   }
-  .title-container-edit {
-    color: white;
-  }
   .active {
     border: 4px solid #131525 !important;
     background-color: #131525 !important;
     opacity: 0.8 !important;
-  }
-  .edit-container-item-input {
-    color: #fff !important;
-    background-color: #292a3b !important;
-    border-color: #292a3b !important;
   }
   .is-cancel:hover {
     border-color: $button-hover-border-color !important;
@@ -351,9 +282,6 @@
   }
   .state-progress span {
     color: $body-text-color;
-  }
-  .stream-info-container {
-    background-color: #131525;
   }
   .modal.is-active {
     z-index: 200;
