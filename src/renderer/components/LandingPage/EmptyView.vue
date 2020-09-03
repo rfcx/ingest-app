@@ -1,5 +1,5 @@
 <template>
-    <div class="container-box empty has-text-centered">
+    <div class="container-box empty has-text-centered empty__wrapper">
         <img :src="stateIcon"><br>
         <span>{{ stateStatus }}</span>
     </div>
@@ -33,7 +33,14 @@
 </script>
 
 <style lang="scss" scoped>
-
+  .empty__wrapper {
+    position: absolute;
+    top: 50%;
+    left: 25%;
+    right: 25%;
+    transform: translateY(-50%);
+  }
+  
   span {
     width: 100px;
     white-space: pre-wrap;
