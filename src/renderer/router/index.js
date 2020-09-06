@@ -17,6 +17,11 @@ export default new Router({
       props: (route) => ({ query: route.query })
     },
     {
+      path: '/import',
+      name: 'import-files',
+      component: require('@/components/ImportStream/ImportStream').default
+    },
+    {
       path: '/api-service',
       name: 'api-service',
       component: require('@/components/APIService').default

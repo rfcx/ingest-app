@@ -81,3 +81,9 @@ a.is-button {
   color: $title-text-color;
   font-weight: $title-font-weight;
 }
+
+p.subtitle {
+  color: $secondary-text-color;
+  font-size: $default-font-size;
+  margin-bottom: $default-padding-margin;
+}
