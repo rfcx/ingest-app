@@ -8,7 +8,6 @@
     @click="getPlacePositionByClick">
     <GeocoderControl
       :accessToken="accessToken"
-      :limit="1"
       :input.sync="defaultInput"
       :mapboxgl="mapbox"
       :localGeocoder="coordinatesGeocoder"
@@ -41,7 +40,6 @@ export default {
         'pk.eyJ1IjoicmZjeCIsImEiOiJoMEptMnlJIn0.LPKrjG_3AeYB5cqsyLpcrg',
       mapStyle: 'mapbox://styles/rfcx/ck9g6dci83g3x1io8dl27r7aq',
       defaultInput: '',
-      searchLimit: 1,
       center: [15, 30],
       zoom: 2,
       closeMapZoom: 8,
@@ -63,13 +61,19 @@ export default {
     getPlacePositionByDrop (event) {
       this.isDraggable = true
       var lngLat = event.marker.getLngLat()
-      this.selectedCoordinates = [lngLat.lng, lngLat.lat]
+      const lng = lngLat.lng
+      const lat = lngLat.lat
+      this.selectedCoordinates = [lng, lat]
+      this.updateTextInput(lng, lat)
       setTimeout(() => { this.isDraggable = false }, 100)
     },
     getPlacePositionByClick (event) {
       if (this.isDraggable) return
       if (event.mapboxEvent.lngLat) {
-        this.selectedCoordinates = [event.mapboxEvent.lngLat.lng, event.mapboxEvent.lngLat.lat]
+        const lng = event.mapboxEvent.lngLat.lng
+        const lat = event.mapboxEvent.lngLat.lat
+        this.selectedCoordinates = [lng, lat]
+        this.updateTextInput(lng, lat)
       }
     },
     updateMapCoordinatesForMarker (lng, lat) {
@@ -80,6 +84,9 @@ export default {
         this.center = [15, 30]
         this.zoom = 2
       }
+    },
+    updateTextInput (lng, lat) {
+      this.defaultInput = `${lat.toFixed(4)}, ${lng.toFixed(4)}`
     },
     coordinatesGeocoder (query) {
       const matches = query.match(/^(-?\d+\.?\d*)[, ]+(-?\d+\.?\d*)[ ]*$/i)
@@ -120,6 +127,7 @@ export default {
     this.mapbox = Mapbox
     if (this.lngLat) {
       this.selectedCoordinates = this.lngLat
+      this.updateTextInput(this.lngLat[0], this.lngLat[1])
       this.center = this.lngLat
       this.zoom = this.closeMapZoom
     }

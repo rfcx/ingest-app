@@ -3,16 +3,16 @@
     <table class="table file-list-table is-hoverable" v-if="files.length > 0">
       <thead>
         <tr>
-          <td class="file-list-table__cell file-list-table__cell_status"></td>
+          <td v-if="!isPreparedTab" class="file-list-table__cell file-list-table__cell_status"></td>
           <td class="file-list-table__cell file-list-table__cell_name">Name</td>
-          <td class="file-list-table__cell file-list-table__cell_info">Timestamp</td>
+          <td class="file-list-table__cell file-list-table__cell_timestamp">Timestamp</td>
           <td class="file-list-table__cell file-list-table__cell_info">Duration</td>
           <td class="file-list-table__cell file-list-table__cell_info">File size</td>
           <td class="file-list-table__cell file-list-table__cell_controls"></td>
         </tr>
       </thead>
       <tbody>
-        <file-row v-for="file in files" :key="file.id" :file="file"></file-row>
+        <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :file="file"></file-row>
       </tbody>
     </table>
     <empty-view v-if="files.length === 0" :hasFileInQueued="queuingFiles.length > 0" :isDragging="isDragging"></empty-view>
@@ -41,6 +41,9 @@ export default {
         case 'Queued': return this.queuingFiles
         case 'Completed': return this.completedFiles
       }
+    },
+    isPreparedTab () {
+      if (this.selectedTab === 'Prepared') return true
     }
   }
 }
@@ -73,18 +76,24 @@ thead th {
       }
       &_name,
       &_error {
-        width: 35%;
+        width: 28%;
+      }
+      &_timestamp {
+        width: 22% !important;
       }
       &_info {
-        width: 15%;
+        width: 16%;
       }
       &_controls {
-        width: 10%;
+        width: 8%;
         text-align: right !important;
         padding-right: 24px !important;
       }
     }
   }
+}
+.table td {
+  padding: 0.5em $default-padding !important;
 }
 .table tbody {
   overflow-y: auto !important;

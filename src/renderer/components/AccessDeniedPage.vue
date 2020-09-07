@@ -1,6 +1,5 @@
 <template>
   <div id="wrapper-access-denied-page" class="access-denied-page">
-    <a class="button is-default access-denied-page__logout-btn" @click="logOut()">Log out</a>
     <div class="access-denied-page-label" v-if="hasRFCxRole === false">You don't have required permissions to access this app. Ask admin@rfcx.org for details.</div>
     <div class="access-denied-page__terms-form" v-if="consentGiven === false">
       <input type="checkbox" id="terms-checkbox" v-model="acceptTermsChecked" class="checkbox-form">
@@ -8,7 +7,7 @@
         <label for="terms-checkbox">I have read and agree with</label> <a v-on:click="openTermsAndConditions()">Terms and Conditions</a>
       </span>
       <div class="access-denied-page__accept-terms-btn-wrapper">
-        <button class="button is-primary" :class="{ 'is-loading': isLoading }" :disabled="!acceptTermsChecked || isLoading || showSuccessMessage" v-if="hasRFCxRole === true" @click="sendAcceptTerms()">Submit</button>
+        <button class="button is-primary is-rounded" :class="{ 'is-loading': isLoading }" :disabled="!acceptTermsChecked || isLoading || showSuccessMessage" v-if="hasRFCxRole === true" @click="sendAcceptTerms()">Submit</button>
       </div>
       <div v-if="hasRFCxRole === true && errorMessage">
         <p class="error-message">{{errorMessage}}</p>
@@ -38,6 +37,7 @@
         <span>You have got access. Please, wait a moment.</span>
       </p>
     </div>
+    <a class="button is-default access-denied-page__logout-btn is-rounded" @click="logOut()">Log out</a>
   </div>
 </template>
 
@@ -180,10 +180,7 @@
     margin: 0;
     position: relative;
     &__logout-btn {
-      position: absolute;
-      top: 15px;
-      right: 10px;
-      z-index: 1;
+      margin-top: $default-padding-margin;
     }
     &__terms-form {
       input,
@@ -203,7 +200,7 @@
       }
     }
     &__accept-terms-btn-wrapper {
-      margin-top: 10px;
+      margin-top: $default-padding-margin;
     }
   }
 
