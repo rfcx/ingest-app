@@ -8,17 +8,20 @@
       </tr>
     </template>
     <template v-else>
-    <tr v-for="drive in drives" :key="drive.id" @click="onSourceSelected(drive)" :class="{'selected': drive.id === selectedSource.id }">
-      <img src="@/assets/ic-sd-card-white.svg" v-if="drive.id === selectedSource.id"/>
+    <tr v-for="drive in drives" :key="drive.id" @click="onSourceSelected(drive)" :class="{'selected': isSelected('external', drive) }">
+      <img src="@/assets/ic-sd-card-white.svg" v-if="isSelected('external', drive)"/>
       <img src="@/assets/ic-sd-card-gray.svg" v-else/>
       <span class="source-list__source-title">{{ drive.label }}</span>
     </tr>
     </template>
-    <!-- <template>
-    <tr :class="{'selected': true }">
-      <span class="source-list__folder-title">Choose other folder</span>
+    <template>
+    <tr @click="$refs.file.click()" :class="{'selected':  isSelected('folder') }">
+      <input type="file" ref="file" webkitdirectory directory @change="handleFileChange" style="display:none"/>
+      <img src="@/assets/ic-sd-card-white.svg" v-if="isSelected('folder')"/>
+      <img src="@/assets/ic-sd-card-gray.svg" v-else-if="selectedFolderPath"/>
+      <span class="source-list__folder-title">{{ selectedFolderPath || 'Choose other folder...' }} </span>
     </tr>
-    </template> -->
+    </template>
   </table>
 </template>
 
@@ -27,7 +30,8 @@ import DriveList from '../../../../utils/DriveListHelper'
 export default {
   data: () => ({
     drives: [],
-    selectedSource: {}
+    selectedSource: {},
+    selectedFolderPath: ''
   }),
   methods: {
     async getExternalDriveList () {
@@ -37,6 +41,18 @@ export default {
     },
     onSourceSelected (source) {
       this.selectedSource = source
+    },
+    handleFileChange (event) {
+      console.log(event.target.files)
+      this.selectedFolderPath = event.target.files[0].path
+      this.selectedSource = {id: this.selectedFolderPath, label: this.selectedFolderPath, path: this.selectedFolderPath}
+    },
+    isSelected (type, drive = null) {
+      switch (type) {
+        case 'external': return drive.id === this.selectedSource.id
+        case 'folder': return this.selectedSource.path === this.selectedFolderPath
+        default: return false
+      }
     }
   },
   watch: {
