@@ -8,8 +8,9 @@
       </tr>
     </template>
     <template v-else>
-    <tr :class="{'selected': true }" v-for="drive in drives" :key="drive.id">
-      <img src="@/assets/ic-sd-card-white.svg"/>
+    <tr v-for="drive in drives" :key="drive.id" @click="onSourceSelected(drive)" :class="{'selected': drive.id === selectedSource.id }">
+      <img src="@/assets/ic-sd-card-white.svg" v-if="drive.id === selectedSource.id"/>
+      <img src="@/assets/ic-sd-card-gray.svg" v-else/>
       <span class="source-list__source-title">{{ drive.label }}</span>
     </tr>
     </template>
@@ -25,13 +26,23 @@
 import DriveList from '../../../../utils/DriveListHelper'
 export default {
   data: () => ({
-    drives: []
+    drives: [],
+    selectedSource: {}
   }),
   methods: {
     async getExternalDriveList () {
       DriveList.getExternalDriveList().then(drives => {
         this.drives = drives
       })
+    },
+    onSourceSelected (source) {
+      this.selectedSource = source
+    }
+  },
+  watch: {
+    selectedSource (val, oldVal) {
+      if (val === oldVal) return
+      this.$emit('sourceSelected', val)
     }
   },
   created () {

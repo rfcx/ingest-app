@@ -2,7 +2,7 @@
   <div class="import-stream__wrapper">
     <h1>Import audio files from AudioMoth</h1>
     <p class="subtitle">Insert SD Card or choose the folder to import.</p>
-    <source-list/>
+    <source-list @sourceSelected="onSourceSelected"></source-list>
     <div class="field is-grouped">
       <p class="control control-btn">
         <router-link class="control-btn" to="/">
@@ -23,7 +23,15 @@
 import SourceList from './SourceList'
 
 export default {
-  components: { SourceList }
+  data: () => ({
+    selectedSource: null
+  }),
+  components: { SourceList },
+  methods: {
+    onSourceSelected (newSource) {
+      this.selectedSource = newSource
+    }
+  }
 }
 </script>
 
