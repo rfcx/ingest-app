@@ -1,15 +1,16 @@
 <template>
   <table>
-    <template v-if="false">
+    <template v-if="!drives || drives.length === 0">
       <tr>
         <img src="@/assets/ic-sd-card-gray.svg"/>
-        <span class="source-list__source-title">No SD Card detected</span>
+        <span class="source-list__source-title" v-if="!drive">Finding external drives...</span>
+        <span class="source-list__source-title" v-else>No SD Card detected</span>
       </tr>
     </template>
     <template v-else>
-    <tr :class="{'selected': true }">
+    <tr :class="{'selected': true }" v-for="drive in drives" :key="drive.id">
       <img src="@/assets/ic-sd-card-white.svg"/>
-      <span class="source-list__source-title">test1</span>
+      <span class="source-list__source-title">{{ drive.label }}</span>
     </tr>
     </template>
     <!-- <template>
@@ -19,6 +20,25 @@
     </template> -->
   </table>
 </template>
+
+<script>
+import DriveList from '../../../../utils/DriveListHelper'
+export default {
+  data: () => ({
+    drives: []
+  }),
+  methods: {
+    async getExternalDriveList () {
+      DriveList.getExternalDriveList().then(drives => {
+        this.drives = drives
+      })
+    }
+  },
+  created () {
+    this.getExternalDriveList()
+  }
+}
+</script>
 
 <style lang="scss" scoped>
   table {

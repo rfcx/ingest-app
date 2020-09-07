@@ -21,6 +21,7 @@
 
 <script>
 import SourceList from './SourceList'
+
 export default {
   components: { SourceList }
 }
