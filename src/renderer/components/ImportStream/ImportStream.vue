@@ -21,6 +21,7 @@
 
 <script>
 import SourceList from './SourceList'
+import FileHelper from '../../../../utils/fileHelper'
 
 export default {
   data: () => ({
@@ -30,6 +31,15 @@ export default {
   methods: {
     onSourceSelected (newSource) {
       this.selectedSource = newSource
+
+      // see all files in the folder
+      const path = this.selectedSource.path
+      const stuffInDirectory = FileHelper
+        .getFilesFromDirectoryPath(path)
+        .map((name) => {
+          return { name: name, path: path + '/' + name }
+        })
+      console.log(stuffInDirectory)
     }
   }
 }
