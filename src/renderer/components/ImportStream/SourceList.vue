@@ -3,7 +3,7 @@
     <template v-if="!drives || drives.length === 0">
       <tr>
         <img src="@/assets/ic-sd-card-gray.svg"/>
-        <span class="source-list__source-title" v-if="!drive">Finding external drives...</span>
+        <span class="source-list__source-title" v-if="!drives">Finding external drives...</span>
         <span class="source-list__source-title" v-else>No SD Card detected</span>
       </tr>
     </template>
