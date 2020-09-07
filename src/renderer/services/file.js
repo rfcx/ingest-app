@@ -6,6 +6,7 @@ import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 import store from '../store'
+import FileInfo from './FileInfo'
 import fs from 'fs'
 
 const FORMAT_AUTO_DETECT = 'Auto-detect'
@@ -13,6 +14,8 @@ const FORMAT_AUTO_DETECT = 'Auto-detect'
 class FileProvider {
   /* -- Import files -- */
   handleDroppedFiles (droppedFiles, selectedStream) {
+    // read file header
+
     // 1. Convert dropped files (from drag&drop) to database file objects
     // 2. Insert files to database
     // 3. Get file duration
@@ -20,8 +23,9 @@ class FileProvider {
     let fileObjects = []
     let fileObjectsInFolder = []
     if (!droppedFiles) {
+      // no files
       return
-    } // no files
+    }
     [...droppedFiles].forEach((file) => {
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
@@ -456,19 +460,33 @@ class FileProvider {
       console.log('this file is already in prepare tab')
       return
     }
+
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
+
+    // read file header info
+    const info = new FileInfo(filePath)
+    console.log(info)
+
+    const deviceId = info.deviceId
+    const deploymentId = info.deployment
+
     // const data = fileHelper.getMD5Hash(filePath)
     // const hash = data.hash
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
+    let momentDate = info.recordedDate
     let isoDate
-    if (stream.timestampFormat === FORMAT_AUTO_DETECT) {
-      isoDate = dateHelper.parseTimestampAuto(fileName)
+    if (momentDate) {
+      isoDate = momentDate.toISOString()
     } else {
-      isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
+      if (stream.timestampFormat === FORMAT_AUTO_DETECT) {
+        isoDate = dateHelper.parseTimestampAuto(fileName)
+      } else {
+        isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
+      }
+      momentDate = dateHelper.getMomentDateFromISODate(isoDate)
     }
-    const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
     const state = this.getState(momentDate, fileExt, hasUploadedBefore)
     return {
       id: this.getFileId(filePath),
@@ -482,7 +500,9 @@ class FileProvider {
       timestamp: isoDate,
       streamId: stream.id,
       state: state.state,
-      stateMessage: state.message
+      stateMessage: state.message,
+      deviceId,
+      deploymentId
     }
   }
 
