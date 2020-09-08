@@ -1,5 +1,5 @@
 <template>
-    <div class="container-box empty has-text-centered">
+    <div class="centered-block has-text-centered">
         <img :src="stateIcon"><br>
         <span>{{ stateStatus }}</span>
     </div>
@@ -33,10 +33,11 @@
 </script>
 
 <style lang="scss" scoped>
-
+  
   span {
     width: 100px;
     white-space: pre-wrap;
+    color: $secondary-text-color;
   }
 
   img {

@@ -83,3 +83,11 @@ a.is-button {
   color: $title-text-color;
   font-weight: $title-font-weight;
 }
+
+.centered-block {
+  position: absolute;
+  top: 50%;
+  left: 25%;
+  right: 25%;
+  transform: translateY(-50%);
+}
