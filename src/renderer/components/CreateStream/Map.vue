@@ -16,6 +16,7 @@
       :autocomplete="false"
       placeholder="search by latitude, longitude"
       position="bottom-right"
+      types="country,region,postcode,district,place,locality,neighborhood"
       @result="onSelected"
     />
     <MglNavigationControl position="top-right" :showZoom="true" :showCompass="false" />

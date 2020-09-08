@@ -12,14 +12,23 @@
         </tr>
       </thead>
       <tbody>
-        <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :file="file"></file-row>
+        <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :file="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
     </table>
     <empty-view v-if="files.length === 0" :hasFileInQueued="queuingFiles.length > 0" :isDragging="isDragging"></empty-view>
+    <confirm-alert
+      :title="deleteAlertTitle"
+      confirmButtonText="Delete"
+      :isProcessing="isDeleting"
+      v-if="shouldShowConfirmToDeleteAlert"
+      @onCancelPressed="hideConfirmToDeleteDialog"
+      @onConfirmPressed="deleteFile"/>
   </div>
 </template>
 
 <script>
+import File from '../../../store/models/File'
+import ConfirmAlert from '../../Common/ConfirmAlert'
 import EmptyView from '../EmptyView'
 import FileRow from './FileRow'
 
@@ -31,8 +40,14 @@ export default {
     selectedTab: String,
     isDragging: Boolean
   },
+  data: () => ({
+    isDeleting: false,
+    deleteAlertTitle: 'Are you sure you want to remove this file?',
+    shouldShowConfirmToDeleteAlert: false,
+    fileToBeDeleted: null
+  }),
   components: {
-    EmptyView, FileRow
+    EmptyView, FileRow, ConfirmAlert
   },
   computed: {
     files () {
@@ -44,6 +59,24 @@ export default {
     },
     isPreparedTab () {
       if (this.selectedTab === 'Prepared') return true
+    }
+  },
+  methods: {
+    showConfirmToDeleteFileDialog (file) {
+      this.deleteAlertTitle = `Are you sure you want to remove ${file.name}?`
+      this.shouldShowConfirmToDeleteAlert = true
+      this.fileToBeDeleted = file
+    },
+    hideConfirmToDeleteDialog () {
+      this.shouldShowConfirmToDeleteAlert = false
+      this.fileToBeDeleted = null
+    },
+    async deleteFile () {
+      if (!(this.fileToBeDeleted && this.fileToBeDeleted.canRemove)) return
+      this.isDeleting = true
+      await File.delete(this.fileToBeDeleted.id)
+      this.isDeleting = false
+      this.hideConfirmToDeleteDialog()
     }
   }
 }

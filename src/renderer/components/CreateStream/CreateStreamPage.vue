@@ -6,10 +6,13 @@
         <button class="delete" @click="onCloseAlert()"></button>
         {{ error }}
       </div>
-      <div class="field">
-        <label for="name" class="label">Site name</label>
+      <div class="field field-stream-name">
+        <label for="name" class="label">
+          Site name
+          <span class="help is-warning" v-if="shouldShowNameHelperMessage">You must enter a site name</span>
+        </label>
         <div class="control">
-          <input v-model="name" class="input" type="text" placeholder="Jaguar 1" />
+          <input v-model="name" class="input" :class="{'is-warning': shouldShowNameHelperMessage}" type="text" placeholder="Jaguar 1" />
         </div>
       </div>
       <div class="field">
@@ -50,7 +53,8 @@ export default {
       selectedLongitude: null,
       isLoading: false,
       hasPassValidation: false,
-      error: ''
+      error: '',
+      shouldShowNameHelperMessage: false
     }
   },
   components: { Map },
@@ -64,6 +68,9 @@ export default {
       console.log('on selected location: ', coordinates)
       this.selectedLongitude = coordinates[0]
       this.selectedLatitude = coordinates[1]
+      if (!this.name || this.name === '') {
+        this.shouldShowNameHelperMessage = true
+      }
     },
     createStream () {
       // TODO: verify data
@@ -116,6 +123,12 @@ export default {
     isProductionEnv () {
       return settings.get('settings.production_env')
     }
+  },
+  watch: {
+    name (val, oldVal) {
+      if (val === oldVal) return
+      this.shouldShowNameHelperMessage = !val || val === ''
+    }
   }
 }
 </script>
@@ -125,6 +138,13 @@ export default {
     margin: $wrapper-margin;
     padding: $default-padding-margin;
     max-width: $wrapper-width;
+  }
+  .notification {
+    background: #3b3e53 !important;
+    color: white;
+  }
+  span.help {
+    display: inline;
   }
 </style>
 

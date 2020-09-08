@@ -1,7 +1,7 @@
 <template>
-  <div class="container empty has-text-centered">
-    <img :src="stateIcon" class="container__state-icon"><br>
-    <span class="container__state-status">{{ stateStatus }}</span>
+  <div class="centered-block has-text-centered">
+      <img :src="stateIcon" class="container__state-icon"><br>
+      <span class="container__state-status">{{ stateStatus }}</span>
   </div>
 </template>
 
@@ -45,11 +45,7 @@
     &__state-status {
       width: $full-width;
       white-space: pre-wrap;
+      color: $secondary-text-color;
     }
-  }
-  .container.empty {
-    margin: $default-padding-margin auto;
-    padding: $default-padding-margin;
-    max-width: 300px;
   }
 </style>
