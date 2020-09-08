@@ -88,4 +88,8 @@ export default class File extends Model {
   get canRemove () {
     return FileState.canRemove(this.state)
   }
+
+  get canRename () {
+    return !this.deviceId
+  }
 }
