@@ -153,8 +153,7 @@ export default {
       this.$file.putFilesIntoUploadingQueue([file])
     },
     remove (file) {
-      if (!file.canRemove) return
-      File.delete(file.id)
+      this.$emit('onTrashPressed', file)
     }
   },
   computed: {
