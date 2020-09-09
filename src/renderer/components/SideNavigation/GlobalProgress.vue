@@ -7,8 +7,8 @@
         <div class="wrapper__progress-subtitle is-size-7">{{getState()}}</div>
       </div>
       <a class="wrapper__button" :title="isUploadingProcessEnabled ? 'Pause uploading process' : 'Continue uploading process'"
-        href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn"
-        :src="getUploadingProcessIcon(isUploadingProcessEnabled)"></a>
+        href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img :src="getUploadingProcessIcon(isUploadingProcessEnabled)">
+      </a>
     </div>
   </div>
 </template>
@@ -102,6 +102,9 @@ export default {
     }
     &__button {
       margin: auto 0;
+      img {
+        width: 17px;
+      }
     }
     &__progress-bar {
       display: block;

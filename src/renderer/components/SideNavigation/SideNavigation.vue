@@ -32,7 +32,7 @@
     </div>
     <ul>
       <li v-for="stream in streams" :key="stream.id">
-        <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'stream-row_active': isActive(stream)}">
+        <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'wrapper__stream-row_active': isActive(stream)}">
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="wrapper__stream-name">{{ stream.name }}</div>
             <font-awesome-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
