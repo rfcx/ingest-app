@@ -22,7 +22,7 @@
         return remote.getGlobal('version')
       },
       getEnv () {
-        return settings.get('settings.production_env') ? '' : 'staging'
+        return settings.get('settings.production_env') ? '' : '(staging)'
       }
     }
   }
