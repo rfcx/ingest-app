@@ -11,7 +11,7 @@
     <div class="wrapper__stat" v-if="showUserMenu">
       <div class="wrapper__user-name">
         <span>{{ userName }}</span>
-        <button class="button is-small is-rounded" @click="logOut()">Log out</button>
+        <button class="button is-small is-rounded" @click.prevent="showPopupToLogOut()">Log out</button>
       </div>
     </div>
     <div class="menu-container wrapper__controls">
@@ -41,6 +41,23 @@
         </div>
       </li>
     </ul>
+    <!-- Modal -->
+    <div class="modal alert" :class="{ 'is-active': showConfirmToLogOut }">
+      <div class="modal-background"></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <p class="modal-card-title">Are you sure you would like to continue?</p>
+        </header>
+        <section class="modal-card-body">
+          If you log out, you will lose all files and site info you have added to this app.
+          They will not be deleted from RFCx Arbimon or Explorer.
+        </section>
+        <footer class="modal-card-foot">
+          <button class="button is-rounded" @click="hidePopupToLogOut()">Cancel</button>
+          <button class="button is-danger is-rounded" @click.prevent="logOut()">Log out</button>
+        </footer>
+      </div>
+    </div>
   </aside>
 </template>
 
@@ -62,6 +79,7 @@
         mesure: '',
         showUserMenu: false,
         toggleSearch: false,
+        showConfirmToLogOut: false,
         userName: this.getUserName()
       }
     },
@@ -211,6 +229,12 @@
           return file.canRedo && file.streamId === streamId
         }).get()
         this.$file.putFilesIntoUploadingQueue(files)
+      },
+      showPopupToLogOut () {
+        this.showConfirmToLogOut = true
+      },
+      hidePopupToLogOut () {
+        this.showConfirmToLogOut = false
       }
     }
   }
