@@ -3,7 +3,7 @@
     <img class="about-logo" src="~@/assets/rfcx-logo.png">
     <div class="about-app">RFCx Ingest</div>
     <div class="about-text" v-if="version">Version {{version}}</div>
-    <div class="about-env is-size-7">({{getEnv()}})</div>
+    <div class="about-env is-size-7">{{getEnv()}}</div>
   </div>
 </template>
 
@@ -22,7 +22,7 @@
         return remote.getGlobal('version')
       },
       getEnv () {
-        return settings.get('settings.production_env') ? '' : 'staging'
+        return settings.get('settings.production_env') ? '' : '(staging)'
       }
     }
   }
