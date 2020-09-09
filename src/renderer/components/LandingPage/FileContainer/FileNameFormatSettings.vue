@@ -40,7 +40,7 @@
 						class="last-input" />
 				</div>
 			</div>
-			
+
 			<div class="columns is-multiline is-gapless">
 				<div class="column is-half" v-for="(formatItem, index) in TIME_FORMAT" :key="'time-format-' + index" :data-type="formatItem.type">
 					<div class="is-flex flex-row align-center">
@@ -525,7 +525,7 @@ const TIME_FORMAT = {
 	$field-offset: 8px;
 	.field {
 		cursor: text;
-        width: 100%;
+        width: $full-width;
         border-radius: 8px;
         border: 1px solid #b2bec3;
         min-height: 40px;
@@ -572,7 +572,7 @@ const TIME_FORMAT = {
       height: 24px;
       margin-bottom: $field-offset;
 		}
-		
+
 		$tag-size: 24px;
 		.control {
 			margin-bottom: $field-offset !important;
@@ -591,7 +591,7 @@ const TIME_FORMAT = {
 				}
 			}
 		}
-		
+
     }
 }
 

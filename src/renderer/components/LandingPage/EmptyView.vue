@@ -1,8 +1,8 @@
 <template>
-    <div class="centered-block has-text-centered">
-        <img :src="stateIcon"><br>
-        <span>{{ stateStatus }}</span>
-    </div>
+  <div class="centered-block has-text-centered">
+      <img :src="stateIcon" class="container__state-icon"><br>
+      <span class="container__state-status">{{ stateStatus }}</span>
+  </div>
 </template>
 
 <script>
@@ -33,23 +33,19 @@
 </script>
 
 <style lang="scss" scoped>
-  
-  span {
-    width: 100px;
-    white-space: pre-wrap;
-    color: $secondary-text-color;
+  .container {
+    margin: 16px auto;
+    padding: $default-padding;
+    max-width: $wrapper-width;
+    &__state-icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: $default-padding-margin;
+    }
+    &__state-status {
+      width: $full-width;
+      white-space: pre-wrap;
+      color: $secondary-text-color;
+    }
   }
-
-  img {
-    width: 40px;
-    height: 40px;
-    margin-bottom: $default-padding-margin;
-  }
-
-  .container-box.empty {
-    margin: $default-padding-margin auto;
-    padding: $default-padding-margin;
-    max-width: 300px;
-  }
-
 </style>

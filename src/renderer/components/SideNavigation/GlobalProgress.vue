@@ -1,14 +1,14 @@
 <template>
-  <div class="global-progress__content-wrapper" v-if="shouldShowProgress" :class="shouldShowProgress ? '' : 'hidden'">
-    <progress class="progress is-success global-progress__progress-bar" :value="getProgressPercent()" max="100"></progress>
-    <div class="global-progress__content">
-      <div class="global-progress__text-wrapper">
-        <div class="global-progress__progress-title">Uploading</div>
-        <div class="global-progress__progress-subtitle is-size-7">{{getState()}}</div>
+  <div class="wrapper__content-wrapper" v-if="shouldShowProgress" :class="shouldShowProgress ? '' : 'hidden'">
+    <progress class="progress is-success wrapper__progress-bar" :value="getProgressPercent()" max="100"></progress>
+    <div class="wrapper__content">
+      <div class="wrapper__text-wrapper">
+        <div class="wrapper__progress-title">Uploading</div>
+        <div class="wrapper__progress-subtitle is-size-7">{{getState()}}</div>
       </div>
-      <a class="global-progress__button" :title="isUploadingProcessEnabled ? 'Pause uploading process' : 'Continue uploading process'"
-        href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img class="side-menu-controls-btn"
-        :src="getUploadingProcessIcon(isUploadingProcessEnabled)"></a>
+      <a class="wrapper__button" :title="isUploadingProcessEnabled ? 'Pause uploading process' : 'Continue uploading process'"
+        href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img :src="getUploadingProcessIcon(isUploadingProcessEnabled)">
+      </a>
     </div>
   </div>
 </template>
@@ -81,7 +81,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .global-progress {
+  .wrapper {
     &__content-wrapper {
       padding: 0 0 16px;
       position: absolute;
@@ -89,7 +89,7 @@ export default {
       bottom: 0;
       width: $sidebar-width;
       height: $global-progress-height;
-      background: #232436;
+      background: $dropdown-content-background-color;
     }
     &__content {
       display: flex;
@@ -102,6 +102,9 @@ export default {
     }
     &__button {
       margin: auto 0;
+      img {
+        width: 17px;
+      }
     }
     &__progress-bar {
       display: block;

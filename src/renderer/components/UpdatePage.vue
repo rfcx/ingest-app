@@ -1,15 +1,15 @@
 <template>
-  <div class="update-popup">
-    <div class="update-popup-title-wrapper">
-     <span class="update-popup-title">{{ newVersion ? 'Update Available' : 'You use Latest Release'}}</span>
+  <div class="wrapper">
+    <div class="wrapper__title-wrapper">
+     <span class="wrapper__title">{{ newVersion ? 'Update Available' : 'You use Latest Release'}}</span>
     </div>
-    <div class="update-popup-content-wrapper">
-      <div class="update-popup-version" v-if="newVersion">{{ newVersion }} (Latest)</div>
-      <div class="update-popup-version" v-if="!newVersion"></div>
-      <div class="update-popup-notes">
+    <div class="wrapper__content-wrapper">
+      <div class="wrapper__version" v-if="newVersion">{{ newVersion }} (Latest)</div>
+      <div class="wrapper__version" v-if="!newVersion"></div>
+      <div class="wrapper__notes">
         <vue-markdown v-if="notes">{{notes}}</vue-markdown>
       </div>
-      <div class="update-popup-controls">
+      <div class="wrapper__controls">
         <button class="button is-rounded btn-edit-cancel btn" @click="cancel()">{{ platform === 'mac' ? 'Cancel' : 'Install on quit' }}</button>
         <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!newVersion" @click="update()">Update now</button>
       </div>
@@ -56,42 +56,37 @@
 </script>
 
 <style lang="scss" scoped>
-
-  .update-popup-title-wrapper {
-    padding: 10px 1em 10px;
-    opacity: 0.5;
-  }
-
-  .update-popup-content-wrapper {
-    padding: 0px 1em 5px;
-  }
-
-  .update-popup-title {
-    font-size: 14px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-
-  .update-popup-version {
-    font-size: 16px;
-    font-weight: bold;
-  }
-
-  .update-popup-notes {
-    font-size: 12px;
-    height: 140px;
-    overflow: auto !important;
-  }
-
-  .update-popup-controls {
-    text-align: right;
-  }
-
-  .update-popup {
+  .wrapper {
     margin: auto;
     overflow: hidden;
+    &__title-wrapper {
+      padding: 10px 1em 10px;
+      opacity: 0.5;
+    }
+    &__title {
+      font-size: 14px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    &__content-wrapper {
+      padding: 0px 1em 5px;
+    }
+    &__version {
+      font-size: 16px;
+      font-weight: bold;
+    }
+    &__notes {
+      font-size: 12px;
+      height: 140px;
+      overflow: auto !important;
+    }
+    &__controls {
+      text-align: right;
+    }
   }
+</style>
 
+<style lang="scss">
   ::-webkit-scrollbar-thumb {
     background-color: transparent;
   }
@@ -101,5 +96,4 @@
   ::-webkit-scrollbar {
     width: 1px;
   }
-
 </style>
