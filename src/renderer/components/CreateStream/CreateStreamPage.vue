@@ -61,6 +61,12 @@ export default {
   computed: {
     hasPassedValidation () {
       return this.name && this.selectedLatitude && this.selectedLongitude
+    },
+    checkMinLength () {
+      return this.name.trim().length && this.name.trim().length > 2
+    },
+    checkMaxLength () {
+      return this.name.trim().length && this.name.trim().length <= 40
     }
   },
   methods: {
@@ -73,7 +79,13 @@ export default {
       }
     },
     createStream () {
-      // TODO: verify data
+      if (!this.checkMinLength) {
+        this.error = 'Minimum stream name length is 3 characters.'
+        return
+      } else if (!this.checkMaxLength) {
+        this.error = 'Maximum stream name length is 40 characters.'
+        return
+      }
       const visibility = false
       const latitude = this.selectedLatitude
       const longitude = this.selectedLongitude
@@ -122,11 +134,15 @@ export default {
     },
     isProductionEnv () {
       return settings.get('settings.production_env')
+    },
+    onCloseAlert () {
+      this.error = null
     }
   },
   watch: {
     name (val, oldVal) {
       if (val === oldVal) return
+      this.error = null
       this.shouldShowNameHelperMessage = !val || val === ''
     }
   }
