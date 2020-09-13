@@ -19,7 +19,7 @@ export default new Router({
     {
       path: '/import',
       name: 'import-files',
-      component: require('@/components/ImportStream/ImportStream').default
+      component: require('@/components/ImportFiles/ImportFilesPage').default
     },
     {
       path: '/api-service',
