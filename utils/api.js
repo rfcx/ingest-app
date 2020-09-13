@@ -4,6 +4,8 @@ const axios = require('axios')
 const fileStreamAxios = axios.create({
   adapter: require('./axios-http-adapter').default
 })
+const httpClient = axios.create()
+httpClient.defaults.timeout = 30000
 const platform = 'amazon' // || 'google'
 
 const apiUrl = (proEnvironment) => {
@@ -22,19 +24,20 @@ const explorerWebUrl = (isProd, streamId = null) => {
 
 const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
   const now = Date.now()
+  console.log(`===> upload file ${fileName}`)
   return requestUploadUrl(env, fileName, filePath, streamId, timestamp, idToken)
     .then((data) => {
       File.update({ where: fileId,
         data: {state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false, uploadedTime: now}
       })
-      return performUpload(data.url, filePath, fileExt, fileSize, progressCallback).then(() => data.uploadId)
+      return performUpload(data.url, data.uploadId, filePath, fileExt, fileSize, progressCallback).then(() => data.uploadId)
     })
 }
 
 // Part 0: Create stream
 const createStream = (env, streamName, latitude, longitude, visibility, idToken) => {
   console.log('creating stream api:', streamName)
-  return axios.post(apiUrl(env) + '/streams', { name: streamName, latitude: latitude, longitude: longitude, is_public: visibility }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.post(apiUrl(env) + '/streams', { name: streamName, latitude: latitude, longitude: longitude, is_public: visibility }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const streamId = response.data.id
       return streamId
@@ -51,10 +54,11 @@ const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, 
   const sha1 = fileHelper.getCheckSum(filePath)
   const params = { filename: originalFilename, checksum: sha1, stream: streamId, timestamp: timestamp }
   console.log('===> requestUploadUrl with params', params)
-  return axios.post(apiUrl(env) + '/uploads', params, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.post(apiUrl(env) + '/uploads', params, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const url = response.data.url
       const uploadId = response.data.uploadId
+      console.log('===> requestUploadUrl for', originalFilename, uploadId)
       return { url, uploadId }
     })
 }
@@ -63,7 +67,8 @@ const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, 
 
 const fs = require('fs')
 
-function performUpload (signedUrl, filePath, fileExt, fileSize, progressCallback) {
+function performUpload (signedUrl, signId, filePath, fileExt, fileSize, progressCallback) {
+  console.log(`===> performUpload to upload file ${signId}`)
   var headers = {
     'Content-Type': `audio/${fileExt}`
   }
@@ -87,7 +92,7 @@ function performUpload (signedUrl, filePath, fileExt, fileSize, progressCallback
 // Part 3: Get ingest status
 
 const checkStatus = (env, uploadId, idToken) => {
-  return axios.get(apiUrl(env) + '/uploads/' + uploadId, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.get(apiUrl(env) + '/uploads/' + uploadId, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const status = response.data.status
       const failureMessage = response.data.failureMessage
@@ -99,7 +104,7 @@ const checkStatus = (env, uploadId, idToken) => {
 }
 
 const updateStream = (env, streamId, opts, idToken) => {
-  return axios.patch(apiUrl(env) + `/streams/${streamId}`, opts, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.patch(apiUrl(env) + `/streams/${streamId}`, opts, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -109,7 +114,7 @@ const updateStream = (env, streamId, opts, idToken) => {
 }
 
 const renameStream = (env, streamId, streamName, streamSite, idToken) => {
-  return axios.patch(apiUrl(env) + `/streams/${streamId}`, { name: streamName, site: streamSite }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.patch(apiUrl(env) + `/streams/${streamId}`, { name: streamName, site: streamSite }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -119,7 +124,7 @@ const renameStream = (env, streamId, streamName, streamSite, idToken) => {
 }
 
 const deleteStream = (env, streamId, idToken) => {
-  return axios.delete(apiUrl(env) + `/streams/${streamId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.delete(apiUrl(env) + `/streams/${streamId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -129,7 +134,7 @@ const deleteStream = (env, streamId, idToken) => {
 }
 
 const moveToTrashStream = (env, streamId, idToken) => {
-  return axios.post(apiUrl(env) + `/streams/${streamId}/move-to-trash`, {}, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.post(apiUrl(env) + `/streams/${streamId}/move-to-trash`, {}, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -139,7 +144,7 @@ const moveToTrashStream = (env, streamId, idToken) => {
 }
 
 const touchApi = (env, idToken) => {
-  return axios.get(apiUrl(env) + `/users/touchapi`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.get(apiUrl(env) + `/users/touchapi`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     })
@@ -152,7 +157,7 @@ const sendInviteCode = (env, attrs, idToken) => {
   if (attrs.acceptTerms) {
     data.accept_terms = !!attrs.acceptTerms
   }
-  return axios.post(apiUrl(env) + `/users/code`, data, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.post(apiUrl(env) + `/users/code`, data, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -162,7 +167,7 @@ const sendInviteCode = (env, attrs, idToken) => {
 }
 
 const sendAcceptTerms = (env, idToken) => {
-  return axios.post(apiUrl(env) + `/users/accept-terms`, { }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.post(apiUrl(env) + `/users/accept-terms`, { }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -172,14 +177,14 @@ const sendAcceptTerms = (env, idToken) => {
 }
 
 const getUserSites = (env, idToken) => {
-  return axios.get(apiUrl(env) + `/users/sites?`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.get(apiUrl(env) + `/users/sites?`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     })
 }
 
 const getExistingStreams = (env, idToken) => {
-  return axios.get(apiUrl(env) + `/streams`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.get(apiUrl(env) + `/streams`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
     }).catch(error => {
