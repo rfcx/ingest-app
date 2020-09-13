@@ -15,6 +15,23 @@
         </div>
       </section>
       <global-progress></global-progress>
+      <!-- Modal -->
+      <div class="modal alert" :class="{ 'is-active': isPopupOpened }">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <p class="modal-card-title">You are up to date</p>
+            <button class="delete" aria-label="close" @click="cancel()"></button>
+          </header>
+          <section class="modal-card-body">
+            <img class="logo" src="~@/assets/rfcx-logo.png">
+            You are on the latest version {{ version }}
+          </section>
+          <footer class="modal-card-foot">
+            <button class="button is-rounded" @click="cancel()">Cancel</button>
+          </footer>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -38,7 +55,8 @@
       return {
         uploadingProcessText: 'The uploading process has been paused',
         executed: false,
-        isDragging: false
+        isDragging: false,
+        isPopupOpened: false
       }
     },
     methods: {
@@ -96,6 +114,9 @@
         await analytics.send('screenview', { cd: `${guid}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
         await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
         console.log('analytics', analytics)
+      },
+      cancel () {
+        this.isPopupOpened = false
       }
     },
     computed: {
@@ -115,6 +136,9 @@
       shouldShowProgress () {
         const allFiles = this.allFilesInTheSession
         return allFiles.length !== allFiles.filter(file => file.isInCompletedGroup).length
+      },
+      version () {
+        return remote.getGlobal('version')
       }
     },
     created () {
@@ -122,6 +146,9 @@
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
+      this.$electron.ipcRenderer.on('showConfirmPopup', (event, message) => {
+        this.isPopupOpened = message
+      })
     }
   }
 </script>
@@ -306,6 +333,16 @@
     border: 2px solid #cac5c5 !important;
     background-color: #cac5c5 !important;
     opacity: 0.5 !important;
+  }
+
+  .logo {
+    vertical-align: middle;
+    width: 30px;
+    margin-right: 10px;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
   }
 
 </style>
