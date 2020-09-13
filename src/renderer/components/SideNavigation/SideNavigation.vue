@@ -47,6 +47,7 @@
       <div class="modal-card">
         <header class="modal-card-head">
           <p class="modal-card-title">Are you sure you would like to continue?</p>
+          <button class="delete" aria-label="close" @click="hidePopupToLogOut()"></button>
         </header>
         <section class="modal-card-body">
           If you log out, you will lose all files and site info you have added to this app.
