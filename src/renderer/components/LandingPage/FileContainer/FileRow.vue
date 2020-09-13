@@ -2,9 +2,9 @@
   <tr>
     <td class="file-status file-list-table__cell file-list-table__cell_status" v-if="!isPreparedTab">
       <img :class="{ 'file-failed': file.isError }" :src="getStateImgUrl(file.state)">
-      <span class="file-status-state">{{ getStateName(file) }}</span>
+      <span class="file-status__state">{{ getStateName(file) }}</span>
     </td>
-    <td :colspan="isEdit ? 5 : ''" class="file-row file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError, 'is-editing': isEdit }" >
+    <td :colspan="isEdit ? 5 : ''" class="file-list-table__cell file-list-table__cell_name" :class="{ 'is-error': file.isError, 'is-editing': isEdit }" >
       <div class="is-flex flex-row filename-content">
         <template v-if="isEdit && canEdit">
           <!-- filename input -->
@@ -52,19 +52,19 @@
       </div>
     </td>
     <template v-if="!isEdit">
-      <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
+      <td class="file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
         {{ getTimestamp(file) }}
       </td>
-      <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
+      <td class="file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
         {{ file.fileDuration }}
       </td>
-      <td class="file-row file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
+      <td class="file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
         {{ file.fileSize }}
       </td>
-      <td class="file-row file-list-table__cell file-list-table__cell_error error-message" colspan="3" v-if="file.isError">
+      <td class="file-list-table__cell file-list-table__cell_error error-message" colspan="3" v-if="file.isError">
         {{ file.stateMessage }}
       </td>
-      <td class="file-row file-row-icons file-list-table__cell file-list-table__cell_controls">
+      <td class="file-list-table__cell file-list-table__cell_controls">
         <fa-icon v-if="file.canRedo" class="icon-redo" :icon="icons.redo" @click="repeatUploading(file)" />
         <fa-icon v-if="file.canRemove" class="icon-trash" :icon="icons.trash" @click="remove(file)" />
       </td>
@@ -187,7 +187,42 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+  td.is-error {
+    color: $secondary-text-color;
+  }
+  .table td {
+    padding: 0.5em $default-padding !important;
+    vertical-align: middle !important;
+  }
+  .file-status {
+    text-align: center !important;
+    padding: 0.4rem 0.75rem 0.7rem 0 !important;
+    &__state {
+      display: block;
+      font-size: 9px;
+      height: auto;
+      line-height: 1;
+    }
+    img {
+      display: block;
+      margin: 0 auto;
+    }
+  }
+  .file-failed {
+    margin: 7px auto 5px !important;
+  }
+  .error-message {
+    color: $error-text-color;
+  }
+  .iconRedo {
+    color: $white-color;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .icon-trash {
+    margin-left: 4px;
+    cursor: pointer;
+  }
   .modal {
     .modal-card {
       border-radius: 8px;
@@ -202,25 +237,6 @@ export default {
       }
     }
   }
-
-  td.is-error {
-    color: $secondary-text-color;
-  }
-
-  .error-message {
-    color: $error-text-color;
-  }
-
-  .icon-redo {
-    color: #ffffff;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .icon-trash {
-    margin-left: 4px;
-    cursor: pointer;
-  }
-
   .flex-row {
     flex-direction: row;
   }
@@ -285,8 +301,5 @@ export default {
 
   .filename-content {
     align-items: center;
-  }
-  .table td {
-    padding: 0.5em $default-padding !important;
   }
 </style>

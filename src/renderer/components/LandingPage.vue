@@ -7,12 +7,10 @@
         <side-navigation :class="{ 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
         <div class="column content is-desktop" v-if="streams && streams.length > 0">
           <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <!-- <file-list v-else></file-list> -->
           <file-container v-else :isDragging="isDragging"></file-container>
         </div>
         <div class="column content is-desktop" v-else>
           <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <!-- <file-list v-else></file-list> -->
           <file-container v-else :isDragging="isDragging"></file-container>
         </div>
       </section>
@@ -26,7 +24,6 @@
   import Navigation from './Navigation/Navigation'
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyStream from './LandingPage/EmptyStream'
-  import FileList from './LandingPage/FileList'
   import FileContainer from './LandingPage/FileContainer/FileContainer'
   import { mapState } from 'vuex'
   import File from '../store/models/File'
@@ -131,21 +128,6 @@
 
 <style lang="scss">
 
-  .user-info-name {
-    padding: 1rem;
-    display: inline-block;
-    vertical-align: middle;
-  }
-
-  .user-info-image {
-    margin: auto;
-    text-align: center;
-    height: 30px;
-    max-width: 30px;
-    max-height: 30px;
-    width: 30px;
-  }
-
   #wrapper-landing-page {
     padding: 0;
     position: absolute;
@@ -183,7 +165,7 @@
   }
 
   aside {
-    background-color: #232436;
+    background-color: $dropdown-content-background-color;
   }
 
   .content {
@@ -205,42 +187,6 @@
 
   ::-webkit-scrollbar-thumb:hover {
     background: $grey-lighter;
-  }
-
-  .menu-container {
-    display: flex;
-    justify-content: space-between;
-    align-self: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .menu-container svg {
-    margin-left: auto !important;
-    margin-right: 3px;
-  }
-
-  .menu-container-failed {
-    margin-right: 4px;
-  }
-
-  .menu-container-failed img {
-    width: 16px !important;
-    height: 16px !important;
-    margin: 5px 0;
-  }
-
-  .side-menu-controls-btn {
-    width: 17px;
-    height: 17px;
-  }
-
-  .menu .stream-title {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    margin-right: 3px;
-    align-self: center;
   }
 
   .progress {
@@ -269,16 +215,6 @@
       height: 25px !important;
       width: 25px !important;
       padding: 0 !important;
-    }
-  }
-
-  .btn-extirnal-link {
-    right: 2em !important;
-    cursor: pointer;
-    &:active,
-    &:hover,
-    &:focus {
-      border-color: transparent !important;
     }
   }
 
@@ -331,32 +267,21 @@
   .modal-card-title {
     color: white !important;
   }
-  .title-container-edit {
-    color: white;
-  }
   .active {
     border: 4px solid #131525 !important;
     background-color: #131525 !important;
     opacity: 0.8 !important;
   }
-  .edit-container-item-input {
-    color: #fff !important;
-    background-color: #292a3b !important;
-    border-color: #292a3b !important;
-  }
   .is-cancel:hover {
-    border-color: #3b3e53 !important;
+    border-color: $button-hover-border-color !important;
     color: #fff !important;
-    background: #3b3e53 !important;
+    background: $button-hover-border-color !important;
   }
   .empty {
     background-color: #131525 !important;
   }
   .state-progress span {
     color: $body-text-color;
-  }
-  .stream-info-container {
-    background-color: #131525;
   }
   .modal.is-active {
     z-index: 200;

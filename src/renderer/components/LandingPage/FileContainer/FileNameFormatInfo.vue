@@ -1,19 +1,19 @@
 <template>
-  <div class="preparing-file-settings__wrapper">
-    <div class="preparing-file-settings__name-format-wrapper">
-      <span class="preparing-file-settings__name-format-title">Filename format</span>
+  <div class="wrapper">
+    <div>
+      <span class="wrapper__title">Filename format</span>
       <div class="is-flex flex-row align-center">
-        <div class="preparing-file-settings__name-format-description">{{ (selectedStream.timestampFormat !== 'Auto-detect' ? 'custom ・ ' : '') + selectedStream.timestampFormat }}</div>
-        <div class="preparing-file-settings__edit-button" title="Edit filename format">
+        <div class="wrapper__description">{{ (selectedStream.timestampFormat !== 'Auto-detect' ? 'custom ・ ' : '') + selectedStream.timestampFormat }}</div>
+        <div class="wrapper__edit-btn" title="Edit filename format">
           <font-awesome-icon :icon="iconPencil" @click="openFileNameFormatSettingModal()"></font-awesome-icon>
         </div>
       </div>
     </div>
-    <div class="preparing-file-settings__actions-wrapper">
+    <div>
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
       <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="readyToUploadFiles.length < 1 || isDeletingAllFiles">Start upload ({{readyToUploadFiles.length}})</button>
     </div>
-    <div class="preparing-file-settings__timestamp-modal modal is-active" v-if="showSettingModal">
+    <div class="modal is-active" v-if="showSettingModal">
       <div class="modal-background"></div>
       <file-name-format-settings
         :format="selectedStream.timestampFormat"
@@ -101,33 +101,28 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .preparing-file-settings {
-    &__wrapper {
-      padding: $default-padding;
-      display: flex;
-      justify-content: space-between;
-      align-self: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    &__name-format-title {
+  .wrapper {
+    padding: $default-padding;
+    display: flex;
+    justify-content: space-between;
+    align-self: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    &__title {
       font-weight: $title-font-weight;
       display: block;
     }
-    &__name-format-description {
+    &__description {
       color: $secondary-text-color;
       display: inline-block;
     }
-    &__edit-button {
-      color: #9B9B9B !important;
+    &__edit-btn {
+      padding-left: 8px;
+      color: $edit-icon-color !important;
       font-size: 14px;
       cursor: pointer;
     }
-  }
-
-  .preparing-file-settings__edit-button {
-    padding-left: 8px;
   }
   .flex-row {
     flex-direction: row;

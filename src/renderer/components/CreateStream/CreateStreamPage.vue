@@ -1,7 +1,7 @@
 <template>
-  <div class="create-stream__wrapper">
+  <div class="wrapper">
     <h1>Create site</h1>
-    <fieldset class="fieldset__wrapper">
+    <fieldset>
       <div class="notification" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
         {{ error }}
@@ -15,7 +15,7 @@
           <input v-model="name" class="input" :class="{'is-warning': shouldShowNameHelperMessage}" type="text" placeholder="Jaguar 1" />
         </div>
       </div>
-      <div class="field field-stream-name">
+      <div class="field">
         <label for="location" class="label">Location</label>
         <Map class="map-wrapper" @locationSelected="onSelectLocation"></Map>
       </div>
@@ -134,29 +134,27 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.create-stream {
-  &__wrapper {
-    margin: 32px auto;
+  .wrapper {
+    margin: $wrapper-margin;
     padding: $default-padding-margin;
-    max-width: 500px;
+    max-width: $wrapper-width;
   }
-}
-.notification {
-  background: #3b3e53 !important;
-  color: white;
-}
-span.help {
-  display: inline;
-}
+  .notification {
+    background: #3b3e53 !important;
+    color: white;
+  }
+  span.help {
+    display: inline;
+  }
 </style>
 
 <style lang="scss">
-.map-wrapper {
-  height: 300px;
-  width: 500px;
-  margin-bottom: $default-padding-margin;
-  .mapboxgl-canvas {
-    height: 300px !important;
+  .map-wrapper {
+    height: 300px;
+    width: $wrapper-width;
+    margin-bottom: $default-padding-margin;
+    .mapboxgl-canvas {
+      height: 300px !important;
+    }
   }
-}
 </style>

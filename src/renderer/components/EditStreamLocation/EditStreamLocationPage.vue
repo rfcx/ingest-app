@@ -1,22 +1,22 @@
 <template>
-  <div class="edit-stream__wrapper">
+  <div class="wrapper">
     <h1>Edit site</h1>
-    <fieldset class="fieldset__wrapper">
-      <div class="notification" v-show="error">
+    <fieldset>
+      <div class="notification wrapper__notification" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
         {{ error }}
       </div>
-      <div class="field field-stream-name">
+      <div class="field">
         <label for="name" class="label">Site name</label>
         <div class="control">
           <input v-model="name" class="input" type="text" placeholder="Jaguar 1" />
         </div>
       </div>
-      <div class="field field-stream-location">
+      <div class="field wrapper__location">
         <label for="location" class="label">Location</label>
         <Map class="map-wrapper" @locationSelected="onSelectLocation" :lngLat="getStreamCoordinates()"></Map>
       </div>
-      <div class="buttons__wrapper">
+      <div class="wrapper__controls">
         <div class="field is-grouped">
           <p class="control control-btn">
             <router-link class="control-btn" to="/">
@@ -58,7 +58,7 @@ import { mapState } from 'vuex'
 export default {
   data () {
     return {
-      name: '',
+      name: 'edit-stream-location-page',
       selectedLatitude: null,
       selectedLongitude: null,
       isLoading: false,
@@ -206,36 +206,35 @@ export default {
 }
 </script>
 
-<style lang="scss">
-.edit-stream {
-  &__wrapper {
-    margin: 32px auto;
+<style lang="scss" scoped>
+  .wrapper {
+    margin: $wrapper-margin;
     padding: $default-padding-margin;
-    max-width: 500px;
+    max-width: $wrapper-width;
+    &__notification {
+      background: #3b3e53 !important;
+      color: white;
+    }
+    &__location {
+      position: relative;
+    }
+    &__controls {
+      display: flex;
+      justify-content: space-between;
+    }
   }
-}
-.map-wrapper {
-  height: 300px;
-  width: 500px;
-  margin-bottom: $default-padding-margin;
-  .mapboxgl-canvas {
-    height: 300px !important;
+  .iconTrash {
+    margin-right: 4px;
   }
-}
-.buttons {
-  &__wrapper {
-    display: flex;
-    justify-content: space-between;
+</style>
+
+<style lang="scss">
+  .map-wrapper {
+    height: 300px;
+    width: $wrapper-width;
+    margin-bottom: $default-padding-margin;
+    .mapboxgl-canvas {
+      height: 300px !important;
+    }
   }
-}
-.iconTrash {
-  margin-right: 4px;
-}
-.notification {
-  background: #3b3e53 !important;
-  color: white;
-}
-.field-stream-location {
-  position: relative;
-}
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="file-container__wrapper">
+  <div class="wrapper">
     <header-view></header-view>
     <tab :files="files" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
@@ -62,11 +62,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .file-container {
-    &__wrapper {
-      height: 100% !important;
-      padding-top: $default-padding-margin !important;
-      background: rgb(19, 21, 37);
-    }
+  .wrapper {
+    padding-top: $default-padding-margin;
+    background: $backgroud-color-dark;
   }
 </style>

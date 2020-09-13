@@ -301,7 +301,7 @@ class FileProvider {
           data: {state: 'uploading'}
         })
       }).then((uploadId) => {
-      console.log('\nfile uploaded to the temp folder S3')
+      console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
       return File.update({ where: file.id, data: { uploaded: true } })
     }).catch((error) => {
       console.log('===> ERROR UPLOAD FILE', error, error.message)
@@ -331,7 +331,7 @@ class FileProvider {
       .then((data) => {
         const status = data.status
         const failureMessage = data.failureMessage
-        console.log(`===> ${file.name} - Ingest status = ${status}`)
+        console.log(`===> ${file.name} ${file.uploadId} - Ingest status = ${status}`)
         switch (status) {
           case 0:
             if (isSuspended) {

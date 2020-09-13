@@ -27,11 +27,6 @@ export default new Router({
       component: require('@/components/APIService').default
     },
     {
-      path: '/fs-service',
-      name: 'fs-service',
-      component: require('@/components/FSService').default
-    },
-    {
       path: '/about',
       name: 'about-page',
       component: require('@/components/AboutPage').default

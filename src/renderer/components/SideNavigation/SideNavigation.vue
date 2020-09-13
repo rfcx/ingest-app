@@ -1,54 +1,40 @@
 <template>
-  <aside class="column menu side-menu side-menu-column">
-    <div class="header">
-      <div class="header-logo">
+  <aside class="column menu side-menu side-menu-column wrapper">
+    <div class="wrapper__header">
+      <div class="wrapper__logo">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
       </div>
-      <div class="header-user-pic" @click="toggleUserMenu()">
+      <div class="wrapper__user-pic" @click="toggleUserMenu()">
         <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)">
       </div>
     </div>
-    <div class="user-stat-wrapper" v-if="showUserMenu">
-      <div class="user-stat-name">
+    <div class="wrapper__stat" v-if="showUserMenu">
+      <div class="wrapper__user-name">
         <span>{{ userName }}</span>
         <button class="button is-small is-rounded" @click="logOut()">Log out</button>
       </div>
-      <!-- <div class="user-stat-info-wrapper">
-        <div class="user-stat-info">
-          <div>{{streams.length}}</div><div>streams created</div>
-        </div>
-        <div class="user-stat-info">
-          <div>0</div><div>hours long</div>
-        </div>
-        <div class="user-stat-info">
-          <div>{{allFiles.length}}</div><div>files uploaded</div>
-        </div>
-        <div class="user-stat-info">
-          <div>{{getAllFilesSize()}}</div><div>{{mesure}} used</div>
-        </div>
-      </div> -->
     </div>
-    <div class="menu-container side-menu-title">
-      <router-link title="Add new site" class="side-menu-router-add-btn" to="/import">
-        <button type="button" class="button is-rounded side-menu-add-btn">
+    <div class="menu-container wrapper__controls">
+      <router-link title="Add new site" class="wrapper__add-btn" to="/import">
+        <button type="button" class="button is-rounded">
           <span>+</span>New Site
         </button>
       </router-link>
     </div>
-    <div class="menu-label">Sites</div>
-    <div v-if="toggleSearch" class="search-wrapper" :class="{ 'search-wrapper_red': isRequiredSymbols }">
-      <input type="text" class="input search-input" placeholder="Filter" v-model="searchStr"
+    <div class="wrapper__title">Sites</div>
+    <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">
+      <input type="text" class="input wrapper__input" placeholder="Filter" v-model="searchStr"
         @keyup="onKeyUp($event)" ref="searchStream">
       <button title="Remove search text" class="btn-remove" @click="onRemoveSearchText()"
         :class="{ 'btn-remove-active': searchStr }">
         <img src="~@/assets/ic-remove.svg">
       </button>
     </div>
-    <ul class="menu-list">
+    <ul>
       <li v-for="stream in streams" :key="stream.id">
-        <div class="menu-item" v-on:click="selectItem(stream)" :class="{'menu-item_active': isActive(stream)}">
+        <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'wrapper__stream-row_active': isActive(stream)}">
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
-            <div class="stream-title">{{ stream.name }}</div>
+            <div class="wrapper__stream-name">{{ stream.name }}</div>
             <font-awesome-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
             <img :src="getStateImgUrl(stream.state)">
           </div>
@@ -231,40 +217,133 @@
 </script>
 
 <style lang="scss" scoped>
-
-  .menu-item:hover,
-  .menu-item_active {
-    background-color: #2e3145;
-    cursor: pointer;
-  }
-
-  .menu-item_active {
-    font-weight: $title-font-weight;
-  }
-
-  .header {
-    padding: 0 12px 0 $default-padding;
-    margin-bottom: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 37px;
-  }
-
-  .header-logo,
-  .header-user-pic {
-    cursor: pointer;
-  }
-
-  .header-logo {
-    margin-right: 10px;
-    height: 37px;
-    img {
+  .wrapper {
+    &__stream-row:hover,
+    &__stream-row_active {
+      background-color: #2e3145;
+      cursor: pointer;
+    }
+    &__stream-row {
+      padding: 9px $default-padding 8px;
+      height: 42px;
+      &_active {
+        font-weight: $title-font-weight;
+      }
+      .menu-container {
+        height: 25px;
+        align-items: center;
+      }
+    }
+    &__header {
+      padding: 0 12px 0 $default-padding;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       height: 37px;
-      width: auto;
+    }
+    &__user-pic {
+      cursor: pointer;
+      margin-left: auto;
+    }
+    &__logo {
+      margin-right: 10px;
+      height: 37px;
+      cursor: pointer;
+      img {
+        height: 37px;
+        width: auto;
+      }
+    }
+    &__stat {
+      padding: 0 8px 0  16px;
+      margin-bottom: 16px;
+      line-height: 1.29;
+      letter-spacing: 0.2px;
+      animation-duration: 4s;
+      animation-delay: 2s;
+    }
+    &__user-name {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    &__controls {
+      padding: 0 8px;
+    }
+    &__add-btn {
+      width: $full-width;
+      button {
+        width: 100%;
+        padding-bottom: calc(0.175em - 1px);
+        padding-top: calc(0.175em - 1px);
+        background-color: $brand-primary;
+        align-self: center;
+        font-weight: $title-font-weight;
+        font-size: $default-font-size;
+        font-style: normal;
+        line-height: normal;
+        color: $white-color;
+        border: none;
+        &:hover,
+        &:active,
+        &:focus {
+          outline: none;
+          border: none;
+          color: $white-color;
+        }
+        span {
+          margin-right: 10px;
+          font-size: 20px;
+        }
+      }
+    }
+    &__title {
+      padding: 24px $default-padding 10px;
+      font-size: 16px;
+      font-style: normal;
+      line-height: normal;
+      color: $white-color !important;
+      margin: 0 !important;
+      align-self: center;
+      font-weight: $title-font-weight;
+      text-transform: none;
+      letter-spacing: 0.2px;
+    }
+    &__search {
+      border-radius: 3px;
+      border: solid 1px $white-color;
+      display: inline-block;
+      vertical-align: middle;
+      width: 98%;
+      padding: 0 5px;
+      margin-bottom: 7px;
+      height: 29px;
+      line-height: normal;
+      &_red {
+        border: solid 1px red;
+      }
+    }
+    &__input {
+      display: inline-block;
+      vertical-align: top;
+      width: 87%;
+      height: 27px;
+      padding: 0 0 1px 0px;
+      font-family: $family-sans-serif;
+      font-size: 13px;
+      background-color: $dropdown-content-background-color;
+      color: $white-color;
+      border: none;
+      box-shadow: none;
+    }
+    &__stream-name {
+      text-overflow: ellipsis;
+      overflow: hidden;
+      margin-right: 3px;
+      align-self: center;
     }
   }
-
   .icon-logo {
     &:hover,
     &:focus {
@@ -273,162 +352,36 @@
       outline: none;
     }
   }
-
-  .header-user-pic {
-    margin-left: auto;
-  }
-
-  .user-stat-wrapper {
-    padding: 0 8px 0  16px;
-    margin-bottom: 16px;
-    line-height: 1.29;
-    letter-spacing: 0.2px;
-    animation-duration: 4s;
-    animation-delay: 2s;
-  }
-
-  .user-stat-name {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .user-stat-info-wrapper {
-    margin: 0;
-    padding: 0;
-  }
-
-  .user-stat-info {
-    display: flex;
-    justify-content: flex-start;
-    div {
-      width: 35%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-right: 5px;
-      &:last-child {
-         width: 65%;
-      }
-    }
-  }
-
   .user-pic {
     border-radius: 50%;
-    height: 100%;
+    height: $full-height;
     height: 32px;
     width: auto;
   }
-
-  .side-menu-title {
-    padding: 0 8px;
-  }
-
-  .side-menu-search-btn {
-    background-color: transparent;
-    border: none !important;
-    padding: 0 !important;
-    margin-right: 5px;
-    cursor: pointer;
-    &:hover,
-    &:active,
-    &:focus {
-      outline: none !important;
-      border: none !important;
-    }
-    img {
-      height: 15px;
-      width: 15px;
-    }
-  }
-
-  .side-menu-router-add-btn {
-    width: 100%;
-  }
-
-  .side-menu-add-btn {
-    width: 100%;
-    padding-bottom: calc(0.175em - 1px);
-    padding-top: calc(0.175em - 1px);
-    background-color: $brand-primary;
+  .menu-container {
+    display: flex;
+    justify-content: space-between;
     align-self: center;
-    font-weight: $title-font-weight;
-    font-size: $default-font-size;
-    font-style: normal;
-    line-height: normal;
-    color: #ffffff !important;
-    border: none !important;
-    &:hover,
-    &:active,
-    &:focus {
-      outline: none !important;
-      border: none !important;
-    }
-    span {
-      margin-right: 10px;
-      font-size: 20px;
-    }
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-
-  .menu-item {
-    padding: 9px $default-padding 8px;
-    height: 42px;
+  .menu-container svg {
+    margin-left: auto !important;
+    margin-right: 3px;
   }
-
-  .menu-item .menu-container {
-    height: 25px;
+  .menu-container-failed {
+    margin-right: 4px;
   }
-
-  .menu-label {
-    padding: 24px $default-padding 10px;
-    font-size: 16px;
-    font-style: normal;
-    line-height: normal;
-    color: #ffffff !important;
-    margin: 0 !important;
-    align-self: center;
-    font-weight: $title-font-weight;
-    text-transform: none;
-    letter-spacing: 0.2px;
+  .menu-container-failed img {
+    width: 16px !important;
+    height: 16px !important;
+    margin: 5px 0;
   }
-
-  .search-wrapper {
-    border-radius: 3px;
-    border: solid 1px #ffffff;
-    display: inline-block;
-    vertical-align: middle;
-    width: 98%;
-    padding: 0 5px;
-    margin-bottom: 7px;
-    height: 29px;
-    line-height: normal;
-    &_red {
-      border: solid 1px red;
-    }
-  }
-
-  .search-input {
-    display: inline-block !important;
-    vertical-align: top !important;
-    width: 87% !important;
-    height: 27px !important;
-    padding: 0 0 1px 0px !important;
-    font-family: Lato;
-    font-size: 13px !important;
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: normal !important;
-    letter-spacing: 0.67px;
-    background-color: #232436 !important;
-    color: #ffffff !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-
   .btn-remove {
     background-color: transparent;
     border: none !important;
-    color: #ffffff;
+    color: $white-color;
     text-align: right;
     opacity: 0.2;
     padding: 0;
@@ -444,64 +397,26 @@
   .btn-remove-active {
     opacity: 1;
   }
-
   .drop-hover {
     background-color: transparent !important;
   }
-
-  .right {
-    text-align: right !important;
-    justify-content: flex-end !important;
-  }
-
   .iconRedo {
     color: grey;
     font-size: 13px;
     cursor: pointer;
     margin: 6px 6px 6px 0;
   }
-
-  .is-danger {
-    background-color: #f14668 !important;
-    border-color: transparent;
-  }
-
-  .menu-container-left,
-  .menu-container-right {
-    font-size: 11px;
-    font-weight: 500;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: normal;
-    letter-spacing: normal;
-    text-align: right;
-    color: #f1f1f1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .menu-container-left {
-    width: 35%;
-    text-align: left;
-  }
-
-  .menu-container-right {
-    width: 64%;
-    text-align: right;
-  }
-
   input[type="text"]::-webkit-input-placeholder {
-    color: #52566e !important;
+    color: $input-placeholder !important;
     opacity: 1;
   }
   :-ms-input-placeholder {
-    color: #52566e;
+    color: $input-placeholder;
   }
   ::-moz-placeholder {
-    color: #52566e;
+    color: $input-placeholder;
   }
   :-moz-placeholder {
-    color: #52566e;
+    color: $input-placeholder;
   }
-
 </style>

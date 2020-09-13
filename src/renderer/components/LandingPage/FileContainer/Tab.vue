@@ -70,22 +70,20 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.file-tab {
-  &__wrapper {
-    padding-bottom: $default-padding-margin;
+  .file-tab {
+    &__wrapper {
+      padding-bottom: $default-padding-margin;
+    }
+    &__fail-icon {
+      padding-right: $default-padding-margin;
+    }
   }
-  &__fail-icon {
-    padding-right: $default-padding-margin;
+  .tabs {
+    ul {
+      margin-left: 0px !important;
+    }
+    .is-active {
+      font-weight: $title-font-weight;
+    }
   }
-}
-
-.tabs {
-  ul {
-    margin-left: 0px !important;
-  }
-  .is-active {
-    font-weight: $title-font-weight;
-  }
-}
-
 </style>

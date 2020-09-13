@@ -1,5 +1,5 @@
 <template>
-  <div class="file-list__wrapper">
+  <div>
     <table class="table file-list-table is-hoverable" v-if="files.length > 0">
       <thead>
         <tr>
@@ -83,52 +83,37 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-thead {
-  text-transform: uppercase;
-}
-
-thead td,
-thead th {
-  color: $secondary-text-color !important;
-}
-
-.file-list-table {
-  &_head {
-    margin-bottom: 0 !important;
-    .file-list-table {
-      &__cell {
-        white-space: nowrap;
-      }
-    }
+  thead {
+    text-transform: uppercase;
+  }
+  thead td,
+  thead th {
+    color: $secondary-text-color !important;
+    padding: 0.5em $default-padding !important;
+  }
+  .table tbody {
+    overflow-y: auto;
   }
   .file-list-table {
     &__cell {
-      &_status {
-        width: 10%;
-        vertical-align: middle !important;
-      }
       &_name,
       &_error {
+        width: 35%;
         width: 28%;
       }
       &_timestamp {
-        width: 22% !important;
+        width: 22%;
       }
       &_info {
+        width: 15%;
         width: 16%;
       }
       &_controls {
+        width: 10%;
         width: 8%;
-        text-align: right !important;
-        padding-right: 24px !important;
+        text-align: right;
+        padding-right: 24px;
       }
     }
   }
-}
-.table td {
-  padding: 0.5em $default-padding !important;
-}
-.table tbody {
-  overflow-y: auto !important;
-}
 </style>
