@@ -23,11 +23,12 @@
 <script>
 import SourceList from './SourceList'
 import FileHelper from '../../../../utils/fileHelper'
+import FileInfo from '../../services/FileInfo'
 
 export default {
   data: () => ({
     selectedSource: null,
-    filesInSource: []
+    deviceId: null
   }),
   components: { SourceList },
   methods: {
@@ -41,11 +42,21 @@ export default {
         .map((name) => {
           return { name: name, path: path + '/' + name }
         })
-      this.filesInSource = stuffInDirectory
+      // read file header info
+      const uniqueDeviceIds = stuffInDirectory.filter(file => {
+        return FileHelper.getExtension(file.path) === 'wav' // read only wav file header info
+      }).map(file => {
+        const info = new FileInfo(file.path)
+        return info.deviceId
+      }).filter(id => id !== '').filter((v, i, a) => a.indexOf(v) === i)
+      console.log('deviceIds', uniqueDeviceIds)
+      if (uniqueDeviceIds.length === 1) {
+        this.deviceId = uniqueDeviceIds[0]
+      }
     },
     importFiles () {
       // TODO: pass device id to create stream
-      this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path }})
+      this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId }})
     }
   }
 }

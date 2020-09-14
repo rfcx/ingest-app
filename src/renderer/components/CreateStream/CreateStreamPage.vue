@@ -66,10 +66,15 @@ export default {
     }
   },
   created () {
+    if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
-    if (this.$route.query && this.$route.query.folderPath) {
-      console.log('create with +', this.selectedFolderPath)
+    if (this.$route.query.folderPath) {
       this.selectedFolderPath = this.$route.query.folderPath
+      console.log('create with +', this.selectedFolderPath)
+    }
+    if (this.$route.query.deviceId) {
+      this.deviceId = this.$route.query.deviceId
+      console.log('+', this.deviceId)
     }
   },
   methods: {
@@ -108,7 +113,8 @@ export default {
               env: this.isProductionEnv() ? 'production' : 'staging',
               visibility: visibility,
               createdAt: Date.now(),
-              updatedAt: Date.now()
+              updatedAt: Date.now(),
+              deviceId: this.deviceId || ''
             }
             console.log('creating stream', JSON.stringify(stream))
             Stream.insert({ data: stream, insert: ['files'] })
