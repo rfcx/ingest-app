@@ -410,6 +410,12 @@
     color: $input-placeholder !important;
     opacity: 1;
   }
+  .button {
+    &:focus {
+      color: $button-hover-color;
+      border-color: $button-hover-border-color;
+    }
+  }
   :-ms-input-placeholder {
     color: $input-placeholder;
   }
