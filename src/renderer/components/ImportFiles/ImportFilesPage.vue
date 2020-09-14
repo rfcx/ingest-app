@@ -24,6 +24,7 @@
 import SourceList from './SourceList'
 import FileHelper from '../../../../utils/fileHelper'
 import FileInfo from '../../services/FileInfo'
+import Stream from '../../store/models/Stream'
 
 export default {
   data: () => ({
@@ -55,8 +56,16 @@ export default {
       }
     },
     importFiles () {
-      // TODO: pass device id to create stream
-      this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId }})
+      if (this.deviceId) {
+        const existingSiteWithDeviceId = Stream.query().where('deviceId', this.deviceId).get()
+        if (existingSiteWithDeviceId && existingSiteWithDeviceId.length > 0) {
+          const streamId = existingSiteWithDeviceId[0].id
+          console.log('existingSiteWithDeviceId', existingSiteWithDeviceId, streamId)
+          this.$router.push({path: '/import-to-existing-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, streamId: streamId }})
+        } else {
+          this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId }})
+        }
+      }
     }
   }
 }

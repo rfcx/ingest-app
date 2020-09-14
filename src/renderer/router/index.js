@@ -22,6 +22,12 @@ export default new Router({
       component: require('@/components/ImportFiles/ImportFilesPage').default
     },
     {
+      path: '/import-to-existing-site',
+      name: 'import-to-existing-site',
+      component: require('@/components/ImportToExistingSite/ImportToExistingSitePage').default,
+      props: (route) => ({ query: route.query })
+    },
+    {
       path: '/api-service',
       name: 'api-service',
       component: require('@/components/APIService').default
