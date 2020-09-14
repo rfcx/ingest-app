@@ -62,10 +62,10 @@ export default {
           const streamId = existingSiteWithDeviceId[0].id
           console.log('existingSiteWithDeviceId', existingSiteWithDeviceId, streamId)
           this.$router.push({path: '/import-to-existing-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, streamId: streamId }})
-        } else {
-          this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId }})
+          return
         }
       }
+      this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId }})
     }
   }
 }
