@@ -240,6 +240,7 @@
   .alert .modal-card-body {
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
+    font-size: $alert-content-size;
   }
 
   @media screen and (min-width: 400px) {

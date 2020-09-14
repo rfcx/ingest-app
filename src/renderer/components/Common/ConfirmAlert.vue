@@ -2,9 +2,13 @@
   <div class="modal alert is-active">
     <div class="modal-background"></div>
     <div class="modal-card">
-      <div class="modal-card-body">
+      <header class="modal-card-head" v-if="useTitle">
         <p class="modal-card-title">{{ title }}</p>
-      </div>
+        <button class="delete" aria-label="close" @click="cancelButtonPressed()"></button>
+      </header>
+      <section class="modal-card-body" v-if="useContent">
+        {{ content }}
+      </section>
       <footer class="modal-card-foot">
         <button class="button is-rounded" @click="cancelButtonPressed()">{{cancelButtonText}}</button>
         <button class="button is-danger is-rounded" :class="{ 'is-loading': isProcessing }" @click.prevent="confirmButtonPressed()">{{confirmButtonText}}</button>
@@ -17,12 +21,15 @@
 export default {
   props: {
     title: String,
+    content: String,
     confirmButtonText: String,
     cancelButtonText: {
       type: String,
       default: 'Cancel'
     },
-    isProcessing: false
+    isProcessing: false,
+    useTitle: false,
+    useContent: false
   },
   methods: {
     cancelButtonPressed () {

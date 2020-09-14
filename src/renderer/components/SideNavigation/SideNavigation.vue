@@ -41,24 +41,16 @@
         </div>
       </li>
     </ul>
-    <!-- Modal -->
-    <div class="modal alert" :class="{ 'is-active': showConfirmToLogOut }">
-      <div class="modal-background"></div>
-      <div class="modal-card">
-        <header class="modal-card-head">
-          <p class="modal-card-title">Are you sure you would like to continue?</p>
-          <button class="delete" aria-label="close" @click="hidePopupToLogOut()"></button>
-        </header>
-        <section class="modal-card-body">
-          If you log out, you will lose all files and site info you have added to this app.
-          They will not be deleted from RFCx Arbimon or Explorer.
-        </section>
-        <footer class="modal-card-foot">
-          <button class="button is-rounded" @click="hidePopupToLogOut()">Cancel</button>
-          <button class="button is-danger is-rounded" @click.prevent="logOut()">Log out</button>
-        </footer>
-      </div>
-    </div>
+    <confirm-alert
+      :title="alertTitle"
+      :content="alertContent"
+      confirmButtonText="Log Out"
+      :isProcessing="false"
+      :useTitle="true"
+      :useContent="true"
+      v-if="showConfirmToLogOut"
+      @onCancelPressed="hidePopupToLogOut()"
+      @onConfirmPressed="logOut()"/>
   </aside>
 </template>
 
@@ -66,6 +58,7 @@
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
   import fileState from '../../../../utils/fileState'
+  import ConfirmAlert from '../Common/ConfirmAlert'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
   const { remote } = window.require('electron')
@@ -81,11 +74,13 @@
         showUserMenu: false,
         toggleSearch: false,
         showConfirmToLogOut: false,
-        userName: this.getUserName()
+        userName: this.getUserName(),
+        alertTitle: 'Are you sure you would like to continue?',
+        alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.'
       }
     },
     components: {
-      FontAwesomeIcon
+      FontAwesomeIcon, ConfirmAlert
     },
     computed: {
       selectedStreamId () {
