@@ -29,7 +29,7 @@ class FileProvider {
     [...droppedFiles].forEach((file) => {
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
-          this.getFileObjectsFromFolder(file, selectedStream, null)
+          this.getFileObjectsFromFolder(file.path, selectedStream, null)
         )
       } else {
         const fileObject = this.createFileObject(file.path, selectedStream)
@@ -49,12 +49,29 @@ class FileProvider {
     )
   }
 
-  getFileObjectsFromFolder (folder, selectedStream, existingFileObjects = null) {
+  handleDroppedFolder (folderPath, selectedStream) {
+    if (!folderPath) return
+    console.log('handleDroppedFolder', folderPath, selectedStream)
+    let fileObjectsInFolder = []
+    fileObjectsInFolder = fileObjectsInFolder.concat(
+      this.getFileObjectsFromFolder(folderPath, selectedStream, null)
+    )
+    // insert converted files into db
+    this.insertNewFiles(fileObjectsInFolder, selectedStream)
+    // update file duration
+    this.updateFilesDuration(
+      fileObjectsInFolder.filter((file) =>
+        fileHelper.isSupportedFileExtension(file.extension)
+      )
+    )
+  }
+
+  getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null) {
     // see all stuff in the directory
     const stuffInDirectory = fileHelper
-      .getFilesFromDirectoryPath(folder.path)
+      .getFilesFromDirectoryPath(folderPath)
       .map((name) => {
-        return { name: name, path: folder.path + '/' + name }
+        return { name: name, path: folderPath + '/' + name }
       })
     // get the files in the directory
     const files = stuffInDirectory.filter(
@@ -73,7 +90,7 @@ class FileProvider {
       fileHelper.isFolder(file.path)
     )
     subfolders.forEach((folder) =>
-      this.getFileObjectsFromFolder(folder, selectedStream, fileObjects)
+      this.getFileObjectsFromFolder(folder.path, selectedStream, fileObjects)
     )
     return fileObjects
   }

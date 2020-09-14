@@ -11,7 +11,7 @@ export default class Stream extends Model {
     return {
       id: this.string(''),
       name: this.string(''),
-      timestampFormat: this.string(''), // TODO: remove
+      timestampFormat: this.string('Auto-detect'), // TODO: remove
       folderPath: this.string(''), // TODO: remove
       siteGuid: this.string(''), // TODO: remove
       latitude: this.number(0),

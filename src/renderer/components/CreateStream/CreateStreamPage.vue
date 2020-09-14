@@ -51,6 +51,8 @@ export default {
       name: '',
       selectedLatitude: null,
       selectedLongitude: null,
+      selectedFolderPath: String, // prop from import page
+      deviceId: String, // prop from import page
       isLoading: false,
       hasPassValidation: false,
       error: '',
@@ -63,6 +65,13 @@ export default {
       return this.name && this.selectedLatitude && this.selectedLongitude
     }
   },
+  created () {
+    // TODO: add logic & UI to go back to import step
+    if (this.$route.query && this.$route.query.folderPath) {
+      console.log('create with +', this.selectedFolderPath)
+      this.selectedFolderPath = this.$route.query.folderPath
+    }
+  },
   methods: {
     onSelectLocation (coordinates) {
       console.log('on selected location: ', coordinates)
@@ -73,7 +82,6 @@ export default {
       }
     },
     createStream () {
-      // TODO: verify data
       const visibility = false
       const latitude = this.selectedLatitude
       const longitude = this.selectedLongitude
@@ -87,6 +95,7 @@ export default {
             latitude,
             longitude,
             visibility,
+            this.deviceId,
             idToken
           )
           .then(async streamId => {
@@ -103,6 +112,10 @@ export default {
             }
             console.log('creating stream', JSON.stringify(stream))
             Stream.insert({ data: stream, insert: ['files'] })
+            // add files to site/stream
+            if (this.selectedFolderPath) {
+              this.$file.handleDroppedFolder(this.selectedFolderPath, stream)
+            }
             this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$router.push('/')
           })

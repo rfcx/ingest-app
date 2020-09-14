@@ -13,6 +13,7 @@
         <button
           type="button"
           class="button is-rounded is-primary"
+          @click.prevent="importFiles"
         >Import</button>
       </p>
     </div>
@@ -25,7 +26,8 @@ import FileHelper from '../../../../utils/fileHelper'
 
 export default {
   data: () => ({
-    selectedSource: null
+    selectedSource: null,
+    filesInSource: []
   }),
   components: { SourceList },
   methods: {
@@ -39,7 +41,11 @@ export default {
         .map((name) => {
           return { name: name, path: path + '/' + name }
         })
-      console.log(stuffInDirectory)
+      this.filesInSource = stuffInDirectory
+    },
+    importFiles () {
+      // TODO: pass device id to create stream
+      this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path }})
     }
   }
 }
