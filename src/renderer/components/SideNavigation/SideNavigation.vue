@@ -11,7 +11,7 @@
     <div class="wrapper__stat" v-if="showUserMenu">
       <div class="wrapper__user-name">
         <span>{{ userName }}</span>
-        <button class="button is-small is-rounded" @click="logOut()">Log out</button>
+        <button class="button is-small is-rounded" @click.prevent="showPopupToLogOut()">Log out</button>
       </div>
     </div>
     <div class="menu-container wrapper__controls">
@@ -41,6 +41,14 @@
         </div>
       </li>
     </ul>
+    <confirm-alert
+      :title="alertTitle"
+      :content="alertContent"
+      confirmButtonText="Log Out"
+      :isProcessing="false"
+      v-if="showConfirmToLogOut"
+      @onCancelPressed="hidePopupToLogOut()"
+      @onConfirmPressed="logOut()"/>
   </aside>
 </template>
 
@@ -48,6 +56,7 @@
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
   import fileState from '../../../../utils/fileState'
+  import ConfirmAlert from '../Common/ConfirmAlert'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
   const { remote } = window.require('electron')
@@ -62,11 +71,14 @@
         mesure: '',
         showUserMenu: false,
         toggleSearch: false,
-        userName: this.getUserName()
+        showConfirmToLogOut: false,
+        userName: this.getUserName(),
+        alertTitle: 'Are you sure you would like to continue?',
+        alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.'
       }
     },
     components: {
-      FontAwesomeIcon
+      FontAwesomeIcon, ConfirmAlert
     },
     computed: {
       selectedStreamId () {
@@ -211,6 +223,12 @@
           return file.canRedo && file.streamId === streamId
         }).get()
         this.$file.putFilesIntoUploadingQueue(files)
+      },
+      showPopupToLogOut () {
+        this.showConfirmToLogOut = true
+      },
+      hidePopupToLogOut () {
+        this.showConfirmToLogOut = false
       }
     }
   }
