@@ -46,8 +46,6 @@
       :content="alertContent"
       confirmButtonText="Log Out"
       :isProcessing="false"
-      :useTitle="true"
-      :useContent="true"
       v-if="showConfirmToLogOut"
       @onCancelPressed="hidePopupToLogOut()"
       @onConfirmPressed="logOut()"/>

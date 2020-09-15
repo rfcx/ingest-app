@@ -2,11 +2,11 @@
   <div class="modal alert is-active">
     <div class="modal-background"></div>
     <div class="modal-card">
-      <header class="modal-card-head" v-if="useTitle">
+      <header class="modal-card-head" v-if="title">
         <p class="modal-card-title">{{ title }}</p>
         <button class="delete" aria-label="close" @click="cancelButtonPressed()"></button>
       </header>
-      <section class="modal-card-body" v-if="useContent">
+      <section class="modal-card-body" v-if="content">
         {{ content }}
       </section>
       <footer class="modal-card-foot">
@@ -27,9 +27,7 @@ export default {
       type: String,
       default: 'Cancel'
     },
-    isProcessing: false,
-    useTitle: false,
-    useContent: false
+    isProcessing: false
   },
   methods: {
     cancelButtonPressed () {

@@ -20,8 +20,6 @@
       :content="deleteAlertTitle"
       confirmButtonText="Delete"
       :isProcessing="isDeleting"
-      :useTitle="false"
-      :useContent="true"
       v-if="shouldShowConfirmToDeleteAlert"
       @onCancelPressed="hideConfirmToDeleteDialog"
       @onConfirmPressed="deleteFile"/>
