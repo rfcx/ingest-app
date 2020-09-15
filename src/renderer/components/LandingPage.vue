@@ -15,23 +15,13 @@
         </div>
       </section>
       <global-progress></global-progress>
-      <!-- Modal -->
-      <div class="modal alert" :class="{ 'is-active': isPopupOpened }">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-          <header class="modal-card-head">
-            <p class="modal-card-title">You are up to date</p>
-            <button class="delete" aria-label="close" @click="cancel()"></button>
-          </header>
-          <section class="modal-card-body">
-            <img class="logo" src="~@/assets/rfcx-logo.png">
-            You are on the latest version {{ version }}
-          </section>
-          <footer class="modal-card-foot">
-            <button class="button is-rounded" @click="cancel()">Cancel</button>
-          </footer>
-        </div>
-      </div>
+      <confirm-alert
+        :title="alertTitle"
+        :content="alertContent"
+        :image="'rfcx-logo.png'"
+        :isProcessing="false"
+        v-if="isPopupOpened"
+        @onCancelPressed="cancel()"/>
     </div>
   </div>
 </template>
@@ -42,6 +32,7 @@
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyStream from './LandingPage/EmptyStream'
   import FileContainer from './LandingPage/FileContainer/FileContainer'
+  import ConfirmAlert from './Common/ConfirmAlert'
   import { mapState } from 'vuex'
   import File from '../store/models/File'
   import Stream from '../store/models/Stream'
@@ -50,10 +41,12 @@
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyStream, FileList, FileContainer, GlobalProgress },
+    components: { Navigation, SideNavigation, EmptyStream, FileList, FileContainer, GlobalProgress, ConfirmAlert },
     data () {
       return {
         uploadingProcessText: 'The uploading process has been paused',
+        alertTitle: 'You are up to date',
+        alertContent: this.getContent(),
         executed: false,
         isDragging: false,
         isPopupOpened: false
@@ -117,6 +110,9 @@
       },
       cancel () {
         this.isPopupOpened = false
+      },
+      getContent () {
+        return `You are on the latest version ${remote.getGlobal('version')}`
       }
     },
     computed: {
@@ -136,9 +132,6 @@
       shouldShowProgress () {
         const allFiles = this.allFilesInTheSession
         return allFiles.length !== allFiles.filter(file => file.isInCompletedGroup).length
-      },
-      version () {
-        return remote.getGlobal('version')
       }
     },
     created () {
@@ -334,16 +327,6 @@
     border: 2px solid #cac5c5 !important;
     background-color: #cac5c5 !important;
     opacity: 0.5 !important;
-  }
-
-  .logo {
-    vertical-align: middle;
-    width: 30px;
-    margin-right: 10px;
-    -webkit-user-drag: none;
-    -khtml-user-drag: none;
-    -moz-user-drag: none;
-    -o-user-drag: none;
   }
 
 </style>
