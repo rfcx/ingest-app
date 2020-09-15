@@ -531,7 +531,7 @@ function createAutoUpdaterSub () {
   })
   autoUpdater.on('update-not-available', () => {
     console.log('update-not-available')
-    mainWindow.webContents.send('showConfirmPopup', true)
+    mainWindow.webContents.send('showUpToDatePopup', true)
   })
   autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
     console.log('update-downloaded', releaseName, releaseNotes)

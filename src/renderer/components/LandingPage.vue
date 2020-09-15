@@ -139,7 +139,7 @@
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
-      this.$electron.ipcRenderer.on('showConfirmPopup', (event, message) => {
+      this.$electron.ipcRenderer.on('showUpToDatePopup', (event, message) => {
         this.isPopupOpened = message
       })
     }
