@@ -1,14 +1,19 @@
 <template>
   <table>
-    <template v-if="!drives || drives.length === 0">
+    <template v-if="!drives">
       <tr>
         <img class="row__icon" src="@/assets/ic-sd-card-gray.svg"/>
-        <span class="row__source-title" v-if="!drives">Finding external drives...</span>
-        <span class="row__source-title" v-else>No SD Card detected</span>
+        <span class="row__source-title">Finding external drives...</span>
+      </tr>
+    </template>
+    <template v-else-if="drives.length === 0">
+      <tr>
+        <img class="row__icon" src="@/assets/ic-sd-card-gray.svg"/>
+        <span class="row__source-title">No SD Card detected</span>
       </tr>
     </template>
     <template v-else>
-    <tr v-for="drive in drives" :key="drive.id" @click="onSourceSelected(drive)" :class="{'selected': isSelected('external', drive) }">
+    <tr v-for="drive in drives" :key="drive.id" @click="onDriveSelected(drive)" :class="{'selected': isSelected('external', drive) }">
       <img class="row__icon" src="@/assets/ic-sd-card-white.svg" v-if="isSelected('external', drive) || defaultState"/>
       <img class="row__icon" src="@/assets/ic-sd-card-gray.svg" v-else/>
       <span class="row__source-title" :class="{'default': defaultState}">{{ drive.label }}</span>
@@ -30,7 +35,7 @@
 import DriveList from '../../../../utils/DriveListHelper'
 export default {
   data: () => ({
-    drives: [],
+    drives: null,
     selectedSource: {},
     selectedFolderPath: '',
     defaultState: true // user hasn't selected any options before
@@ -41,8 +46,8 @@ export default {
         this.drives = drives
       })
     },
-    onSourceSelected (source) {
-      this.selectedSource = source
+    onDriveSelected (drive) {
+      this.selectedSource = drive
     },
     handleFileChange (event) {
       console.log(event.target.files)
@@ -60,7 +65,9 @@ export default {
   watch: {
     selectedSource (val, oldVal) {
       if (val === oldVal) return
-      this.defaultState = false
+      if (this.defaultState === true) { // first time
+        this.defaultState = false
+      }
       this.$emit('sourceSelected', val)
     }
   },

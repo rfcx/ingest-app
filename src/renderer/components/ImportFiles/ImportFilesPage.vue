@@ -13,6 +13,8 @@
         <button
           type="button"
           class="button is-rounded is-primary"
+          :class="{ 'is-loading': isLoading }"
+          :disabled="!selectedSource"
           @click.prevent="importFiles"
         >Import</button>
       </p>
@@ -28,6 +30,7 @@ import Stream from '../../store/models/Stream'
 
 export default {
   data: () => ({
+    isLoading: false,
     selectedSource: null,
     deviceId: null
   }),
@@ -35,7 +38,9 @@ export default {
   methods: {
     onSourceSelected (newSource) {
       this.selectedSource = newSource
-
+    },
+    readFilesForDeviceId () {
+      this.isLoading = true
       // see all files in the folder
       const path = this.selectedSource.path
       const stuffInDirectory = FileHelper
@@ -44,18 +49,23 @@ export default {
           return { name: name, path: path + '/' + name }
         })
       // read file header info
-      const uniqueDeviceIds = stuffInDirectory.filter(file => {
+      const deviceIds = stuffInDirectory.filter(file => {
         return FileHelper.getExtension(file.path) === 'wav' // read only wav file header info
       }).map(file => {
         const info = new FileInfo(file.path)
         return info.deviceId
-      }).filter(id => id !== '').filter((v, i, a) => a.indexOf(v) === i)
-      console.log('deviceIds', uniqueDeviceIds)
-      if (uniqueDeviceIds.length === 1) {
-        this.deviceId = uniqueDeviceIds[0]
+      })/* .filter(id => id !== '').filter((v, i, a) => a.indexOf(v) === i)
+      console.log('deviceIds', uniqueDeviceIds) */
+      this.isLoading = false
+      if (deviceIds.length > 0) {
+        this.deviceId = deviceIds[0] // assign first device id as a stream device id
+        return Promise.resolve()
+      } else {
+        return Promise.reject(new Error('Device ID not found'))
       }
     },
-    importFiles () {
+    async importFiles () {
+      await this.readFilesForDeviceId()
       if (this.deviceId) {
         const existingSiteWithDeviceId = Stream.query().where('deviceId', this.deviceId).get()
         if (existingSiteWithDeviceId && existingSiteWithDeviceId.length > 0) {
