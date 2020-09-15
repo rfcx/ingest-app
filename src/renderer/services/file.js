@@ -30,7 +30,7 @@ class FileProvider {
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
           this.getFileObjectsFromFolder(file.path, selectedStream, null)
-        )
+        ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
       } else {
         const fileObject = this.createFileObject(file.path, selectedStream)
         if (fileObject) {
@@ -55,7 +55,7 @@ class FileProvider {
     let fileObjectsInFolder = []
     fileObjectsInFolder = fileObjectsInFolder.concat(
       this.getFileObjectsFromFolder(folderPath, selectedStream, null)
-    )
+    ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
     // insert converted files into db
     this.insertNewFiles(fileObjectsInFolder, selectedStream)
     // update file duration
