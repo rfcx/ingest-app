@@ -307,9 +307,10 @@ class FileProvider {
   uploadFile (file, idToken) {
     console.log('\nupload file ', file)
     if (!fileHelper.isExist(file.path)) {
-      return File.update({ where: file.id,
-        data: {state: 'local_error', stateMessage: 'File is not exist'}
+      File.update({ where: file.id,
+        data: {state: 'server_error', stateMessage: 'File does not exist'}
       })
+      return Promise.reject(new Error('File does not exist'))
     }
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.timestamp,
       file.sizeInByte, idToken, (progress) => {
