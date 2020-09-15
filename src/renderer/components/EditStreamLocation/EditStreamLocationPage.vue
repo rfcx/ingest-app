@@ -49,6 +49,7 @@
 <script>
 import Stream from '../../store/models/Stream'
 import File from '../../store/models/File'
+import streamHelper from '../../../../utils/streamHelper'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
 import Map from '../CreateStream/Map'
@@ -79,12 +80,6 @@ export default {
     },
     hasEditedData () {
       return this.name !== this.selectedStream.name || this.selectedLatitude !== this.selectedStream.latitude || this.selectedLongitude !== this.selectedStream.longitude
-    },
-    checkMinLength () {
-      return this.name.trim().length && this.name.trim().length > 2
-    },
-    checkMaxLength () {
-      return this.name.trim().length && this.name.trim().length <= 40
     }
   },
   methods: {
@@ -94,11 +89,8 @@ export default {
       this.selectedLatitude = coordinates[1]
     },
     updateStream () {
-      if (!this.checkMinLength) {
-        this.error = 'Minimum stream name length is 3 characters.'
-        return
-      } else if (!this.checkMaxLength) {
-        this.error = 'Maximum stream name length is 40 characters.'
+      if (!streamHelper.isValidName(this.name)) {
+        this.error = streamHelper.getNameError(this.name)
         return
       }
       const latitude = this.selectedLatitude

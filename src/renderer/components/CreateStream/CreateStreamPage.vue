@@ -42,6 +42,7 @@
 <script>
 import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
+import streamHelper from '../../../../utils/streamHelper'
 import settings from 'electron-settings'
 import Map from './Map'
 
@@ -61,12 +62,6 @@ export default {
   computed: {
     hasPassedValidation () {
       return this.name && this.selectedLatitude && this.selectedLongitude
-    },
-    checkMinLength () {
-      return this.name.trim().length && this.name.trim().length > 2
-    },
-    checkMaxLength () {
-      return this.name.trim().length && this.name.trim().length <= 40
     }
   },
   methods: {
@@ -79,11 +74,8 @@ export default {
       }
     },
     createStream () {
-      if (!this.checkMinLength) {
-        this.error = 'Minimum stream name length is 3 characters.'
-        return
-      } else if (!this.checkMaxLength) {
-        this.error = 'Maximum stream name length is 40 characters.'
+      if (!streamHelper.isValidName(this.name)) {
+        this.error = streamHelper.getNameError(this.name)
         return
       }
       const visibility = false
