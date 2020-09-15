@@ -482,17 +482,19 @@ class FileProvider {
     const fileExt = fileHelper.getExtension(fileName)
 
     // read file header info
-    const info = new FileInfo(filePath)
-    console.log(info)
-
-    const deviceId = info.deviceId
-    const deploymentId = info.deployment
+    let deviceId, deploymentId, momentDate
+    if (fileExt === 'wav') {
+      const info = new FileInfo(filePath)
+      console.log(info)
+      deviceId = info.deviceId
+      deploymentId = info.deployment
+      momentDate = info.recordedDate
+    }
 
     // const data = fileHelper.getMD5Hash(filePath)
     // const hash = data.hash
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
-    let momentDate = info.recordedDate
     let isoDate
     if (momentDate) {
       isoDate = momentDate.toISOString()
