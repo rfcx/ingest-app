@@ -2,6 +2,14 @@ const moment = require('moment')
 
 const appDate = 'YYYY-MM-DD HH:mm:ss'
 
+const getIsoDateWithFormat = (format, fileName) => {
+  switch (format) {
+    case 'Auto-detect': return parseTimestampAuto(fileName)
+    case 'unix-hex': return parseTimestampUnixHex(fileName)
+    default: return parseTimestamp(fileName, format)
+  }
+}
+
 const parseTimestamp = (fileName, timestampFormat) => {
   const parts = {
     '%Y': '(?<year>[1-9][0-9][0-9][0-9])',
@@ -72,6 +80,11 @@ const parseTimestampAuto = (input) => {
   return `${result.year}-${result.month}-${result.day}T${result.hour}:${result.minute}:${result.second}Z`
 }
 
+const parseTimestampUnixHex = (input) => {
+  console.log('parseTimestampUnixHex', input)
+  return moment.utc('1970-01-01').add('seconds', parseInt(input, 16)).toISOString()
+}
+
 const getMomentDateFromISODate = (date) => {
   return moment.utc(date, moment.ISO_8601)
 }
@@ -90,8 +103,10 @@ const isValidDate = (date) => {
 
 export default {
   appDate,
+  getIsoDateWithFormat,
   parseTimestamp,
   parseTimestampAuto,
+  parseTimestampUnixHex,
   getMomentDateFromISODate,
   getMomentDateFromAppDate,
   convertMomentDateToAppDate,
