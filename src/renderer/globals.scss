@@ -87,8 +87,9 @@ body {
 }
 
 h1 {
-  font-size: 18px;
-  margin-bottom: $default-padding-margin;
+  font-size: 18px !important;
+  font-weight: normal !important;
+  margin-bottom: $default-padding-margin !important;
 }
 
 a.is-button {
