@@ -13,7 +13,7 @@ const apiUrl = (proEnvironment) => {
     return platform === 'amazon' ? 'https://ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
   }
   return platform === 'amazon' ? 'https://staging-ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
-  // return 'https://192.168.154.144:3030' // return 'https://localhost:3030'
+  // return 'http://192.168.154.144:3030' // return 'http://localhost:3030'
 }
 
 const explorerWebUrl = (isProd, streamId = null) => {
@@ -133,47 +133,7 @@ const deleteStream = (env, streamId, idToken) => {
     })
 }
 
-const moveToTrashStream = (env, streamId, idToken) => {
-  return httpClient.post(apiUrl(env) + `/streams/${streamId}/move-to-trash`, {}, { headers: { 'Authorization': 'Bearer ' + idToken } })
-    .then(function (response) {
-      return response.data
-    }).catch(error => {
-      console.log('error', error.response)
-      throw error.response
-    })
-}
-
-const touchApi = (env, idToken) => {
-  return httpClient.get(apiUrl(env) + `/users/touchapi`, { headers: { 'Authorization': 'Bearer ' + idToken } })
-    .then(function (response) {
-      return response.data
-    })
-}
-
-const sendInviteCode = (env, attrs, idToken) => {
-  let data = {
-    code: attrs.code
-  }
-  if (attrs.acceptTerms) {
-    data.accept_terms = !!attrs.acceptTerms
-  }
-  return httpClient.post(apiUrl(env) + `/users/code`, data, { headers: { 'Authorization': 'Bearer ' + idToken } })
-    .then(function (response) {
-      return response.data
-    }).catch(error => {
-      console.log('error', error.response)
-      throw error.response
-    })
-}
-
 const getUserSites = (env, idToken) => {
-  return httpClient.get(apiUrl(env) + `/users/sites?`, { headers: { 'Authorization': 'Bearer ' + idToken } })
-    .then(function (response) {
-      return response.data
-    })
-}
-
-const getExistingStreams = (env, idToken) => {
   return httpClient.get(apiUrl(env) + `/streams`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       return response.data
@@ -191,9 +151,5 @@ export default {
   checkStatus,
   renameStream,
   deleteStream,
-  moveToTrashStream,
-  touchApi,
-  sendInviteCode,
-  getUserSites,
-  getExistingStreams
+  getUserSites
 }

@@ -29,6 +29,7 @@ function createAuthWindow () {
     console.log('authWindow onBeforeRequest')
     await authService.loadTokens(url)
     index.createWindow(false)
+    global.firstLogIn = true
     await destroyAuthWin()
   })
   // win.webContents.once('dom-ready', () => win.webContents.openDevTools())
