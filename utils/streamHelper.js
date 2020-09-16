@@ -7,7 +7,7 @@ const getNameError = (streamName) => {
 }
 
 const isValidName = (streamName) => {
-  return streamName.trim().length && streamName.trim().length > 2 && streamName.trim().length <= 40
+  return checkMinLength(streamName) && checkMaxLength(streamName)
 }
 
 const checkMinLength = (streamName) => {
