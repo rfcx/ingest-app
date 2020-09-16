@@ -2,6 +2,10 @@ import { Model } from '@vuex-orm/core'
 import File from './File'
 import FileState from '../../../../utils/fileState'
 
+const AUTO_DETECT = 'Auto-detect'
+// eslint-disable-next-line no-unused-vars
+const UNIX_HEX = 'unix-hex'
+
 export default class Stream extends Model {
   static entity = 'streams'
 
@@ -11,7 +15,7 @@ export default class Stream extends Model {
     return {
       id: this.string(''),
       name: this.string(''),
-      timestampFormat: this.string(''), // TODO: remove
+      timestampFormat: this.string(AUTO_DETECT), // Auto-detect, unix-hex, custom
       folderPath: this.string(''), // TODO: remove
       siteGuid: this.string(''), // TODO: remove
       latitude: this.number(0),
