@@ -160,12 +160,13 @@ export default {
     },
     formatItemClick (type, item) {
       if (item instanceof TimeFormat) {
-        if (item.format === AUTO_DETECT) {
+        if (item.format === AUTO_DETECT) { // if select auto-detect, then reset the selected value
           this.selectedItems = [item]
           this.lastInputText = ''
         } else {
-          if (this.isAutoDetect) {
-            return
+          if (this.isAutoDetect) { // if select something else when the auto-detect was selected, then reset the selected value
+            this.selectedItems = [item]
+            this.lastInputText = ''
           }
           // check format type is already selected
           const isSelected = this.selectedItems.findIndex(si => (si instanceof TimeFormat && si.type === item.type)) > -1
