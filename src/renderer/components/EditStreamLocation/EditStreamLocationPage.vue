@@ -24,7 +24,7 @@
             </router-link>
           </p>
           <p class="control control-btn">
-            <button type="button" class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!(hasEditedData && isNewStreamNameValid)" @click.prevent="updateStream">Apply</button>
+            <button type="button" class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!hasEditedData" @click.prevent="updateStream">Apply</button>
           </p>
         </div>
         <button type="button" class="button is-danger is-rounded is-outlined" :class="{'is-loading': isDeleting}" @click.prevent="showConfirmToDeleteStreamModal"><font-awesome-icon class="iconTrash" :icon="iconTrash"></font-awesome-icon> Delete Site</button>
@@ -49,6 +49,7 @@
 <script>
 import Stream from '../../store/models/Stream'
 import File from '../../store/models/File'
+import streamHelper from '../../../../utils/streamHelper'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
 import Map from '../CreateStream/Map'
@@ -79,9 +80,6 @@ export default {
     },
     hasEditedData () {
       return this.name !== this.selectedStream.name || this.selectedLatitude !== this.selectedStream.latitude || this.selectedLongitude !== this.selectedStream.longitude
-    },
-    isNewStreamNameValid () {
-      return this.name.trim().length && this.name.trim().length >= 3 && this.name.trim().length <= 40
     }
   },
   methods: {
@@ -91,6 +89,10 @@ export default {
       this.selectedLatitude = coordinates[1]
     },
     updateStream () {
+      if (!streamHelper.isValidName(this.name)) {
+        this.error = streamHelper.getNameError(this.name)
+        return
+      }
       const latitude = this.selectedLatitude
       const longitude = this.selectedLongitude
       const name = this.name
@@ -198,11 +200,21 @@ export default {
     },
     redirectToMainScreen () {
       this.$router.push('/')
+    },
+    onCloseAlert () {
+      this.error = null
     }
   },
   mounted () {
     this.name = this.selectedStream.name || ''
+  },
+  watch: {
+    name (val, oldVal) {
+      if (val === oldVal) return
+      this.error = null
+    }
   }
+
 }
 </script>
 
