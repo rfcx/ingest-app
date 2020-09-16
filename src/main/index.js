@@ -367,7 +367,6 @@ async function createAppWindow (openedAsHidden) {
     await authService.getIdToken()
     await checkToken()
     await getUserInfo()
-    await hasAccessToApp()
     console.log('create main window')
     createWindow(openedAsHidden)
   } catch (err) {
@@ -398,30 +397,6 @@ async function checkToken () {
   })
 }
 
-async function checkUserPermissions () {
-  console.log('checkUserRole')
-  return new Promise(async (resolve, reject) => {
-    if (!idToken) {
-      idToken = await authService.getIdToken()
-      if (!idToken) return resolve(false)
-    }
-    let profile = jwtDecode(idToken)
-    let appMetadata = 'https://rfcx.org/app_metadata'
-    let userMetadata = 'https://rfcx.org/user_metadata'
-    if (profile && profile.roles && (profile.roles || []).includes('rfcxUser')) {
-      return resolve(profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
-        profile[userMetadata].consentGiven.toString() === 'true')
-    } else if (profile && profile[appMetadata] && profile[appMetadata].authorization && (profile[appMetadata].authorization.roles || []).includes('rfcxUser')) {
-      return resolve(profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
-        profile[userMetadata].consentGiven.toString() === 'true')
-    } else return resolve(false)
-  })
-}
-
-async function hasAccessToApp () {
-  global.hasAccessToApp = await checkUserPermissions()
-}
-
 async function getUserInfo () {
   console.log('getUserInfo')
   return new Promise(async (resolve, reject) => {
@@ -446,9 +421,6 @@ async function getUserInfo () {
     }
     if (profile && profile.guid) {
       global.userId = profile.guid
-    }
-    if (profile && profile.roles) {
-      global.roles = profile.roles
     }
     global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
       profile[userMetadata].consentGiven.toString() === 'true'
@@ -636,7 +608,6 @@ ipcMain.on('getIdToken', listenerOfToken)
 async function listenerOfRefreshToken (event, args) {
   await refreshTokens()
   await checkToken()
-  await hasAccessToApp()
   event.sender.send('sendRefreshToken')
 }
 
@@ -677,6 +648,5 @@ ipcMain.on('changeAutoUpdateApp', () => {
 })
 
 export default {
-  createWindow,
-  hasAccessToApp
+  createWindow
 }

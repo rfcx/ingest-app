@@ -1,21 +1,19 @@
 <template>
   <div id="wrapper-landing-page" :class="{ 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop"
      @dragover.prevent @dragleave="outDrag">
-    <div v-if="hasAccessToApp()">
-      <!-- <navigation :class="{ 'dark-mode': isDarkTheme === true }"></navigation> -->
-      <section class="main-content columns is-mobile">
-        <side-navigation :class="{ 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
-        <div class="column content is-desktop" v-if="streams && streams.length > 0">
-          <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <file-container v-else :isDragging="isDragging"></file-container>
-        </div>
-        <div class="column content is-desktop" v-else>
-          <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <file-container v-else :isDragging="isDragging"></file-container>
-        </div>
-      </section>
-      <global-progress></global-progress>
-      <confirm-alert
+    <section class="main-content columns is-mobile">
+      <side-navigation :class="{ 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
+      <div class="column content is-desktop" v-if="streams && streams.length > 0">
+        <empty-stream v-if="isEmptyStream()"></empty-stream>
+        <file-container v-else :isDragging="isDragging"></file-container>
+      </div>
+      <div class="column content is-desktop" v-else>
+        <empty-stream v-if="isEmptyStream()"></empty-stream>
+        <file-container v-else :isDragging="isDragging"></file-container>
+      </div>
+    </section>
+    <global-progress></global-progress>
+    <confirm-alert
         :title="alertTitle"
         :content="alertContent"
         :image="'rfcx-logo.png'"
@@ -84,21 +82,6 @@
       },
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
-      },
-      hasAccessToApp () {
-        let hasAccessToApp = remote.getGlobal('hasAccessToApp')
-        if (hasAccessToApp && !this.executed) {
-          // For the first enter to the app for continue the uploading process
-          console.log('hasAccessToApp on the first enter', hasAccessToApp)
-          this.executed = true
-          return true
-        } else if (hasAccessToApp && this.executed) {
-          console.log('hasAccessToApp', hasAccessToApp)
-          return true
-        } else {
-          console.log('hasAccessToApp', hasAccessToApp)
-          this.$router.push('/access-denied-page')
-        }
       },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')

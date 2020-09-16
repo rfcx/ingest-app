@@ -28,7 +28,6 @@ function createAuthWindow () {
   webRequest.onBeforeRequest(filter, async ({ url }) => {
     console.log('authWindow onBeforeRequest')
     await authService.loadTokens(url)
-    await index.hasAccessToApp()
     index.createWindow(false)
     await destroyAuthWin()
   })
