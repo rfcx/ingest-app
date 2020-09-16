@@ -37,11 +37,6 @@ export default new Router({
       component: require('@/components/PreferencesPage').default
     },
     {
-      path: '/access-denied-page',
-      name: 'access-denied-page',
-      component: require('@/components/AccessDeniedPage').default
-    },
-    {
       path: '/edit-stream-location',
       name: 'edit-stream-location-page',
       component: require('@/components/EditStreamLocation/EditStreamLocationPage').default,

@@ -166,16 +166,6 @@ const sendInviteCode = (env, attrs, idToken) => {
     })
 }
 
-const sendAcceptTerms = (env, idToken) => {
-  return httpClient.post(apiUrl(env) + `/users/accept-terms`, { }, { headers: { 'Authorization': 'Bearer ' + idToken } })
-    .then(function (response) {
-      return response.data
-    }).catch(error => {
-      console.log('error', error.response)
-      throw error.response
-    })
-}
-
 const getUserSites = (env, idToken) => {
   return httpClient.get(apiUrl(env) + `/users/sites?`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
@@ -204,7 +194,6 @@ export default {
   moveToTrashStream,
   touchApi,
   sendInviteCode,
-  sendAcceptTerms,
   getUserSites,
   getExistingStreams
 }
