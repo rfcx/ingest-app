@@ -13,6 +13,14 @@
       </div>
     </section>
     <global-progress></global-progress>
+    <confirm-alert
+        :title="alertTitle"
+        :content="alertContent"
+        :image="'rfcx-logo.png'"
+        :isProcessing="false"
+        v-if="isPopupOpened"
+        @onCancelPressed="cancel()"/>
+    </div>
   </div>
 </template>
 
@@ -22,6 +30,7 @@
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyStream from './LandingPage/EmptyStream'
   import FileContainer from './LandingPage/FileContainer/FileContainer'
+  import ConfirmAlert from './Common/ConfirmAlert'
   import { mapState } from 'vuex'
   import File from '../store/models/File'
   import Stream from '../store/models/Stream'
@@ -30,11 +39,15 @@
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyStream, FileList, FileContainer, GlobalProgress },
+    components: { Navigation, SideNavigation, EmptyStream, FileList, FileContainer, GlobalProgress, ConfirmAlert },
     data () {
       return {
         uploadingProcessText: 'The uploading process has been paused',
-        isDragging: false
+        alertTitle: 'You are up to date',
+        alertContent: this.getContent(),
+        executed: false,
+        isDragging: false,
+        isPopupOpened: false
       }
     },
     methods: {
@@ -77,6 +90,12 @@
         await analytics.send('screenview', { cd: `${guid}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
         await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
         console.log('analytics', analytics)
+      },
+      cancel () {
+        this.isPopupOpened = false
+      },
+      getContent () {
+        return `You are on the latest version ${remote.getGlobal('version')}`
       }
     },
     computed: {
@@ -103,6 +122,9 @@
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
+      this.$electron.ipcRenderer.on('showUpToDatePopup', (event, message) => {
+        this.isPopupOpened = message
+      })
     }
   }
 </script>
