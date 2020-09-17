@@ -14,13 +14,12 @@
     </section>
     <global-progress></global-progress>
     <confirm-alert
-        :title="alertTitle"
-        :content="alertContent"
-        :image="'rfcx-logo.png'"
-        :isProcessing="false"
-        v-if="isPopupOpened"
-        @onCancelPressed="cancel()"/>
-    </div>
+      :title="alertTitle"
+      :content="alertContent"
+      :image="'rfcx-logo.png'"
+      :isProcessing="false"
+      v-if="isPopupOpened"
+      @onCancelPressed="cancel()"/>
   </div>
 </template>
 
