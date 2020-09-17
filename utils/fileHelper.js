@@ -2,6 +2,7 @@ import getAudioDurationInSeconds from './fileDurationHelper'
 const fs = require('fs')
 const path = require('path')
 const cryptoJS = require('crypto-js')
+const dayInMs = 1000 * 60 * 60 * 24
 
 const getFilePath = (directoryPath, fileName) => {
   return path.join(directoryPath, fileName)
@@ -75,6 +76,10 @@ const isSupportedFileExtension = (fileExtension) => {
   return extension === 'wav' || extension === 'opus' || extension === 'flac'
 }
 
+const isOutdatedFile = (file) => {
+  return file.uploadedTime && Date.now() - parseInt(file.uploadedTime) > dayInMs * 30
+}
+
 export default {
   getFilesFromDirectoryPath,
   readFile,
@@ -88,5 +93,6 @@ export default {
   getFileDuration,
   isSupportedFileExtension,
   isFolder,
-  getCheckSum
+  getCheckSum,
+  isOutdatedFile
 }
