@@ -7,7 +7,6 @@ import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
-import userService from './services/user-service'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
@@ -54,6 +53,7 @@ const preferencesURL = process.env.NODE_ENV === 'development'
 
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
+  if (!idToken) getIdToken()
   /**
    * Initial window options
    */
@@ -369,6 +369,7 @@ async function createAppWindow (openedAsHidden) {
     await getUserInfo()
     console.log('create main window')
     createWindow(openedAsHidden)
+    resetFirstLogInCondition()
   } catch (err) {
     // An Entry for new users
     console.log('createAuthWindow')
@@ -395,6 +396,10 @@ async function checkToken () {
     }
     resolve()
   })
+}
+
+async function getIdToken () {
+  idToken = await authService.getIdToken()
 }
 
 async function getUserInfo () {
@@ -424,13 +429,8 @@ async function getUserInfo () {
     }
     global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
       profile[userMetadata].consentGiven.toString() === 'true'
-    await setAllUserSitesInfo()
     resolve()
   })
-}
-
-async function setAllUserSitesInfo () {
-  global.allSites = await userService.getUserSites(idToken)
 }
 
 async function refreshTokens () {
@@ -450,6 +450,7 @@ async function logOut () {
     mainWindow.close()
   }
   idToken = null
+  resetFirstLogInCondition()
 }
 
 function clearAllData () {
@@ -486,6 +487,10 @@ if (!gotTheLock) {
       mainWindow.focus()
     }
   })
+}
+
+function resetFirstLogInCondition () {
+  global.firstLogIn = false
 }
 
 function createAutoUpdaterSub () {
@@ -638,6 +643,10 @@ ipcMain.on('closeUpdatePopupWindow', () => {
 
 ipcMain.on('updateVersion', () => {
   updateApp()
+})
+
+ipcMain.on('resetFirstLogIn', () => {
+  resetFirstLogInCondition()
 })
 
 ipcMain.on('changeAutoUpdateApp', () => {

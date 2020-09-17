@@ -26,7 +26,6 @@
 
 <script>
   import GlobalProgress from './SideNavigation/GlobalProgress'
-  import Navigation from './Navigation/Navigation'
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyStream from './LandingPage/EmptyStream'
   import FileContainer from './LandingPage/FileContainer/FileContainer'
@@ -39,7 +38,7 @@
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyStream, FileList, FileContainer, GlobalProgress, ConfirmAlert },
+    components: { SideNavigation, EmptyStream, FileList, FileContainer, GlobalProgress, ConfirmAlert },
     data () {
       return {
         uploadingProcessText: 'The uploading process has been paused',
