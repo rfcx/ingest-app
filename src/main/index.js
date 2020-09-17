@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow, Menu, ipcMain, dialog, autoUpdater, powerMonitor } from 'electron'
+import { app, BrowserWindow, Menu, ipcMain, autoUpdater, powerMonitor } from 'electron'
 import store from '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
@@ -24,7 +24,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 let mainWindow, backgroundAPIWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
-let menu, idToken, isManualUpdateCheck
+let menu, idToken
 let refreshIntervalTimeout, expires, updateIntervalTimeout
 let willQuitApp = false
 let isLogOut = false
@@ -67,8 +67,6 @@ function createWindow (openedAsHidden = false) {
     backgroundColor: '#131525',
     webPreferences: { nodeIntegration: true }
   })
-
-  // mainWindow.webContents.once('dom-ready', () => mainWindow.webContents.openDevTools())
 
   mainWindow.on('closed', () => {
     resetTimers()
@@ -289,7 +287,6 @@ function createMenu () {
               updatePopupWindow.destroy()
               updatePopupWindow = null
             }
-            isManualUpdateCheck = true
             checkForUpdates()
           }
         },
@@ -508,25 +505,10 @@ function createAutoUpdaterSub () {
   autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
   autoUpdater.on('update-available', () => {
     console.log('update-available')
-    isManualUpdateCheck = false
   })
   autoUpdater.on('update-not-available', () => {
     console.log('update-not-available')
-    let messageForPopup
-    if (process.platform === 'win32' || process.platform === 'win64') messageForPopup = `You don't have any updates.`
-    else {
-      messageForPopup = `You are up to date! RFCx Ingest App ${process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()} is the latest version.`
-    }
-    if (isManualUpdateCheck) {
-      dialog.showMessageBox(mainWindow, {
-        type: 'info',
-        buttons: ['Ok'],
-        message: messageForPopup,
-        title: 'UP TO DATE',
-        icon: path.join(__static, 'rfcx-logo-win.png')
-      })
-    }
-    isManualUpdateCheck = false
+    mainWindow.webContents.send('showUpToDatePopup', true)
   })
   autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
     console.log('update-downloaded', releaseName, releaseNotes)

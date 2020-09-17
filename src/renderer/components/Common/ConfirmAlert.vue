@@ -7,11 +7,12 @@
         <button class="delete" aria-label="close" @click="cancelButtonPressed()"></button>
       </header>
       <section class="modal-card-body" v-if="content">
+        <img v-if="image" class="logo" :src="require(`../../assets/${image}`)">
         {{ content }}
       </section>
       <footer class="modal-card-foot">
-        <button class="button is-rounded" @click="cancelButtonPressed()">{{cancelButtonText}}</button>
-        <button class="button is-danger is-rounded" :class="{ 'is-loading': isProcessing }" @click.prevent="confirmButtonPressed()">{{confirmButtonText}}</button>
+        <button class="button is-rounded" @click="cancelButtonPressed()">{{ cancelButtonText }}</button>
+        <button v-if="confirmButtonText" class="button is-danger is-rounded" :class="{ 'is-loading': isProcessing }" @click.prevent="confirmButtonPressed()">{{ confirmButtonText }}</button>
       </footer>
     </div>
   </div>
@@ -22,6 +23,7 @@ export default {
   props: {
     title: String,
     content: String,
+    image: String,
     confirmButtonText: String,
     cancelButtonText: {
       type: String,
@@ -39,3 +41,17 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+
+  .logo {
+    vertical-align: middle;
+    width: 30px;
+    margin-right: 10px;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+  }
+
+</style>

@@ -3,7 +3,7 @@
     <img class="wrapper__logo" src="~@/assets/rfcx-logo.png">
     <div class="wrapper__title">RFCx Ingest</div>
     <div class="wrapper__version" v-if="version">Version {{version}}</div>
-    <div class="wrapper__version is-size-7">({{getEnv()}})</div>
+    <div class="wrapper__version is-size-7">{{getEnv()}}</div>
   </div>
 </template>
 
