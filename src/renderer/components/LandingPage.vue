@@ -1,30 +1,34 @@
 <template>
   <div id="wrapper-landing-page" :class="{ 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop"
      @dragover.prevent @dragleave="outDrag">
-    <div v-if="hasAccessToApp()">
-      <!-- <navigation :class="{ 'dark-mode': isDarkTheme === true }"></navigation> -->
-      <section class="main-content columns is-mobile">
-        <side-navigation :class="{ 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
-        <div class="column content is-desktop" v-if="streams && streams.length > 0">
-          <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <file-container v-else :isDragging="isDragging"></file-container>
-        </div>
-        <div class="column content is-desktop" v-else>
-          <empty-stream v-if="isEmptyStream()"></empty-stream>
-          <file-container v-else :isDragging="isDragging"></file-container>
-        </div>
-      </section>
-      <global-progress></global-progress>
-    </div>
+    <section class="main-content columns is-mobile">
+      <side-navigation :class="{ 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
+      <div class="column content is-desktop" v-if="streams && streams.length > 0">
+        <empty-stream v-if="isEmptyStream()"></empty-stream>
+        <file-container v-else :isDragging="isDragging"></file-container>
+      </div>
+      <div class="column content is-desktop" v-else>
+        <empty-stream v-if="isEmptyStream()"></empty-stream>
+        <file-container v-else :isDragging="isDragging"></file-container>
+      </div>
+    </section>
+    <global-progress></global-progress>
+    <confirm-alert
+      :title="alertTitle"
+      :content="alertContent"
+      :image="'rfcx-logo.png'"
+      :isProcessing="false"
+      v-if="isPopupOpened"
+      @onCancelPressed="cancel()"/>
   </div>
 </template>
 
 <script>
   import GlobalProgress from './SideNavigation/GlobalProgress'
-  import Navigation from './Navigation/Navigation'
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyStream from './LandingPage/EmptyStream'
   import FileContainer from './LandingPage/FileContainer/FileContainer'
+  import ConfirmAlert from './Common/ConfirmAlert'
   import { mapState } from 'vuex'
   import File from '../store/models/File'
   import Stream from '../store/models/Stream'
@@ -33,12 +37,15 @@
 
   export default {
     name: 'landing-page',
-    components: { Navigation, SideNavigation, EmptyStream, FileList, FileContainer, GlobalProgress },
+    components: { SideNavigation, EmptyStream, FileList, FileContainer, GlobalProgress, ConfirmAlert },
     data () {
       return {
         uploadingProcessText: 'The uploading process has been paused',
+        alertTitle: 'You are up to date',
+        alertContent: this.getContent(),
         executed: false,
-        isDragging: false
+        isDragging: false,
+        isPopupOpened: false
       }
     },
     methods: {
@@ -74,21 +81,6 @@
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
       },
-      hasAccessToApp () {
-        let hasAccessToApp = remote.getGlobal('hasAccessToApp')
-        if (hasAccessToApp && !this.executed) {
-          // For the first enter to the app for continue the uploading process
-          console.log('hasAccessToApp on the first enter', hasAccessToApp)
-          this.executed = true
-          return true
-        } else if (hasAccessToApp && this.executed) {
-          console.log('hasAccessToApp', hasAccessToApp)
-          return true
-        } else {
-          console.log('hasAccessToApp', hasAccessToApp)
-          this.$router.push('/access-denied-page')
-        }
-      },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
         let guid = remote.getGlobal('userId')
@@ -96,6 +88,12 @@
         await analytics.send('screenview', { cd: `${guid}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
         await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
         console.log('analytics', analytics)
+      },
+      cancel () {
+        this.isPopupOpened = false
+      },
+      getContent () {
+        return `You are on the latest version ${remote.getGlobal('version')}`
       }
     },
     computed: {
@@ -122,6 +120,9 @@
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
+      this.$electron.ipcRenderer.on('showUpToDatePopup', (event, message) => {
+        this.isPopupOpened = message
+      })
     }
   }
 </script>

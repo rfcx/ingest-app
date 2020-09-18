@@ -1,13 +1,12 @@
 'use strict'
 
-import { app, BrowserWindow, Menu, ipcMain, dialog, autoUpdater, powerMonitor } from 'electron'
+import { app, BrowserWindow, Menu, ipcMain, autoUpdater, powerMonitor } from 'electron'
 import store from '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
-import userService from './services/user-service'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
@@ -25,7 +24,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 let mainWindow, backgroundAPIWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
-let menu, idToken, isManualUpdateCheck
+let menu, idToken
 let refreshIntervalTimeout, expires, updateIntervalTimeout
 let willQuitApp = false
 let isLogOut = false
@@ -54,6 +53,7 @@ const preferencesURL = process.env.NODE_ENV === 'development'
 
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
+  if (!idToken) getIdToken()
   /**
    * Initial window options
    */
@@ -67,8 +67,6 @@ function createWindow (openedAsHidden = false) {
     backgroundColor: '#131525',
     webPreferences: { nodeIntegration: true }
   })
-
-  // mainWindow.webContents.once('dom-ready', () => mainWindow.webContents.openDevTools())
 
   mainWindow.on('closed', () => {
     resetTimers()
@@ -289,7 +287,6 @@ function createMenu () {
               updatePopupWindow.destroy()
               updatePopupWindow = null
             }
-            isManualUpdateCheck = true
             checkForUpdates()
           }
         },
@@ -370,9 +367,9 @@ async function createAppWindow (openedAsHidden) {
     await authService.getIdToken()
     await checkToken()
     await getUserInfo()
-    await hasAccessToApp()
     console.log('create main window')
     createWindow(openedAsHidden)
+    resetFirstLogInCondition()
   } catch (err) {
     // An Entry for new users
     console.log('createAuthWindow')
@@ -401,28 +398,8 @@ async function checkToken () {
   })
 }
 
-async function checkUserPermissions () {
-  console.log('checkUserRole')
-  return new Promise(async (resolve, reject) => {
-    if (!idToken) {
-      idToken = await authService.getIdToken()
-      if (!idToken) return resolve(false)
-    }
-    let profile = jwtDecode(idToken)
-    let appMetadata = 'https://rfcx.org/app_metadata'
-    let userMetadata = 'https://rfcx.org/user_metadata'
-    if (profile && profile.roles && (profile.roles || []).includes('rfcxUser')) {
-      return resolve(profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
-        profile[userMetadata].consentGiven.toString() === 'true')
-    } else if (profile && profile[appMetadata] && profile[appMetadata].authorization && (profile[appMetadata].authorization.roles || []).includes('rfcxUser')) {
-      return resolve(profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
-        profile[userMetadata].consentGiven.toString() === 'true')
-    } else return resolve(false)
-  })
-}
-
-async function hasAccessToApp () {
-  global.hasAccessToApp = await checkUserPermissions()
+async function getIdToken () {
+  idToken = await authService.getIdToken()
 }
 
 async function getUserInfo () {
@@ -450,18 +427,10 @@ async function getUserInfo () {
     if (profile && profile.guid) {
       global.userId = profile.guid
     }
-    if (profile && profile.roles) {
-      global.roles = profile.roles
-    }
     global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
       profile[userMetadata].consentGiven.toString() === 'true'
-    await setAllUserSitesInfo()
     resolve()
   })
-}
-
-async function setAllUserSitesInfo () {
-  global.allSites = await userService.getUserSites(idToken)
 }
 
 async function refreshTokens () {
@@ -481,6 +450,7 @@ async function logOut () {
     mainWindow.close()
   }
   idToken = null
+  resetFirstLogInCondition()
 }
 
 function clearAllData () {
@@ -519,6 +489,10 @@ if (!gotTheLock) {
   })
 }
 
+function resetFirstLogInCondition () {
+  global.firstLogIn = false
+}
+
 function createAutoUpdaterSub () {
   let platform = os.platform() + '_' + os.arch()
   let version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
@@ -531,25 +505,10 @@ function createAutoUpdaterSub () {
   autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
   autoUpdater.on('update-available', () => {
     console.log('update-available')
-    isManualUpdateCheck = false
   })
   autoUpdater.on('update-not-available', () => {
     console.log('update-not-available')
-    let messageForPopup
-    if (process.platform === 'win32' || process.platform === 'win64') messageForPopup = `You don't have any updates.`
-    else {
-      messageForPopup = `You are up to date! RFCx Ingest App ${process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()} is the latest version.`
-    }
-    if (isManualUpdateCheck) {
-      dialog.showMessageBox(mainWindow, {
-        type: 'info',
-        buttons: ['Ok'],
-        message: messageForPopup,
-        title: 'UP TO DATE',
-        icon: path.join(__static, 'rfcx-logo-win.png')
-      })
-    }
-    isManualUpdateCheck = false
+    mainWindow.webContents.send('showUpToDatePopup', true)
   })
   autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
     console.log('update-downloaded', releaseName, releaseNotes)
@@ -654,7 +613,6 @@ ipcMain.on('getIdToken', listenerOfToken)
 async function listenerOfRefreshToken (event, args) {
   await refreshTokens()
   await checkToken()
-  await hasAccessToApp()
   event.sender.send('sendRefreshToken')
 }
 
@@ -687,6 +645,10 @@ ipcMain.on('updateVersion', () => {
   updateApp()
 })
 
+ipcMain.on('resetFirstLogIn', () => {
+  resetFirstLogInCondition()
+})
+
 ipcMain.on('changeAutoUpdateApp', () => {
   if (settings.get('settings.auto_update_app')) {
     checkForUpdates()
@@ -695,6 +657,5 @@ ipcMain.on('changeAutoUpdateApp', () => {
 })
 
 export default {
-  createWindow,
-  hasAccessToApp
+  createWindow
 }

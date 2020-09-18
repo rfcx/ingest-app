@@ -14,7 +14,7 @@ function getAPIUrl () {
       url = isProd ? 'https://ingest.rfcx.org' : 'https://staging-ingest.rfcx.org'
   }
   return url
-  // return 'https://localhost:3030'
+  // return 'http://localhost:3030'
 }
 
 export default {
