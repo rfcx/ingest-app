@@ -1,3 +1,4 @@
+import fileHelper from './fileHelper'
 const moment = require('moment')
 
 const appDate = 'YYYY-MM-DD HH:mm:ss'
@@ -80,9 +81,20 @@ const parseTimestampAuto = (input) => {
   return `${result.year}-${result.month}-${result.day}T${result.hour}:${result.minute}:${result.second}Z`
 }
 
+const isHex = (string) => {
+  var num = parseInt(string, 16)
+  return (num.toString(16).toLowerCase() === string.toLowerCase())
+}
+
 const parseTimestampUnixHex = (input) => {
   console.log('parseTimestampUnixHex', input)
-  return moment.utc('1970-01-01').add('seconds', parseInt(input, 16)).toISOString()
+  const fileName = fileHelper.getFileName(input)
+  if (!isHex(fileName)) {
+    return undefined
+  } else {
+    const date = moment.utc('1970-01-01').add(parseInt(fileName, 16), 'seconds')
+    return date.toISOString()
+  }
 }
 
 const getMomentDateFromISODate = (date) => {
