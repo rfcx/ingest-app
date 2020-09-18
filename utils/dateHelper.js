@@ -87,13 +87,12 @@ const isHex = (string) => {
 }
 
 const parseTimestampUnixHex = (input) => {
-  console.log('parseTimestampUnixHex', input)
   const fileName = fileHelper.getFileName(input)
   if (!isHex(fileName)) {
     return undefined
   } else {
     const date = moment.utc('1970-01-01').add(parseInt(fileName, 16), 'seconds')
-    return date.toISOString()
+    return moment(date, 'YYYY-DD-MM').isValid() ? date.toISOString() : undefined
   }
 }
 
@@ -109,10 +108,6 @@ const convertMomentDateToAppDate = (date) => {
   return date.format(appDate)
 }
 
-const isValidDate = (date) => {
-  return date.isValid()
-}
-
 export default {
   appDate,
   getIsoDateWithFormat,
@@ -121,6 +116,5 @@ export default {
   parseTimestampUnixHex,
   getMomentDateFromISODate,
   getMomentDateFromAppDate,
-  convertMomentDateToAppDate,
-  isValidDate
+  convertMomentDateToAppDate
 }
