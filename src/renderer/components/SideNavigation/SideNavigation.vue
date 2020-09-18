@@ -4,8 +4,10 @@
       <div class="wrapper__logo">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
       </div>
-      <div class="wrapper__user-pic" @click="toggleUserMenu()">
-        <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)">
+      <div class="wrapper__user-pic" v-click-outside="outside" >
+        <div @click="toggleUserMenu()">
+          <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)">
+        </div>
       </div>
     </div>
     <div class="wrapper__stat" v-if="showUserMenu">
@@ -133,6 +135,9 @@
       },
       toggleUserMenu () {
         this.showUserMenu = !this.showUserMenu
+      },
+      outside: function (e) {
+        this.showUserMenu = false
       },
       getUserName () {
         let userName = remote.getGlobal('firstname')
