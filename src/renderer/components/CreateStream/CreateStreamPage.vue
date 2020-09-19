@@ -42,6 +42,7 @@
 <script>
 import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
+import streamHelper from '../../../../utils/streamHelper'
 import settings from 'electron-settings'
 import Map from './Map'
 
@@ -87,6 +88,10 @@ export default {
       }
     },
     createStream () {
+      if (!streamHelper.isValidName(this.name)) {
+        this.error = streamHelper.getNameError(this.name)
+        return
+      }
       const visibility = false
       const latitude = this.selectedLatitude
       const longitude = this.selectedLongitude
@@ -141,11 +146,15 @@ export default {
     },
     isProductionEnv () {
       return settings.get('settings.production_env')
+    },
+    onCloseAlert () {
+      this.error = null
     }
   },
   watch: {
     name (val, oldVal) {
       if (val === oldVal) return
+      this.error = null
       this.shouldShowNameHelperMessage = !val || val === ''
     }
   }

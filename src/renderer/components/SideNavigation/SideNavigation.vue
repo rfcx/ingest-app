@@ -11,7 +11,7 @@
     <div class="wrapper__stat" v-if="showUserMenu">
       <div class="wrapper__user-name">
         <span>{{ userName }}</span>
-        <button class="button is-small is-rounded" @click="logOut()">Log out</button>
+        <button class="button is-small is-rounded" @click.prevent="showPopupToLogOut()">Log out</button>
       </div>
     </div>
     <div class="menu-container wrapper__controls">
@@ -41,6 +41,14 @@
         </div>
       </li>
     </ul>
+    <confirm-alert
+      :title="alertTitle"
+      :content="alertContent"
+      confirmButtonText="Log Out"
+      :isProcessing="false"
+      v-if="showConfirmToLogOut"
+      @onCancelPressed="hidePopupToLogOut()"
+      @onConfirmPressed="logOut()"/>
   </aside>
 </template>
 
@@ -48,6 +56,10 @@
   import Stream from '../../store/models/Stream'
   import File from '../../store/models/File'
   import fileState from '../../../../utils/fileState'
+  import streamHelper from '../../../../utils/streamHelper'
+  import api from '../../../../utils/api'
+  import ConfirmAlert from '../Common/ConfirmAlert'
+  import settings from 'electron-settings'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
   const { remote } = window.require('electron')
@@ -62,11 +74,15 @@
         mesure: '',
         showUserMenu: false,
         toggleSearch: false,
-        userName: this.getUserName()
+        showConfirmToLogOut: false,
+        userName: this.getUserName(),
+        userSites: [],
+        alertTitle: 'Are you sure you would like to continue?',
+        alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.'
       }
     },
     components: {
-      FontAwesomeIcon
+      FontAwesomeIcon, ConfirmAlert
     },
     computed: {
       selectedStreamId () {
@@ -211,6 +227,38 @@
           return file.canRedo && file.streamId === streamId
         }).get()
         this.$file.putFilesIntoUploadingQueue(files)
+      },
+      showPopupToLogOut () {
+        this.showConfirmToLogOut = true
+      },
+      hidePopupToLogOut () {
+        this.showConfirmToLogOut = false
+      },
+      isProductionEnv () {
+        return settings.get('settings.production_env')
+      },
+      getUserSites () {
+        let listener = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          api.getUserSites(this.isProductionEnv(), arg)
+            .then(sites => {
+              console.log('user sites', sites)
+              if (sites && sites.length) {
+                let userSites = streamHelper.parseUserSites(sites)
+                streamHelper.insertSites(userSites)
+              }
+            }).catch(error => {
+              console.log(`error while getting user's sites`, error)
+            })
+        }
+        this.$electron.ipcRenderer.send('getIdToken')
+        this.$electron.ipcRenderer.on('sendIdToken', listener)
+      }
+    },
+    created () {
+      if (remote.getGlobal('firstLogIn')) {
+        this.getUserSites()
+        this.$electron.ipcRenderer.send('resetFirstLogIn')
       }
     }
   }
@@ -409,6 +457,12 @@
   input[type="text"]::-webkit-input-placeholder {
     color: $input-placeholder !important;
     opacity: 1;
+  }
+  .button {
+    &:focus {
+      color: $button-hover-color;
+      border-color: $button-hover-border-color;
+    }
   }
   :-ms-input-placeholder {
     color: $input-placeholder;

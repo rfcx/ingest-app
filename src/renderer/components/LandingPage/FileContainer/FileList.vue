@@ -17,7 +17,7 @@
     </table>
     <empty-view v-if="files.length === 0" :hasFileInQueued="queuingFiles.length > 0" :isDragging="isDragging"></empty-view>
     <confirm-alert
-      :title="deleteAlertTitle"
+      :content="deleteAlertTitle"
       confirmButtonText="Delete"
       :isProcessing="isDeleting"
       v-if="shouldShowConfirmToDeleteAlert"

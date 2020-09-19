@@ -1,4 +1,3 @@
-import userService from './user-service'
 const jwtDecode = require('jwt-decode')
 const request = require('request')
 const url = require('url')
@@ -122,17 +121,9 @@ async function parseTokens (responseBody) {
   if (profile && profile.guid) {
     global.userId = profile.guid
   }
-  if (profile && profile.roles) {
-    global.roles = profile.roles
-  }
   global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
     profile[userMetadata].consentGiven.toString() === 'true'
-  await setAllUserSitesInfo(responseBody.id_token)
   console.log('parse tokens finished')
-}
-
-async function setAllUserSitesInfo (idToken) {
-  global.allSites = await userService.getUserSites(idToken)
 }
 
 async function logout () {
