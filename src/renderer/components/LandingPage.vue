@@ -12,8 +12,8 @@
       </div>
       <side-navigation 
         :class="{ 'side-menu__with-progress': shouldShowProgress}" 
-        @clickNewSiteButton="showNewSiteDropDown(true)" 
-        @clickOutSideNewSiteButton="showNewSiteDropDown(false)"
+        @clickNewSiteButton="toggleNewSiteDropDown" 
+        @clickOutSideNewSiteButton="hideNewSiteDropDown"
       />
       <div class="column content is-desktop" v-if="streams && streams.length > 0">
         <empty-stream v-if="isEmptyStream()"></empty-stream>
@@ -108,8 +108,11 @@
       getContent () {
         return `You are on the latest version ${remote.getGlobal('version')}`
       },
-      showNewSiteDropDown (show) {
-        this.shouldShowNewSiteDropDown = show
+      toggleNewSiteDropDown () {
+        this.shouldShowNewSiteDropDown = !this.shouldShowNewSiteDropDown
+      },
+      hideNewSiteDropDown () {
+        this.shouldShowNewSiteDropDown = false
       }
     },
     computed: {
