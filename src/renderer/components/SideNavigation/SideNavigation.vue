@@ -15,11 +15,11 @@
       </div>
     </div>
     <div class="menu-container wrapper__controls">
-      <router-link title="Add new site" class="wrapper__add-btn" to="/import">
-        <button type="button" class="button is-rounded">
+      <div title="Add new site" class="wrapper__add-btn">
+        <button type="button" class="button is-rounded is-primary" @click="showDropDownMenu" v-click-outside="hideDropDownMenu">
           <span>+</span>New Site
         </button>
-      </router-link>
+      </div>
     </div>
     <div class="wrapper__title">Sites</div>
     <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">
@@ -62,6 +62,7 @@
   import settings from 'electron-settings'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
+  // import ClickOutside from 'v-click-outside'
   const { remote } = window.require('electron')
 
   export default {
@@ -177,6 +178,12 @@
             // TODO: find a stream
           }
         }, 500)
+      },
+      showDropDownMenu () {
+        this.$emit('clickNewSiteButton')
+      },
+      hideDropDownMenu () {
+        this.$emit('clickOutSideNewSiteButton')
       },
       getUploadingProcessIcon (enabled) {
         const state = enabled ? 'pause' : 'play'
@@ -380,7 +387,7 @@
       padding: 0 0 1px 0px;
       font-family: $family-sans-serif;
       font-size: 13px;
-      background-color: $dropdown-content-background-color;
+      background-color: $side-menu-background;
       color: $white-color;
       border: none;
       box-shadow: none;
