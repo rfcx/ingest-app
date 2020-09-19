@@ -2,7 +2,7 @@
 	<div class="modal-card">
 		<header class="modal-card-head">
 			<font-awesome-icon :icon="ICON_CLOCK" size="2x"/>
-			<span class="pl-2">TIMESTAMP FORMAT</span>
+			<h1 class="title">Filename Format</h1>
 		</header>
 		<section class="modal-card-body">
 
@@ -458,10 +458,10 @@ const TIME_FORMAT = {
   auto_detect: (() => {
     const type = 'auto_detect'
     return {
-      label: 'Auto detect',
+      label: 'Auto Detect',
       type,
       options: [
-        new TimeFormat('Auto detect', AUTO_DETECT, type, '')
+        new TimeFormat('Auto Detect', AUTO_DETECT, type, '')
       ]
     }
   })(),
@@ -537,8 +537,9 @@ const TIME_FORMAT = {
 .modal-card {
 	width: 640px !important;
 }
-.pl-2 {
-	padding-left: 12px;
+.title {
+  padding-left: 12px;
+  color: $title-text-color !important;
 }
 
 .input-container {
