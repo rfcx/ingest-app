@@ -1,6 +1,6 @@
 <template>
   <div class="import-stream__wrapper">
-    <h1>Import audio files from AudioMoth</h1>
+    <header-view title="Import audio files from AudioMoth" />
     <p class="subtitle">Insert SD Card or choose the folder to import.</p>
     <source-list @sourceSelected="onSourceSelected"></source-list>
     <div class="field is-grouped">
@@ -27,6 +27,7 @@ import SourceList from './SourceList'
 import FileHelper from '../../../../utils/fileHelper'
 import FileInfo from '../../services/FileInfo'
 import Stream from '../../store/models/Stream'
+import HeaderView from '../Common/HeaderWithBackButton'
 
 export default {
   data: () => ({
@@ -34,7 +35,7 @@ export default {
     selectedSource: null,
     deviceId: null
   }),
-  components: { SourceList },
+  components: { SourceList, HeaderView },
   methods: {
     onSourceSelected (newSource) {
       this.selectedSource = newSource

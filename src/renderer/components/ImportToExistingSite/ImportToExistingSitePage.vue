@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <h1>Existing site detected</h1>
+    <header-view title="Existing site detected"  :shouldShowBackButton="selectedFolderPath != null"/>
     <p class="subtitle">It seems you have created a site for this device before called "{{existingStream.name}}"</p>
     <button class="button is-rounded is-primary" @click.prevent="importFiles">Import files to "{{existingStream.name}}"</button>
     <button class="button is-rounded" @click.prevent="redirectToCreateStream">Create new a site</button>
@@ -9,14 +9,9 @@
 
 <script>
 import Stream from '../../store/models/Stream'
+import HeaderView from '../Common/HeaderWithBackButton'
 export default {
-  created () {
-    console.log(this.$route.query)
-    if (!this.$route.query) return
-    if (this.$route.query.streamId) this.existingStreamId = this.$route.query.streamId
-    if (this.$route.query.folderPath) this.selectedFolderPath = this.$route.query.folderPath
-    if (this.$route.query.deviceId) this.deviceId = this.$route.query.deviceId
-  },
+  components: { HeaderView },
   data: () => ({
     selectedFolderPath: null,
     existingStreamId: null,
@@ -27,6 +22,13 @@ export default {
     existingStream () {
       return Stream.find(this.existingStreamId)
     }
+  },
+  created () {
+    console.log(this.$route.query)
+    if (!this.$route.query) return
+    if (this.$route.query.streamId) this.existingStreamId = this.$route.query.streamId
+    if (this.$route.query.folderPath) this.selectedFolderPath = this.$route.query.folderPath
+    if (this.$route.query.deviceId) this.deviceId = this.$route.query.deviceId
   },
   methods: {
     importFiles () {

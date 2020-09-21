@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <h1>Create site</h1>
+    <header-view title="Create Site" :shouldShowBackButton="selectedFolderPath"/>
     <fieldset>
       <div class="notification" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
@@ -45,6 +45,7 @@ import api from '../../../../utils/api'
 import streamHelper from '../../../../utils/streamHelper'
 import settings from 'electron-settings'
 import Map from './Map'
+import HeaderView from '../Common/HeaderWithBackButton'
 
 export default {
   data () {
@@ -52,15 +53,15 @@ export default {
       name: '',
       selectedLatitude: null,
       selectedLongitude: null,
-      selectedFolderPath: String, // prop from import page
-      deviceId: String, // prop from import page
+      selectedFolderPath: null, // prop from import page
+      deviceId: null, // prop from import page
       isLoading: false,
       hasPassValidation: false,
       error: '',
       shouldShowNameHelperMessage: false
     }
   },
-  components: { Map },
+  components: { Map, HeaderView },
   computed: {
     hasPassedValidation () {
       return this.name && this.selectedLatitude && this.selectedLongitude
