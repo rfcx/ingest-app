@@ -4,10 +4,11 @@ class DriveListHelper {
   async getExternalDriveList () {
     const drives = await drivelist.list()
     console.log('getExternalDriveList: ', drives)
-    return Promise.resolve(drives.filter(drive => drive.isCard || drive.isUSB).map(drive => this.toDriveObject(drive)))
+    return Promise.resolve(drives.filter(drive => drive.isCard || drive.isUSB).map(drive => this.toDriveObject(drive)).filter(item => item != null))
   }
 
   toDriveObject (drive) {
+    if (!drive.mountpoints || drive.mountpoints.length === 0) return null
     const id = [
       drive.device,
       drive.size,
