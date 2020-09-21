@@ -1,12 +1,10 @@
 <template>
   <table>
-    <template v-if="!drives">
-      <tr>
-        <img class="row__icon" src="@/assets/ic-sd-card-gray.svg"/>
-        <span class="row__source-title">Finding external drives...</span>
-      </tr>
-    </template>
-    <template v-else-if="drives.length === 0">
+    <tr class="source-type__row">
+      <span class="source-type__title">External drives</span>
+      <button class="button is-small is-rounded" :class="{'is-loading': isLoading}" :disabled="isLoading" @click="getExternalDriveList">Rescan</button>
+    </tr>
+    <template v-if="!drives || drives.length === 0">
       <tr>
         <img class="row__icon" src="@/assets/ic-sd-card-gray.svg"/>
         <span class="row__source-title">No SD Card detected</span>
@@ -20,6 +18,9 @@
     </tr>
     </template>
     <template>
+    <tr class="source-type__row">
+      <span class="source-type__title">Other Folder</span>
+    </tr>
     <tr @click="$refs.file.click()" :class="{'selected':  isSelected('folder') }">
       <input type="file" ref="file" webkitdirectory directory @change="handleFileChange" style="display:none"/>
       <img class="row__icon" src="@/assets/ic-folder-empty-white.svg" v-if="isSelected('folder') || defaultState"/>
@@ -38,12 +39,16 @@ export default {
     drives: null,
     selectedSource: {},
     selectedFolderPath: '',
-    defaultState: true // user hasn't selected any options before
+    defaultState: true,
+    isLoading: false // user hasn't selected any options before
   }),
   methods: {
     async getExternalDriveList () {
+      this.isLoading = true
       DriveList.getExternalDriveList().then(drives => {
         this.drives = drives
+        console.log('view =>', this.drives)
+        this.isLoading = false
       })
     },
     onDriveSelected (drive) {
@@ -88,6 +93,7 @@ export default {
   }
   table {
     margin: $default-padding-margin 0px;
+    width: 280px;
   }
   tr {
     margin-bottom: $default-padding-margin;
@@ -103,4 +109,19 @@ export default {
       cursor: pointer;
     }
   }
+  .source-type {
+      &__row {
+        height: 20px;
+        margin-bottom: 0;
+        display: flex;
+        justify-content: space-between;
+        align-self: center;
+        white-space: nowrap;
+      }
+      &__title {
+        font-size: 12px;
+        color: $secondary-text-color;
+        font-weight: 700;
+      }
+    }
 </style>

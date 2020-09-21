@@ -69,6 +69,7 @@ $dropdown-content-shadow: 0 0.5em 1em -0.125em rgba($divider-color, 0.1), 0 0px 
 $button-color: $title-text-color;
 $button-background-color: $button-background-color;
 $button-border-color: $button-background-color;
+$button-disabled-background-color: $button-background-color;
 $button-hover-color: $title-text-color;
 $button-hover-border-color: #3b3e53;
 
@@ -114,4 +115,12 @@ a.is-button {
   left: 25%;
   right: 25%;
   transform: translateY(-50%);
+}
+
+.button.is-loading {
+  &:hover, &:focus, &:active, &:visited {
+    &::after {
+      border-color: transparent transparent #fff #fff !important
+    }
+  }
 }
