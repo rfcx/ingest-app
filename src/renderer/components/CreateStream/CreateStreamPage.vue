@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <header-view title="Create Site" :shouldShowBackButton="selectedFolderPath"/>
+    <header-view title="Create Site" :shouldShowBackButton="selectedFolderPath != null"/>
     <fieldset>
       <div class="notification" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
@@ -19,7 +19,18 @@
         <label for="location" class="label">Location</label>
         <Map class="map-wrapper" @locationSelected="onSelectLocation"></Map>
       </div>
-      <div class="field is-grouped">
+      <div class="folder-path-input__wrapper" v-if="selectedFolderPath != null">
+        <label for="path" class="label">Folder path</label>
+        <div class="field has-addons" >
+          <div class="control is-expanded">
+            <input class="input" type="path" :value="selectedFolderPath" readonly>
+          </div>
+          <div class="control">
+            <a class="button" @click="$router.push('/import')">Change</a>
+          </div>
+        </div>
+      </div>
+      <div class="field is-grouped controls-group">
         <p class="control control-btn">
           <router-link class="control-btn" to="/">
             <button type="button" class="button is-rounded is-cancel">Cancel</button>
@@ -174,6 +185,9 @@ export default {
   }
   span.help {
     display: inline;
+  }
+  .controls-group {
+    margin-top: $default-padding-margin;
   }
 </style>
 
