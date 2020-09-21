@@ -55,7 +55,7 @@
         this.isDragging = false
       },
       handleDrag (e) {
-        console.log('handleDrag -- side', e)
+        // console.log('handleDrag -- side', e)
         this.isDragging = true
       },
       onDragOver (e) {

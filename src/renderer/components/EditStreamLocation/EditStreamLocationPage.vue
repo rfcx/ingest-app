@@ -2,7 +2,7 @@
   <div class="wrapper">
     <h1>Edit site</h1>
     <fieldset>
-      <div class="notification wrapper__notification" v-show="error">
+      <div class="notification default-notice" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
         {{ error }}
       </div>
@@ -223,10 +223,6 @@ export default {
     margin: $wrapper-margin;
     padding: $default-padding-margin;
     max-width: $wrapper-width;
-    &__notification {
-      background: #3b3e53 !important;
-      color: white;
-    }
     &__location {
       position: relative;
     }

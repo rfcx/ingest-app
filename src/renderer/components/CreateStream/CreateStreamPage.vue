@@ -2,7 +2,7 @@
   <div class="wrapper">
     <h1>Create site</h1>
     <fieldset>
-      <div class="notification" v-show="error">
+      <div class="notification default-notice" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
         {{ error }}
       </div>
@@ -146,10 +146,6 @@ export default {
     margin: $wrapper-margin;
     padding: $default-padding-margin;
     max-width: $wrapper-width;
-  }
-  .notification {
-    background: #3b3e53 !important;
-    color: white;
   }
   span.help {
     display: inline;

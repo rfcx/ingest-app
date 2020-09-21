@@ -15,8 +15,8 @@
       </div>
     </div>
     <div class="menu-container wrapper__controls">
-      <router-link title="Add new site" class="wrapper__add-btn" to="/add">
-        <button type="button" class="button is-rounded">
+      <router-link title="Add new site" to="/add">
+        <button type="button" class="button is-rounded rounded-button">
           <span>+</span>New Site
         </button>
       </router-link>
@@ -318,32 +318,8 @@
     }
     &__controls {
       padding: 0 8px;
-    }
-    &__add-btn {
-      width: $full-width;
-      button {
-        width: 100%;
-        padding-bottom: calc(0.175em - 1px);
-        padding-top: calc(0.175em - 1px);
-        background-color: $brand-primary;
-        align-self: center;
-        font-weight: $title-font-weight;
-        font-size: $default-font-size;
-        font-style: normal;
-        line-height: normal;
-        color: $white-color;
-        border: none;
-        &:hover,
-        &:active,
-        &:focus {
-          outline: none;
-          border: none;
-          color: $white-color;
-        }
-        span {
-          margin-right: 10px;
-          font-size: 20px;
-        }
+      a {
+        width: $full-width;
       }
     }
     &__title {
@@ -390,6 +366,12 @@
       overflow: hidden;
       margin-right: 3px;
       align-self: center;
+    }
+  }
+  .rounded-button {
+    span {
+      margin-right: 10px;
+      font-size: 20px;
     }
   }
   .icon-logo {
