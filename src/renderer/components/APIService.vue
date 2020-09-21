@@ -98,7 +98,7 @@
           return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== '' && file.uploaded === true
         }).orderBy('timestamp').limit(5).get()
       },
-      getComplitedFiles () {
+      getCompletedFiles () {
         return File.query().where(file =>
           file.state === 'completed' && fileHelper.isOutdatedFile(file))
           .orderBy('timestamp', 'asc').get()
@@ -161,7 +161,6 @@
       tickUpload () {
         if (!this.isUploadingProcessEnabled) return
         this.queueFilesToUpload()
-        this.checkForOutdatedFiles()
       },
       tickCheckStatus () {
         if (!this.isUploadingProcessEnabled) return
@@ -203,8 +202,8 @@
           this.resetUploadingSessionId()
         }
       },
-      async checkForOutdatedFiles () {
-        const files = this.getComplitedFiles()
+      async removeOutdatedFiles () {
+        const files = this.getCompletedFiles()
         if (files && files.length) {
           for (let file of files) {
             await File.delete(file.id)
@@ -251,6 +250,7 @@
       }, workerTimeoutMinimum)
       this.tickCheckStatus()
       this.checkFilesInUploadingSessionId(this.filesInUploadingSession)
+      this.removeOutdatedFiles()
     },
     beforeDestroy () {
       console.log('\nclearInterval')
