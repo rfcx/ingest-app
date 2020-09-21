@@ -60,10 +60,8 @@ export default {
       this.isLoading = false
       if (deviceIds.length > 0) {
         this.deviceId = deviceIds[0] // assign first device id as a stream device id
-        return Promise.resolve()
-      } else {
-        return Promise.reject(new Error('Device ID not found'))
       }
+      return Promise.resolve()
     },
     async importFiles () {
       await this.readFilesForDeviceId()
