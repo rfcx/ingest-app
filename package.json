@@ -24,6 +24,7 @@
     "productName": "RFCx Ingest",
     "appId": "org.rfcx.ingest",
     "afterSign": "./after-sign-hook.js",
+    "npmRebuild": false,
     "directories": {
       "output": "build"
     },
