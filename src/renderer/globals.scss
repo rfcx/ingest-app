@@ -105,3 +105,38 @@ a.is-button {
   right: 25%;
   transform: translateY(-50%);
 }
+
+.rounded-button {
+  width: $full-width;
+  padding-bottom: calc(0.175em - 1px);
+  padding-top: calc(0.175em - 1px);
+  background-color: $brand-primary;
+  align-self: center;
+  font-weight: $title-font-weight;
+  font-size: $default-font-size;
+  font-style: normal;
+  line-height: normal;
+  color: $white-color;
+  border: none;
+  &:hover,
+  &:active,
+  &:focus {
+    outline: none;
+    border: none;
+    color: $white-color;
+  }
+}
+
+.fixed-notice {
+  position: fixed;
+  top: 10px;
+  left: auto;
+  right: calc((100% - 200px) / 2);
+  transform: translate(50%, 0%);
+  z-index: 1000;
+}
+
+.default-notice {
+  background: #3b3e53;
+  color: white;
+}

@@ -15,7 +15,6 @@ import Tab from './Tab'
 import FileNameFormatInfo from './FileNameFormatInfo'
 import FileList from './FileList'
 import FileState from '../../../../../utils/fileState'
-// import FileList from '../FileList'
 
 export default {
   props: {
