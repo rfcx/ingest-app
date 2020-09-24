@@ -2,7 +2,7 @@
 	<div class="modal-card">
 		<header class="modal-card-head">
 			<font-awesome-icon :icon="ICON_CLOCK" size="2x"/>
-			<span class="pl-2">TIMESTAMP FORMAT</span>
+			<h1 class="title">Filename Format</h1>
 		</header>
 		<section class="modal-card-body">
 
@@ -31,7 +31,7 @@
               />
 					</template>
 					<input
-            :disabled="isAutoDetect"
+            :disabled="isAutoDetect || isUnixHex"
 						:size="lastInputText.length"
 						@keydown="keydown($event)"
 						type="text"
@@ -72,6 +72,7 @@
 <script>
 import * as far from '@fortawesome/free-regular-svg-icons'
 const AUTO_DETECT = 'Auto-detect'
+const UNIX_HEX = 'unix-hex'
 export default {
   props: {
     format: {
@@ -158,14 +159,17 @@ export default {
     customInputBlur (e, idx) {
       console.log('customInputBlur', e, idx)
     },
+    resetTheSelectedItems (newItem) {
+      this.selectedItems = [newItem]
+      this.lastInputText = ''
+    },
     formatItemClick (type, item) {
       if (item instanceof TimeFormat) {
-        if (item.format === AUTO_DETECT) {
-          this.selectedItems = [item]
-          this.lastInputText = ''
+        if (item.format === AUTO_DETECT || item.format === UNIX_HEX) { // if select auto-detect/unix-hex, then reset the selected value
+          this.resetTheSelectedItems(item)
         } else {
-          if (this.isAutoDetect) {
-            return
+          if (this.isAutoDetect || this.isUnixHex) { // if select something else when the auto-detect/unix-hex was selected, then reset the selected value
+            this.resetTheSelectedItems(item)
           }
           // check format type is already selected
           const isSelected = this.selectedItems.findIndex(si => (si instanceof TimeFormat && si.type === item.type)) > -1
@@ -217,6 +221,9 @@ export default {
       if (format === AUTO_DETECT) {
         // Select auto detect item
         this.selectedItems = [TIME_FORMAT.auto_detect.options[0]]
+      } else if (format === UNIX_HEX) {
+        // Select auto detect item
+        this.selectedItems = [TIME_FORMAT.unix.options[0]]
       } else {
         const size = format.length
         const selectedItems = []
@@ -283,6 +290,9 @@ export default {
     },
     isAutoDetect () {
       return this.selectedItems.some(si => (si instanceof TimeFormat) && si.format === AUTO_DETECT)
+    },
+    isUnixHex () {
+      return this.selectedItems.some(si => (si instanceof TimeFormat) && si.format === UNIX_HEX)
     },
     selectedFormat () {
       return this.selectedItems.reduce((acc, item) => {
@@ -448,10 +458,21 @@ const TIME_FORMAT = {
   auto_detect: (() => {
     const type = 'auto_detect'
     return {
-      label: 'Auto detect',
+      label: 'Auto Detect',
       type,
       options: [
-        new TimeFormat('Auto detect', AUTO_DETECT, type, '')
+        new TimeFormat('Auto Detect', AUTO_DETECT, type, '')
+      ]
+    }
+  })(),
+
+  unix: (() => {
+    const type = 'unix'
+    return {
+      label: 'Unix',
+      type,
+      options: [
+        new TimeFormat('Unix Hex', UNIX_HEX, type, '')
       ]
     }
   })()
@@ -516,8 +537,9 @@ const TIME_FORMAT = {
 .modal-card {
 	width: 640px !important;
 }
-.pl-2 {
-	padding-left: 12px;
+.title {
+  padding-left: 12px;
+  color: $title-text-color !important;
 }
 
 .input-container {

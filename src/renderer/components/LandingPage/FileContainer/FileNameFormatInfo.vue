@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <div>
-      <span class="wrapper__title">Filename format</span>
+      <span class="wrapper__title">Filename Format</span>
       <div class="is-flex flex-row align-center">
         <div class="wrapper__description">{{ (selectedStream.timestampFormat !== 'Auto-detect' ? 'custom ・ ' : '') + selectedStream.timestampFormat }}</div>
         <div class="wrapper__edit-btn" title="Edit filename format">

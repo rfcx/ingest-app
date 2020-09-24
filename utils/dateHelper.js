@@ -1,6 +1,15 @@
+import fileHelper from './fileHelper'
 const moment = require('moment')
 
 const appDate = 'YYYY-MM-DD HH:mm:ss'
+
+const getIsoDateWithFormat = (format, fileName) => {
+  switch (format) {
+    case 'Auto-detect': return parseTimestampAuto(fileName)
+    case 'unix-hex': return parseTimestampUnixHex(fileName)
+    default: return parseTimestamp(fileName, format)
+  }
+}
 
 const parseTimestamp = (fileName, timestampFormat) => {
   const parts = {
@@ -72,6 +81,21 @@ const parseTimestampAuto = (input) => {
   return `${result.year}-${result.month}-${result.day}T${result.hour}:${result.minute}:${result.second}Z`
 }
 
+const isHex = (string) => {
+  var num = parseInt(string, 16)
+  return (num.toString(16).toLowerCase() === string.toLowerCase())
+}
+
+const parseTimestampUnixHex = (input) => {
+  const fileName = fileHelper.getFileName(input)
+  if (!isHex(fileName)) {
+    return undefined
+  } else {
+    const date = moment.utc('1970-01-01').add(parseInt(fileName, 16), 'seconds')
+    return moment(date, 'YYYY-DD-MM').isValid() ? date.toISOString() : undefined
+  }
+}
+
 const getMomentDateFromISODate = (date) => {
   return moment.utc(date, moment.ISO_8601)
 }
@@ -84,16 +108,13 @@ const convertMomentDateToAppDate = (date) => {
   return date.format(appDate)
 }
 
-const isValidDate = (date) => {
-  return date.isValid()
-}
-
 export default {
   appDate,
+  getIsoDateWithFormat,
   parseTimestamp,
   parseTimestampAuto,
+  parseTimestampUnixHex,
   getMomentDateFromISODate,
   getMomentDateFromAppDate,
-  convertMomentDateToAppDate,
-  isValidDate
+  convertMomentDateToAppDate
 }
