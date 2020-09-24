@@ -1,10 +1,13 @@
-
 import settings from 'electron-settings'
+const { remote } = window.require('electron')
 
 function getAPIUrl () {
   const isProd = settings.get('settings.production_env')
   const platform = settings.get('settings.platform')
-  let url
+  let url = remote.getGlobal('ingestServicelUrl')
+  if (url) {
+    return url
+  }
   switch (platform) {
     case 'google':
       url = isProd ? 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api' : 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
@@ -14,7 +17,6 @@ function getAPIUrl () {
       url = isProd ? 'https://ingest.rfcx.org' : 'https://staging-ingest.rfcx.org'
   }
   return url
-  // return 'http://localhost:3030'
 }
 
 export default {

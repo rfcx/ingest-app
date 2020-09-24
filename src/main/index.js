@@ -553,6 +553,12 @@ function createUpdateInterval () {
   }, dayInMs)
 }
 
+function checkIngestServicelUrl () {
+  if (process.env.npm_config_url) {
+    global.ingestServicelUrl = process.env.npm_config_url
+  }
+}
+
 function checkForUpdates () {
   console.log('checkForUpdates')
   autoUpdater.checkForUpdates()
@@ -565,6 +571,7 @@ app.on('ready', () => {
   if (process.platform === 'darwin') openedAsHidden = app.getLoginItemSettings().wasOpenedAsHidden
   else openedAsHidden = (process.argv || []).indexOf('--hidden') !== -1
   console.log('open as hidden', openedAsHidden)
+  checkIngestServicelUrl()
   initialSettings()
   createAppWindow(openedAsHidden)
   global.version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
