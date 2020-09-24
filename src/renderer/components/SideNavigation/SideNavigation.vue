@@ -199,7 +199,7 @@
       },
       checkWarningLoad (stream) {
         let countFailed = 0
-        let countComplited = 0
+        let countCompleted = 0
         let countDisabled = 0
         stream.files.forEach((file) => {
           if (file.disabled === true) {
@@ -207,11 +207,11 @@
           } else if (file.state === 'failed' || file.state === 'duplicated') {
             countFailed++
           } else if (file.state === 'completed') {
-            countComplited++
+            countCompleted++
           }
         })
-        if (countFailed !== stream.files.length && countComplited !== stream.files.length && (countFailed + countComplited + countDisabled) === stream.files.length &&
-          (countDisabled + countComplited) !== stream.files.length && (countDisabled + countFailed + countComplited) === stream.files.length) return true
+        if (countFailed !== stream.files.length && countCompleted !== stream.files.length && (countFailed + countCompleted + countDisabled) === stream.files.length &&
+          (countDisabled + countCompleted) !== stream.files.length && (countDisabled + countFailed + countCompleted) === stream.files.length) return true
         else return false
       },
       isFilesHidden (stream) {

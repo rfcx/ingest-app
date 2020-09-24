@@ -5,9 +5,9 @@
 <script>
   import { mapState } from 'vuex'
   import File from '../store/models/File'
+  import fileHelper from './../../../utils/fileHelper'
 
   const workerTimeoutMinimum = 3000
-  const dayInMs = 1000 * 60 * 60 * 24
 
   export default {
     data: () => {
@@ -98,6 +98,11 @@
           return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== '' && file.uploaded === true
         }).orderBy('timestamp').limit(5).get()
       },
+      getCompletedFiles () {
+        return File.query().where(file =>
+          file.state === 'completed' && fileHelper.isOutdatedFile(file))
+          .orderBy('timestamp', 'asc').get()
+      },
       uploadFile (file) {
         return new Promise((resolve, reject) => {
           let listener = (event, arg) => {
@@ -129,7 +134,7 @@
             try {
               const files = await Promise.all(this.getUploadedFiles())
               for (let file of files) {
-                if (file.uploadedTime && Date.now() - parseInt(file.uploadedTime) > dayInMs * 30) {
+                if (fileHelper.isOutdatedFile(file)) {
                   await File.update({
                     where: file.id,
                     data: {
@@ -197,6 +202,14 @@
           this.resetUploadingSessionId()
         }
       },
+      async removeOutdatedFiles () {
+        const files = this.getCompletedFiles()
+        if (files && files.length) {
+          for (let file of files) {
+            await File.delete(file.id)
+          }
+        }
+      },
       sendCompleteNotification (numberOfCompletedFiles, numberOfFailedFiles) {
         const completedText = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'} uploaded`
         const failText = `${numberOfFailedFiles} ${numberOfFailedFiles > 1 ? 'files' : 'file'} failed`
@@ -237,6 +250,7 @@
       }, workerTimeoutMinimum)
       this.tickCheckStatus()
       this.checkFilesInUploadingSessionId(this.filesInUploadingSession)
+      this.removeOutdatedFiles()
     },
     beforeDestroy () {
       console.log('\nclearInterval')
