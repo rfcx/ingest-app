@@ -15,11 +15,9 @@
       </div>
     </div>
     <div class="menu-container wrapper__controls">
-      <div title="Add new site" class="wrapper__add-btn">
-        <button type="button" class="button is-rounded is-primary" @click="showDropDownMenu" v-click-outside="hideDropDownMenu">
-          <span>+</span>New Site
-        </button>
-      </div>
+      <button type="button" class="button is-rounded rounded-button" @click="showDropDownMenu" v-click-outside="hideDropDownMenu">
+        <span>+</span>New Site
+      </button>
     </div>
     <div class="wrapper__title">Sites</div>
     <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">
