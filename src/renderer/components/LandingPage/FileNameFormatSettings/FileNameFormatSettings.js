@@ -10,7 +10,8 @@ export default {
   },
   data: () => ({
     selectedItems: [],
-    lastInputText: ''
+    lastInputText: '',
+    shouldShowErrorMessage: false
   }),
   mounted () {
     this.checkRestoreFormatToField()
@@ -18,7 +19,13 @@ export default {
   methods: {
     async save () {
       const format = this.selectedFormat
-      this.$emit('save', format)
+      console.log('selectedItems', this.selectedItems)
+      if (this.isPassedValidation) {
+        this.$emit('save', format)
+      } else {
+        this.shouldShowErrorMessage = true
+        console.log('error not pass validation')
+      }
     },
     closeModal () {
       console.log('closeModal')
@@ -92,6 +99,7 @@ export default {
       this.lastInputText = ''
     },
     formatItemClick (type, item) {
+      this.shouldShowErrorMessage = false
       if (item instanceof TimeFormat) {
         if (item.format === AUTO_DETECT || item.format === UNIX_HEX) { // if select auto-detect/unix-hex, then reset the selected value
           this.resetTheSelectedItems(item)
@@ -216,6 +224,9 @@ export default {
     requiredTimeFormatForCustomTimestamp: () => {
       return ['year', 'month', 'day', 'hour', 'minute']
     },
+    errorMessageForRequiredTimeFormatForCustomTimestamp () {
+      return this.requiredTimeFormatForCustomTimestamp.toString() + ' are required for a custom timestamp format'
+    },
     isPassedValidation () {
       if (this.isAutoDetect || this.isUnixHex) return true
       const allSelectedTimeFormatRequiredType = this.selectedItems
@@ -242,6 +253,12 @@ export default {
         }
         return acc
       }, '') + this.lastInputText.trim()
+    }
+  },
+  watch: {
+    selectedItems (oldValue, newValue) {
+      if (oldValue === newValue) return
+      this.shouldShowErrorMessage = false
     }
   }
 }

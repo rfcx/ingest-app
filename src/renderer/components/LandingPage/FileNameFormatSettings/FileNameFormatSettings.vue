@@ -39,6 +39,7 @@
 						ref="fieldInput"
 						class="last-input" />
 				</div>
+        <span class="help is-warning" v-if="shouldShowErrorMessage">{{errorMessageForRequiredTimeFormatForCustomTimestamp}}</span>
 			</div>
 
 			<div class="columns is-multiline is-gapless">
