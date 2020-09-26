@@ -206,7 +206,7 @@
       },
       checkWarningLoad (stream) {
         let countFailed = 0
-        let countComplited = 0
+        let countCompleted = 0
         let countDisabled = 0
         stream.files.forEach((file) => {
           if (file.disabled === true) {
@@ -214,11 +214,11 @@
           } else if (file.state === 'failed' || file.state === 'duplicated') {
             countFailed++
           } else if (file.state === 'completed') {
-            countComplited++
+            countCompleted++
           }
         })
-        if (countFailed !== stream.files.length && countComplited !== stream.files.length && (countFailed + countComplited + countDisabled) === stream.files.length &&
-          (countDisabled + countComplited) !== stream.files.length && (countDisabled + countFailed + countComplited) === stream.files.length) return true
+        if (countFailed !== stream.files.length && countCompleted !== stream.files.length && (countFailed + countCompleted + countDisabled) === stream.files.length &&
+          (countDisabled + countCompleted) !== stream.files.length && (countDisabled + countFailed + countCompleted) === stream.files.length) return true
         else return false
       },
       isFilesHidden (stream) {
@@ -328,32 +328,8 @@
     }
     &__controls {
       padding: 0 8px;
-    }
-    &__add-btn {
-      width: $full-width;
-      button {
-        width: 100%;
-        padding-bottom: calc(0.175em - 1px);
-        padding-top: calc(0.175em - 1px);
-        background-color: $brand-primary;
-        align-self: center;
-        font-weight: $title-font-weight;
-        font-size: $default-font-size;
-        font-style: normal;
-        line-height: normal;
-        color: $white-color;
-        border: none;
-        &:hover,
-        &:active,
-        &:focus {
-          outline: none;
-          border: none;
-          color: $white-color;
-        }
-        span {
-          margin-right: 10px;
-          font-size: 20px;
-        }
+      a {
+        width: $full-width;
       }
     }
     &__title {
@@ -400,6 +376,12 @@
       overflow: hidden;
       margin-right: 3px;
       align-self: center;
+    }
+  }
+  .rounded-button {
+    span {
+      margin-right: 10px;
+      font-size: 20px;
     }
   }
   .icon-logo {

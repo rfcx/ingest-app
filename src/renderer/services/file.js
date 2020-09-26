@@ -131,10 +131,7 @@ class FileProvider {
     const updatedFiles = []
     if (Array.isArray(fileObjectList) && fileObjectList.length > 0) {
       for await (const file of fileObjectList) {
-        const isoDate =
-          format === FORMAT_AUTO_DETECT
-            ? dateHelper.parseTimestampAuto(file.name)
-            : dateHelper.parseTimestamp(file.name, format)
+        const isoDate = dateHelper.getIsoDateWithFormat(format, file.name)
         const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
 
         const hasUploadedBefore = this.hasUploadedBefore(file.path, stream.id)
@@ -252,10 +249,7 @@ class FileProvider {
     // checking file status with new file name
 
     const format = stream.timestampFormat
-    const isoDate =
-          format === FORMAT_AUTO_DETECT
-            ? dateHelper.parseTimestampAuto(filename)
-            : dateHelper.parseTimestamp(filename, format)
+    const isoDate = dateHelper.getIsoDateWithFormat(format, filename)
     const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
 
     const stateObj = this.getState(momentDate, file.extension, false)
@@ -483,7 +477,7 @@ class FileProvider {
     const fileExt = fileHelper.getExtension(fileName)
 
     // read file header info
-    let deviceId, deploymentId, momentDate
+    let deviceId, deploymentId, momentDate, isoDate
     if (fileExt === 'wav') {
       const info = new FileInfo(filePath)
       console.log(info)
@@ -496,15 +490,10 @@ class FileProvider {
     // const hash = data.hash
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
-    let isoDate
     if (momentDate) {
       isoDate = momentDate.toISOString()
     } else {
-      if (stream.timestampFormat === FORMAT_AUTO_DETECT) {
-        isoDate = dateHelper.parseTimestampAuto(fileName)
-      } else {
-        isoDate = dateHelper.parseTimestamp(fileName, stream.timestampFormat)
-      }
+      isoDate = dateHelper.getIsoDateWithFormat(stream.timestampFormat, fileName)
       momentDate = dateHelper.getMomentDateFromISODate(isoDate)
     }
     const state = this.getState(momentDate, fileExt, hasUploadedBefore)

@@ -6,7 +6,8 @@
 </template>
 
 <script>
-  const dropFileDefaultMessage = 'Drop audio files here and press start upload to start uploading the audio files to the site.'
+  const dropFileDefaultMessage = 'Drop audio files here and press start upload to start uploading the audio files to the site.' +
+  'Completed uploads are shown for up to 30 days. To see all uploads, open in Arbimon.'
   export default {
     props: {
       isDragging: Boolean,

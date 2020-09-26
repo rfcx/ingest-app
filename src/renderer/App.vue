@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div class="notification is-danger is-light notice" v-if="!onLine">
+    <div class="notification is-danger is-light fixed-notice" v-if="!onLine">
       <strong>No Internet Connection</strong>
     </div>
     <router-view></router-view>
@@ -85,13 +85,6 @@
 
 <style>
   @import "~bulma/css/bulma.css";
-
-  .notice {
-    position: fixed !important;
-    top: 0 !important;
-    left: 40% !important;
-    z-index: 1000 !important;
-  }
 
   .notification.is-danger {
     background-color: #c73b57 !important;
