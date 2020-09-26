@@ -1,0 +1,117 @@
+.modal-card {
+	width: 640px !important;
+}
+.title {
+  padding-left: 12px;
+  color: $title-text-color !important;
+}
+
+.input-container {
+	margin-bottom: 16px;
+	$field-offset: 8px;
+	.field {
+		cursor: text;
+        width: $full-width;
+        border-radius: 8px;
+        border: 1px solid #b2bec3;
+        min-height: 40px;
+        position: relative;
+        padding-left: $field-offset;
+        padding-right: $field-offset;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 0 !important;
+        padding-top: $field-offset;
+
+        input {
+          height: 24px;
+          background: transparent !important;
+          border: 0 !important;
+          font-size: 16px;
+          color: white;
+          margin-bottom: $field-offset;
+          min-width: 10px;
+
+          &.custom-input {
+            text-align: center;
+          }
+          &:focus {
+              border: 0 !important;
+              outline: unset !important;
+          }
+
+          &[size="0"] {
+            width: 10px !important;
+          }
+
+          &.last-input {
+            margin-left: 8px;
+          }
+    }
+
+    .input-text {
+      display: flex;
+      align-items: center;
+      padding-right: 8px;
+      font-size: 16px;
+      height: 24px;
+      margin-bottom: $field-offset;
+		}
+
+		$tag-size: 24px;
+		.control {
+			margin-bottom: $field-offset !important;
+      height: $tag-size;
+      margin-right: 0 !important;
+			.tags {
+				a {
+					margin-bottom: 0 !important;
+					height: $tag-size;
+					text-decoration: unset !important;
+
+					&.tag-label {
+						background: white;
+						color: black;
+					}
+				}
+			}
+		}
+
+    }
+}
+
+table.time-format-table {
+	tr {
+		td {
+			border: 0 !important;
+			&.label-col {
+				text-align: right;
+				width: 140px;
+			}
+
+			&.col-options {
+				button.option-btn {
+					&:not(:first-child) {
+						margin-left: 8px;
+					}
+				}
+			}
+		}
+	}
+}
+
+.modal-card-foot {
+	padding-top: 24px !important;
+	button {
+		min-width: 110px;
+	}
+}
+
+.modal-card-head {
+	padding-bottom: 8px !important;
+}
+
+.flex-row {
+  flex-direction: row;
+}
