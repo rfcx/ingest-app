@@ -213,6 +213,17 @@ export default {
   computed: {
     ICON_CLOCK: () => far.faClock,
     TIME_FORMAT: () => TIME_FORMAT,
+    requiredTimeFormatForCustomTimestamp: () => {
+      return ['year', 'month', 'day', 'hour', 'minute']
+    },
+    isPassedValidation () {
+      if (this.isAutoDetect || this.isUnixHex) return true
+      const allSelectedTimeFormatRequiredType = this.selectedItems
+        .filter(item => this.isFormatItem(item))
+        .map(item => item.group)
+        .filter(item => this.requiredTimeFormatForCustomTimestamp.includes(item.toLowerCase()))
+      return allSelectedTimeFormatRequiredType.length >= this.requiredTimeFormatForCustomTimestamp.length
+    },
     isEmpty () {
       return this.lastInputText.trim() === '' && this.selectedItems.length === 0
     },
@@ -240,12 +251,14 @@ class TimeFormat {
   label = ''
   type = ''
   example = ''
+  group = ''
 
-  constructor (label, format, type, ex) {
+  constructor (label, format, type, ex, group) {
     this.label = label
     this.format = format
     this.type = type
     this.example = ex
+    this.group = group
   }
 }
 
@@ -279,13 +292,14 @@ const TIME_FORMAT = {
   // })(),
   /** --------- 24 Hours format ---------- */
   hours24: (() => {
+    const group = 'Hour'
     const type = 'hours24'
     const ex = 'H'
     return {
-      label: 'Hour',
+      label: group,
       type,
       options: [
-        new TimeFormat('06', '%H', type, ex)
+        new TimeFormat('06', '%H', type, ex, group)
         // new TimeFormat('06', 'HH', type, ex)
       ]
     }
@@ -293,114 +307,122 @@ const TIME_FORMAT = {
 
   /** --------- Minute format ---------- */
   minute: (() => {
+    const group = 'Minute'
     const type = 'minute'
     const ex = 'min'
     return {
       label: 'Minutes',
       type,
       options: [
-        new TimeFormat('5', '%m', type, ex)
-        // new TimeFormat('05', 'mm', type, ex)
+        new TimeFormat('5', '%m', type, ex, group)
+        // new TimeFormat('05', 'mm', type, ex, group)
       ]
     }
   })(),
 
   /** --------- Second format ---------- */
   second: (() => {
+    const group = 'Second'
     const type = 'second'
     const ex = 's'
     return {
-      label: 'Seconds',
+      label: group,
       type,
       options: [
-        new TimeFormat('05', '%s', type, ex)
+        new TimeFormat('05', '%s', type, ex, group)
       ]
     }
   })(),
 
   /** --------- Day number format ---------- */
   day_number: (() => {
+    const group = 'Day'
     const type = 'day_number'
     const ex = 'D'
     return {
-      label: 'Day',
+      label: group,
       type,
       options: [
-        new TimeFormat('9', '%D', type, ex)
-        // new TimeFormat('29', 'DD', type, ex),
-        // new TimeFormat('nd', 'Do', type, ex),
-        // new TimeFormat('ND', 'Do', type, ex)
+        new TimeFormat('9', '%D', type, ex, group)
+        // new TimeFormat('29', 'DD', type, ex, group),
+        // new TimeFormat('nd', 'Do', type, ex, group),
+        // new TimeFormat('ND', 'Do', type, ex, group)
       ]
     }
   })(),
 
   /** --------- Day Name format ---------- */
   // day_name: (() => {
+  //   const group = 'Day'
   //   const type = 'day_name'
   //   const ex = 'Day'
   //   return {
   //     label: 'Day Name',
   //     type,
   //     options: [
-  //       new TimeFormat('Fri', 'ddd', type, ex),
-  //       new TimeFormat('Friday', 'dddd', type, ex),
-  //       new TimeFormat('F', 'd', type, ex),
-  //       new TimeFormat('U', 'd', type, ex)
+  //       new TimeFormat('Fri', 'ddd', type, ex, group),
+  //       new TimeFormat('Friday', 'dddd', type, ex, group),
+  //       new TimeFormat('F', 'd', type, ex, group),
+  //       new TimeFormat('U', 'd', type, ex, group)
   //     ]
   //   }
   // })(),
 
   /** --------- Month format ---------- */
   month: (() => {
+    const group = 'Month'
     const type = 'month'
     const ex = 'M'
     return {
       label: 'Month',
       type,
       options: [
-        // new TimeFormat('6', 'M', type, ex),
-        // new TimeFormat('06', 'MM', type, ex),
-        // new TimeFormat('J', 'M', type, ex),
-        // new TimeFormat('Jun', 'MMM', type, ex),
-        // new TimeFormat('June', 'MMMM', type, ex)
-        new TimeFormat('06', '%M', type, ex)
+        // new TimeFormat('6', 'M', type, ex, group),
+        // new TimeFormat('06', 'MM', type, ex, group),
+        // new TimeFormat('J', 'M', type, ex, group),
+        // new TimeFormat('Jun', 'MMM', type, ex, group),
+        // new TimeFormat('June', 'MMMM', type, ex, group)
+        new TimeFormat('06', '%M', type, ex, group)
       ]
     }
   })(),
 
   /** --------- Year format ---------- */
   year: (() => {
+    const group = 'Year'
     const type = 'year'
     const ex = 'Y'
     return {
       label: 'Year',
       type,
       options: [
-        new TimeFormat('20', '%y', type, ex),
-        new TimeFormat('2020', '%Y', type, ex)
+        new TimeFormat('20', '%y', type, ex, group),
+        new TimeFormat('2020', '%Y', type, ex, group)
       ]
     }
   })(),
 
   /** --------- Year format ---------- */
   auto_detect: (() => {
+    const group = 'pre_fill'
     const type = 'auto_detect'
     return {
       label: 'Auto Detect',
       type,
       options: [
-        new TimeFormat('Auto Detect', AUTO_DETECT, type, '')
+        new TimeFormat('Auto Detect', AUTO_DETECT, type, '', group)
       ]
     }
   })(),
 
   unix: (() => {
+    const group = 'pre_fill'
     const type = 'unix'
     return {
       label: 'Unix',
       type,
       options: [
-        new TimeFormat('Unix Hex', UNIX_HEX, type, '')
+        new TimeFormat('Unix Hex', UNIX_HEX, type, '', group)
       ]
     }
   })()
