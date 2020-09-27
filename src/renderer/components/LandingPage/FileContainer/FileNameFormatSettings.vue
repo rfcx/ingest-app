@@ -334,21 +334,20 @@ class CustomInputFormat {
 
 const TIME_FORMAT = {
   /** --------- 12 Hours format ---------- */
-  // hours12: (() => {
-  //   const type = 'hours12'
-  //   const ex = 'H12'
-  //   return {
-  //     label: '12 Hour',
-  //     type,
-  //     options: [
-  //       new TimeFormat('6', 'h', type, ex),
-  //       new TimeFormat('06', 'hh', type, ex),
-  //       new TimeFormat('AM/PM', 'A', type, ''),
-  //       new TimeFormat('A/P', 'A', type, ''),
-  //       new TimeFormat('am/pm', 'a', type, '')
-  //     ]
-  //   }
-  // })(),
+  hours12: (() => {
+    const type = 'hours12'
+    const ex = 'H12'
+    return {
+      label: '12 Hour',
+      type,
+      options: [
+        new TimeFormat('6', '%g', type, ex),
+        new TimeFormat('06', '%G', type, ex),
+        new TimeFormat('A/P', '%a', type, ''),
+        new TimeFormat('AM/PM', '%A', type, '')
+      ]
+    }
+  })(),
   /** --------- 24 Hours format ---------- */
   hours24: (() => {
     const type = 'hours24'
@@ -357,12 +356,11 @@ const TIME_FORMAT = {
       label: 'Hour',
       type,
       options: [
+        new TimeFormat('6', '%h', type, ex)
         new TimeFormat('06', '%H', type, ex)
-        // new TimeFormat('06', 'HH', type, ex)
       ]
     }
   })(),
-
   /** --------- Minute format ---------- */
   minute: (() => {
     const type = 'minute'
@@ -371,12 +369,11 @@ const TIME_FORMAT = {
       label: 'Minutes',
       type,
       options: [
-        new TimeFormat('5', '%m', type, ex)
-        // new TimeFormat('05', 'mm', type, ex)
+        new TimeFormat('5', '%i', type, ex)
+        new TimeFormat('05', '%I', type, ex)
       ]
     }
   })(),
-
   /** --------- Second format ---------- */
   second: (() => {
     const type = 'second'
@@ -385,11 +382,11 @@ const TIME_FORMAT = {
       label: 'Seconds',
       type,
       options: [
-        new TimeFormat('05', '%s', type, ex)
+        new TimeFormat('5', '%s', type, ex)
+        new TimeFormat('05', '%S', type, ex)
       ]
     }
   })(),
-
   /** --------- Day number format ---------- */
   day_number: (() => {
     const type = 'day_number'
@@ -398,30 +395,11 @@ const TIME_FORMAT = {
       label: 'Day',
       type,
       options: [
-        new TimeFormat('9', '%D', type, ex)
-        // new TimeFormat('29', 'DD', type, ex),
-        // new TimeFormat('nd', 'Do', type, ex),
-        // new TimeFormat('ND', 'Do', type, ex)
+        new TimeFormat('9', '%d', type, ex)
+        new TimeFormat('09', '%D', type, ex)
       ]
     }
   })(),
-
-  /** --------- Day Name format ---------- */
-  // day_name: (() => {
-  //   const type = 'day_name'
-  //   const ex = 'Day'
-  //   return {
-  //     label: 'Day Name',
-  //     type,
-  //     options: [
-  //       new TimeFormat('Fri', 'ddd', type, ex),
-  //       new TimeFormat('Friday', 'dddd', type, ex),
-  //       new TimeFormat('F', 'd', type, ex),
-  //       new TimeFormat('U', 'd', type, ex)
-  //     ]
-  //   }
-  // })(),
-
   /** --------- Month format ---------- */
   month: (() => {
     const type = 'month'
@@ -430,16 +408,13 @@ const TIME_FORMAT = {
       label: 'Month',
       type,
       options: [
-        // new TimeFormat('6', 'M', type, ex),
-        // new TimeFormat('06', 'MM', type, ex),
-        // new TimeFormat('J', 'M', type, ex),
-        // new TimeFormat('Jun', 'MMM', type, ex),
-        // new TimeFormat('June', 'MMMM', type, ex)
-        new TimeFormat('06', '%M', type, ex)
+        new TimeFormat('6', '%m', type, ex),
+        new TimeFormat('06', '%M', type, ex),
+        new TimeFormat('Jun', '%n', type, ex),
+        new TimeFormat('June', '%N', type, ex)
       ]
     }
   })(),
-
   /** --------- Year format ---------- */
   year: (() => {
     const type = 'year'
@@ -453,8 +428,20 @@ const TIME_FORMAT = {
       ]
     }
   })(),
-
-  /** --------- Year format ---------- */
+  /** --------- Timezone format ---------- */
+  timezone: (() => {
+    const type = 'timezone'
+    const ex = 'tz'
+    return {
+      label: 'Timezone',
+      type,
+      options: [
+        new TimeFormat('+1000', '%z', type, ex),
+        new TimeFormat('PDT', '%Z', type, ex)
+      ]
+    }
+  })(),
+  /** --------- Others ---------- */
   auto_detect: (() => {
     const type = 'auto_detect'
     return {
@@ -465,7 +452,6 @@ const TIME_FORMAT = {
       ]
     }
   })(),
-
   unix: (() => {
     const type = 'unix'
     return {
@@ -476,61 +462,6 @@ const TIME_FORMAT = {
       ]
     }
   })()
-
-  /** --------- Timezone format ---------- */
-  // timezone: (() => {
-  //   const type = 'timezone'
-  //   const ex = 'tz'
-  //   return {
-  //     label: 'Timezone',
-  //     type,
-  //     options: [
-  //       new TimeFormat('+1000', '+1000', type, ex),
-  //       new TimeFormat('PDT', 'PDT', type, ex),
-  //       new TimeFormat('Pacific Time', 'Pacific Time', type, ex)
-  //     ]
-  //   }
-  // })(),
-
-  // /** --------- Fuzzy clock format ---------- */
-  // fuzzy_clock: (() => {
-  //   const type = 'fuzzy_clock'
-  //   const ex = ''
-  //   return {
-  //     label: 'Fuzzy Clock',
-  //     type,
-  //     options: [
-  //       new TimeFormat('quarter of five', 'fuzzy_clock', type, ex)
-  //     ]
-  //   }
-  // })(),
-
-  // /** --------- Week/Day format ---------- */
-  // week_day_of_year: (() => {
-  //   const type = 'week_day_of_year'
-  //   const ex = 'W'
-  //   return {
-  //     label: 'Week/Day of year',
-  //     type,
-  //     options: [
-  //       new TimeFormat('52', 'W', type, ex),
-  //       new TimeFormat('365', 'W', type, ex)
-  //     ]
-  //   }
-  // })(),
-
-  // /** --------- System time offset format ---------- */
-  // system_time_offset: (() => {
-  //   const type = 'system_time_offset'
-  //   const ex = ''
-  //   return {
-  //     label: 'System time offset',
-  //     type,
-  //     options: [
-  //       new TimeFormat('+6', AUTO_DETECT, type, ex)
-  //     ]
-  //   }
-  // })()
 }
 </script>
 <style lang="scss" scoped>
