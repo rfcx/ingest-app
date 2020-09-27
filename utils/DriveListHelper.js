@@ -18,7 +18,12 @@ class DriveListHelper {
         .sort()
         .join(',')
     ].join('|')
-    return { id, path: drive.mountpoints[0].path, label: drive.mountpoints[0].label }
+    const path = drive.mountpoints[0].path
+    let label = drive.mountpoints[0].label
+    if (!label || label.length === 0) { // if no name set
+      label = drive.busType + ` ${path}`
+    }
+    return { id, path, label }
   }
 }
 
