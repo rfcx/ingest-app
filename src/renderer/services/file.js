@@ -6,6 +6,7 @@ import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import cryptoJS from 'crypto-js'
 import store from '../store'
+import FileInfo from './FileInfo'
 import fs from 'fs'
 
 const FORMAT_AUTO_DETECT = 'Auto-detect'
@@ -13,6 +14,8 @@ const FORMAT_AUTO_DETECT = 'Auto-detect'
 class FileProvider {
   /* -- Import files -- */
   handleDroppedFiles (droppedFiles, selectedStream) {
+    // read file header
+
     // 1. Convert dropped files (from drag&drop) to database file objects
     // 2. Insert files to database
     // 3. Get file duration
@@ -20,13 +23,14 @@ class FileProvider {
     let fileObjects = []
     let fileObjectsInFolder = []
     if (!droppedFiles) {
+      // no files
       return
-    } // no files
+    }
     [...droppedFiles].forEach((file) => {
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
-          this.getFileObjectsFromFolder(file, selectedStream, null)
-        )
+          this.getFileObjectsFromFolder(file.path, selectedStream, null)
+        ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
       } else {
         const fileObject = this.createFileObject(file.path, selectedStream)
         if (fileObject) {
@@ -45,12 +49,29 @@ class FileProvider {
     )
   }
 
-  getFileObjectsFromFolder (folder, selectedStream, existingFileObjects = null) {
+  handleDroppedFolder (folderPath, selectedStream) {
+    if (!folderPath) return
+    console.log('handleDroppedFolder', folderPath, selectedStream)
+    let fileObjectsInFolder = []
+    fileObjectsInFolder = fileObjectsInFolder.concat(
+      this.getFileObjectsFromFolder(folderPath, selectedStream, null)
+    ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
+    // insert converted files into db
+    this.insertNewFiles(fileObjectsInFolder, selectedStream)
+    // update file duration
+    this.updateFilesDuration(
+      fileObjectsInFolder.filter((file) =>
+        fileHelper.isSupportedFileExtension(file.extension)
+      )
+    )
+  }
+
+  getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null) {
     // see all stuff in the directory
     const stuffInDirectory = fileHelper
-      .getFilesFromDirectoryPath(folder.path)
+      .getFilesFromDirectoryPath(folderPath)
       .map((name) => {
-        return { name: name, path: folder.path + '/' + name }
+        return { name: name, path: folderPath + '/' + name }
       })
     // get the files in the directory
     const files = stuffInDirectory.filter(
@@ -69,7 +90,7 @@ class FileProvider {
       fileHelper.isFolder(file.path)
     )
     subfolders.forEach((folder) =>
-      this.getFileObjectsFromFolder(folder, selectedStream, fileObjects)
+      this.getFileObjectsFromFolder(folder.path, selectedStream, fileObjects)
     )
     return fileObjects
   }
@@ -280,9 +301,10 @@ class FileProvider {
   uploadFile (file, idToken) {
     console.log('\nupload file ', file)
     if (!fileHelper.isExist(file.path)) {
-      return File.update({ where: file.id,
-        data: {state: 'local_error', stateMessage: 'File is not exist'}
+      File.update({ where: file.id,
+        data: {state: 'server_error', stateMessage: 'File does not exist'}
       })
+      return Promise.reject(new Error('File does not exist'))
     }
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.timestamp,
       file.sizeInByte, idToken, (progress) => {
@@ -450,14 +472,30 @@ class FileProvider {
       console.log('this file is already in prepare tab')
       return
     }
+
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
+
+    // read file header info
+    let deviceId, deploymentId, momentDate, isoDate
+    if (fileExt === 'wav') {
+      const info = new FileInfo(filePath)
+      console.log(info)
+      deviceId = info.deviceId
+      deploymentId = info.deployment
+      momentDate = info.recordedDate
+    }
+
     // const data = fileHelper.getMD5Hash(filePath)
     // const hash = data.hash
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
-    const isoDate = dateHelper.getIsoDateWithFormat(stream.timestampFormat, fileName)
-    const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+    if (momentDate) {
+      isoDate = momentDate.toISOString()
+    } else {
+      isoDate = dateHelper.getIsoDateWithFormat(stream.timestampFormat, fileName)
+      momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+    }
     const state = this.getState(momentDate, fileExt, hasUploadedBefore)
     return {
       id: this.getFileId(filePath),
@@ -471,7 +509,9 @@ class FileProvider {
       timestamp: isoDate,
       streamId: stream.id,
       state: state.state,
-      stateMessage: state.message
+      stateMessage: state.message,
+      deviceId,
+      deploymentId
     }
   }
 

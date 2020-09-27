@@ -30,7 +30,9 @@ export default class File extends Model {
       retries: this.number(0),
       uploaded: this.boolean(false),
       paused: this.boolean(false),
-      sessionId: this.attr('')
+      sessionId: this.attr(''),
+      deviceId: this.string(''),
+      deploymentId: this.string('')
     }
   }
 
@@ -85,5 +87,9 @@ export default class File extends Model {
 
   get canRemove () {
     return FileState.canRemove(this.state)
+  }
+
+  get canRename () {
+    return !this.deviceId
   }
 }

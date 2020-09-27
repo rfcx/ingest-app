@@ -24,7 +24,8 @@ export default class Stream extends Model {
       createdAt: this.attr(''),
       updatedAt: this.attr(''),
       env: this.string(''),
-      visibility: this.string('')
+      visibility: this.string(''),
+      deviceId: this.string('')
     }
   }
 

@@ -89,7 +89,7 @@ export default {
       bottom: 0;
       width: $sidebar-width;
       height: $global-progress-height;
-      background: $dropdown-content-background-color;
+      background: $side-menu-background;
     }
     &__content {
       display: flex;
