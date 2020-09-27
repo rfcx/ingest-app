@@ -15,7 +15,7 @@
         <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :file="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
     </table>
-    <empty-view v-if="files.length === 0" :hasFileInQueued="queuingFiles.length > 0" :isDragging="isDragging"></empty-view>
+    <empty-view v-if="files.length === 0" :hasFileInQueued="queuingFiles.length > 0" :isDragging="isDragging" @onImportFiles="onImportFiles"></empty-view>
     <confirm-alert
       :content="deleteAlertTitle"
       confirmButtonText="Delete"
@@ -77,6 +77,10 @@ export default {
       await File.delete(this.fileToBeDeleted.id)
       this.isDeleting = false
       this.hideConfirmToDeleteDialog()
+    },
+    onImportFiles (files) {
+      console.log('onImportFiles = filelist', files)
+      this.$emit('onImportFiles', files)
     }
   }
 }
