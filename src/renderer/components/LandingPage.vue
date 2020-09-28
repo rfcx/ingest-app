@@ -17,11 +17,11 @@
       />
       <div class="column content is-desktop" v-if="streams && streams.length > 0">
         <empty-stream v-if="isEmptyStream()"></empty-stream>
-        <file-container v-else :isDragging="isDragging"></file-container>
+        <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>
       <div class="column content is-desktop" v-else>
         <empty-stream v-if="isEmptyStream()"></empty-stream>
-        <file-container v-else :isDragging="isDragging"></file-container>
+        <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>
     <!-- </section> -->
     <global-progress></global-progress>
@@ -82,13 +82,14 @@
         let dt = e.dataTransfer
         let files = dt.files
         this.handleFiles(files)
-        const tabObject = {}
-        tabObject[this.selectedStreamId] = 'Prepared'
-        this.$store.dispatch('setSelectedTab', tabObject)
       },
       handleFiles (files) {
         this.isDragging = false
         if (!files) { return }
+        // reset selected tab
+        const tabObject = {}
+        tabObject[this.selectedStreamId] = 'Prepared'
+        this.$store.dispatch('setSelectedTab', tabObject)
         this.$file.handleDroppedFiles(files, this.selectedStream)
       },
       isEmptyStream () {

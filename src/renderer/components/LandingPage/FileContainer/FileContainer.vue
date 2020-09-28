@@ -3,7 +3,7 @@
     <header-view></header-view>
     <tab :files="files" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
-    <file-list :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab" :isDragging="isDragging"></file-list>
+    <file-list :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab" :isDragging="isDragging" @onImportFiles="onImportFiles"></file-list>
   </div>
 </template>
 
@@ -55,6 +55,10 @@ export default {
       if (this.queuingFiles.length > 0) { return 'Queued' }
       if (this.completedFiles.length > 0) { return 'Completed' }
       return 'Prepared'
+    },
+    onImportFiles (files) {
+      console.log('onImportFiles = filecontainer', files)
+      this.$emit('onImportFiles', files)
     }
   }
 }
