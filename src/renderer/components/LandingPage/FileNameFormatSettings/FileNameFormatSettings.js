@@ -1,75 +1,3 @@
-<template>
-	<div class="modal-card">
-		<header class="modal-card-head">
-			<font-awesome-icon :icon="ICON_CLOCK" size="2x"/>
-			<h1 class="title">Filename Format</h1>
-		</header>
-		<section class="modal-card-body">
-
-			<!-- Custom file input picker -->
-			<div class="d-flex w100 input-container">
-				<div class="field is-grouped is-grouped-multiline" @click.stop="fieldClick($event)">
-					<template v-for="(item, idx) in selectedItems">
-						<div class="control" v-if="isFormatItem(item)" :key="'item-' + idx" :data-index="idx">
-							<div class="tags has-addons">
-								<a class="tag is-link tag-label">
-									<span>{{ item.label }}</span>
-									<span v-if="item.example">({{ item.example }})</span>
-								</a>
-								<a class="tag is-delete" @click="deleteSelectedFormatItem(item)"></a>
-							</div>
-						</div>
-            <input
-              :data-index="idx"
-              @blur="customInputBlur($event, idx)"
-              v-model="item.value"
-              :key="'format-input-' + idx"
-              v-else
-              :size="item.value.length"
-              class="custom-input"
-              @keydown="customInputKeydown($event, idx)"
-              />
-					</template>
-					<input
-            :disabled="isAutoDetect || isUnixHex"
-						:size="lastInputText.length"
-						@keydown="keydown($event)"
-						type="text"
-						v-model="lastInputText"
-						ref="fieldInput"
-						class="last-input" />
-				</div>
-			</div>
-
-			<div class="columns is-multiline is-gapless">
-				<div class="column is-half" v-for="(formatItem, index) in TIME_FORMAT" :key="'time-format-' + index" :data-type="formatItem.type">
-					<div class="is-flex flex-row align-center">
-						<table class="w100 time-format-table">
-							<tr>
-								<td class="label-col">
-									<span>{{ formatItem.label }}</span>
-								</td>
-								<td class="col-options">
-									<div class="is-flex flex-row">
-										<button @click="formatItemClick(formatItem.type, option)" class="button is-light is-small option-btn" v-for="(option, optIdx) in formatItem.options" :key="'format-btn-' + formatItem.type + '-' + optIdx">
-											<span>{{ option.label }}</span>
-										</button>
-									</div>
-								</td>
-							</tr>
-						</table>
-					</div>
-				</div>
-			</div>
-		</section>
-		<footer class="modal-card-foot">
-			<button class="button is-rounded" @click="closeModal()">Cancel</button>
-			<button class="button is-rounded is-success" @click="save()" :disabled="isEmpty">Apply</button>
-		</footer>
-	</div>
-</template>
-
-<script>
 import * as far from '@fortawesome/free-regular-svg-icons'
 const AUTO_DETECT = 'Auto-detect'
 const UNIX_HEX = 'unix-hex'
@@ -82,7 +10,8 @@ export default {
   },
   data: () => ({
     selectedItems: [],
-    lastInputText: ''
+    lastInputText: '',
+    shouldShowErrorMessage: false
   }),
   mounted () {
     this.checkRestoreFormatToField()
@@ -90,7 +19,13 @@ export default {
   methods: {
     async save () {
       const format = this.selectedFormat
-      this.$emit('save', format)
+      console.log('selectedItems', this.selectedItems)
+      if (this.isPassedValidation) {
+        this.$emit('save', format)
+      } else {
+        this.shouldShowErrorMessage = true
+        console.log('error not pass validation')
+      }
     },
     closeModal () {
       console.log('closeModal')
@@ -164,6 +99,7 @@ export default {
       this.lastInputText = ''
     },
     formatItemClick (type, item) {
+      this.shouldShowErrorMessage = false
       if (item instanceof TimeFormat) {
         if (item.format === AUTO_DETECT || item.format === UNIX_HEX) { // if select auto-detect/unix-hex, then reset the selected value
           this.resetTheSelectedItems(item)
@@ -285,6 +221,20 @@ export default {
   computed: {
     ICON_CLOCK: () => far.faClock,
     TIME_FORMAT: () => TIME_FORMAT,
+    requiredTimeFormatForCustomTimestamp: () => {
+      return ['year', 'month', 'day', 'hour', 'minute']
+    },
+    errorMessageForRequiredTimeFormatForCustomTimestamp () {
+      return this.requiredTimeFormatForCustomTimestamp.toString() + ' are required for a custom timestamp format'
+    },
+    isPassedValidation () {
+      if (this.isAutoDetect || this.isUnixHex) return true
+      const allSelectedTimeFormatRequiredType = this.selectedItems
+        .filter(item => this.isFormatItem(item))
+        .map(item => item.group)
+        .filter(item => item && this.requiredTimeFormatForCustomTimestamp.includes(item.toLowerCase()))
+      return allSelectedTimeFormatRequiredType.length >= this.requiredTimeFormatForCustomTimestamp.length
+    },
     isEmpty () {
       return this.lastInputText.trim() === '' && this.selectedItems.length === 0
     },
@@ -304,6 +254,12 @@ export default {
         return acc
       }, '') + this.lastInputText.trim()
     }
+  },
+  watch: {
+    selectedItems (oldValue, newValue) {
+      if (oldValue === newValue) return
+      this.shouldShowErrorMessage = false
+    }
   }
 }
 
@@ -312,12 +268,14 @@ class TimeFormat {
   label = ''
   type = ''
   example = ''
+  group = ''
 
-  constructor (label, format, type, ex) {
+  constructor (label, format, type, ex, group) {
     this.label = label
     this.format = format
     this.type = type
     this.example = ex
+    this.group = group
   }
 }
 
@@ -350,236 +308,125 @@ const TIME_FORMAT = {
   })(),
   /** --------- 24 Hours format ---------- */
   hours24: (() => {
+    const group = 'Hour'
     const type = 'hours24'
     const ex = 'H'
     return {
-      label: 'Hour',
+      label: group,
       type,
       options: [
-        new TimeFormat('6', '%h', type, ex)
-        new TimeFormat('06', '%H', type, ex)
+        new TimeFormat('6', '%h', type, ex, group),
+        new TimeFormat('06', '%H', type, ex, group)
       ]
     }
   })(),
   /** --------- Minute format ---------- */
   minute: (() => {
+    const group = 'Minute'
     const type = 'minute'
     const ex = 'min'
     return {
       label: 'Minutes',
       type,
       options: [
-        new TimeFormat('5', '%i', type, ex)
-        new TimeFormat('05', '%I', type, ex)
+        new TimeFormat('5', '%i', type, ex, group),
+        new TimeFormat('05', '%I', type, ex, group)
       ]
     }
   })(),
   /** --------- Second format ---------- */
   second: (() => {
+    const group = 'Second'
     const type = 'second'
     const ex = 's'
     return {
-      label: 'Seconds',
+      label: group,
       type,
       options: [
-        new TimeFormat('5', '%s', type, ex)
-        new TimeFormat('05', '%S', type, ex)
+        new TimeFormat('5', '%s', type, ex, group),
+        new TimeFormat('05', '%S', type, ex, group)
       ]
     }
   })(),
   /** --------- Day number format ---------- */
   day_number: (() => {
+    const group = 'Day'
     const type = 'day_number'
     const ex = 'D'
     return {
-      label: 'Day',
+      label: group,
       type,
       options: [
-        new TimeFormat('9', '%d', type, ex)
-        new TimeFormat('09', '%D', type, ex)
+        new TimeFormat('9', '%d', type, ex, group),
+        new TimeFormat('09', '%D', type, ex, group)
       ]
     }
   })(),
   /** --------- Month format ---------- */
   month: (() => {
+    const group = 'Month'
     const type = 'month'
     const ex = 'M'
     return {
       label: 'Month',
       type,
       options: [
-        new TimeFormat('6', '%m', type, ex),
-        new TimeFormat('06', '%M', type, ex),
-        new TimeFormat('Jun', '%n', type, ex),
-        new TimeFormat('June', '%N', type, ex)
+        new TimeFormat('6', '%m', type, ex, group),
+        new TimeFormat('06', '%M', type, ex, group),
+        new TimeFormat('Jun', '%n', type, ex, group),
+        new TimeFormat('June', '%N', type, ex, group)
       ]
     }
   })(),
   /** --------- Year format ---------- */
   year: (() => {
+    const group = 'Year'
     const type = 'year'
     const ex = 'Y'
     return {
       label: 'Year',
       type,
       options: [
-        new TimeFormat('20', '%y', type, ex),
-        new TimeFormat('2020', '%Y', type, ex)
+        new TimeFormat('20', '%y', type, ex, group),
+        new TimeFormat('2020', '%Y', type, ex, group)
       ]
     }
   })(),
   /** --------- Timezone format ---------- */
   timezone: (() => {
+    const group = 'Timezone'
     const type = 'timezone'
     const ex = 'tz'
     return {
-      label: 'Timezone',
+      label: group,
       type,
       options: [
-        new TimeFormat('+1000', '%z', type, ex),
-        new TimeFormat('PDT', '%Z', type, ex)
+        new TimeFormat('+1000', '%z', type, ex, group),
+        new TimeFormat('PDT', '%Z', type, ex, group)
       ]
     }
   })(),
   /** --------- Others ---------- */
   auto_detect: (() => {
+    const group = 'pre_fill'
     const type = 'auto_detect'
     return {
       label: 'Auto Detect',
       type,
       options: [
-        new TimeFormat('Auto Detect', AUTO_DETECT, type, '')
+        new TimeFormat('Auto Detect', AUTO_DETECT, type, '', group)
       ]
     }
   })(),
   unix: (() => {
+    const group = 'pre_fill'
     const type = 'unix'
     return {
       label: 'Unix',
       type,
       options: [
-        new TimeFormat('Unix Hex', UNIX_HEX, type, '')
+        new TimeFormat('Unix Hex', UNIX_HEX, type, '', group)
       ]
     }
   })()
 }
-</script>
-<style lang="scss" scoped>
-.modal-card {
-	width: 640px !important;
-}
-.title {
-  padding-left: 12px;
-  color: $title-text-color !important;
-}
-
-.input-container {
-	margin-bottom: 16px;
-	$field-offset: 8px;
-	.field {
-		cursor: text;
-        width: $full-width;
-        border-radius: 8px;
-        border: 1px solid #b2bec3;
-        min-height: 40px;
-        position: relative;
-        padding-left: $field-offset;
-        padding-right: $field-offset;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        margin-bottom: 0 !important;
-        padding-top: $field-offset;
-
-        input {
-          height: 24px;
-          background: transparent !important;
-          border: 0 !important;
-          font-size: 16px;
-          color: white;
-          margin-bottom: $field-offset;
-          min-width: 10px;
-
-          &.custom-input {
-            text-align: center;
-          }
-          &:focus {
-              border: 0 !important;
-              outline: unset !important;
-          }
-
-          &[size="0"] {
-            width: 10px !important;
-          }
-
-          &.last-input {
-            margin-left: 8px;
-          }
-    }
-
-    .input-text {
-      display: flex;
-      align-items: center;
-      padding-right: 8px;
-      font-size: 16px;
-      height: 24px;
-      margin-bottom: $field-offset;
-		}
-
-		$tag-size: 24px;
-		.control {
-			margin-bottom: $field-offset !important;
-      height: $tag-size;
-      margin-right: 0 !important;
-			.tags {
-				a {
-					margin-bottom: 0 !important;
-					height: $tag-size;
-					text-decoration: unset !important;
-
-					&.tag-label {
-						background: white;
-						color: black;
-					}
-				}
-			}
-		}
-
-    }
-}
-
-table.time-format-table {
-	tr {
-		td {
-			border: 0 !important;
-			&.label-col {
-				text-align: right;
-				width: 140px;
-			}
-
-			&.col-options {
-				button.option-btn {
-					&:not(:first-child) {
-						margin-left: 8px;
-					}
-				}
-			}
-		}
-	}
-}
-
-.modal-card-foot {
-	padding-top: 24px !important;
-	button {
-		min-width: 110px;
-	}
-}
-
-.modal-card-head {
-	padding-bottom: 8px !important;
-}
-
-.flex-row {
-  flex-direction: row;
-}
-</style>
