@@ -60,7 +60,6 @@
   import settings from 'electron-settings'
   import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
-  // import ClickOutside from 'v-click-outside'
   const { remote } = window.require('electron')
 
   export default {
