@@ -1,6 +1,4 @@
-import fileHelper from './fileHelper'
 const moment = require('moment')
-
 const appDate = 'YYYY-MM-DD HH:mm:ss'
 
 const getIsoDateWithFormat = (format, fileName) => {
@@ -11,15 +9,50 @@ const getIsoDateWithFormat = (format, fileName) => {
   }
 }
 
+const formatIso = (obj) => {
+  if (obj.year && obj.year.length === 2) {
+    obj.year = '20' + obj.year
+  }
+  if (obj.hour12) {
+    if (obj.hour12ap === 'pm' || obj.hour12ap === 'p' || obj.hour12ap === 'PM' || obj.hour12ap === 'P') {
+      obj.hour = (parseInt(obj.hour12) + 12).toString()
+    } else {
+      obj.hour = obj.hour12
+    }
+  }
+  if (!obj.second) {
+    obj.second = '00'
+  }
+  if (!obj.timezone) {
+    obj.timezone = 'Z'
+  }
+  const datePart = `${obj.year}-${obj.month.padStart(2, '0')}-${obj.day.padStart(2, '0')}`
+  const timePart = `${obj.hour.padStart(2, '0')}:${obj.minute.padStart(2, '0')}:${obj.second.padStart(2, '0')}.000`
+  return `${datePart}T${timePart}${obj.timezone}`
+}
+
 const parseTimestamp = (fileName, timestampFormat) => {
   const parts = {
     '%Y': '(?<year>[1-9][0-9][0-9][0-9])',
     '%y': '(?<year>[0-9][0-9])',
     '%M': '(?<month>[0-1][0-9])',
+    '%m': '(?<month>1?[0-9])',
+    '%N': '(?<month>January|February|March|April|May|June|July|August|September|October|November|December)',
+    '%n': '(?<month>Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)',
     '%D': '(?<day>[0-3][0-9])',
+    '%d': '(?<day>[1-3]?[0-9])',
     '%H': '(?<hour>[0-2][0-9])',
-    '%m': '(?<minute>[0-5][0-9])',
-    '%s': '(?<second>[0-5][0-9])?'
+    '%h': '(?<hour>[1-2]?[0-9])',
+    '%G': '(?<hour12>0[0-9]|1[0-1])',
+    '%g': '(?<hour12>[0-9]|1[0-1])',
+    '%A': '(?<hour12ap>AM|PM|am|pm)',
+    '%a': '(?<hour12ap>A|P|a|p)',
+    '%I': '(?<minute>[0-5][0-9])',
+    '%i': '(?<minute>[1-5]?[0-9])',
+    '%S': '(?<second>[0-5][0-9])',
+    '%s': '(?<second>[1-5]?[0-9])',
+    '%Z': '(?<timezone>\\+[0-9][0-9][0-9][0-9])',
+    '%z': '(?<timezone>[A-Z][A-Z][A-Z])'
   }
 
   var regExpString = timestampFormat
@@ -35,10 +68,7 @@ const parseTimestamp = (fileName, timestampFormat) => {
     return undefined
   }
 
-  result = result.groups
-  if (!result.second) result.second = '00'
-  if (result && result.year && result.year.length === 2) result.year = '20' + result.year
-  return `${result.year}-${result.month}-${result.day}T${result.hour}:${result.minute}:${result.second}Z`
+  return formatIso(result.groups)
 }
 
 const parseTimestampAuto = (input) => {
@@ -74,11 +104,7 @@ const parseTimestampAuto = (input) => {
       }
     }
   }
-  result = result.groups
-
-  if (!result.second) result.second = '00'
-  if (result && result.year && result.year.length === 2) result.year = '20' + result.year
-  return `${result.year}-${result.month}-${result.day}T${result.hour}:${result.minute}:${result.second}Z`
+  return formatIso(result.groups)
 }
 
 const isHex = (string) => {
@@ -86,12 +112,12 @@ const isHex = (string) => {
   return (num.toString(16).toLowerCase() === string.toLowerCase())
 }
 
-const parseTimestampUnixHex = (input) => {
-  const fileName = fileHelper.getFileName(input)
-  if (!isHex(fileName)) {
+const parseTimestampUnixHex = (filenameWithExtension) => {
+  const filename = filenameWithExtension.replace(/\.[^/.]+$/, '')
+  if (!isHex(filename)) {
     return undefined
   } else {
-    const date = moment.utc('1970-01-01').add(parseInt(fileName, 16), 'seconds')
+    const date = moment.utc('1970-01-01').add(parseInt(filename, 16), 'seconds')
     return moment(date, 'YYYY-DD-MM').isValid() ? date.toISOString() : undefined
   }
 }
@@ -100,21 +126,12 @@ const getMomentDateFromISODate = (date) => {
   return moment.utc(date, moment.ISO_8601)
 }
 
-const getMomentDateFromAppDate = (date) => {
-  return moment.utc(date, appDate)
-}
-
 const convertMomentDateToAppDate = (date) => {
   return date.format(appDate)
 }
 
 export default {
-  appDate,
   getIsoDateWithFormat,
-  parseTimestamp,
-  parseTimestampAuto,
-  parseTimestampUnixHex,
   getMomentDateFromISODate,
-  getMomentDateFromAppDate,
   convertMomentDateToAppDate
 }
