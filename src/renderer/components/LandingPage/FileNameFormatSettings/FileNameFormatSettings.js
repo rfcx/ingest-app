@@ -291,63 +291,6 @@ class CustomInputFormat {
 }
 
 const TIME_FORMAT = {
-  /** --------- 12 Hours format ---------- */
-  hours12: (() => {
-    const type = 'hours12'
-    const ex = 'H12'
-    return {
-      label: '12 Hour',
-      type,
-      options: [
-        new TimeFormat('6', '%g', type, ex),
-        new TimeFormat('06', '%G', type, ex),
-        new TimeFormat('A/P', '%a', type, ''),
-        new TimeFormat('AM/PM', '%A', type, '')
-      ]
-    }
-  })(),
-  /** --------- 24 Hours format ---------- */
-  hours24: (() => {
-    const group = 'Hour'
-    const type = 'hours24'
-    const ex = 'H'
-    return {
-      label: group,
-      type,
-      options: [
-        new TimeFormat('6', '%h', type, ex, group),
-        new TimeFormat('06', '%H', type, ex, group)
-      ]
-    }
-  })(),
-  /** --------- Minute format ---------- */
-  minute: (() => {
-    const group = 'Minute'
-    const type = 'minute'
-    const ex = 'min'
-    return {
-      label: 'Minutes',
-      type,
-      options: [
-        new TimeFormat('5', '%i', type, ex, group),
-        new TimeFormat('05', '%I', type, ex, group)
-      ]
-    }
-  })(),
-  /** --------- Second format ---------- */
-  second: (() => {
-    const group = 'Second'
-    const type = 'second'
-    const ex = 's'
-    return {
-      label: group,
-      type,
-      options: [
-        new TimeFormat('5', '%s', type, ex, group),
-        new TimeFormat('05', '%S', type, ex, group)
-      ]
-    }
-  })(),
   /** --------- Day number format ---------- */
   day_number: (() => {
     const group = 'Day'
@@ -392,6 +335,64 @@ const TIME_FORMAT = {
       ]
     }
   })(),
+  /** --------- 12 Hours format ---------- */
+  hours12: (() => {
+    const group = 'Hour'
+    const type = 'hours12'
+    const ex = 'H12'
+    return {
+      label: '12 Hour',
+      type,
+      options: [
+        new TimeFormat('6', '%g', type, ex, group),
+        new TimeFormat('06', '%G', type, ex, group),
+        new TimeFormat('A/P', '%a', type, ''),
+        new TimeFormat('AM/PM', '%A', type, '')
+      ]
+    }
+  })(),
+  /** --------- 24 Hours format ---------- */
+  hours24: (() => {
+    const group = 'Hour'
+    const type = 'hours24'
+    const ex = 'H'
+    return {
+      label: '24 Hour',
+      type,
+      options: [
+        new TimeFormat('6', '%h', type, ex, group),
+        new TimeFormat('06', '%H', type, ex, group)
+      ]
+    }
+  })(),
+  /** --------- Minute format ---------- */
+  minute: (() => {
+    const group = 'Minute'
+    const type = 'minute'
+    const ex = 'min'
+    return {
+      label: 'Minutes',
+      type,
+      options: [
+        new TimeFormat('5', '%i', type, ex, group),
+        new TimeFormat('05', '%I', type, ex, group)
+      ]
+    }
+  })(),
+  /** --------- Second format ---------- */
+  second: (() => {
+    const group = 'Second'
+    const type = 'second'
+    const ex = 's'
+    return {
+      label: group,
+      type,
+      options: [
+        new TimeFormat('5', '%s', type, ex, group),
+        new TimeFormat('05', '%S', type, ex, group)
+      ]
+    }
+  })(),
   /** --------- Timezone format ---------- */
   timezone: (() => {
     const group = 'Timezone'
@@ -403,29 +404,6 @@ const TIME_FORMAT = {
       options: [
         new TimeFormat('+1000', '%z', type, ex, group),
         new TimeFormat('PDT', '%Z', type, ex, group)
-      ]
-    }
-  })(),
-  /** --------- Others ---------- */
-  auto_detect: (() => {
-    const group = 'pre_fill'
-    const type = 'auto_detect'
-    return {
-      label: 'Auto Detect',
-      type,
-      options: [
-        new TimeFormat('Auto Detect', AUTO_DETECT, type, '', group)
-      ]
-    }
-  })(),
-  unix: (() => {
-    const group = 'pre_fill'
-    const type = 'unix'
-    return {
-      label: 'Unix',
-      type,
-      options: [
-        new TimeFormat('Unix Hex', UNIX_HEX, type, '', group)
       ]
     }
   })()
