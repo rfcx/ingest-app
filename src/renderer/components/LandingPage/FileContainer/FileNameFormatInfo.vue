@@ -79,6 +79,9 @@ export default {
     selectedStream () {
       return Stream.find(this.selectedStreamId)
     },
+    selectedTimestampFormat () {
+      return this.selectedStream.timestampFormat
+    },
     readyToUploadFiles () {
       return this.preparingFiles.filter(file => file.isPreparing)
     },
@@ -123,13 +126,17 @@ export default {
       const objectFiles = this.preparingFiles.filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage)) || []
       this.isUpdatingFilenameFormat = true
       this.$file.updateFilesFormat(this.selectedStream, objectFiles, format).then(_ => {
-        this.isUpdatingFilenameFormat = false
-        console.log(`Success update files format '${format}'`)
       }).catch(error => {
         this.isUpdatingFilenameFormat = false
         console.log(`Error update files format '${format}'`, error.message)
         // TODO: Show notify error to user
       })
+    }
+  },
+  watch: {
+    selectedTimestampFormat (newValue, oldValue) {
+      if (newValue === oldValue) return
+      this.isUpdatingFilenameFormat = false
     }
   }
 }
@@ -152,17 +159,14 @@ export default {
       color: $secondary-text-color;
       display: inline-block;
     }
-    &__edit-btn {
-      padding-left: 8px;
-      color: $edit-icon-color !important;
-      font-size: 14px;
-      cursor: pointer;
-    }
   }
   .flex-row {
     flex-direction: row;
   }
   .align-center {
     align-items: center;
+  }
+  .dropdown {
+    margin-top: 4px;
   }
 </style>
