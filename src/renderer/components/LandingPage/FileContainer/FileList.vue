@@ -1,5 +1,9 @@
 <template>
   <div>
+    <div class="notification default-notice" v-if="isCompletedTab && !(hasClosedNotice)">
+      <button class="delete" @click="onCloseNotice()"></button>
+      Completed uploads are shown for up to 30 days. To see all uploads, open in Arbimon.
+    </div>
     <table class="table file-list-table is-hoverable" v-if="files.length > 0">
       <thead>
         <tr>
@@ -15,7 +19,7 @@
         <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :file="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
     </table>
-    <empty-view v-if="files.length === 0" :hasFileInQueued="queuingFiles.length > 0" :isDragging="isDragging"></empty-view>
+    <empty-view v-if="files.length === 0" :hasFileInQueued="queuingFiles.length > 0" :isDragging="isDragging" @onImportFiles="onImportFiles"></empty-view>
     <confirm-alert
       :content="deleteAlertTitle"
       confirmButtonText="Delete"
@@ -44,7 +48,8 @@ export default {
     isDeleting: false,
     deleteAlertTitle: 'Are you sure you want to remove this file?',
     shouldShowConfirmToDeleteAlert: false,
-    fileToBeDeleted: null
+    fileToBeDeleted: null,
+    hasClosedNotice: false
   }),
   components: {
     EmptyView, FileRow, ConfirmAlert
@@ -59,6 +64,9 @@ export default {
     },
     isPreparedTab () {
       if (this.selectedTab === 'Prepared') return true
+    },
+    isCompletedTab () {
+      if (this.selectedTab === 'Completed') return true
     }
   },
   methods: {
@@ -77,6 +85,13 @@ export default {
       await File.delete(this.fileToBeDeleted.id)
       this.isDeleting = false
       this.hideConfirmToDeleteDialog()
+    },
+    onImportFiles (files) {
+      console.log('onImportFiles = filelist', files)
+      this.$emit('onImportFiles', files)
+    },
+    onCloseNotice () {
+      this.hasClosedNotice = true
     }
   }
 }
@@ -115,5 +130,9 @@ export default {
         padding-right: 24px;
       }
     }
+  }
+  
+  .notification {
+    margin: auto $default-padding-margin;
   }
 </style>

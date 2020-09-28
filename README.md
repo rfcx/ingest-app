@@ -27,6 +27,11 @@
     ``` bash
     npm run dev
     ```
+    If you need to set your own URL to API use
+
+    ``` bash
+    npm run dev --url=`http://localhost:3030`
+    ```
 
 ### Build
 

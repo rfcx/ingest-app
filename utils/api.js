@@ -7,13 +7,17 @@ const fileStreamAxios = axios.create({
 const httpClient = axios.create()
 httpClient.defaults.timeout = 30000
 const platform = 'amazon' // || 'google'
+const { remote } = window.require('electron')
 
 const apiUrl = (proEnvironment) => {
+  const url = remote.getGlobal('ingestServicelUrl')
+  if (url) {
+    return url
+  }
   if (proEnvironment) {
     return platform === 'amazon' ? 'https://ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
   }
   return platform === 'amazon' ? 'https://staging-ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
-  // return 'http://192.168.154.144:3030' // return 'http://localhost:3030'
 }
 
 const explorerWebUrl = (isProd, streamId = null) => {
@@ -35,9 +39,9 @@ const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestam
 }
 
 // Part 0: Create stream
-const createStream = (env, streamName, latitude, longitude, visibility, idToken) => {
+const createStream = (env, streamName, latitude, longitude, visibility, deviceId, idToken) => {
   console.log('creating stream api:', streamName)
-  return httpClient.post(apiUrl(env) + '/streams', { name: streamName, latitude: latitude, longitude: longitude, is_public: visibility }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.post(apiUrl(env) + '/streams', { name: streamName, latitude: latitude, longitude: longitude, is_public: visibility, device_id: deviceId }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const streamId = response.data.id
       return streamId

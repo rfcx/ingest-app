@@ -180,7 +180,7 @@ export default {
       return String(this.file.extension).toLowerCase() === String(arr[arr.length - 1]).toLowerCase()
     },
     canEdit () {
-      return ['local_error', 'preparing'].includes(this.file.state)
+      return ['local_error', 'preparing'].includes(this.file.state) && this.file.canRename
     }
   }
 }

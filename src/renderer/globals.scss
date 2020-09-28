@@ -15,6 +15,9 @@ $button-background-color: #45485d;
 $input-placeholder: #52566e;
 $danger-color: #f14668;
 $edit-icon-color: #9B9B9B;
+$divider-color: #5f6292;
+$side-menu-background: #232436;
+$dropdown-background: #373955;
 $title-font-weight: 700;
 $navbar-height: 0rem;
 $default-padding-margin: 0.75em;
@@ -55,15 +58,18 @@ $input-color: $body-text-color;
 $label-color: $title-text-color;
 
 // -- Dropdown
-$dropdown-content-background-color: #232436;
+$dropdown-content-background-color: $dropdown-background;
 $dropdown-item-color: $body-text-color;
 $dropdown-item-hover-color: $body-text-color;
-$dropdown-item-hover-background-color: $box-color;
+$dropdown-item-hover-background-color: #414364;
+$dropdown-divider-background-color: $dropdown-background;
+$dropdown-content-shadow: 0 0.5em 1em -0.125em rgba($divider-color, 0.1), 0 0px 0 1px rgba($divider-color, 0.02);
 
 // -- Button
 $button-color: $title-text-color;
 $button-background-color: $button-background-color;
 $button-border-color: $button-background-color;
+$button-disabled-background-color: $button-background-color;
 $button-hover-color: $title-text-color;
 $button-hover-border-color: #3b3e53;
 
@@ -92,6 +98,12 @@ h1 {
   margin-bottom: $default-padding-margin !important;
 }
 
+p.subtitle {
+  color: $secondary-text-color;
+  font-size: $default-font-size;
+  margin-bottom: $default-padding-margin;
+}
+
 a.is-button {
   text-transform: uppercase;
   color: $title-text-color;
@@ -104,6 +116,14 @@ a.is-button {
   left: 25%;
   right: 25%;
   transform: translateY(-50%);
+}
+
+.button.is-loading {
+  &:hover, &:focus, &:active, &:visited {
+    &::after {
+      border-color: transparent transparent #fff #fff !important
+    }
+  }
 }
 
 .rounded-button {

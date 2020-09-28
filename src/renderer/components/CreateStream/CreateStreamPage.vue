@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <h1>Create site</h1>
+    <header-view title="Create Site" :shouldShowBackButton="selectedFolderPath != null"/>
     <fieldset>
       <div class="notification default-notice" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
@@ -19,7 +19,18 @@
         <label for="location" class="label">Location</label>
         <Map class="map-wrapper" @locationSelected="onSelectLocation"></Map>
       </div>
-      <div class="field is-grouped">
+      <div class="folder-path-input__wrapper" v-if="selectedFolderPath != null">
+        <label for="path" class="label">Folder path</label>
+        <div class="field has-addons" >
+          <div class="control is-expanded">
+            <input class="input" type="path" :value="selectedFolderPath" readonly>
+          </div>
+          <div class="control">
+            <a class="button" @click="$router.push('/import')">Change</a>
+          </div>
+        </div>
+      </div>
+      <div class="field is-grouped controls-group">
         <p class="control control-btn">
           <router-link class="control-btn" to="/">
             <button type="button" class="button is-rounded is-cancel">Cancel</button>
@@ -45,6 +56,7 @@ import api from '../../../../utils/api'
 import streamHelper from '../../../../utils/streamHelper'
 import settings from 'electron-settings'
 import Map from './Map'
+import HeaderView from '../Common/HeaderWithBackButton'
 
 export default {
   data () {
@@ -52,16 +64,30 @@ export default {
       name: '',
       selectedLatitude: null,
       selectedLongitude: null,
+      selectedFolderPath: null, // prop from import page
+      deviceId: null, // prop from import page
       isLoading: false,
       hasPassValidation: false,
       error: '',
       shouldShowNameHelperMessage: false
     }
   },
-  components: { Map },
+  components: { Map, HeaderView },
   computed: {
     hasPassedValidation () {
       return this.name && this.selectedLatitude && this.selectedLongitude
+    }
+  },
+  created () {
+    if (!this.$route.query) return
+    // TODO: add logic & UI to go back to import step
+    if (this.$route.query.folderPath) {
+      this.selectedFolderPath = this.$route.query.folderPath
+      console.log('create with +', this.selectedFolderPath)
+    }
+    if (this.$route.query.deviceId) {
+      this.deviceId = this.$route.query.deviceId
+      console.log('+', this.deviceId)
     }
   },
   methods: {
@@ -91,6 +117,7 @@ export default {
             latitude,
             longitude,
             visibility,
+            this.deviceId,
             idToken
           )
           .then(async streamId => {
@@ -103,10 +130,15 @@ export default {
               env: this.isProductionEnv() ? 'production' : 'staging',
               visibility: visibility,
               createdAt: Date.now(),
-              updatedAt: Date.now()
+              updatedAt: Date.now(),
+              deviceId: this.deviceId || ''
             }
             console.log('creating stream', JSON.stringify(stream))
             Stream.insert({ data: stream, insert: ['files'] })
+            // add files to site/stream
+            if (this.selectedFolderPath) {
+              this.$file.handleDroppedFolder(this.selectedFolderPath, stream)
+            }
             this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$router.push('/')
           })
@@ -149,6 +181,9 @@ export default {
   }
   span.help {
     display: inline;
+  }
+  .controls-group {
+    margin-top: $default-padding-margin;
   }
 </style>
 

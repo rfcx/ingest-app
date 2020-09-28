@@ -1,17 +1,29 @@
 <template>
   <div id="wrapper-landing-page" :class="{ 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop"
      @dragover.prevent @dragleave="outDrag">
-    <section class="main-content columns is-mobile">
-      <side-navigation :class="{ 'side-menu__with-progress': shouldShowProgress}"></side-navigation>
+    <!-- <section class="main-content columns is-mobile"> -->
+      <div class="dropdown dropdown__wrapper" :class="{ 'is-active': shouldShowNewSiteDropDown }">
+        <div class="dropdown-menu dropdown__menu" id="dropdown-menu-for-new-site" role="menu">
+          <div class="dropdown-content dropdown__content">
+            <router-link title="Create new site" to="/add"><a href="#" class="dropdown-item">Create new site</a></router-link>
+            <router-link title="Import files" to="/import"><a href="#" class="dropdown-item">Import files</a></router-link>
+          </div>
+        </div>
+      </div>
+      <side-navigation 
+        :class="{ 'side-menu__with-progress': shouldShowProgress}" 
+        @clickNewSiteButton="toggleNewSiteDropDown" 
+        @clickOutSideNewSiteButton="hideNewSiteDropDown"
+      />
       <div class="column content is-desktop" v-if="streams && streams.length > 0">
         <empty-stream v-if="isEmptyStream()"></empty-stream>
-        <file-container v-else :isDragging="isDragging"></file-container>
+        <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>
       <div class="column content is-desktop" v-else>
         <empty-stream v-if="isEmptyStream()"></empty-stream>
-        <file-container v-else :isDragging="isDragging"></file-container>
+        <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>
-    </section>
+    <!-- </section> -->
     <global-progress></global-progress>
     <confirm-alert
       :title="alertTitle"
@@ -45,7 +57,8 @@
         alertContent: this.getContent(),
         executed: false,
         isDragging: false,
-        isPopupOpened: false
+        isPopupOpened: false,
+        shouldShowNewSiteDropDown: false
       }
     },
     methods: {
@@ -69,13 +82,14 @@
         let dt = e.dataTransfer
         let files = dt.files
         this.handleFiles(files)
-        const tabObject = {}
-        tabObject[this.selectedStreamId] = 'Prepared'
-        this.$store.dispatch('setSelectedTab', tabObject)
       },
       handleFiles (files) {
         this.isDragging = false
         if (!files) { return }
+        // reset selected tab
+        const tabObject = {}
+        tabObject[this.selectedStreamId] = 'Prepared'
+        this.$store.dispatch('setSelectedTab', tabObject)
         this.$file.handleDroppedFiles(files, this.selectedStream)
       },
       isEmptyStream () {
@@ -94,6 +108,12 @@
       },
       getContent () {
         return `You are on the latest version ${remote.getGlobal('version')}`
+      },
+      toggleNewSiteDropDown () {
+        this.shouldShowNewSiteDropDown = !this.shouldShowNewSiteDropDown
+      },
+      hideNewSiteDropDown () {
+        this.shouldShowNewSiteDropDown = false
       }
     },
     computed: {
@@ -166,7 +186,7 @@
   }
 
   aside {
-    background-color: $dropdown-content-background-color;
+    background-color: $side-menu-background;
   }
 
   .content {
@@ -242,6 +262,25 @@
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
     font-size: $alert-content-size;
+  }
+
+  .dropdown {
+    &__wrapper {
+      top: 95px;
+      left: 1.5em;
+      border: 1px solid rgba($divider-color, 0.5);
+    }
+    &__menu {
+      width: 220px;
+    }
+    &__content {
+      border: 1px solid rgba($divider-color, 0.5);
+    }
+  }
+
+  a.dropdown-item {
+    font-size: $default-font-size;
+    padding: 0.75rem 1rem;
   }
 
   @media screen and (min-width: 400px) {
