@@ -1,6 +1,5 @@
 import * as far from '@fortawesome/free-regular-svg-icons'
-const AUTO_DETECT = 'Auto-detect'
-const UNIX_HEX = 'unix-hex'
+import fileFormat from '../../../../../utils/FileFormat'
 export default {
   props: {
     format: {
@@ -101,25 +100,22 @@ export default {
     formatItemClick (type, item) {
       this.shouldShowErrorMessage = false
       if (item instanceof TimeFormat) {
-        if (item.format === AUTO_DETECT || item.format === UNIX_HEX) { // if select auto-detect/unix-hex, then reset the selected value
-          this.resetTheSelectedItems(item)
-        } else {
-          if (this.isAutoDetect || this.isUnixHex) { // if select something else when the auto-detect/unix-hex was selected, then reset the selected value
-            this.resetTheSelectedItems(item)
-          }
-          // check format type is already selected
-          const isSelected = this.selectedItems.findIndex(si => (si instanceof TimeFormat && si.type === item.type)) > -1
-          if (!isSelected) {
-            if (this.selectedItems.length > 0) {
-              if (this.lastInputText !== '') {
-                this.selectedItems.push(new CustomInputFormat(this.lastInputText))
-                this.lastInputText = ''
-              } else {
-                this.selectedItems.push(new CustomInputFormat(''))
-              }
+        // check format type is already selected
+        const isSelected = this.selectedItems.findIndex(si => {
+          if (item.type === 'hours12' || item.group === 'Hour') { return si.group === item.group }
+          return (si instanceof TimeFormat && si.type === item.type)
+        }) > -1
+        // TODO: check am/pm
+        if (!isSelected) {
+          if (this.selectedItems.length > 0) {
+            if (this.lastInputText !== '') {
+              this.selectedItems.push(new CustomInputFormat(this.lastInputText))
+              this.lastInputText = ''
+            } else {
+              this.selectedItems.push(new CustomInputFormat(''))
             }
-            this.selectedItems.push(item)
           }
+          this.selectedItems.push(item)
         }
       }
     },
@@ -154,67 +150,60 @@ export default {
     checkRestoreFormatToField () {
       const { format } = this
       console.log(`restoring format '${format}'`)
-      if (format === AUTO_DETECT) {
-        // Select auto detect item
-        this.selectedItems = [TIME_FORMAT.auto_detect.options[0]]
-      } else if (format === UNIX_HEX) {
-        // Select auto detect item
-        this.selectedItems = [TIME_FORMAT.unix.options[0]]
-      } else {
-        const size = format.length
-        const selectedItems = []
-        if (size > 0) {
-          const selectFormat = formatText => {
-            for (const formatItem of Object.values(TIME_FORMAT)) {
-              const option = formatItem.options.find(op => op.format === formatText)
-              if (option) {
-                selectedItems.push(option)
-                selectedItems.push(new CustomInputFormat(''))
-                return
-              }
+      if (Object.values(fileFormat.fileFormat).includes(format)) return
+      const size = format.length
+      const selectedItems = []
+      if (size > 0) {
+        const selectFormat = formatText => {
+          for (const formatItem of Object.values(TIME_FORMAT)) {
+            const option = formatItem.options.find(op => op.format === formatText)
+            if (option) {
+              selectedItems.push(option)
+              selectedItems.push(new CustomInputFormat(''))
+              return
             }
           }
-
-          let idx = 0
-          let count = 0
-          this.selectedItems = []
-          const CHAR = '%'
-          while (idx < size) {
-            if (format[idx] === CHAR && idx + 1 < size) {
-              const fm = format.substr(idx, 2)
-              idx += 2
-              selectFormat(fm)
-            } else {
-              const strIdx = format.indexOf(CHAR, idx)
-              let text = ''
-              if (strIdx > -1) {
-                text = format.substring(idx, strIdx)
-                idx += strIdx - idx
-              } else {
-                text = format.substring(idx, size)
-                idx += (size - idx)
-              }
-
-              if (selectedItems[selectedItems.length - 1] instanceof CustomInputFormat) {
-                selectedItems[selectedItems.length - 1].value = text
-              } else {
-                selectedItems.push(new CustomInputFormat(text))
-              }
-            }
-            count++
-            // prevent infinite loop
-            if (count > 50) {
-              break
-            }
-          }
-
-          const lastItem = selectedItems[selectedItems.length - 1]
-          if (lastItem instanceof CustomInputFormat && lastItem.value === '') {
-            selectedItems.splice(selectedItems.length - 1, 1)
-          }
-
-          this.selectedItems = selectedItems
         }
+
+        let idx = 0
+        let count = 0
+        this.selectedItems = []
+        const CHAR = '%'
+        while (idx < size) {
+          if (format[idx] === CHAR && idx + 1 < size) {
+            const fm = format.substr(idx, 2)
+            idx += 2
+            selectFormat(fm)
+          } else {
+            const strIdx = format.indexOf(CHAR, idx)
+            let text = ''
+            if (strIdx > -1) {
+              text = format.substring(idx, strIdx)
+              idx += strIdx - idx
+            } else {
+              text = format.substring(idx, size)
+              idx += (size - idx)
+            }
+
+            if (selectedItems[selectedItems.length - 1] instanceof CustomInputFormat) {
+              selectedItems[selectedItems.length - 1].value = text
+            } else {
+              selectedItems.push(new CustomInputFormat(text))
+            }
+          }
+          count++
+          // prevent infinite loop
+          if (count > 50) {
+            break
+          }
+        }
+
+        const lastItem = selectedItems[selectedItems.length - 1]
+        if (lastItem instanceof CustomInputFormat && lastItem.value === '') {
+          selectedItems.splice(selectedItems.length - 1, 1)
+        }
+
+        this.selectedItems = selectedItems
       }
     }
   },
@@ -228,7 +217,6 @@ export default {
       return this.requiredTimeFormatForCustomTimestamp.toString() + ' are required for a custom timestamp format'
     },
     isPassedValidation () {
-      if (this.isAutoDetect || this.isUnixHex) return true
       const allSelectedTimeFormatRequiredType = this.selectedItems
         .filter(item => this.isFormatItem(item))
         .map(item => item.group)
@@ -238,11 +226,8 @@ export default {
     isEmpty () {
       return this.lastInputText.trim() === '' && this.selectedItems.length === 0
     },
-    isAutoDetect () {
-      return this.selectedItems.some(si => (si instanceof TimeFormat) && si.format === AUTO_DETECT)
-    },
-    isUnixHex () {
-      return this.selectedItems.some(si => (si instanceof TimeFormat) && si.format === UNIX_HEX)
+    is12Hour () {
+      return this.selectedItems.some(si => (si instanceof TimeFormat) && si.format === 'hours12')
     },
     selectedFormat () {
       return this.selectedItems.reduce((acc, item) => {
@@ -346,8 +331,8 @@ const TIME_FORMAT = {
       options: [
         new TimeFormat('6', '%g', type, ex, group),
         new TimeFormat('06', '%G', type, ex, group),
-        new TimeFormat('A/P', '%a', type, ''),
-        new TimeFormat('AM/PM', '%A', type, '')
+        new TimeFormat('A/P', '%a', type, '', 'ampm'),
+        new TimeFormat('AM/PM', '%A', type, '', 'ampm')
       ]
     }
   })(),

@@ -31,7 +31,6 @@
               />
 					</template>
 					<input
-            :disabled="isAutoDetect || isUnixHex"
 						:size="lastInputText.length"
 						@keydown="keydown($event)"
 						type="text"
