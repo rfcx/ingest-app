@@ -72,13 +72,9 @@ export default {
       this.showNavigateMessage = false
     },
     redirectToArbimon () {
-      // TODO: change url to 'https://arbimon.rfcx.org/core/links/sites/${this.selectedStreamId}'
       let url = `https://arbimon.rfcx.org/`
       if (this.selectedStreamId) {
-        if (this.selectedStream.env && this.selectedStream.env === 'staging') {
-          // TODO: change url for staging env
-          url = `https://arbimon.rfcx.org/`
-        }
+        url += `site/${this.selectedStreamId}`
       }
       this.$electron.shell.openExternal(url)
     }
