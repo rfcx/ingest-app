@@ -2,7 +2,7 @@
   <table>
     <tr class="source-type__row">
       <span class="source-type__title">External drives</span>
-      <button class="button is-small is-rounded" :class="{'is-loading': isLoading}" :disabled="isLoading" @click="getExternalDriveList">Rescan</button>
+      <!-- <button class="button is-small is-rounded" :class="{'is-loading': isLoading}" :disabled="isLoading" @click="getExternalDriveList">Rescan</button> -->
     </tr>
     <template v-if="!drives || drives.length === 0">
       <tr>
@@ -36,6 +36,7 @@
 import DriveList from '../../../../utils/DriveListHelper'
 export default {
   data: () => ({
+    driveFetchingInterval: null,
     drives: null,
     selectedSource: {},
     selectedFolderPath: '',
@@ -44,6 +45,7 @@ export default {
   }),
   methods: {
     async getExternalDriveList () {
+      console.log('driveFetchingInterval')
       this.isLoading = true
       DriveList.getExternalDriveList().then(drives => {
         this.drives = drives
@@ -77,7 +79,13 @@ export default {
     }
   },
   created () {
-    this.getExternalDriveList()
+    // fetch drive every 3 secs
+    this.driveFetchingInterval = setInterval(() => {
+      this.getExternalDriveList()
+    }, 5000)
+  },
+  beforeDestroy () {
+    clearInterval(this.driveFetchingInterval)
   }
 }
 </script>
