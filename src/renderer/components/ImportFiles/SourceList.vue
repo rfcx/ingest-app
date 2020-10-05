@@ -29,7 +29,6 @@
       <span class="row__source-title" :class="{'default': defaultState}" v-if="selectedFolder.path">{{ selectedFolder.path }}</span>
       <span class="row__folder-button" :class="{'default': defaultState}" v-else>Choose other folder...</span>
       <AudioMothTag :show="selectedFolder.deviceId" :isSelected="(isSelected('folder') || defaultState)"/>
-      </div> -->
     </tr>
     </template>
   </table>
