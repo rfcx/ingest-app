@@ -2,7 +2,6 @@
   <table>
     <tr class="source-type__row">
       <span class="source-type__title">External drives</span>
-      <!-- <button class="button is-small is-rounded" :class="{'is-loading': isLoading}" :disabled="isLoading" @click="getExternalDriveList">Rescan</button> -->
     </tr>
     <template v-if="!drives || drives.length === 0">
       <tr>
