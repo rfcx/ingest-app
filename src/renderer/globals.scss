@@ -33,6 +33,7 @@ $full-width: 100%;
 $primary: $brand-primary;
 $danger: $error-text-color;
 $warning: $warning-text-color;
+$dark: $box-color;
 $family-sans-serif: 'Lato', sans-serif;
 $link: $brand-primary;
 
@@ -62,7 +63,6 @@ $dropdown-content-background-color: $dropdown-background;
 $dropdown-item-color: $body-text-color;
 $dropdown-item-hover-color: $body-text-color;
 $dropdown-item-hover-background-color: #414364;
-$dropdown-divider-background-color: $dropdown-background;
 $dropdown-content-shadow: 0 0.5em 1em -0.125em rgba($divider-color, 0.1), 0 0px 0 1px rgba($divider-color, 0.02);
 
 // -- Button
@@ -72,9 +72,6 @@ $button-border-color: $button-background-color;
 $button-disabled-background-color: $button-background-color;
 $button-hover-color: $title-text-color;
 $button-hover-border-color: #3b3e53;
-
-// --Tag
-$tag-background-color: $box-color;
 
 // -- Wrapper
 $wrapper-width: 500px;

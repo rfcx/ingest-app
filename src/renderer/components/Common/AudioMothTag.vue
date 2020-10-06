@@ -1,5 +1,5 @@
 <template>
-  <div class="tag" v-if="show">
+  <div class="tag is-dark" v-if="show">
     <img class="tag__icon" src="@/assets/ic-audiomoth-white.png" v-if="isSelected"/>
     <img class="tag__icon" src="@/assets/ic-audiomoth-gray.png" v-else>
     <span class="tag__text is-size-7" :class="{'selected': isSelected}">AudioMoth</span>

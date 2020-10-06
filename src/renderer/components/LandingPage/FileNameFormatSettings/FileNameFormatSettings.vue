@@ -2,7 +2,7 @@
   <div class="modal-card">
 		<header class="modal-card-head">
 			<font-awesome-icon :icon="ICON_CLOCK" size="2x"/>
-			<h1 class="title">Filename Format</h1>
+			<h1 class="title">Custom Filename Format</h1>
 		</header>
 		<section class="modal-card-body">
 
@@ -31,7 +31,6 @@
               />
 					</template>
 					<input
-            :disabled="isAutoDetect || isUnixHex"
 						:size="lastInputText.length"
 						@keydown="keydown($event)"
 						type="text"
