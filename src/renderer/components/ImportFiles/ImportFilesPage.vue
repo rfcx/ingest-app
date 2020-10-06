@@ -24,8 +24,6 @@
 
 <script>
 import SourceList from './SourceList'
-import FileHelper from '../../../../utils/fileHelper'
-import FileInfo from '../../services/FileInfo'
 import Stream from '../../store/models/Stream'
 import HeaderView from '../Common/HeaderWithBackButton'
 
@@ -39,32 +37,11 @@ export default {
   methods: {
     onSourceSelected (newSource) {
       this.selectedSource = newSource
-    },
-    readFilesForDeviceId () {
-      this.isLoading = true
-      // see all files in the folder
-      const path = this.selectedSource.path
-      const stuffInDirectory = FileHelper
-        .getFilesFromDirectoryPath(path)
-        .map((name) => {
-          return { name: name, path: path + '/' + name }
-        })
-      // read file header info
-      const deviceIds = stuffInDirectory.filter(file => {
-        return FileHelper.getExtension(file.path) === 'wav' // read only wav file header info
-      }).map(file => {
-        const info = new FileInfo(file.path)
-        return info.deviceId
-      })/* .filter(id => id !== '').filter((v, i, a) => a.indexOf(v) === i)
-      console.log('deviceIds', uniqueDeviceIds) */
-      this.isLoading = false
-      if (deviceIds.length > 0) {
-        this.deviceId = deviceIds[0] // assign first device id as a stream device id
+      if (this.selectedSource.deviceId) {
+        this.deviceId = this.selectedSource.deviceId
       }
-      return Promise.resolve()
     },
     async importFiles () {
-      await this.readFilesForDeviceId()
       if (this.deviceId) {
         const existingSiteWithDeviceId = Stream.query().where('deviceId', this.deviceId).get()
         if (existingSiteWithDeviceId && existingSiteWithDeviceId.length > 0) {
