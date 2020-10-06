@@ -2,7 +2,6 @@
   <table>
     <tr class="source-type__row">
       <span class="source-type__title">External drives</span>
-      <button class="button is-small is-rounded" :class="{'is-loading': isLoading}" :disabled="isLoading" @click="getExternalDriveList">Rescan</button>
     </tr>
     <template v-if="!drives || drives.length === 0">
       <tr>
@@ -15,18 +14,20 @@
       <img class="row__icon" src="@/assets/ic-sd-card-white.svg" v-if="isSelected('external', drive) || defaultState"/>
       <img class="row__icon" src="@/assets/ic-sd-card-gray.svg" v-else/>
       <span class="row__source-title" :class="{'default': defaultState}">{{ drive.label }}</span>
+      <AudioMothTag :show="drive.deviceId" :isSelected="(isSelected('external', drive) || defaultState)"/>
     </tr>
     </template>
     <template>
     <tr class="source-type__row">
       <span class="source-type__title">Other Folder</span>
     </tr>
-    <tr @click="$refs.file.click()" :class="{'selected':  isSelected('folder') }">
+    <tr @click="onClickChangeFolder" :class="{'selected':  isSelected('folder') }">
       <input type="file" ref="file" webkitdirectory directory @change="handleFileChange" style="display:none"/>
       <img class="row__icon" src="@/assets/ic-folder-empty-white.svg" v-if="isSelected('folder') || defaultState"/>
       <img class="row__icon" src="@/assets/ic-folder-empty.svg" v-else/>
-      <span class="row__source-title" :class="{'default': defaultState}" v-if="selectedFolderPath">{{ selectedFolderPath }}</span>
+      <span class="row__source-title" :class="{'default': defaultState}" v-if="selectedFolder.path">{{ selectedFolder.path }}</span>
       <span class="row__folder-button" :class="{'default': defaultState}" v-else>Choose other folder...</span>
+      <AudioMothTag :show="selectedFolder.deviceId" :isSelected="(isSelected('folder') || defaultState)"/>
     </tr>
     </template>
   </table>
@@ -34,35 +35,70 @@
 
 <script>
 import DriveList from '../../../../utils/DriveListHelper'
+import FileHelper from '../../../../utils/fileHelper'
+import FileInfo from '../../services/FileInfo'
+import AudioMothTag from '../Common/AudioMothTag'
 export default {
   data: () => ({
+    driveFetchingInterval: null,
     drives: null,
     selectedSource: {},
-    selectedFolderPath: '',
+    selectedFolder: {},
     defaultState: true,
     isLoading: false // user hasn't selected any options before
   }),
+  components: { AudioMothTag },
   methods: {
     async getExternalDriveList () {
+      console.log('driveFetchingInterval')
       this.isLoading = true
       DriveList.getExternalDriveList().then(drives => {
-        this.drives = drives
-        console.log('view =>', this.drives)
         this.isLoading = false
+        if (drives.length === 0) return
+        this.drives = drives.map(drive => {
+          const deviceId = this.getDeviceId(drive.path)
+          return {...drive, deviceId}
+        })
+        console.log('view =>', this.drives)
       })
+    },
+    getDeviceId (path) {
+      const stuffInDirectory = FileHelper
+        .getFilesFromDirectoryPath(path)
+        .map((name) => {
+          return { name: name, path: path + '/' + name }
+        })
+      // read file header info
+      const firstWavFile = stuffInDirectory.find(file => {
+        return FileHelper.getExtension(file.path) === 'wav' // read only wav file header info
+      })
+      if (!firstWavFile) return undefined
+      const deviceId = new FileInfo(firstWavFile.path).deviceId
+      return deviceId
     },
     onDriveSelected (drive) {
       this.selectedSource = drive
     },
+    onClickChangeFolder () {
+      if (this.selectedFolder.path) {
+        console.log('change selected source', this.selectedFolder)
+        const path = this.selectedFolder.path
+        const deviceId = this.selectedFolder.deviceId
+        this.selectedSource = {id: path, label: path, path: path, deviceId: deviceId}
+      }
+      this.$refs.file.click()
+    },
     handleFileChange (event) {
       console.log(event.target.files)
-      this.selectedFolderPath = event.target.files[0].path
-      this.selectedSource = {id: this.selectedFolderPath, label: this.selectedFolderPath, path: this.selectedFolderPath}
+      const path = event.target.files[0].path
+      const deviceId = this.getDeviceId(path)
+      this.selectedFolder = {path, deviceId}
+      this.selectedSource = {id: path, label: path, path: path, deviceId: deviceId}
     },
     isSelected (type, drive = null) {
       switch (type) {
         case 'external': return drive.id === this.selectedSource.id
-        case 'folder': return this.selectedSource.path === this.selectedFolderPath
+        case 'folder': return this.selectedSource.path === this.selectedFolder.path
         default: return false
       }
     }
@@ -77,7 +113,16 @@ export default {
     }
   },
   created () {
+    // fetch drive list for the first time
     this.getExternalDriveList()
+
+    // set an interval to fetch drive list every 5 secs
+    this.driveFetchingInterval = setInterval(() => {
+      this.getExternalDriveList()
+    }, 5000)
+  },
+  beforeDestroy () {
+    clearInterval(this.driveFetchingInterval)
   }
 }
 </script>
