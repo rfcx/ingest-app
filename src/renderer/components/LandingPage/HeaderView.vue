@@ -29,6 +29,7 @@
 <script>
 import Stream from '../../store/models/Stream'
 import File from '../../store/models/File'
+import api from '../../../../utils/api'
 import { faPencilAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
 
@@ -72,11 +73,8 @@ export default {
       this.showNavigateMessage = false
     },
     redirectToArbimon () {
-      let url = `https://arbimon.rfcx.org/`
-      if (this.selectedStreamId) {
-        url += `site/${this.selectedStreamId}`
-      }
-      this.$electron.shell.openExternal(url)
+      const isProd = this.selectedStream.env && this.selectedStream.env === 'production'
+      this.$electron.shell.openExternal(api.arbimonWebUrl(isProd, this.selectedStreamId))
     }
   },
   watch: {
