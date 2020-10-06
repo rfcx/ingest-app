@@ -40,6 +40,7 @@
         @save="onFormatSave"/>
       <button class="modal-close is-large" aria-label="close"></button>
     </div>
+    <ErrorAlert v-if="errorMessage" :content="errorMessage" @onCancelPressed="errorMessage = null"/>
   </div>
 </template>
 
@@ -52,6 +53,7 @@ import FileNameFormatSettings from '../FileNameFormatSettings/FileNameFormatSett
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
 import fileState from '../../../../../utils/fileState'
 import fileFormat from '../../../../../utils/FileFormat'
+import ErrorAlert from '../../Common/ErrorAlert'
 
 export default {
   props: {
@@ -60,13 +62,14 @@ export default {
       default: () => []
     }
   },
-  components: { FileNameFormatSettings },
+  components: { FileNameFormatSettings, ErrorAlert },
   data () {
     return {
       showSettingModal: false,
       isDeletingAllFiles: false,
       showFileNameFormatDropDown: false,
-      isUpdatingFilenameFormat: false
+      isUpdatingFilenameFormat: false,
+      errorMessage: null
     }
   },
   computed: {
@@ -129,7 +132,7 @@ export default {
       }).catch(error => {
         this.isUpdatingFilenameFormat = false
         console.log(`Error update files format '${format}'`, error.message)
-        // TODO: Show notify error to user
+        this.errorMessage = error.message
       })
     }
   },

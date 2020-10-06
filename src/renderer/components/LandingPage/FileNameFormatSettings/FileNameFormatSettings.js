@@ -105,7 +105,6 @@ export default {
           if (item.type === 'hours12' || item.group === 'Hour') { return si.group === item.group }
           return (si instanceof TimeFormat && si.type === item.type)
         }) > -1
-        // TODO: check am/pm
         if (!isSelected) {
           if (this.selectedItems.length > 0) {
             if (this.lastInputText !== '') {
