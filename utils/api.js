@@ -26,6 +26,12 @@ const explorerWebUrl = (isProd, streamId = null) => {
   return baseUrl + query
 }
 
+const arbimonWebUrl = (isProd, streamId = null) => {
+  let baseUrl = isProd ? 'https://arbimon.rfcx.org/' : 'https://arbimon.rfcx.org/' // TODO: change staging url
+  let query = streamId ? `site/${streamId}` : ''
+  return baseUrl + query
+}
+
 const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
   const now = Date.now()
   console.log(`===> upload file ${fileName}`)
@@ -149,6 +155,7 @@ const getUserSites = (env, idToken) => {
 
 export default {
   explorerWebUrl,
+  arbimonWebUrl,
   createStream,
   updateStream,
   uploadFile,
