@@ -1,4 +1,5 @@
 const moment = require('moment')
+const geoTz = require('geo-tz')
 const appDate = 'YYYY-MM-DD HH:mm:ss'
 
 const getIsoDateWithFormat = (format, fileName) => {
@@ -122,6 +123,20 @@ const parseTimestampUnixHex = (filenameWithExtension) => {
   }
 }
 
+const getPossibleTimezonesFromLocation = (latitude, longitude) => {
+  return geoTz(latitude, longitude)
+}
+
+const getTimezomeOffsetInHourFromLocation = (latitude, longitude) => {
+  const possibleTimezones = getPossibleTimezonesFromLocation(latitude, longitude)
+  if (possibleTimezones.length === 0) return 0 // no timezone found, assuming it UTC time
+  var momentTz = require('moment-timezone')
+  const dateString = momentTz().tz(possibleTimezones[0]).format()
+  const offset = moment.parseZone(dateString).utcOffset()
+  console.log(`lat,lon (${latitude},${longitude}) possible timezone: ${possibleTimezones} offset: ${offset / 60}`)
+  return offset / 60
+}
+
 const getMomentDateFromISODate = (date) => {
   return moment.utc(date, moment.ISO_8601)
 }
@@ -133,5 +148,6 @@ const convertMomentDateToAppDate = (date) => {
 export default {
   getIsoDateWithFormat,
   getMomentDateFromISODate,
+  getTimezomeOffsetInHourFromLocation,
   convertMomentDateToAppDate
 }
