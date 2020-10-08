@@ -127,6 +127,14 @@ const getPossibleTimezonesFromLocation = (latitude, longitude) => {
   return geoTz(latitude, longitude)
 }
 
+const getDefaultTimezone = (latitude, longitude) => {
+  const possibleTimezones = getPossibleTimezonesFromLocation(latitude, longitude)
+  if (possibleTimezones && possibleTimezones.length > 0) {
+    return possibleTimezones[0]
+  }
+  return 'utc'
+}
+
 /*
 passing in timezone e.g. 'Asia/Bangkok'
 */
@@ -150,6 +158,7 @@ const convertMomentDateToAppDate = (date) => {
 export default {
   getIsoDateWithFormat,
   getMomentDateFromISODate,
+  getDefaultTimezone,
   getPossibleTimezonesFromLocation,
   getTimezoneOffset,
   convertMomentDateToAppDate

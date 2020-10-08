@@ -45,7 +45,7 @@ export default class Stream extends Model {
   }
 
   get location () {
-    return `${this.latitude}, ${this.longitude}`
+    return `${this.latitude.toFixed(6)}, ${this.longitude.toFixed(6)}`
   }
 
   get defaultTimezone () {
