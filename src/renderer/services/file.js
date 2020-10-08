@@ -477,26 +477,25 @@ class FileProvider {
     const fileExt = fileHelper.getExtension(fileName)
 
     // read file header info
-    let deviceId, deploymentId, momentDate, isoDate
+    let deviceId, deploymentId, timestamp
     if (fileExt === 'wav') {
       const info = new FileInfo(filePath)
-      console.log(info)
       deviceId = info.deviceId
       deploymentId = info.deployment
-      momentDate = info.recordedDate
+      const momentDate = info.recordedDate
+      if (momentDate) {
+        timestamp = momentDate.format()
+      }
     }
 
     // const data = fileHelper.getMD5Hash(filePath)
     // const hash = data.hash
     // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
-    if (momentDate) {
-      isoDate = momentDate.toISOString()
-    } else {
-      isoDate = dateHelper.getIsoDateWithFormat(stream.timestampFormat, fileName)
-      momentDate = dateHelper.getMomentDateFromISODate(isoDate)
+    if (!timestamp) {
+      timestamp = dateHelper.getIsoDateWithFormat(stream.timestampFormat, fileName)
     }
-    const state = this.getState(momentDate, fileExt, hasUploadedBefore)
+    const state = this.getState(timestamp, fileExt, hasUploadedBefore)
     return {
       id: this.getFileId(filePath),
       name: fileName,
@@ -506,7 +505,8 @@ class FileProvider {
       extension: fileExt,
       sizeInByte: size,
       durationInSecond: -1,
-      timestamp: isoDate,
+      timestamp: timestamp,
+      timezone: stream.defaultTimezone, // TODO: change to selected timezone (configure by user)
       streamId: stream.id,
       state: state.state,
       stateMessage: state.message,
@@ -515,7 +515,8 @@ class FileProvider {
     }
   }
 
-  getState (momentDate, fileExt, hasUploadedBefore) {
+  getState (timestamp, fileExt, hasUploadedBefore) {
+    const momentDate = dateHelper.getMomentDateFromISODate(timestamp)
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
       return {state: 'local_error', message: 'File extension is not supported'}
     } else if (hasUploadedBefore) {

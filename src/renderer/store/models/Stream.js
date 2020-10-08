@@ -1,6 +1,7 @@
 import { Model } from '@vuex-orm/core'
 import File from './File'
 import FileState from '../../../../utils/fileState'
+import DateHelper from '../../../../utils/dateHelper'
 
 const AUTO_DETECT = 'Auto-detect'
 // eslint-disable-next-line no-unused-vars
@@ -41,6 +42,18 @@ export default class Stream extends Model {
     if (preparingFiles.length > 0) return 'preparing'
     if (isCompleted) return 'completed'
     return ''
+  }
+
+  get location () {
+    return `${this.latitude}, ${this.longitude}`
+  }
+
+  get defaultTimezone () {
+    const possibleTimezones = DateHelper.getPossibleTimezonesFromLocation(this.latitude, this.longitude)
+    if (possibleTimezones && possibleTimezones.length > 0) {
+      return possibleTimezones[0]
+    }
+    return 'utc'
   }
 
   get isError () {

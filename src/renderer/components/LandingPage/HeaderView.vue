@@ -13,7 +13,7 @@
     <div class="stream-info__subtitle">
       <router-link title="Edit site location" to="/edit-stream-location">
         <img src="~@/assets/ic-pin.svg">
-        <span v-if="selectedStream" class="stream-info__coordinates">{{ selectedStream.siteGuid || `${selectedStream.latitude}, ${selectedStream.longitude}` }}</span></router-link>
+        <span v-if="selectedStream" class="stream-info__coordinates">{{ selectedStream.siteGuid || selectedStream.location }}</span></router-link>
     </div>
     <a title="Redirect to Arbimon" class="button is-rounded rounded-button" :class="{ 'rounded-button__disabled': !isStreamCompleted || !files.length}" @click="redirectToArbimon()">
       <font-awesome-icon class="faExternal" :icon="faExternalLinkAlt"></font-awesome-icon>

@@ -1,5 +1,4 @@
 const moment = require('moment')
-const geoTz = require('geo-tz')
 const appDate = 'YYYY-MM-DD HH:mm:ss'
 
 const getIsoDateWithFormat = (format, fileName) => {
@@ -25,10 +24,10 @@ const formatIso = (obj) => {
     obj.second = '00'
   }
   if (!obj.timezone) {
-    obj.timezone = 'Z'
+    obj.timezone = ''
   }
   const datePart = `${obj.year}-${obj.month.padStart(2, '0')}-${obj.day.padStart(2, '0')}`
-  const timePart = `${obj.hour.padStart(2, '0')}:${obj.minute.padStart(2, '0')}:${obj.second.padStart(2, '0')}.000`
+  const timePart = `${obj.hour.padStart(2, '0')}:${obj.minute.padStart(2, '0')}:${obj.second.padStart(2, '0')}`
   return `${datePart}T${timePart}${obj.timezone}`
 }
 
@@ -124,16 +123,19 @@ const parseTimestampUnixHex = (filenameWithExtension) => {
 }
 
 const getPossibleTimezonesFromLocation = (latitude, longitude) => {
+  const geoTz = require('geo-tz')
   return geoTz(latitude, longitude)
 }
 
-const getTimezomeOffsetInHourFromLocation = (latitude, longitude) => {
-  const possibleTimezones = getPossibleTimezonesFromLocation(latitude, longitude)
-  if (possibleTimezones.length === 0) return 0 // no timezone found, assuming it UTC time
+/*
+passing in timezone e.g. 'Asia/Bangkok'
+*/
+const getTimezoneOffset = (timezone) => {
+  if (!timezone) return 0
   var momentTz = require('moment-timezone')
-  const dateString = momentTz().tz(possibleTimezones[0]).format()
+  const dateString = momentTz().tz(timezone).format()
+  if (!dateString) return 0
   const offset = moment.parseZone(dateString).utcOffset()
-  console.log(`lat,lon (${latitude},${longitude}) possible timezone: ${possibleTimezones} offset: ${offset / 60}`)
   return offset / 60
 }
 
@@ -148,6 +150,7 @@ const convertMomentDateToAppDate = (date) => {
 export default {
   getIsoDateWithFormat,
   getMomentDateFromISODate,
-  getTimezomeOffsetInHourFromLocation,
+  getPossibleTimezonesFromLocation,
+  getTimezoneOffset,
   convertMomentDateToAppDate
 }

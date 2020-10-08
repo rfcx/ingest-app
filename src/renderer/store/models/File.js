@@ -1,6 +1,7 @@
 import { Model } from '@vuex-orm/core'
 import Stream from './Stream'
 import FileState from '../../../../utils/fileState'
+const moment = require('moment-timezone')
 
 export default class File extends Model {
   static entity = 'files'
@@ -18,6 +19,7 @@ export default class File extends Model {
       durationInSecond: this.number(-1), // -1: unknown (default value) -2: error, no duration
       extension: this.string(''),
       timestamp: this.attr(null),
+      timezone: this.string(''),
       state: this.string(''), // state: preparing, local_error, waiting, uploading, ingesting, completed, server_error
       stateMessage: this.string(''),
       streamId: this.string(''),
@@ -42,6 +44,20 @@ export default class File extends Model {
     date.setSeconds(this.durationInSecond)
     var timeString = date.toISOString().substr(11, 8)
     return timeString
+  }
+
+  get displayTimestamp () {
+    return moment.parseZone(this.timestamp).format('YYYY-MM-DD HH:mm:ss Z')
+  }
+
+  get utcTimestamp () {
+    if (this.timestamp.substr(-1) === 'Z' || this.timestamp.substr(-6, 1) === '-' || this.timestamp.substr(-6, 1) === '+') {
+      return moment.utc(this.timestamp).toISOString() // timezone is in the parsed timestamp
+    }
+    if (!this.timezone) {
+      return this.timestamp + 'Z' // no timezone provided (assume UTC)
+    }
+    return moment.tz(this.timestamp, this.timezone).toISOString() // parse with timezone and return as UTC
   }
 
   get fileSize () {
