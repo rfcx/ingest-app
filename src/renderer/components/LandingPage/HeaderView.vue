@@ -59,7 +59,7 @@ export default {
       return File.query().where('streamId', this.selectedStreamId).orderBy('name').get()
     },
     isStreamCompleted () {
-      return this.files.length === this.completedFiles.length + this.failedFiles.length
+      return this.completedFiles.length > 0
     },
     completedFiles () {
       return this.files.filter(file => file.isInCompletedGroup && !file.isError)
