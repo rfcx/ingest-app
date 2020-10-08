@@ -306,7 +306,7 @@ class FileProvider {
       })
       return Promise.reject(new Error('File does not exist'))
     }
-    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.timestamp,
+    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.utcTimestamp,
       file.sizeInByte, idToken, (progress) => {
       // FIX progress scale when we will start work with google cloud
         return File.update({ where: file.id,
