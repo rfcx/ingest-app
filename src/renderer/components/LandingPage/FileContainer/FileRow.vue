@@ -54,7 +54,7 @@
     </td>
     <template v-if="!isEdit">
       <td class="file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
-        {{ getTimestamp(file) }}
+        {{ file.displayTimestamp }}
       </td>
       <td class="file-list-table__cell file-list-table__cell_info" v-if="!file.isError">
         {{ file.fileDuration }}
@@ -76,7 +76,6 @@
 <script>
 import File from '../../../store/models/File'
 import fileState from '../../../../../utils/fileState'
-import dateHelper from '../../../../../utils/dateHelper'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faRedo, faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 import AudioMothTag from '../../Common/AudioMothTag'
@@ -144,12 +143,6 @@ export default {
       if (fileState.isPreparing(state)) return ''
       const iconName = fileState.getIconName(state)
       return require(`../../../assets/${iconName}`)
-    },
-    getTimestamp (file) {
-      const isoDate = file.timestamp
-      const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-      const appDate = dateHelper.convertMomentDateToAppDate(momentDate)
-      return appDate
     },
     repeatUploading (file) {
       if (!file.canRedo) return

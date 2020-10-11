@@ -54,6 +54,7 @@
 import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
 import streamHelper from '../../../../utils/streamHelper'
+import dateHelper from '../../../../utils/dateHelper'
 import settings from 'electron-settings'
 import Map from './Map'
 import HeaderView from '../Common/HeaderWithBackButton'
@@ -134,10 +135,11 @@ export default {
               deviceId: this.deviceId || ''
             }
             console.log('creating stream', JSON.stringify(stream))
-            Stream.insert({ data: stream, insert: ['files'] })
+            await Stream.insert({ data: stream })
             // add files to site/stream
             if (this.selectedFolderPath) {
-              this.$file.handleDroppedFolder(this.selectedFolderPath, stream)
+              stream.defaultTimezone = dateHelper.getDefaultTimezone(stream.latitude, stream.longitude)
+              this.$file.handleDroppedFolder(this.selectedFolderPath, stream) // TODO: fix to pass the stream model object in
             }
             this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$router.push('/')

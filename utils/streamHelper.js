@@ -35,8 +35,8 @@ const parseUserSites = (sites) => {
       latitude: site.latitude || 0,
       longitude: site.longitude || 0,
       files: [],
-      createdAt: site.created_at,
-      updatedAt: site.updated_at,
+      createdAt: Date.parse(site.created_at),
+      updatedAt: Date.parse(site.updated_at),
       env: isProductionEnv() ? 'production' : 'staging',
       visibility: site.is_public
     }

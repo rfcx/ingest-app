@@ -50,6 +50,7 @@
 import Stream from '../../store/models/Stream'
 import File from '../../store/models/File'
 import streamHelper from '../../../../utils/streamHelper'
+import dateHelper from '../../../../utils/dateHelper'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
 import Map from '../CreateStream/Map'
@@ -106,11 +107,13 @@ export default {
         }
         api
           .updateStream(this.isProductionEnv(), this.selectedStreamId, opts, idToken)
-          .then(data => {
+          .then(async data => {
             console.log('stream coordinates is updated')
-            Stream.update({ where: this.selectedStream.id,
+            Stream.update({
+              where: this.selectedStream.id,
               data: { latitude: latitude, longitude: longitude, name: name }
             })
+            this.updateFilesTimezone(dateHelper.getDefaultTimezone(latitude, longitude))
             this.isLoading = false
             this.redirectToMainScreen()
           })
@@ -129,6 +132,15 @@ export default {
     },
     getStreamCoordinates () {
       return this.selectedStream.longitude ? [this.selectedStream.longitude, this.selectedStream.latitude] : null
+    },
+    async updateFilesTimezone (timezone) {
+      const preparingFiles = File.query().where(file => file.streamId === this.selectedStreamId && file.isInPreparedGroup).get()
+      await preparingFiles.forEach(file => {
+        File.update({ where: file.id,
+          data: { timezone: timezone }
+        })
+      })
+      console.log(preparingFiles)
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true

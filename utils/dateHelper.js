@@ -24,10 +24,10 @@ const formatIso = (obj) => {
     obj.second = '00'
   }
   if (!obj.timezone) {
-    obj.timezone = 'Z'
+    obj.timezone = ''
   }
   const datePart = `${obj.year}-${obj.month.padStart(2, '0')}-${obj.day.padStart(2, '0')}`
-  const timePart = `${obj.hour.padStart(2, '0')}:${obj.minute.padStart(2, '0')}:${obj.second.padStart(2, '0')}.000`
+  const timePart = `${obj.hour.padStart(2, '0')}:${obj.minute.padStart(2, '0')}:${obj.second.padStart(2, '0')}`
   return `${datePart}T${timePart}${obj.timezone}`
 }
 
@@ -122,6 +122,31 @@ const parseTimestampUnixHex = (filenameWithExtension) => {
   }
 }
 
+const getPossibleTimezonesFromLocation = (latitude, longitude) => {
+  const geoTz = require('geo-tz')
+  return geoTz(latitude, longitude)
+}
+
+const getDefaultTimezone = (latitude, longitude) => {
+  const possibleTimezones = getPossibleTimezonesFromLocation(latitude, longitude)
+  if (possibleTimezones && possibleTimezones.length > 0) {
+    return possibleTimezones[0]
+  }
+  return 'utc'
+}
+
+/*
+passing in timezone e.g. 'Asia/Bangkok'
+*/
+const getTimezoneOffset = (timezone) => {
+  if (!timezone) return 0
+  var momentTz = require('moment-timezone')
+  const dateString = momentTz().tz(timezone).format()
+  if (!dateString) return 0
+  const offset = moment.parseZone(dateString).utcOffset()
+  return offset / 60
+}
+
 const getMomentDateFromISODate = (date) => {
   return moment.utc(date, moment.ISO_8601)
 }
@@ -133,5 +158,8 @@ const convertMomentDateToAppDate = (date) => {
 export default {
   getIsoDateWithFormat,
   getMomentDateFromISODate,
+  getDefaultTimezone,
+  getPossibleTimezonesFromLocation,
+  getTimezoneOffset,
   convertMomentDateToAppDate
 }

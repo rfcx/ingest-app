@@ -25,34 +25,19 @@ export default class FileInfo {
    * Return moment date or 'null'
    */
   get recordedDate () {
-    const reg = /((([0-2]{1})([0-3]{1})):(([0-5]{1})([0-9]{1})):(([0-5]{1})([0-9]{1})))\s(([0-2]\d|[3][0-1])\/([0]\d|[1][0-2])\/([2][01]|[1][6-9])\d{2})/ig
-    let md = null
-    let dateStr = ''
-    try {
-      const matched = this.comment.match(reg)
-      dateStr = matched[0]
-      if (!dateStr) {
-        return null
-      }
-      md = moment(dateStr, 'HH:mm:ss DD/MM/YYYY')
-      if (!md.isValid()) {
-        return null
-      }
-    } catch (e) {
+    const reg = /(?<date>[0-2]{1}[0-3]{1}:[0-5]{1}[0-9]{1}:[0-5]{1}[0-9]{1}\s(?:[0-2]\d|[3][0-1])\/(?:[0]\d|[1][0-2])\/(?:[2][01]|[1][6-9])\d{2}) \(UTC(?<timezone>[+-]\d{1,2})\)/ig
+    const matched = reg.exec(this.comment)
+    if (!matched || matched.length === 0) {
       return null
     }
-
-    // capture and utc offset
-    try {
-      if (md) {
-        const utc = dateStr.match(/(\(\w{1,3}[-+]\d{1,2}\))/ig)
-        const ofs = Number(utc[0].match(/[-+]\d{1,2}/ig)[0])
-        md = md.utcOffset(ofs)
-      }
-    } catch (e) {
-      // Do nothing, use current date
+    const dateStr = matched.groups.date
+    const timezoneStr = matched.groups.timezone
+    const timestamp = moment.utc(dateStr, 'HH:mm:ss DD/MM/YYYY')
+    timestamp.utcOffset(parseInt(timezoneStr), true)
+    if (!timestamp.isValid()) {
+      return null
     }
-    return md
+    return timestamp
   }
 
   get fileName () {
