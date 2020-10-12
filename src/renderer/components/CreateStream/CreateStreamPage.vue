@@ -55,6 +55,7 @@ import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
 import streamHelper from '../../../../utils/streamHelper'
 import dateHelper from '../../../../utils/dateHelper'
+import FileFormat from '../../../../utils/FileFormat'
 import settings from 'electron-settings'
 import Map from './Map'
 import HeaderView from '../Common/HeaderWithBackButton'
@@ -108,6 +109,7 @@ export default {
       const visibility = false
       const latitude = this.selectedLatitude
       const longitude = this.selectedLongitude
+      const fileFormat = this.deviceId ? FileFormat.fileFormat.FILE_HEADER : FileFormat.fileFormat.AUTO_DETECT
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         let idToken = arg
@@ -127,7 +129,7 @@ export default {
               name: this.name,
               latitude: latitude,
               longitude: longitude,
-              timestampFormat: 'Auto-detect',
+              timestampFormat: fileFormat,
               env: this.isProductionEnv() ? 'production' : 'staging',
               visibility: visibility,
               createdAt: Date.now(),
