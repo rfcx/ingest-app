@@ -25,7 +25,7 @@ export default class FileInfo {
    * Return moment date or 'null'
    */
   get recordedDate () {
-    const reg = /(?<date>(?:[0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\s(?:[0-2]\d|[3][0-1])\/(?:[0]\d|[1][0-2])\/(?:[2][01]|[1][6-9])\d{2}) \(UTC(?<timezone>[+-]\d{1,2})\)/ig
+    const reg = /(?<date>(?:[0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\s(?:[0-2]\d|[3][0-1])\/(?:[0]\d|[1][0-2])\/(?:[2][01]|[1][6-9])\d{2}) \(UTC(?<timezone>(?:[+-]\d{1,2}))?\)/ig
     const matched = reg.exec(this.comment)
     if (!matched || matched.length === 0) {
       return null
