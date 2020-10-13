@@ -46,6 +46,8 @@
   import Stream from '../store/models/Stream'
   import Analytics from 'electron-ga'
   const { remote } = window.require('electron')
+  const log = require('electron-log')
+  console.log = log.log
 
   export default {
     name: 'landing-page',
