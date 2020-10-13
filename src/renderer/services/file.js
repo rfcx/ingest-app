@@ -4,12 +4,13 @@ import File from '../store/models/File'
 import Stream from '../store/models/Stream'
 import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
+import FileFormat from '../../../utils/FileFormat'
 import cryptoJS from 'crypto-js'
 import store from '../store'
 import FileInfo from './FileInfo'
 import fs from 'fs'
 
-const FORMAT_AUTO_DETECT = 'Auto-detect'
+const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 
 class FileProvider {
   /* -- Import files -- */
@@ -131,25 +132,35 @@ class FileProvider {
     const updatedFiles = []
     if (Array.isArray(fileObjectList) && fileObjectList.length > 0) {
       for await (const file of fileObjectList) {
-        const isoDate = dateHelper.getIsoDateWithFormat(format, file.name)
-        const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
-
+        let timestamp
+        if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
+          console.log('create file object with file info yes!')
+          const info = new FileInfo(file.path)
+          const momentDate = info.recordedDate
+          if (momentDate) {
+            timestamp = momentDate.format()
+          }
+          console.log('create file object fileinfo', info)
+        }
+        if (!timestamp) {
+          timestamp = dateHelper.getIsoDateWithFormat(format, file.name)
+        }
         const hasUploadedBefore = this.hasUploadedBefore(file.path, stream.id)
-        const stateObj = this.getState(momentDate, file.extension, hasUploadedBefore)
+        const stateObj = this.getState(timestamp, file.extension, hasUploadedBefore)
         const state = stateObj.state
         const stateMessage = stateObj.message
         const newFile = { ...file }
         // update fields
         newFile.state = state
         newFile.stateMessage = stateMessage
-        newFile.timestamp = isoDate
+        newFile.timestamp = timestamp
 
         updatedFiles.push(newFile)
 
         try {
           await File.update({
             where: file.id,
-            data: { state, stateMessage, timestamp: isoDate },
+            data: { state, stateMessage, timestamp: timestamp },
             update: ['state', 'stateMessage', 'timestamp']
           })
         } catch (e) {
@@ -250,9 +261,8 @@ class FileProvider {
 
     const format = stream.timestampFormat
     const isoDate = dateHelper.getIsoDateWithFormat(format, filename)
-    const momentDate = dateHelper.getMomentDateFromISODate(isoDate)
 
-    const stateObj = this.getState(momentDate, file.extension, false)
+    const stateObj = this.getState(isoDate, file.extension, false)
     const state = stateObj.state
     const stateMessage = stateObj.message
     const newFile = { ...file }
@@ -478,7 +488,7 @@ class FileProvider {
 
     // read file header info
     let deviceId, deploymentId, timestamp
-    if (fileExt === 'wav') {
+    if (fileExt === 'wav' && stream.timestampFormat === FileFormat.fileFormat.FILE_HEADER) {
       const info = new FileInfo(filePath)
       deviceId = info.deviceId
       deploymentId = info.deployment
