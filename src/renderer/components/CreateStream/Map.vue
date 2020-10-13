@@ -55,8 +55,6 @@ export default {
       return this.title ? this.title : 'marker'
     },
     onSelected (event) {
-      console.log(`onselected`)
-      console.log(event)
       this.selectedCoordinates = event.result.center
     },
     getPlacePositionByDrop (event) {
@@ -119,7 +117,6 @@ export default {
   watch: {
     selectedCoordinates (val, oldVal) {
       if (val === oldVal || val.length !== 2) return
-      console.log('new location selected', val)
       this.updateMapCoordinatesForMarker(val[0], val[1])
       this.$emit('locationSelected', val)
     }

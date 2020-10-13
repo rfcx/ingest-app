@@ -63,7 +63,6 @@ const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, 
   // Make a request for a user with a given ID
   const sha1 = fileHelper.getCheckSum(filePath)
   const params = { filename: originalFilename, checksum: sha1, stream: streamId, timestamp: timestamp }
-  console.log('===> requestUploadUrl with params', params)
   return httpClient.post(apiUrl(env) + '/uploads', params, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const url = response.data.url
