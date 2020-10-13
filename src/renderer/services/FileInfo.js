@@ -18,7 +18,17 @@ export default class FileInfo {
   }
 
   get deviceId () {
-    return this.authors !== '' ? this.authors.replace(/AudioMoth\s/g, '').trim() : ''
+    const getDeviceId = string => string.replace(/AudioMoth\s/g, '').trim()
+    if (this.authors !== '') {
+      return getDeviceId(this.authors)
+    }
+    const reg = /AudioMoth\s\w*\s/ig
+    try {
+      const matched = this.comment.match(reg)
+      return getDeviceId(matched[0])
+    } catch (e) {
+      return ''
+    }
   }
 
   /**
