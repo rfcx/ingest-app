@@ -16,11 +16,11 @@
         @clickOutSideNewSiteButton="hideNewSiteDropDown"
       />
       <div class="column content is-desktop" v-if="streams && streams.length > 0">
-        <empty-stream v-if="isEmptyStream()"></empty-stream>
+        <empty-view v-if="isEmptyStream()" :isEmptyStream="isEmptyStream()"></empty-view>
         <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>
       <div class="column content is-desktop" v-else>
-        <empty-stream v-if="isEmptyStream()"></empty-stream>
+        <empty-view v-if="isEmptyStream()" :isEmptyStream="isEmptyStream()"></empty-view>
         <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>
     <!-- </section> -->
@@ -38,7 +38,7 @@
 <script>
   import GlobalProgress from './SideNavigation/GlobalProgress'
   import SideNavigation from './SideNavigation/SideNavigation'
-  import EmptyStream from './LandingPage/EmptyStream'
+  import EmptyView from './LandingPage/EmptyView'
   import FileContainer from './LandingPage/FileContainer/FileContainer'
   import ConfirmAlert from './Common/ConfirmAlert'
   import { mapState } from 'vuex'
@@ -49,7 +49,7 @@
 
   export default {
     name: 'landing-page',
-    components: { SideNavigation, EmptyStream, FileList, FileContainer, GlobalProgress, ConfirmAlert },
+    components: { SideNavigation, EmptyView, FileList, FileContainer, GlobalProgress, ConfirmAlert },
     data () {
       return {
         uploadingProcessText: 'The uploading process has been paused',
@@ -86,6 +86,10 @@
       handleFiles (files) {
         this.isDragging = false
         if (!files) { return }
+        if (!(this.streams && this.streams.length > 0)) {
+          // TODO: create new streams with files
+          return
+        }
         // reset selected tab
         const tabObject = {}
         tabObject[this.selectedStreamId] = 'Prepared'

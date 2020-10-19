@@ -2,7 +2,7 @@
   <div class="centered-block has-text-centered">
       <img :src="stateIcon" class="container__state-icon"><br>
       <span class="container__state-status">{{ stateStatus }}</span>
-      <button class="button is-rounded is-primary container__button">
+      <button class="button is-rounded is-primary container__button" v-if="!isEmptyStream">
         Import files
         <input class="file-input" type="file" ref="file" v-on:change="importFiles($event)" multiple/>
       </button>
@@ -14,11 +14,20 @@ const dropFileDefaultMessage = 'Drop or import audio files here and press start 
 export default {
   props: {
     isDragging: Boolean,
-    hasFileInQueued: Boolean
+    hasFileInQueued: {
+      type: Boolean,
+      default: false
+    },
+    isEmptyStream: {
+      type: Boolean,
+      default: false
+    }
   },
   computed: {
     stateStatus () {
-      if (this.hasFileInQueued) {
+      if (this.isEmptyStream) { // has no stream
+        return 'Use + button to create your first site and start uploading files.'
+      } else if (this.hasFileInQueued) {
         return 'Your audio is being uploaded.\n\nYou can still drop files here to upload more!'
       }
       return dropFileDefaultMessage
