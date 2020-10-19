@@ -1,5 +1,5 @@
 <template>
-  <div id="wrapper-landing-page" :class="{ 'drag-active': isDragging && streams && streams.length > 0}" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop"
+  <div id="wrapper-landing-page" :class="{ 'drag-active': isDragging }" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop"
      @dragover.prevent @dragleave="outDrag">
     <!-- <section class="main-content columns is-mobile"> -->
       <div class="dropdown dropdown__wrapper" :class="{ 'is-active': shouldShowNewSiteDropDown }">
@@ -86,8 +86,18 @@
       handleFiles (files) {
         this.isDragging = false
         if (!files) { return }
-        if (!(this.streams && this.streams.length > 0)) {
-          // TODO: create new streams with files
+        if (!(this.streams && this.streams.length > 0)) { // create new streams with files
+          const fileObjects = [...files].map(file => {
+            return {
+              'lastModified': file.lastModified,
+              'lastModifiedDate': file.lastModifiedDate,
+              'name': file.name,
+              'size': file.size,
+              'type': file.type,
+              'path': file.path
+            }
+          })
+          this.$router.push({path: '/add', query: { selectedFiles: JSON.stringify(fileObjects) }})
           return
         }
         // reset selected tab

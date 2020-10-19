@@ -26,7 +26,7 @@ export default {
   computed: {
     stateStatus () {
       if (this.isEmptyStream) { // has no stream
-        return 'Use + button to create your first site and start uploading files.'
+        return 'Use + button or drop your audio files here to create your first site.'
       } else if (this.hasFileInQueued) {
         return 'Your audio is being uploaded.\n\nYou can still drop files here to upload more!'
       }

@@ -66,6 +66,7 @@ export default {
       name: '',
       selectedLatitude: null,
       selectedLongitude: null,
+      selectedFiles: null, // prop from landing page where user drag files in to create their first site
       selectedFolderPath: null, // prop from import page
       deviceId: null, // prop from import page
       isLoading: false,
@@ -90,6 +91,9 @@ export default {
     if (this.$route.query.deviceId) {
       this.deviceId = this.$route.query.deviceId
       console.log('+', this.deviceId)
+    }
+    if (this.$route.query.selectedFiles) {
+      this.selectedFiles = JSON.parse(this.$route.query.selectedFiles)
     }
   },
   methods: {
@@ -142,6 +146,9 @@ export default {
             if (this.selectedFolderPath) {
               stream.defaultTimezone = dateHelper.getDefaultTimezone(stream.latitude, stream.longitude)
               this.$file.handleDroppedFolder(this.selectedFolderPath, stream) // TODO: fix to pass the stream model object in
+            }
+            if (this.selectedFiles.length > 0) {
+              this.$file.handleDroppedFiles(this.selectedFiles, stream)
             }
             this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$router.push('/')
