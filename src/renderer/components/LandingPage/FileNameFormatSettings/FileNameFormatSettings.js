@@ -10,7 +10,8 @@ export default {
   data: () => ({
     selectedItems: [],
     lastInputText: '',
-    shouldShowErrorMessage: false
+    shouldShowErrorMessage: false,
+    selectedIndexCursor: null
   }),
   mounted () {
     this.checkRestoreFormatToField()
@@ -91,7 +92,8 @@ export default {
       }
     },
     customInputBlur (e, idx) {
-      console.log('customInputBlur', e, idx)
+      console.log('customInputBlur', idx)
+      this.selectedIndexCursor = idx
     },
     resetTheSelectedItems (newItem) {
       this.selectedItems = [newItem]
@@ -100,22 +102,36 @@ export default {
     formatItemClick (type, item) {
       this.shouldShowErrorMessage = false
       if (item instanceof TimeFormat) {
-        // check format type is already selected
-        const isSelected = this.selectedItems.findIndex(si => {
+        // check if format type has already selected
+        const hasSelected = this.selectedItems.findIndex(si => {
           if (item.type === 'hours12' || item.group === 'Hour') { return si.group === item.group }
           return (si instanceof TimeFormat && si.type === item.type)
         }) > -1
-        if (!isSelected) {
-          if (this.selectedItems.length > 0) {
-            if (this.lastInputText !== '') {
-              this.selectedItems.push(new CustomInputFormat(this.lastInputText))
+        if (!hasSelected) {
+          if (this.selectedItems.length > 0) { // if already has some items in the list
+            console.log('formatItemClick: already has some items')
+            if (this.lastInputText !== '') { // if last input text has some value, then add it to the list
+              console.log('formatItemClick: last input text is not an empty string')
+              const inputFormat = new CustomInputFormat(this.lastInputText)
+              this.insertOrPushToSelectedItems(inputFormat, this.selectedIndexCursor)
+            } else { // if not then add an empty string into the list
+              console.log('formatItemClick: last input text is an empty string')
+              this.insertOrPushToSelectedItems(new CustomInputFormat(''), this.selectedIndexCursor)
               this.lastInputText = ''
-            } else {
-              this.selectedItems.push(new CustomInputFormat(''))
             }
           }
-          this.selectedItems.push(item)
+          // add selected item into the list
+          const index = this.selectedIndexCursor ? this.selectedIndexCursor + 1 : null
+          this.insertOrPushToSelectedItems(item, index)
         }
+        this.selectedIndexCursor = null // reset index cursor
+      }
+    },
+    insertOrPushToSelectedItems (item, index) {
+      if (index) {
+        this.selectedItems.splice(index, 0, item)
+      } else {
+        this.selectedItems.push(item)
       }
     },
     deleteSelectedFormatItem (optionItem) {
