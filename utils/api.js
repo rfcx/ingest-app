@@ -6,29 +6,24 @@ const fileStreamAxios = axios.create({
 })
 const httpClient = axios.create()
 httpClient.defaults.timeout = 30000
-const platform = 'amazon' // || 'google'
 const { remote } = window.require('electron')
+const env = require('../env.json')
 
 const apiUrl = (proEnvironment) => {
   const url = remote.getGlobal('ingestServicelUrl')
-  if (url) {
-    return url
-  }
-  if (proEnvironment) {
-    return platform === 'amazon' ? 'https://ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-257610.cloudfunctions.net/api'
-  }
-  return platform === 'amazon' ? 'https://staging-ingest.rfcx.org' : 'https://us-central1-rfcx-ingest-dev.cloudfunctions.net/api'
+  if (url) { return url } // local url provided
+  return proEnvironment ? env.ingestApi : env.staging.ingestApi
 }
 
 const explorerWebUrl = (isProd, streamId = null) => {
-  let baseUrl = isProd ? 'https://explorer.rfcx.org/' : 'https://staging-explorer.rfcx.org/'
+  let baseUrl = isProd ? env.explorerUrl : env.staging.explorerUrl
   let query = streamId ? `?stream=${streamId}` : ''
   return baseUrl + query
 }
 
 const arbimonWebUrl = (isProd, streamId = null) => {
-  let baseUrl = isProd ? 'https://arbimon.rfcx.org/' : 'https://arbimon.rfcx.org/' // TODO: change staging url
-  let query = streamId ? `site/${streamId}` : ''
+  let baseUrl = isProd ? env.arbimonUrl : env.staging.arbimonUrl
+  let query = streamId ? `/site/${streamId}` : ''
   return baseUrl + query
 }
 
@@ -82,11 +77,9 @@ function performUpload (signedUrl, signId, filePath, fileExt, fileSize, progress
   var headers = {
     'Content-Type': `audio/${fileExt}`
   }
-  if (platform === 'amazon') {
-    // S3 doesn't allow chunked uploads, so setting the Content-Length is required
-    // const fileSize = fs.statSync(filePath).size
-    headers['Content-Length'] = fileSize
-  }
+  // S3 doesn't allow chunked uploads, so setting the Content-Length is required
+  // const fileSize = fs.statSync(filePath).size
+  headers['Content-Length'] = fileSize
   const readStream = fs.createReadStream(filePath)
   const options = {
     headers: headers,
