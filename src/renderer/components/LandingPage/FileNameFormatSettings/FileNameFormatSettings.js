@@ -19,7 +19,6 @@ export default {
   methods: {
     async save () {
       const format = this.selectedFormat
-      console.log('selectedItems', this.selectedItems)
       if (this.isPassedValidation) {
         this.$emit('save', format)
       } else {
@@ -28,7 +27,6 @@ export default {
       }
     },
     closeModal () {
-      console.log('closeModal')
       this.$emit('onClose')
       this.clearSelectedItem()
     },
