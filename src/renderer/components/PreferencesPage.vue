@@ -45,7 +45,6 @@
       }
     },
     created () {
-      console.log('Update page')
       this.isAutoUpdateApp = settings.get('settings.auto_update_app')
       this.currentTab = 'update'
     }

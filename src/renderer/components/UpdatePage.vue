@@ -48,7 +48,6 @@
       }
     },
     created () {
-      console.log('Update page')
       this.platform = remote.getGlobal('platform')
       this.getNotes()
     }
