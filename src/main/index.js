@@ -448,12 +448,16 @@ async function logOut () {
   await authService.logout()
   settings.set('settings.production_env', true)
   clearAllData()
+  hideMainWindowAndForceLogin()
+  resetFirstLogInCondition()
+}
+
+function hideMainWindowAndForceLogin () {
   if (mainWindow) {
     isLogOut = true
     mainWindow.close()
   }
   idToken = null
-  resetFirstLogInCondition()
 }
 
 function clearAllData () {
@@ -615,6 +619,10 @@ ipcMain.on('logOut', (event, data) => {
 })
 
 let listenerOfToken = (event, args) => {
+  if (!idToken) { // if there is no idToken, then force user to login again
+    hideMainWindowAndForceLogin()
+    return
+  }
   event.sender.send('sendIdToken', idToken)
 }
 
