@@ -14,6 +14,9 @@ const os = require('os')
 const setupEvents = require('./../../setupEvents')
 const log = require('electron-log')
 console.log = log.log
+log.transports.console.format = '{h}:{i}:{s} {text}'
+log.transports.file.getFile()
+
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
