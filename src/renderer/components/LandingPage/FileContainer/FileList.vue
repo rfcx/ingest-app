@@ -87,7 +87,6 @@ export default {
       this.hideConfirmToDeleteDialog()
     },
     onImportFiles (files) {
-      console.log('onImportFiles = filelist', files)
       this.$emit('onImportFiles', files)
     },
     onCloseNotice () {

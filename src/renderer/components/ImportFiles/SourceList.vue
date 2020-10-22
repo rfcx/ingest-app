@@ -50,7 +50,6 @@ export default {
   components: { AudioMothTag },
   methods: {
     async getExternalDriveList () {
-      console.log('driveFetchingInterval')
       this.isLoading = true
       DriveList.getExternalDriveList().then(drives => {
         this.isLoading = false
@@ -59,7 +58,6 @@ export default {
           const deviceId = this.getDeviceId(drive.path)
           return {...drive, deviceId}
         })
-        console.log('view =>', this.drives)
       })
     },
     getDeviceId (path) {

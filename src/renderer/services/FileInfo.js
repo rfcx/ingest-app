@@ -18,14 +18,24 @@ export default class FileInfo {
   }
 
   get deviceId () {
-    return this.authors !== '' ? this.authors.replace(/AudioMoth\s/g, '').trim() : ''
+    const getDeviceId = string => string.replace(/AudioMoth\s/g, '').trim()
+    if (this.authors !== '') {
+      return getDeviceId(this.authors)
+    }
+    const reg = /AudioMoth\s\w*\s/ig
+    try {
+      const matched = this.comment.match(reg)
+      return getDeviceId(matched[0])
+    } catch (e) {
+      return ''
+    }
   }
 
   /**
    * Return moment date or 'null'
    */
   get recordedDate () {
-    const reg = /(?<date>[0-2]{1}[0-3]{1}:[0-5]{1}[0-9]{1}:[0-5]{1}[0-9]{1}\s(?:[0-2]\d|[3][0-1])\/(?:[0]\d|[1][0-2])\/(?:[2][01]|[1][6-9])\d{2}) \(UTC(?<timezone>[+-]\d{1,2})\)/ig
+    const reg = /(?<date>(?:[0-1][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]\s(?:[0-2]\d|[3][0-1])\/(?:[0]\d|[1][0-2])\/(?:[2][01]|[1][6-9])\d{2}) \(UTC(?<timezone>(?:[+-]\d{1,2}))?\)/ig
     const matched = reg.exec(this.comment)
     if (!matched || matched.length === 0) {
       return null

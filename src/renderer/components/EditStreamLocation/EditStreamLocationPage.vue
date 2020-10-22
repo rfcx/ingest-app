@@ -85,7 +85,6 @@ export default {
   },
   methods: {
     onSelectLocation (coordinates) {
-      console.log('coordinates', coordinates)
       this.selectedLongitude = coordinates[0]
       this.selectedLatitude = coordinates[1]
     },
@@ -140,7 +139,6 @@ export default {
           data: { timezone: timezone }
         })
       })
-      console.log(preparingFiles)
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true

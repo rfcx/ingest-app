@@ -249,12 +249,10 @@
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           api.getUserSites(this.isProductionEnv(), arg)
             .then(sites => {
-              console.log('user sites', sites)
               if (sites && sites.length) {
                 let userSites = streamHelper.parseUserSites(sites)
                 streamHelper.insertSites(userSites)
                 // set selected site
-                console.log(userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt))
                 this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
               }
             }).catch(error => {

@@ -119,7 +119,6 @@ export default {
       this.showSettingModal = true
     },
     closeFileNameFormatSettingModal () {
-      console.log('closeFileNameFormatSettingModal')
       this.showSettingModal = false
     },
     async onFormatSave (format = '') {
