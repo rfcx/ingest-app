@@ -46,6 +46,8 @@
   import Stream from '../store/models/Stream'
   import Analytics from 'electron-ga'
   const { remote } = window.require('electron')
+  const log = require('electron-log')
+  console.log = log.log
 
   export default {
     name: 'landing-page',
@@ -68,17 +70,14 @@
         this.isDragging = false
       },
       handleDrag (e) {
-        // console.log('handleDrag -- side', e)
         this.isDragging = true
       },
       onDragOver (e) {
-        console.log('onDragOver', e)
         e.preventDefault()
         e.dataTransfer.effectAllowed = 'uninitialized'
         e.dataTransfer.dropEffect = 'none'
       },
       handleDrop (e) {
-        console.log('handleDrop', e)
         let dt = e.dataTransfer
         let files = dt.files
         this.handleFiles(files)
@@ -115,7 +114,6 @@
         const analytics = new Analytics('UA-38186431-15', { appName: 'RFCx Ingest', appVersion: `${version}`, clientId: `${guid}` })
         await analytics.send('screenview', { cd: `${guid}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
         await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
-        console.log('analytics', analytics)
       },
       cancel () {
         this.isPopupOpened = false
@@ -150,7 +148,6 @@
       }
     },
     created () {
-      console.log('view loaded')
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()

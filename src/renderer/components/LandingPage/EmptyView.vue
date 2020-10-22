@@ -44,7 +44,6 @@ export default {
   },
   methods: {
     importFiles (e) {
-      console.log('importFiles', e.target.files)
       this.$emit('onImportFiles', e.target.files)
     }
   }

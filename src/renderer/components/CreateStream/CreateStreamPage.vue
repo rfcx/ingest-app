@@ -86,11 +86,9 @@ export default {
     // TODO: add logic & UI to go back to import step
     if (this.$route.query.folderPath) {
       this.selectedFolderPath = this.$route.query.folderPath
-      console.log('create with +', this.selectedFolderPath)
     }
     if (this.$route.query.deviceId) {
       this.deviceId = this.$route.query.deviceId
-      console.log('+', this.deviceId)
     }
     if (this.$route.query.selectedFiles) {
       this.selectedFiles = JSON.parse(this.$route.query.selectedFiles)
@@ -98,7 +96,6 @@ export default {
   },
   methods: {
     onSelectLocation (coordinates) {
-      console.log('on selected location: ', coordinates)
       this.selectedLongitude = coordinates[0]
       this.selectedLatitude = coordinates[1]
       if (!this.name || this.name === '') {
@@ -140,7 +137,6 @@ export default {
               updatedAt: Date.now(),
               deviceId: this.deviceId || ''
             }
-            console.log('creating stream', JSON.stringify(stream))
             await Stream.insert({ data: stream })
             // add files to site/stream
             if (this.selectedFolderPath) {
