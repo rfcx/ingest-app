@@ -143,7 +143,7 @@ export default {
               stream.defaultTimezone = dateHelper.getDefaultTimezone(stream.latitude, stream.longitude)
               this.$file.handleDroppedFolder(this.selectedFolderPath, stream) // TODO: fix to pass the stream model object in
             }
-            if (this.selectedFiles.length > 0) {
+            if (this.selectedFiles && this.selectedFiles.length > 0) {
               this.$file.handleDroppedFiles(this.selectedFiles, stream)
             }
             this.$store.dispatch('setSelectedStreamId', stream.id)
