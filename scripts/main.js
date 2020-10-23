@@ -29,8 +29,7 @@ function createWindow () {
     if (willQuitApp) {
       mainWindow = null
       app.exit()
-    }
-    else {
+    } else {
       e.preventDefault()
       mainWindow.hide()
     }
