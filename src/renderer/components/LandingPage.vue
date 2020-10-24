@@ -45,6 +45,7 @@
   import File from '../store/models/File'
   import Stream from '../store/models/Stream'
   import Analytics from 'electron-ga'
+  import env from '../../../env.json'
   const { remote } = window.require('electron')
   const log = require('electron-log')
   console.log = log.log
@@ -111,9 +112,9 @@
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
         let guid = remote.getGlobal('userId')
-        const analytics = new Analytics('UA-38186431-15', { appName: 'RFCx Ingest', appVersion: `${version}`, clientId: `${guid}` })
-        await analytics.send('screenview', { cd: `${guid}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
-        await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}`, 'an': 'RFCx Ingest', 'av': `${version}`, 'cid': `${guid}` })
+        const analytics = new Analytics(env.analytics.id, { appName: env.analytics.appName, appVersion: `${version}`, clientId: `${guid}` })
+        await analytics.send('screenview', { cd: `${guid}`, 'an': env.analytics.appName, 'av': `${version}`, 'cid': `${guid}` })
+        await analytics.send('event', { ec: `${guid}`, 'ea': `${new Date().toLocaleString()}`, 'an': env.analytics.appName, 'av': `${version}`, 'cid': `${guid}` })
       },
       cancel () {
         this.isPopupOpened = false

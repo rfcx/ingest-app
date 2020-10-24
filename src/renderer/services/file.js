@@ -9,8 +9,11 @@ import cryptoJS from 'crypto-js'
 import store from '../store'
 import FileInfo from './FileInfo'
 import fs from 'fs'
+import Analytics from 'electron-ga'
+import env from '../../../env.json'
 
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
+const analytics = new Analytics(env.analytics.id)
 
 class FileProvider {
   /* -- Import files -- */
@@ -324,7 +327,7 @@ class FileProvider {
         })
       }).then((uploadId) => {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
-      return File.update({ where: file.id, data: { uploaded: true } })
+      return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
     }).catch((error) => {
       console.log('===> ERROR UPLOAD FILE', error, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
@@ -350,7 +353,7 @@ class FileProvider {
   checkStatus (file, idToken, isSuspended) {
     return api
       .checkStatus(this.isProductionEnv(), file.uploadId, idToken)
-      .then((data) => {
+      .then(async (data) => {
         const status = data.status
         const failureMessage = data.failureMessage
         console.log(`===> ${file.name} ${file.uploadId} - Ingest status = ${status}`)
@@ -376,6 +379,9 @@ class FileProvider {
               data: { state: 'ingesting', stateMessage: '', progress: 100 }
             })
           case 20:
+            const uploadTime = Date.now() - file.uploadedTime
+            const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.ingest, 'el': `${file.name}/${file.uploadId}`, 'ev': uploadTime }
+            await analytics.send('event', analyticsEventObj)
             return File.update({
               where: file.id,
               data: { state: 'completed', stateMessage: '', progress: 100 }
