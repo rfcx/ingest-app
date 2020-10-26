@@ -1,5 +1,7 @@
 import File from '../src/renderer/store/models/File'
 import fileHelper from './fileHelper'
+import Analytics from 'electron-ga'
+
 const axios = require('axios')
 const fileStreamAxios = axios.create({
   adapter: require('./axios-http-adapter').default
@@ -27,15 +29,24 @@ const arbimonWebUrl = (isProd, streamId = null) => {
   return baseUrl + query
 }
 
-const uploadFile = (env, fileId, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
+const uploadFile = async (environment, fileId, fileName, filePath, fileExt, streamId, timestamp, fileSize, idToken, progressCallback) => {
   const now = Date.now()
+  const analytics = new Analytics(env.analytics.id)
   console.log(`===> upload file ${fileName}`)
-  return requestUploadUrl(env, fileName, filePath, streamId, timestamp, idToken)
-    .then((data) => {
+  return requestUploadUrl(environment, fileName, filePath, streamId, timestamp, idToken)
+    .then(async (data) => {
+      const getUploadIdTime = Date.now() - now
+      const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.getUploadId, 'el': fileName, 'ev': getUploadIdTime }
+      await analytics.send('event', analyticsEventObj)
       File.update({ where: fileId,
-        data: {state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false, uploadedTime: now}
+        data: {state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false}
       })
-      return performUpload(data.url, data.uploadId, filePath, fileExt, fileSize, progressCallback).then(() => data.uploadId)
+      return performUpload(data.url, data.uploadId, filePath, fileExt, fileSize, progressCallback).then(async () => {
+        const uploadTime = Date.now() - now
+        const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.upload, 'el': fileName, 'ev': uploadTime }
+        await analytics.send('event', analyticsEventObj)
+        return data.uploadId
+      })
     })
 }
 
