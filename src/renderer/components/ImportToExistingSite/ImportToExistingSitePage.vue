@@ -15,7 +15,8 @@ export default {
   data: () => ({
     selectedFolderPath: null,
     existingStreamId: null,
-    deviceId: null
+    deviceId: null,
+    deploymentId: null
 
   }),
   computed: {
@@ -29,6 +30,7 @@ export default {
     if (this.$route.query.streamId) this.existingStreamId = this.$route.query.streamId
     if (this.$route.query.folderPath) this.selectedFolderPath = this.$route.query.folderPath
     if (this.$route.query.deviceId) this.deviceId = this.$route.query.deviceId
+    if (this.$route.query.deploymentId) this.deploymentId = this.$route.query.deploymentId
   },
   methods: {
     importFiles () {
@@ -38,7 +40,7 @@ export default {
       this.$router.push('/')
     },
     redirectToCreateStream () {
-      this.$router.push({path: '/add', query: { folderPath: this.selectedFolderPath, deviceId: this.deviceId }})
+      this.$router.push({path: '/add', query: { folderPath: this.selectedFolderPath, deviceId: this.deviceId, deploymentId: this.deploymentId }})
     }
   }
 }

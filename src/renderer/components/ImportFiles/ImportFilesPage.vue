@@ -31,15 +31,15 @@ export default {
   data: () => ({
     isLoading: false,
     selectedSource: null,
-    deviceId: null
+    deviceId: null,
+    deploymentId: null
   }),
   components: { SourceList, HeaderView },
   methods: {
     onSourceSelected (newSource) {
       this.selectedSource = newSource
-      if (this.selectedSource.deviceId) {
-        this.deviceId = this.selectedSource.deviceId
-      }
+      this.deviceId = this.selectedSource.deviceId
+      this.deploymentId = this.selectedSource.deploymentId
     },
     async importFiles () {
       if (this.deviceId) {
@@ -47,11 +47,11 @@ export default {
         if (existingSiteWithDeviceId && existingSiteWithDeviceId.length > 0) {
           const streamId = existingSiteWithDeviceId[0].id
           console.log('existingSiteWithDeviceId', existingSiteWithDeviceId, streamId)
-          this.$router.push({path: '/import-to-existing-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, streamId: streamId }})
+          this.$router.push({path: '/import-to-existing-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, streamId: streamId, deploymentId: this.deploymentId }})
           return
         }
       }
-      this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId }})
+      this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentId: this.deploymentId }})
     }
   }
 }

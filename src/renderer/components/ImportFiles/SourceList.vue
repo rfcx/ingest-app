@@ -55,12 +55,14 @@ export default {
         this.isLoading = false
         if (drives.length === 0) return
         this.drives = drives.map(drive => {
-          const deviceId = this.getDeviceId(drive.path)
-          return {...drive, deviceId}
+          const deviceInfo = this.getDeviceInfo(drive.path)
+          const deviceId = deviceInfo.deviceId
+          const deploymentId = deviceInfo.deploymentId
+          return {...drive, deviceId, deploymentId}
         })
       })
     },
-    getDeviceId (path) {
+    getDeviceInfo (path) {
       const stuffInDirectory = FileHelper
         .getFilesFromDirectoryPath(path)
         .map((name) => {
@@ -71,8 +73,10 @@ export default {
         return FileHelper.getExtension(file.path) === 'wav' // read only wav file header info
       })
       if (!firstWavFile) return undefined
-      const deviceId = new FileInfo(firstWavFile.path).deviceId
-      return deviceId
+      const fileInfo = new FileInfo(firstWavFile.path)
+      const deviceId = fileInfo.deviceId
+      const deploymentId = fileInfo.deployment
+      return {deviceId, deploymentId}
     },
     onDriveSelected (drive) {
       this.selectedSource = drive
@@ -82,16 +86,19 @@ export default {
         console.log('change selected source', this.selectedFolder)
         const path = this.selectedFolder.path
         const deviceId = this.selectedFolder.deviceId
-        this.selectedSource = {id: path, label: path, path: path, deviceId: deviceId}
+        const deploymentId = this.selectedFolder.deploymentId
+        this.selectedSource = {id: path, label: path, path: path, deviceId: deviceId, deploymentId: deploymentId}
       }
       this.$refs.file.click()
     },
     handleFileChange (event) {
       console.log(event.target.files)
       const path = event.target.files[0].path
-      const deviceId = this.getDeviceId(path)
-      this.selectedFolder = {path, deviceId}
-      this.selectedSource = {id: path, label: path, path: path, deviceId: deviceId}
+      const deviceInfo = this.getDeviceInfo(path)
+      const deviceId = deviceInfo.deviceId
+      const deploymentId = deviceInfo.deploymentId
+      this.selectedFolder = {path, deviceId, deploymentId}
+      this.selectedSource = {id: path, label: path, path: path, deviceId: deviceId, deploymentId: deploymentId}
     },
     isSelected (type, drive = null) {
       switch (type) {

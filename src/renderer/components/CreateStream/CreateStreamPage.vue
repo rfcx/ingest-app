@@ -69,6 +69,7 @@ export default {
       selectedFiles: null, // prop from landing page where user drag files in to create their first site
       selectedFolderPath: null, // prop from import page
       deviceId: null, // prop from import page
+      deploymentId: null,
       isLoading: false,
       hasPassValidation: false,
       error: '',
@@ -89,6 +90,9 @@ export default {
     }
     if (this.$route.query.deviceId) {
       this.deviceId = this.$route.query.deviceId
+    }
+    if (this.$route.query.deploymentId) {
+      this.deploymentId = this.$route.query.deploymentId
     }
     if (this.$route.query.selectedFiles) {
       this.selectedFiles = JSON.parse(this.$route.query.selectedFiles)
