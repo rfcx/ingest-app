@@ -19,7 +19,10 @@
         <span>+</span>New Site
       </button>
     </div>
-    <div class="wrapper__title">Sites</div>
+    <div class="wrapper__title">
+      <span>Sites</span>
+      <div class="loader" v-if="isFetching"></div>
+    </div>
     <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">
       <input type="text" class="input wrapper__input" placeholder="Filter" v-model="searchStr"
         @keyup="onKeyUp($event)" ref="searchStream">
@@ -75,6 +78,7 @@
         showConfirmToLogOut: false,
         userName: this.getUserName(),
         userSites: [],
+        isFetching: false,
         alertTitle: 'Are you sure you would like to continue?',
         alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.'
       }
@@ -249,6 +253,7 @@
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           api.getUserSites(this.isProductionEnv(), arg)
             .then(sites => {
+              this.isFetching = false
               if (sites && sites.length) {
                 let userSites = streamHelper.parseUserSites(sites)
                 streamHelper.insertSites(userSites)
@@ -256,9 +261,11 @@
                 this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
               }
             }).catch(error => {
+              this.isFetching = false
               console.log(`error while getting user's sites`, error)
             })
         }
+        this.isFetching = true
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       }
@@ -341,6 +348,8 @@
       font-weight: $title-font-weight;
       text-transform: none;
       letter-spacing: 0.2px;
+      display: flex;
+      justify-content: space-between;
     }
     &__search {
       border-radius: 3px;
