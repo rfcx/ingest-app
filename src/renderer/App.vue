@@ -14,7 +14,7 @@
   const isOnline = require('is-online')
 
   export default {
-    name: 'rfcx-ingest',
+    name: 'rfcx-uploader',
     data () {
       return {
         onLine: navigator.onLine

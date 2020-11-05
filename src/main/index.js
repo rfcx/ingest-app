@@ -293,7 +293,7 @@ function createMenu () {
             checkForUpdates()
           }
         },
-        { label: 'About Ingest App',
+        { label: 'About RFCx Uploader',
           click: function () {
             if (aboutWindow) {
               aboutWindow.destroy()
