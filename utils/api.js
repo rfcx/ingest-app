@@ -156,6 +156,17 @@ const getUserSites = (env, idToken) => {
     })
 }
 
+const getDeploymentInfo = (deploymentId, idToken) => {
+  // only available in prod
+  return httpClient.get(apiUrl(true) + `/deployments/${deploymentId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+    .then(response => {
+      return response.data
+    }).catch(error => {
+      console.log('error', error.response)
+      throw error.response
+    })
+}
+
 export default {
   explorerWebUrl,
   arbimonWebUrl,
@@ -165,5 +176,6 @@ export default {
   checkStatus,
   renameStream,
   deleteStream,
-  getUserSites
+  getUserSites,
+  getDeploymentInfo
 }

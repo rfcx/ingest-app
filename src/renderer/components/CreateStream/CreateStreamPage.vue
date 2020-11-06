@@ -17,7 +17,7 @@
       </div>
       <div class="field">
         <label for="location" class="label">Location</label>
-        <Map class="map-wrapper" @locationSelected="onSelectLocation"></Map>
+        <Map class="map-wrapper" @locationSelected="onSelectLocation" :lngLat="selectedCoordinates" ref="map"></Map>
       </div>
       <div class="folder-path-input__wrapper" v-if="selectedFolderPath != null">
         <label for="path" class="label">Folder path</label>
@@ -40,7 +40,7 @@
           <button
             type="button"
             class="button is-rounded is-primary"
-            :class="{ 'is-loading': isLoading }"
+            :class="{ 'is-loading': isCreating }"
             :disabled="!hasPassedValidation"
             @click.prevent="createStream"
           >Create</button>
@@ -69,7 +69,8 @@ export default {
       selectedFiles: null, // prop from landing page where user drag files in to create their first site
       selectedFolderPath: null, // prop from import page
       deviceId: null, // prop from import page
-      isLoading: false,
+      deploymentInfo: null,
+      isCreating: false,
       hasPassValidation: false,
       error: '',
       shouldShowNameHelperMessage: false
@@ -79,6 +80,9 @@ export default {
   computed: {
     hasPassedValidation () {
       return this.name && this.selectedLatitude && this.selectedLongitude
+    },
+    selectedCoordinates () {
+      return this.sselectedLatitude ? [this.selectedLongitude, this.selectedLatitude] : null
     }
   },
   created () {
@@ -90,8 +94,18 @@ export default {
     if (this.$route.query.deviceId) {
       this.deviceId = this.$route.query.deviceId
     }
+    if (this.$route.query.deploymentInfo) {
+      this.deploymentInfo = JSON.parse(this.$route.query.deploymentInfo)
+    }
     if (this.$route.query.selectedFiles) {
       this.selectedFiles = JSON.parse(this.$route.query.selectedFiles)
+    }
+  },
+  mounted () {
+    // get deployment info if needed
+    if (this.deploymentInfo && this.deploymentInfo.locationName && this.deploymentInfo.coordinates) {
+      this.name = this.deploymentInfo.locationName
+      this.$refs.map.updateCoordinates(this.deploymentInfo.coordinates)
     }
   },
   methods: {
@@ -151,7 +165,7 @@ export default {
           })
           .catch(error => {
             console.log('error while creating stream', error)
-            this.isLoading = false
+            this.isCreating = false
             if (error.status === 401 || error.data === 'UNAUTHORIZED') {
               this.error = 'You are not authorized.'
             } else {
@@ -159,7 +173,7 @@ export default {
             }
           })
       }
-      this.isLoading = true
+      this.isCreating = true
       this.$electron.ipcRenderer.send('getIdToken')
       this.$electron.ipcRenderer.on('sendIdToken', listener)
     },

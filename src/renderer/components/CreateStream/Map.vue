@@ -112,6 +112,13 @@ export default {
       }
 
       return geocodes
+    },
+    updateCoordinates (coordinates) {
+      console.log('updateCoordinates', coordinates)
+      this.selectedCoordinates = coordinates
+      this.updateTextInput(coordinates[0], coordinates[1])
+      this.center = coordinates
+      this.zoom = this.closeMapZoom
     }
   },
   watch: {
@@ -124,10 +131,7 @@ export default {
   created () {
     this.mapbox = Mapbox
     if (this.lngLat) {
-      this.selectedCoordinates = this.lngLat
-      this.updateTextInput(this.lngLat[0], this.lngLat[1])
-      this.center = this.lngLat
-      this.zoom = this.closeMapZoom
+      this.updateCoordinates(this.lngLat)
     }
   }
 }
