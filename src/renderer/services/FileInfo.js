@@ -56,7 +56,7 @@ export default class FileInfo {
   }
 
   get deployment () {
-    const reg = /deployment\s\d*\s/ig
+    const reg = /deployment\s[\da-f]*\s/ig
     try {
       const matched = this.comment.match(reg)
       return matched[0].replace(/deployment\s/, '').trim()
