@@ -1,6 +1,6 @@
 {
   "name": "rfcx-ingest",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "author": "RFCx",
   "private": true,
   "description": "Desktop application for ingesting audio to RFCx platform",
@@ -76,7 +76,7 @@
     },
     "squirrelWindows": {
       "iconUrl": "https://rfcx.org/favicon.ico",
-      "loadingGif": "build/icons/win-installer-gif-icon.gif",
+      "loadingGif": "build/icons/win-installer-loading.gif",
       "remoteReleases": "http://localhost:5000/public",
       "useAppIdAsId": false
     },
