@@ -235,14 +235,27 @@ class FileProvider {
       if (newPath !== path) {
         // if file already exists then throw error
         checkFileAlreadyExists(newPath)
-
-        fs.rename(path, newPath, e => {
-          if (e) {
-            reject(e)
-          } else {
-            resolve(newPath)
-            console.log(`Rename file '${path}' to '${newPath}' success`)
-          }
+        // keep retring for preventing EPREM error (https://stackoverflow.com/questions/39293636/npm-err-error-eperm-operation-not-permitted-rename/45840283)
+        const rename = (path, newPath, maxRetires) => new Promise((resolve, reject) => {
+          fs.rename(path, newPath, e => {
+            if (e && (e.code === 'EACCES' || e.code === 'EPERM') && maxRetires > 0) {
+              maxRetires--
+              return rename(path, newPath, maxRetires).then(resolve).catch(reject)
+            } else if (e) {
+              reject(e)
+            } else {
+              resolve(newPath)
+            }
+          })
+        })
+        const maxRetires = 3
+        console.log('start calling the function')
+        rename(path, newPath, maxRetires).then(newPath => {
+          resolve(newPath)
+          console.log(`Rename file '${path}' to '${newPath}' success`)
+        }).catch(error => {
+          reject(error)
+          console.log(`Rename file '${path}' to '${newPath}' failed`)
         })
       } else {
         console.log(`File doesn't need to rename, Because old file name equal to new file name`)
