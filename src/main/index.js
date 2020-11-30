@@ -78,51 +78,13 @@ function createWindow (openedAsHidden = false) {
   })
 
   mainWindow.on('close', (e) => {
-    if (willQuitApp) {
-      console.log('mainWindow exit')
-      menu = null
-      mainWindow = null
-      if (backgroundAPIWindow) {
-        backgroundAPIWindow = null
-      }
-      if (preferencesPopupWindow) {
-        preferencesPopupWindow.destroy()
-        preferencesPopupWindow = null
-      }
-      if (updatePopupWindow) {
-        updatePopupWindow.destroy()
-        updatePopupWindow = null
-      }
-      if (aboutWindow) {
-        aboutWindow.destroy()
-        aboutWindow = null
-      }
-      resetTimers()
-      app.exit()
-      app.quit()
-    } else if (isLogOut) {
-      console.log('mainWindow logout')
-      resetTimers()
-      createAuthWindow()
-      if (mainWindow) {
-        mainWindow.destroy()
-        mainWindow = null
-      }
-      idToken = null
-      isLogOut = false
-    } else {
-      console.log('mainWindow close')
-      if (process.platform === 'win32' || process.platform === 'win64') {
-        menu = null
-        mainWindow = null
-        resetTimers()
-        app.exit()
-        app.quit()
-        return
-      }
-      e.preventDefault()
-      mainWindow.hide()
+    if (mainWindow.isFullScreen()) {
+      mainWindow.once('leave-full-screen', (e1) => {
+        mainWindow.hide()
+      })
+      mainWindow.setFullScreen(false)
     }
+    closeMainWindow(e)
   })
 
   mainWindow.loadURL(winURL)
@@ -331,6 +293,55 @@ function showMainWindow () {
     createWindow()
   } else {
     mainWindow.show()
+  }
+}
+
+function closeMainWindow (e) {
+  console.log('closeMainWindow willQuitApp', willQuitApp)
+  if (willQuitApp) {
+    console.log('mainWindow exit')
+    menu = null
+    mainWindow = null
+    if (backgroundAPIWindow) {
+      backgroundAPIWindow = null
+    }
+    if (preferencesPopupWindow) {
+      preferencesPopupWindow.destroy()
+      preferencesPopupWindow = null
+    }
+    if (updatePopupWindow) {
+      updatePopupWindow.destroy()
+      updatePopupWindow = null
+    }
+    if (aboutWindow) {
+      aboutWindow.destroy()
+      aboutWindow = null
+    }
+    resetTimers()
+    app.exit()
+    app.quit()
+  } else if (isLogOut) {
+    console.log('mainWindow logout')
+    resetTimers()
+    createAuthWindow()
+    if (mainWindow) {
+      mainWindow.destroy()
+      mainWindow = null
+    }
+    idToken = null
+    isLogOut = false
+  } else {
+    console.log('mainWindow close')
+    if (process.platform === 'win32' || process.platform === 'win64') {
+      menu = null
+      mainWindow = null
+      resetTimers()
+      app.exit()
+      app.quit()
+      return
+    }
+    e.preventDefault()
+    mainWindow.hide()
   }
 }
 
