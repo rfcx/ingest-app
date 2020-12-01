@@ -64,8 +64,11 @@ export default {
     completedFiles () {
       return this.files.filter(file => file.isInCompletedGroup && !file.isError)
     },
-    failedFiles () {
-      return this.files.filter(file => file.isInCompletedGroup && file.isError)
+    allFilesInUploadingSessionCompleted () {
+      const allFilesInSiteInUploadingSession = this.files.filter(file => file.sessionId === this.currentUploadingSessionId)
+      const completedFilesInSiteInUploadingSession = this.files.filter(file => file.isInCompletedGroup && file.sessionId === this.currentUploadingSessionId)
+      if (completedFilesInSiteInUploadingSession.length === 0 || allFilesInSiteInUploadingSession === 0) return false
+      return completedFilesInSiteInUploadingSession.length === allFilesInSiteInUploadingSession.length
     }
   },
   methods: {
@@ -79,7 +82,7 @@ export default {
   },
   watch: {
     filesInUploadingSession () {
-      if (this.isStreamCompleted) {
+      if (this.allFilesInUploadingSessionCompleted) {
         this.showNavigateMessage = true
       }
     }

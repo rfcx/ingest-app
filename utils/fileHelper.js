@@ -80,6 +80,20 @@ const isOutdatedFile = (file) => {
   return file.uploadedTime && Date.now() - parseInt(file.uploadedTime) > dayInMs * 30
 }
 
+// keep retring for preventing EPREM error (https://stackoverflow.com/questions/39293636/npm-err-error-eperm-operation-not-permitted-rename/45840283)
+const rename = (path, newPath, maxRetires) => new Promise((resolve, reject) => {
+  fs.rename(path, newPath, e => {
+    if (e && (e.code === 'EACCES' || e.code === 'EPERM') && maxRetires > 0) {
+      maxRetires--
+      return rename(path, newPath, maxRetires).then(resolve).catch(reject)
+    } else if (e) {
+      reject(e)
+    } else {
+      resolve(newPath)
+    }
+  })
+})
+
 export default {
   getFilesFromDirectoryPath,
   readFile,
@@ -94,5 +108,6 @@ export default {
   isSupportedFileExtension,
   isFolder,
   getCheckSum,
-  isOutdatedFile
+  isOutdatedFile,
+  rename
 }
