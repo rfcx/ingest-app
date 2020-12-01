@@ -221,7 +221,7 @@ class FileProvider {
      * @ function rename file name
      * @ convert callback to promise
     */
-    const renameFileOnDisk = () => new Promise((resolve, reject) => {
+    const renameFileOnDisk = () => {
       const path = file.path
       const oldFilename = file.name
       const filenameIdx = path.lastIndexOf(oldFilename)
@@ -235,18 +235,12 @@ class FileProvider {
       if (newPath !== path) {
         // if file already exists then throw error
         checkFileAlreadyExists(newPath)
-        fileHelper.rename(path, newPath, 3).then(newPath => {
-          resolve(newPath)
-          console.log(`Rename file '${path}' to '${newPath}' success`)
-        }).catch(error => {
-          reject(error)
-          console.log(`Rename file '${path}' to '${newPath}' failed`)
-        })
+        return fileHelper.rename(path, newPath, 3)
       } else {
         console.log(`File doesn't need to rename, Because old file name equal to new file name`)
-        resolve('')
+        return Promise.resolve('')
       }
-    })
+    }
 
     console.log(`Renaming file name...`)
     // update file name
@@ -262,23 +256,12 @@ class FileProvider {
 
     const format = stream.timestampFormat
     const isoDate = dateHelper.getIsoDateWithFormat(format, filename)
-
     const stateObj = this.getState(isoDate, file.extension, false)
-    const state = stateObj.state
-    const stateMessage = stateObj.message
-    const newFile = { ...file }
-
-    // update fields
-    newFile.state = state
-    newFile.stateMessage = stateMessage
-    newFile.timestamp = isoDate
-    newFile.name = filename
-    newFile.path = newPath
 
     // ----- update file on database -----
     const updateFields = {
-      state,
-      stateMessage,
+      state: stateObj.state,
+      stateMessage: stateObj.message,
       timestamp: isoDate,
       name: filename,
       path: newPath
@@ -291,6 +274,7 @@ class FileProvider {
 
     console.log(`Update file success`)
 
+    const newFile = { ...file, ...updateFields }
     const fileIdx = files.findIndex(f => f.id === file.id)
     if (fileIdx > -1) {
       files[fileIdx] = newFile
