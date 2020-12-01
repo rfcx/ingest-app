@@ -109,7 +109,14 @@ function createWindow (openedAsHidden = false) {
       backgroundAPIWindow.webContents.send('suspendApp', true)
     }
   })
+
+  app.setAsDefaultProtocolClient('rfcx-uploader')
 }
+
+app.on('open-url', function (event, data) {
+  event.preventDefault()
+  console.log('open-url', data)
+})
 
 function createAboutUrl (isShow) {
   aboutWindow = new BrowserWindow({
