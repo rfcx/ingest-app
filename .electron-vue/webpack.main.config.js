@@ -13,7 +13,7 @@ let mainConfig = {
     main: path.join(__dirname, '../src/main/index.js')
   },
   externals: [
-    ...Object.keys(dependencies || {})
+    ...Object.keys(dependencies || {}),
   ],
   module: {
     rules: [
@@ -52,7 +52,8 @@ let mainConfig = {
     new webpack.NoEmitOnErrorsPlugin()
   ],
   resolve: {
-    extensions: ['.js', '.json', '.node']
+    extensions: ['.js', '.json', '.node'],
+    mainFields: ['main', 'browser', 'module']
   },
   target: 'electron-main'
 }
