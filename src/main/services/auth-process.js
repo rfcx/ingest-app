@@ -20,7 +20,7 @@ function createAuthWindow () {
   win = new BrowserWindow({
     width: 1000,
     height: 563,
-    minWidth: 400,
+    minWidth: 770,
     webPreferences: { nodeIntegration: true }
   })
   const {
