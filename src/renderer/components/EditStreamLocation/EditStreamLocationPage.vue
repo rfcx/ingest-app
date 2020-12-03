@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <h1>Edit site</h1>
+    <h2>Edit site</h2>
     <fieldset>
       <div class="notification default-notice" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>

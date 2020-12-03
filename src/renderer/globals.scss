@@ -92,7 +92,7 @@ body {
   letter-spacing: 0.2px;
 }
 
-h1 {
+h2 {
   font-size: 18px !important;
   font-weight: normal !important;
   margin-bottom: $default-padding-margin !important;
@@ -101,6 +101,12 @@ h1 {
 p.subtitle {
   color: $secondary-text-color;
   font-size: $default-font-size;
+  margin-bottom: $default-padding-margin;
+}
+
+p.caption {
+  color: $secondary-text-color;
+  font-size: $default-subtitle-font-size;
   margin-bottom: $default-padding-margin;
 }
 

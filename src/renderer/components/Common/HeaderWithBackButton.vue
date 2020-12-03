@@ -1,7 +1,7 @@
 <template>
   <div class="header__wrapper">
     <font-awesome-icon :icon="icons.back" class="header__back-button" v-if="shouldShowBackButton" @click="onClickBackButton"/>
-    <h1 class="header__title">{{title}}</h1>
+    <h2 class="header__title">{{title}}</h2>
   </div>
 </template>
 
