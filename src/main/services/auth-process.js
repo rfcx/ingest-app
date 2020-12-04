@@ -31,7 +31,7 @@ function createAuthWindow () {
   currentUrl = authService.getAuthenticationURL()
   webRequest.onBeforeRequest(filter, async ({ url }) => {
     console.log('authWindow onBeforeRequest')
-    await authService.loadTokens(url)
+    await authService.loadTokensFromCallbackURL(url)
     index.createWindow(false)
     global.firstLogIn = true
     await destroyAuthWin()
@@ -206,4 +206,4 @@ function setLoginItem (openAtLogin) {
   })
 }
 
-export default createAuthWindow
+export default { createAuthWindow, destroyAuthWin }
