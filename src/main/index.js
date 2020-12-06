@@ -1,6 +1,7 @@
 'use strict'
 
-import { app, BrowserWindow, Menu, ipcMain, autoUpdater, powerMonitor } from 'electron'
+import { app, BrowserWindow, ipcMain, autoUpdater, powerMonitor } from 'electron'
+import menuProcess from '../main/processes/Menu/index'
 import store from '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
@@ -27,7 +28,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 
 let mainWindow, backgroundAPIWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
-let menu, idToken
+let idToken
 let refreshIntervalTimeout, expires, updateIntervalTimeout
 let willQuitApp = false
 let isLogOut = false
@@ -198,93 +199,43 @@ function createPreferencesPopupWindow (isShow) {
 }
 
 function createMenu () {
-  /* MENU */
-  const template = [
-    {
-      label: 'File',
-      submenu: [
-        { label: 'Clear data',
-          click: async () => {
-            console.log('clear data')
-            clearAllData()
-          }
-        },
-        { label: 'Auto start',
-          type: 'checkbox',
-          checked: settings.get('settings.auto_start'),
-          click: async (item) => {
-            const existingSettings = settings.get('settings')
-            existingSettings['auto_start'] = item.checked
-            settings.set('settings', existingSettings)
-            setLoginItem(item.checked)
-          }
-        },
-        { label: 'Log out',
-          type: 'checkbox',
-          click: async () => {
-            console.log('logOut')
-            logOut()
-          }
-        },
-        { label: 'Quit',
-          click: function () {
-            app.exit()
-            app.quit()
-          }
-        },
-        { type: 'separator' },
-        { label: 'Preferences',
-          click: function () {
-            if (preferencesPopupWindow) {
-              preferencesPopupWindow.destroy()
-              preferencesPopupWindow = null
-            }
-            if (preferencesURL) {
-              createPreferencesPopupWindow(true)
-              preferencesPopupWindow.loadURL(preferencesURL)
-              preferencesPopupWindow.show()
-            } else preferencesPopupWindow.loadURL(preferencesURL)
-          }
-        },
-        { label: 'Check for Updates',
-          click: function () {
-            if (updatePopupWindow) {
-              updatePopupWindow.destroy()
-              updatePopupWindow = null
-            }
-            checkForUpdates()
-          }
-        },
-        { label: 'About RFCx Uploader',
-          click: function () {
-            if (aboutWindow) {
-              aboutWindow.destroy()
-              aboutWindow = null
-            }
-            if (aboutURL) {
-              createAboutUrl(true)
-              aboutWindow.loadURL(aboutURL)
-              aboutWindow.show()
-            } else aboutWindow.loadURL(aboutURL)
-          }
-        }
-      ]
-    },
-    {
-      label: 'Edit',
-      submenu: [
-        { label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
-        { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:' },
-        { type: 'separator' },
-        { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
-        { label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:' },
-        { label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:' },
-        { label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' }
-      ]
+  const logoutFn = async () => {
+    console.log('logOut')
+    logOut()
+  }
+
+  const prefFn = function () {
+    if (preferencesPopupWindow) {
+      preferencesPopupWindow.destroy()
+      preferencesPopupWindow = null
     }
-  ]
-  menu = Menu.buildFromTemplate(template)
-  Menu.setApplicationMenu(menu)
+    if (preferencesURL) {
+      createPreferencesPopupWindow(true)
+      preferencesPopupWindow.loadURL(preferencesURL)
+      preferencesPopupWindow.show()
+    } else preferencesPopupWindow.loadURL(preferencesURL)
+  }
+
+  const updateFn = function () {
+    if (updatePopupWindow) {
+      updatePopupWindow.destroy()
+      updatePopupWindow = null
+    }
+    checkForUpdates()
+  }
+
+  const aboutFn = function () {
+    if (aboutWindow) {
+      aboutWindow.destroy()
+      aboutWindow = null
+    }
+    if (aboutURL) {
+      createAboutUrl(true)
+      aboutWindow.loadURL(aboutURL)
+      aboutWindow.show()
+    } else aboutWindow.loadURL(aboutURL)
+  }
+  menuProcess.createMenu(logoutFn, prefFn, aboutFn, updateFn)
 }
 
 function showMainWindow () {
@@ -300,7 +251,6 @@ function closeMainWindow (e) {
   console.log('closeMainWindow willQuitApp', willQuitApp)
   if (willQuitApp) {
     console.log('mainWindow exit')
-    menu = null
     mainWindow = null
     if (backgroundAPIWindow) {
       backgroundAPIWindow = null
@@ -333,7 +283,6 @@ function closeMainWindow (e) {
   } else {
     console.log('mainWindow close')
     if (process.platform === 'win32' || process.platform === 'win64') {
-      menu = null
       mainWindow = null
       resetTimers()
       app.exit()
@@ -544,7 +493,6 @@ function updateApp () {
   autoUpdater.quitAndInstall()
   setTimeout(() => {
     console.log('start updating')
-    menu = null
     mainWindow = null
     if (backgroundAPIWindow) {
       backgroundAPIWindow = null
