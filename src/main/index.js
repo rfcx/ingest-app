@@ -1,10 +1,9 @@
 'use strict'
 
 import { app, BrowserWindow, ipcMain, autoUpdater, powerMonitor } from 'electron'
+import commonProcess from '../main/processes/Common/index'
 import menuProcess from '../main/processes/Menu/index'
 import aboutProcess from '../main/processes/About/index'
-import store from '../renderer/store'
-import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
@@ -259,16 +258,6 @@ function closeMainWindow (e) {
   }
 }
 
-function setLoginItem (openAtLogin) {
-  console.log('setLoginItem', openAtLogin)
-  const args = openAtLogin ? ['--process-start-args', `"--hidden"`] : []
-  app.setLoginItemSettings({
-    openAtLogin: openAtLogin,
-    openAsHidden: openAtLogin,
-    args: args
-  })
-}
-
 function initialSettings () {
   if (settings.get('settings') === undefined) {
     settings.set('settings', {
@@ -286,7 +275,7 @@ function initialSettings () {
   if (settings.get('settings.onLine') === undefined) {
     settings.set('settings.onLine', true)
   }
-  setLoginItem(settings.get('settings.auto_start'))
+  commonProcess.setLoginItem(settings.get('settings.auto_start'))
 }
 
 async function createAppWindow (openedAsHidden) {
@@ -372,7 +361,7 @@ async function refreshTokens () {
 async function logOut () {
   await authService.logout()
   settings.set('settings.production_env', true)
-  clearAllData()
+  commonProcess.clearAllData()
   hideMainWindowAndForceLogin()
   resetFirstLogInCondition()
 }
@@ -383,12 +372,6 @@ function hideMainWindowAndForceLogin () {
     mainWindow.close()
   }
   idToken = null
-}
-
-function clearAllData () {
-  File.deleteAll()
-  Stream.deleteAll()
-  store.dispatch('reset', {})
 }
 
 async function createRefreshInterval () {
