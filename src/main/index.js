@@ -2,6 +2,7 @@
 
 import { app, BrowserWindow, ipcMain, autoUpdater, powerMonitor } from 'electron'
 import menuProcess from '../main/processes/Menu/index'
+import aboutProcess from '../main/processes/About/index'
 import store from '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
@@ -26,7 +27,6 @@ log.transports.file.getFile()
 if (process.env.NODE_ENV !== 'development') {
   global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
-
 let mainWindow, backgroundAPIWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
 let idToken
 let refreshIntervalTimeout, expires, updateIntervalTimeout
@@ -42,10 +42,6 @@ const winURL = process.env.NODE_ENV === 'development'
 const backgroundAPIURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/api-service`
   : `file://${__dirname}/index.html#/api-service`
-
-const aboutURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080/#/about`
-  : `file://${__dirname}/index.html#/about`
 
 const updateURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/update`
@@ -75,7 +71,6 @@ function createWindow (openedAsHidden = false) {
   mainWindow.on('closed', () => {
     resetTimers()
     mainWindow = null
-    menu = null
   })
 
   mainWindow.on('close', (e) => {
@@ -95,7 +90,10 @@ function createWindow (openedAsHidden = false) {
     webPreferences: { nodeIntegration: true }
   })
   backgroundAPIWindow.loadURL(backgroundAPIURL)
-  createAboutUrl(false)
+  aboutWindow = aboutProcess.createWindow(false)
+  aboutWindow.on('closed', () => {
+    aboutWindow = null
+  })
   createPreferencesPopupWindow(false)
 
   powerMonitor.on('suspend', () => {
@@ -108,34 +106,6 @@ function createWindow (openedAsHidden = false) {
     // Continue uploading process if the app has an internet connection
     if (settings.get('settings.onLine')) {
       backgroundAPIWindow.webContents.send('suspendApp', true)
-    }
-  })
-}
-
-function createAboutUrl (isShow) {
-  aboutWindow = new BrowserWindow({
-    width: 300,
-    height: 200,
-    show: isShow,
-    frame: true,
-    transparent: false,
-    backgroundColor: '#131525',
-    titleBarStyle: 'default',
-    webPreferences: { nodeIntegration: true }
-  })
-
-  aboutWindow.removeMenu()
-
-  aboutWindow.on('close', () => {
-    console.log('aboutWindow close')
-    aboutWindow = null
-  })
-
-  aboutWindow.on('closed', () => {
-    console.log('aboutWindow closed')
-    if (aboutWindow) {
-      aboutWindow.destroy()
-      aboutWindow = null
     }
   })
 }
@@ -225,15 +195,10 @@ function createMenu () {
   }
 
   const aboutFn = function () {
-    if (aboutWindow) {
-      aboutWindow.destroy()
-      aboutWindow = null
+    if (!aboutWindow) {
+      aboutWindow = aboutProcess.createWindow(true)
     }
-    if (aboutURL) {
-      createAboutUrl(true)
-      aboutWindow.loadURL(aboutURL)
-      aboutWindow.show()
-    } else aboutWindow.loadURL(aboutURL)
+    aboutWindow.show()
   }
   menuProcess.createMenu(logoutFn, prefFn, aboutFn, updateFn)
 }
