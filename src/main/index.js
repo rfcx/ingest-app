@@ -13,7 +13,6 @@ import authService from './services/auth-service'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
-const os = require('os')
 const setupEvents = require('./../../setupEvents')
 const log = require('electron-log')
 console.log = log.log
@@ -43,10 +42,6 @@ const winURL = process.env.NODE_ENV === 'development'
 const backgroundAPIURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/api-service`
   : `file://${__dirname}/index.html#/api-service`
-
-const updateURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080/#/update`
-  : `file://${__dirname}/index.html#/update`
 
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
@@ -106,31 +101,13 @@ function createWindow (openedAsHidden = false) {
   })
 }
 
-function createUpdatePopupWindow (isShow) {
-  updatePopupWindow = new BrowserWindow({
-    width: 500,
-    height: 300,
-    show: isShow,
-    frame: true,
-    transparent: false,
-    backgroundColor: '#131525',
-    titleBarStyle: 'default',
-    webPreferences: { nodeIntegration: true }
-  })
-
-  updatePopupWindow.removeMenu()
-  updatePopupWindow.loadURL(updateURL)
-
-  updatePopupWindow.on('close', () => {
-    console.log('updatePopupWindow close')
-    updatePopupWindow = null
-  })
-
-  updatePopupWindow.on('closed', () => {
-    console.log('updatePopupWindow closed')
-    if (updatePopupWindow) {
-      updatePopupWindow.destroy()
-      updatePopupWindow = null
+function createAutoUpdaterSub () {
+  updateProcess.createAutoUpdaterSub()
+  // TODO: move code below to update process
+  autoUpdater.on('update-not-available', () => {
+    console.log('update-not-available')
+    if (mainWindow) {
+      mainWindow.webContents.send('showUpToDatePopup', true)
     }
   })
 }
@@ -365,35 +342,7 @@ function resetFirstLogInCondition () {
   global.firstLogIn = false
 }
 
-function createAutoUpdaterSub () {
-  let platform = os.platform() + '_' + os.arch()
-  let version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
-  // let updaterFeedURL = 'https://localhost:3030/update/' + platform + '/' + version
-  let updaterFeedURL = ((process.env.NODE_ENV === 'development') ? 'https://localhost:3030/update/' : (settings.get('settings.production_env') ? 'https://ingest.rfcx.org/update/' : 'https://staging-ingest.rfcx.org/update/')) + platform + '/' + version
-  autoUpdater.setFeedURL(updaterFeedURL)
-  autoUpdater.on('error', message => {
-    console.error('There was a problem updating the application', message)
-  })
-  autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
-  autoUpdater.on('update-available', () => {
-    console.log('update-available')
-  })
-  autoUpdater.on('update-not-available', () => {
-    console.log('update-not-available')
-    if (mainWindow) {
-      mainWindow.webContents.send('showUpToDatePopup', true)
-    }
-  })
-  autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-    console.log('update-downloaded', releaseName, releaseNotes)
-    if (releaseName) global.newVersion = releaseName
-    if (releaseNotes) global.notes = releaseNotes
-    if (!updatePopupWindow) {
-      createUpdatePopupWindow(true)
-    }
-  })
-}
-
+// TODO: move this to update process
 function updateApp () {
   autoUpdater.quitAndInstall()
   setTimeout(() => {
@@ -508,14 +457,7 @@ ipcMain.on('deleteFiles', async function (event, ids) {
   event.sender.send('filesDeleted')
 })
 
-ipcMain.on('closeUpdatePopupWindow', () => {
-  console.log('closeUpdatePopupWindow')
-  if (updatePopupWindow) {
-    updatePopupWindow.destroy()
-    updatePopupWindow = null
-  }
-})
-
+// TODO: move this to update process
 ipcMain.on('updateVersion', () => {
   updateApp()
 })
