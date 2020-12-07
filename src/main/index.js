@@ -4,6 +4,8 @@ import { app, BrowserWindow, ipcMain, autoUpdater, powerMonitor } from 'electron
 import commonProcess from '../main/processes/Common/index'
 import menuProcess from '../main/processes/Menu/index'
 import aboutProcess from '../main/processes/About/index'
+import preferenceProcess from '../main/processes/Preference/index'
+import updateProcess from '../main/processes/Update/index'
 import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
@@ -28,7 +30,7 @@ if (process.env.NODE_ENV !== 'development') {
 }
 let mainWindow, backgroundAPIWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
 let idToken
-let refreshIntervalTimeout, expires, updateIntervalTimeout
+let refreshIntervalTimeout, expires
 let willQuitApp = false
 let isLogOut = false
 let dayInMs = 60 * 60 * 24 * 1000
@@ -45,10 +47,6 @@ const backgroundAPIURL = process.env.NODE_ENV === 'development'
 const updateURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080/#/update`
   : `file://${__dirname}/index.html#/update`
-
-const preferencesURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080/#/preferences`
-  : `file://${__dirname}/index.html#/preferences`
 
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
@@ -89,11 +87,10 @@ function createWindow (openedAsHidden = false) {
     webPreferences: { nodeIntegration: true }
   })
   backgroundAPIWindow.loadURL(backgroundAPIURL)
+
   aboutWindow = aboutProcess.createWindow(false)
-  aboutWindow.on('closed', () => {
-    aboutWindow = null
-  })
-  createPreferencesPopupWindow(false)
+
+  preferencesPopupWindow = preferenceProcess.createWindow(false)
 
   powerMonitor.on('suspend', () => {
     console.log('------------The system is going to suspend----------')
@@ -138,35 +135,6 @@ function createUpdatePopupWindow (isShow) {
   })
 }
 
-function createPreferencesPopupWindow (isShow) {
-  preferencesPopupWindow = new BrowserWindow({
-    width: 500,
-    height: 300,
-    show: isShow,
-    frame: true,
-    transparent: false,
-    title: 'SETTINGS',
-    backgroundColor: '#131525',
-    titleBarStyle: 'default',
-    webPreferences: { nodeIntegration: true }
-  })
-
-  preferencesPopupWindow.removeMenu()
-
-  preferencesPopupWindow.on('close', () => {
-    console.log('preferencesPopupWindow close')
-    preferencesPopupWindow = null
-  })
-
-  preferencesPopupWindow.on('closed', () => {
-    console.log('preferencesPopupWindow closed')
-    if (preferencesPopupWindow) {
-      preferencesPopupWindow.destroy()
-      preferencesPopupWindow = null
-    }
-  })
-}
-
 function createMenu () {
   const logoutFn = async () => {
     console.log('logOut')
@@ -174,15 +142,10 @@ function createMenu () {
   }
 
   const prefFn = function () {
-    if (preferencesPopupWindow) {
-      preferencesPopupWindow.destroy()
-      preferencesPopupWindow = null
+    if (!preferencesPopupWindow || preferencesPopupWindow.isDestroyed()) {
+      preferencesPopupWindow = preferenceProcess.createWindow(true)
     }
-    if (preferencesURL) {
-      createPreferencesPopupWindow(true)
-      preferencesPopupWindow.loadURL(preferencesURL)
-      preferencesPopupWindow.show()
-    } else preferencesPopupWindow.loadURL(preferencesURL)
+    preferencesPopupWindow.show()
   }
 
   const updateFn = function () {
@@ -190,11 +153,11 @@ function createMenu () {
       updatePopupWindow.destroy()
       updatePopupWindow = null
     }
-    checkForUpdates()
+    updateProcess.checkForUpdates()
   }
 
   const aboutFn = function () {
-    if (!aboutWindow) {
+    if (!aboutWindow || aboutWindow.isDestroyed()) {
       aboutWindow = aboutProcess.createWindow(true)
     }
     aboutWindow.show()
@@ -289,7 +252,7 @@ async function createAppWindow (openedAsHidden) {
     resetFirstLogInCondition()
   } catch (err) {
     // An Entry for new users
-    console.log('createAuthWindow')
+    console.log('An Entry for new users: createAuthWindow', err)
     createAuthWindow()
   }
 }
@@ -380,12 +343,6 @@ async function createRefreshInterval () {
   }, dayInMs)
 }
 
-function resetUpdateTimers () {
-  if (updateIntervalTimeout) {
-    clearInterval(updateIntervalTimeout)
-  }
-}
-
 function resetTimers () {
   if (refreshIntervalTimeout) {
     clearInterval(refreshIntervalTimeout)
@@ -463,21 +420,10 @@ function updateApp () {
   }, 2000)
 }
 
-function createUpdateInterval () {
-  updateIntervalTimeout = setInterval(() => {
-    checkForUpdates()
-  }, dayInMs)
-}
-
 function checkIngestServicelUrl () {
   if (process.env.npm_config_url) {
     global.ingestServicelUrl = process.env.npm_config_url
   }
-}
-
-function checkForUpdates () {
-  console.log('checkForUpdates')
-  autoUpdater.checkForUpdates()
 }
 app.commandLine.appendArgument('--enable-features=Metal')
 app.on('ready', () => {
@@ -493,9 +439,11 @@ app.on('ready', () => {
   global.version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
   global.platform = (process.platform === 'win32' || process.platform === 'win64') ? 'win' : 'mac'
   createAutoUpdaterSub()
+  console.log('get setting')
+  console.log('xxxx =>', settings.get('settings.auto_update_app'))
   if (settings.get('settings.auto_update_app')) {
-    checkForUpdates()
-    createUpdateInterval()
+    updateProcess.checkForUpdates()
+    updateProcess.createUpdateInterval()
   }
 })
 
@@ -574,13 +522,6 @@ ipcMain.on('updateVersion', () => {
 
 ipcMain.on('resetFirstLogIn', () => {
   resetFirstLogInCondition()
-})
-
-ipcMain.on('changeAutoUpdateApp', () => {
-  if (settings.get('settings.auto_update_app')) {
-    checkForUpdates()
-    createUpdateInterval()
-  } else { resetUpdateTimers() }
 })
 
 export default {
