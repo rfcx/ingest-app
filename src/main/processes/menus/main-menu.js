@@ -1,6 +1,7 @@
 import { app, Menu } from 'electron'
 import settings from 'electron-settings'
-import commonProcess from '../Common/index'
+import sharedProcess from '../shared/index'
+import sharedMenu from './shared'
 
 function createMenu (logoutFunction, preferenceFunction, aboutFunction, updateFunction) {
   /* MENU */
@@ -11,7 +12,7 @@ function createMenu (logoutFunction, preferenceFunction, aboutFunction, updateFu
         { label: 'Clear data',
           click: async () => {
             console.log('clear data')
-            commonProcess.clearAllData()
+            sharedProcess.clearAllData()
           }
         },
         { label: 'Auto start',
@@ -21,7 +22,7 @@ function createMenu (logoutFunction, preferenceFunction, aboutFunction, updateFu
             const existingSettings = settings.get('settings')
             existingSettings['auto_start'] = item.checked
             settings.set('settings', existingSettings)
-            commonProcess.setLoginItem(item.checked)
+            sharedProcess.setLoginItem(item.checked)
           }
         },
         { label: 'Log out',
@@ -46,18 +47,7 @@ function createMenu (logoutFunction, preferenceFunction, aboutFunction, updateFu
         }
       ]
     },
-    {
-      label: 'Edit',
-      submenu: [
-        { label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
-        { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:' },
-        { type: 'separator' },
-        { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
-        { label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:' },
-        { label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:' },
-        { label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' }
-      ]
-    }
+    sharedMenu.getEditMenuTemplate()
   ]
   let menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
