@@ -13,7 +13,6 @@ import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
-const { shell } = require('electron')
 const setupEvents = require('./../../setupEvents')
 const log = require('electron-log')
 console.log = log.log
@@ -421,11 +420,6 @@ async function listenerOfRefreshToken (event, args) {
 }
 
 ipcMain.on('getRefreshToken', listenerOfRefreshToken)
-
-ipcMain.on('focusFolder', (event, data) => {
-  console.log('focusFolder')
-  shell.openItem(data)
-})
 
 ipcMain.on('setUploadingProcess', (event, data) => {
   console.log('setUploadingProcess', data)
