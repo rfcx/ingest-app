@@ -1,7 +1,8 @@
 'use strict'
 
-import { app, BrowserWindow, ipcMain, autoUpdater, powerMonitor } from 'electron'
+import { app, BrowserWindow, ipcMain, autoUpdater } from 'electron'
 import commonProcess from './processes/shared'
+import backgroundProcess from './processes/views/Background/index'
 import menuProcess from './processes/menus/main-menu'
 import aboutProcess from './processes/views/About/index'
 import preferenceProcess from './processes/views/Preference/index'
@@ -39,10 +40,6 @@ const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
   : `file://${__dirname}/index.html`
 
-const backgroundAPIURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080/#/api-service`
-  : `file://${__dirname}/index.html#/api-service`
-
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
   if (!idToken) getIdToken()
@@ -77,28 +74,11 @@ function createWindow (openedAsHidden = false) {
 
   mainWindow.loadURL(winURL)
 
-  backgroundAPIWindow = new BrowserWindow({
-    show: false,
-    webPreferences: { nodeIntegration: true }
-  })
-  backgroundAPIWindow.loadURL(backgroundAPIURL)
+  backgroundAPIWindow = backgroundProcess.createWindow()
 
   aboutWindow = aboutProcess.createWindow(false)
 
   preferencesPopupWindow = preferenceProcess.createWindow(false)
-
-  powerMonitor.on('suspend', () => {
-    console.log('------------The system is going to suspend----------')
-    // Pause uploading process if the app hasn't an internet connection
-    backgroundAPIWindow.webContents.send('suspendApp', false)
-  })
-  powerMonitor.on('resume', () => {
-    console.log('------------The system is going to resume-----------')
-    // Continue uploading process if the app has an internet connection
-    if (settings.get('settings.onLine')) {
-      backgroundAPIWindow.webContents.send('suspendApp', true)
-    }
-  })
 }
 
 function createAutoUpdaterSub () {
