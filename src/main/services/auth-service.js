@@ -26,7 +26,7 @@ async function getIdToken () {
 
 function getAuthenticationURL () {
   return (
-    `https://${auth0Domain}/authorize?audience=${apiIdentifier}&scope=openid email profile offline_access&response_type=code&` +
+    `https://${auth0Domain}/authorize?theme=dark&audience=${apiIdentifier}&scope=openid email profile offline_access&response_type=code&` +
     `client_id=${clientId}&redirect_uri=${redirectUri}`
   )
 }
