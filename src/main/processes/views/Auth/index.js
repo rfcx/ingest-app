@@ -1,5 +1,6 @@
 // TODO: implement new auth process here
-import { BrowserWindow } from 'electron'
+import { app, ipcMain, BrowserWindow } from 'electron'
+import { menuProcess } from '../../../processes'
 
 export default {
   createWindow () {
@@ -12,6 +13,11 @@ export default {
       webPreferences: { nodeIntegration: true }
     })
     authWindow.loadURL(authURL)
+    menuProcess.authMenu.createMenu(async () => {
+      authWindow.destroy()
+      app.exit()
+      app.quit()
+    })
 
     authWindow.on('closed', () => {
       if (authWindow) {
@@ -21,5 +27,10 @@ export default {
     })
 
     return authWindow
+  },
+  addGetIdTokenListener (handler) {
+    ipcMain.on('getIdToken', (event, args) => {
+      handler(event, args)
+    })
   }
 }

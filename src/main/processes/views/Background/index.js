@@ -1,4 +1,4 @@
-import { BrowserWindow, powerMonitor } from 'electron'
+import { BrowserWindow, ipcMain, powerMonitor } from 'electron'
 import settings from 'electron-settings'
 
 export default {
@@ -22,6 +22,10 @@ export default {
       if (settings.get('settings.onLine')) {
         backgroundAPIWindow.webContents.send('suspendApp', true)
       }
+    })
+
+    ipcMain.on('setUploadingProcess', (event, data) => {
+      console.log('setUploadingProcess', data)
     })
 
     return backgroundAPIWindow

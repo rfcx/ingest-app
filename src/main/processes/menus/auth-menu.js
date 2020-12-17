@@ -3,7 +3,7 @@ import settings from 'electron-settings'
 import sharedProcess from '../shared/index'
 import sharedMenu from './shared'
 
-function createMenu (backToLogInFunction, quitFunction) {
+function createMenu (quitFunction) {
   /* MENU */
   const template = [
     {
@@ -18,10 +18,6 @@ function createMenu (backToLogInFunction, quitFunction) {
             settings.set('settings', existingSettings)
             sharedProcess.setLoginItem(item.checked)
           }
-        },
-        { label: 'Back to Login page',
-          type: 'checkbox',
-          click: backToLogInFunction
         },
         { label: 'Enable staging mode',
           type: 'checkbox',

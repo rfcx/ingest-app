@@ -1,9 +1,7 @@
 'use strict'
-
-import { app, BrowserWindow, ipcMain, autoUpdater } from 'electron'
-import { commonProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess, authProcess } from './processes'
+import { app, ipcMain, autoUpdater } from 'electron'
+import { commonProcess, mainProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess, authProcess } from './processes'
 import { deeplinkService, authService } from './services'
-import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
@@ -29,9 +27,6 @@ let isLogOut = false
 let dayInMs = 60 * 60 * 24 * 1000
 // let weekInMs = dayInMs * 7
 const gotTheLock = app.requestSingleInstanceLock()
-const winURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080`
-  : `file://${__dirname}/index.html`
 
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
@@ -40,37 +35,35 @@ function createWindow (openedAsHidden = false) {
    * Initial window options
    */
   createMenu()
-  mainWindow = new BrowserWindow({
-    show: !openedAsHidden,
-    useContentSize: true,
-    width: 1000,
-    height: 563,
-    minWidth: 400,
-    backgroundColor: '#131525',
-    webPreferences: { nodeIntegration: true }
-  })
-
-  mainWindow.on('closed', () => {
-    resetTimers()
-    mainWindow = null
-  })
-
-  mainWindow.on('close', (e) => {
-    if (mainWindow.isFullScreen()) {
-      mainWindow.once('leave-full-screen', (e1) => {
-        mainWindow.hide()
-      })
-      mainWindow.setFullScreen(false)
-    }
-    closeMainWindow(e)
-  })
-
-  mainWindow.loadURL(winURL)
+  mainWindow = mainProcess.createWindow(!openedAsHidden,
+    (e) => {
+      if (mainWindow.isFullScreen()) {
+        mainWindow.once('leave-full-screen', (e1) => {
+          mainWindow.hide()
+        })
+        mainWindow.setFullScreen(false)
+      }
+      closeMainWindow(e)
+    }, (e) => {
+      resetTimers()
+      mainWindow = null
+    })
 
   backgroundAPIWindow = backgroundProcess.createWindow()
   aboutWindow = aboutProcess.createWindow(false)
 
   preferencesPopupWindow = preferenceProcess.createWindow(false)
+  createListener()
+}
+
+function createListener () {
+  authProcess.addGetIdTokenListener((event, args) => {
+    if (!idToken) { // if there is no idToken, then force user to login again
+      hideMainWindowAndForceLogin()
+      return
+    }
+    event.sender.send('sendIdToken', idToken)
+  })
 }
 
 function createAutoUpdaterSub () {
@@ -111,7 +104,7 @@ function createMenu () {
     }
     aboutWindow.show()
   }
-  menuProcess.createMenu(logoutFn, prefFn, aboutFn, updateFn)
+  menuProcess.mainMenu.createMenu(logoutFn, prefFn, aboutFn, updateFn)
 }
 
 function setupDeeplink () {
@@ -399,41 +392,9 @@ app.on('activate', () => {
   } else app.focus()
 })
 
-ipcMain.on('openMainWindow', (event, data) => {
-  showMainWindow()
-})
-
 ipcMain.on('logOut', (event, data) => {
   console.log('logOut')
   logOut()
-})
-
-let listenerOfToken = (event, args) => {
-  if (!idToken) { // if there is no idToken, then force user to login again
-    hideMainWindowAndForceLogin()
-    return
-  }
-  event.sender.send('sendIdToken', idToken)
-}
-
-ipcMain.on('getIdToken', listenerOfToken)
-
-async function listenerOfRefreshToken (event, args) {
-  await refreshTokens()
-  await checkToken()
-  event.sender.send('sendRefreshToken')
-}
-
-ipcMain.on('getRefreshToken', listenerOfRefreshToken)
-
-ipcMain.on('setUploadingProcess', (event, data) => {
-  console.log('setUploadingProcess', data)
-})
-
-ipcMain.on('deleteFiles', async function (event, ids) {
-  console.log('deleteFiles', ids)
-  await Promise.all(ids.map(id => File.delete(id)))
-  event.sender.send('filesDeleted')
 })
 
 // TODO: move this to update process
