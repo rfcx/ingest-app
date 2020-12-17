@@ -1,12 +1,10 @@
 'use strict'
 
 import { app, BrowserWindow, ipcMain, autoUpdater } from 'electron'
-import authProcess from './processes/views/Auth/index'
-import deeplinkService from './services/deeplink-service'
-import { commonProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess } from './processes'
+import { commonProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess, authProcess } from './processes'
+import { deeplinkService, authService } from './services'
 import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
-import authService from './services/auth-service'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const setupEvents = require('./../../setupEvents')
