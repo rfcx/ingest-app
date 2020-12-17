@@ -1,12 +1,7 @@
 'use strict'
 
 import { app, BrowserWindow, ipcMain, autoUpdater } from 'electron'
-import commonProcess from './processes/shared'
-import backgroundProcess from './processes/views/Background/index'
-import menuProcess from './processes/menus/main-menu'
-import aboutProcess from './processes/views/About/index'
-import preferenceProcess from './processes/views/Preference/index'
-import updateProcess from './processes/views/Update/index'
+import { commonProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess } from './processes'
 import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
