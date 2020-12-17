@@ -1,8 +1,7 @@
 'use strict'
 
-import { app, BrowserWindow, ipcMain, autoUpdater } from 'electron'
-import { commonProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess } from './processes'
-import File from '../renderer/store/models/File'
+import { app, ipcMain, autoUpdater } from 'electron'
+import { commonProcess, mainProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess } from './processes'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
@@ -30,9 +29,6 @@ let isLogOut = false
 let dayInMs = 60 * 60 * 24 * 1000
 // let weekInMs = dayInMs * 7
 const gotTheLock = app.requestSingleInstanceLock()
-const winURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080`
-  : `file://${__dirname}/index.html`
 
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
@@ -41,22 +37,7 @@ function createWindow (openedAsHidden = false) {
    * Initial window options
    */
   createMenu()
-  mainWindow = new BrowserWindow({
-    show: !openedAsHidden,
-    useContentSize: true,
-    width: 1000,
-    height: 563,
-    minWidth: 400,
-    backgroundColor: '#131525',
-    webPreferences: { nodeIntegration: true }
-  })
-
-  mainWindow.on('closed', () => {
-    resetTimers()
-    mainWindow = null
-  })
-
-  mainWindow.on('close', (e) => {
+  mainWindow = mainProcess.createWindow(!openedAsHidden, (e) => {
     if (mainWindow.isFullScreen()) {
       mainWindow.once('leave-full-screen', (e1) => {
         mainWindow.hide()
@@ -65,8 +46,6 @@ function createWindow (openedAsHidden = false) {
     }
     closeMainWindow(e)
   })
-
-  mainWindow.loadURL(winURL)
 
   backgroundAPIWindow = backgroundProcess.createWindow()
 
@@ -389,10 +368,6 @@ app.on('activate', () => {
   } else app.focus()
 })
 
-ipcMain.on('openMainWindow', (event, data) => {
-  showMainWindow()
-})
-
 ipcMain.on('logOut', (event, data) => {
   console.log('logOut')
   logOut()
@@ -418,12 +393,6 @@ ipcMain.on('getRefreshToken', listenerOfRefreshToken)
 
 ipcMain.on('setUploadingProcess', (event, data) => {
   console.log('setUploadingProcess', data)
-})
-
-ipcMain.on('deleteFiles', async function (event, ids) {
-  console.log('deleteFiles', ids)
-  await Promise.all(ids.map(id => File.delete(id)))
-  event.sender.send('filesDeleted')
 })
 
 // TODO: move this to update process
