@@ -82,6 +82,12 @@
     },
     "linux": {
       "icon": "build/icons"
+    },
+    "protocols": {
+      "name": "rfcx-uploader-protocol",
+      "schemes": [
+        "rfcx-uploader"
+      ]
     }
   },
   "dependencies": {

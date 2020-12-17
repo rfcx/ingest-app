@@ -5,8 +5,9 @@ import store from '../renderer/store'
 import Stream from '../renderer/store/models/Stream'
 import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
-import createAuthWindow from './services/auth-process'
+import authProcess from './services/auth-process'
 import authService from './services/auth-service'
+import Deeplink from '../../utils/Deeplink'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const { shell } = require('electron')
@@ -109,7 +110,23 @@ function createWindow (openedAsHidden = false) {
       backgroundAPIWindow.webContents.send('suspendApp', true)
     }
   })
+
+  app.setAsDefaultProtocolClient('rfcx-uploader')
 }
+
+app.on('open-url', function (event, link) {
+  event.preventDefault()
+  let deeplink = new Deeplink(link)
+  console.log('open-url', link, deeplink)
+  if (deeplink.isAuth) { // TODO: check if already logged in
+    // TODO: handle auth
+    authService.loadTokens(deeplink.param).then(_ => {
+      createWindow(false)
+      global.firstLogIn = true
+      authProcess.destroyAuthWin()
+    })
+  }
+})
 
 function createAboutUrl (isShow) {
   aboutWindow = new BrowserWindow({
@@ -323,7 +340,7 @@ function closeMainWindow (e) {
   } else if (isLogOut) {
     console.log('mainWindow logout')
     resetTimers()
-    createAuthWindow()
+    authProcess.createAuthWindow()
     if (mainWindow) {
       mainWindow.destroy()
       mainWindow = null
@@ -387,7 +404,7 @@ async function createAppWindow (openedAsHidden) {
   } catch (err) {
     // An Entry for new users
     console.log('createAuthWindow')
-    createAuthWindow()
+    authProcess.createAuthWindow()
   }
 }
 

@@ -54,6 +54,11 @@ export default new Router({
       props: (route) => ({ query: route.query })
     },
     {
+      path: '/auth',
+      name: 'auth',
+      component: require('@/components/AuthPage').default
+    },
+    {
       path: '*',
       redirect: '/'
     }

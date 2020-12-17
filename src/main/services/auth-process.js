@@ -3,6 +3,10 @@ import authService from './auth-service'
 import index from '../index'
 import settings from 'electron-settings'
 
+const authURL = process.env.NODE_ENV === 'development'
+  ? `http://localhost:9080/#/auth`
+  : `file://${__dirname}/index.html#/auth`
+
 const filter = {
   urls: ['file:///callback*']
 }
@@ -14,20 +18,20 @@ function createAuthWindow () {
   let isDarkMode = true
   createMenu()
   win = new BrowserWindow({
-    width: 615,
-    height: 650,
-    webPreferences: {
-      nodeIntegration: false
-    }
+    width: 1000,
+    height: 563,
+    minWidth: 770,
+    webPreferences: { nodeIntegration: true }
   })
   const {
     session: { webRequest }
   } = win.webContents
-  win.loadURL(authService.getAuthenticationURL(), { userAgent: 'Chrome' })
+  win.loadURL(authURL)
+  // win.loadURL(authService.getAuthenticationURL(), { userAgent: 'Chrome' })
   currentUrl = authService.getAuthenticationURL()
   webRequest.onBeforeRequest(filter, async ({ url }) => {
     console.log('authWindow onBeforeRequest')
-    await authService.loadTokens(url)
+    await authService.loadTokensFromCallbackURL(url)
     index.createWindow(false)
     global.firstLogIn = true
     await destroyAuthWin()
@@ -202,4 +206,4 @@ function setLoginItem (openAtLogin) {
   })
 }
 
-export default createAuthWindow
+export default { createAuthWindow, destroyAuthWin }

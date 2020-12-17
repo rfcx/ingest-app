@@ -60,16 +60,19 @@ async function refreshTokens () {
   })
 }
 
-async function loadTokens (callbackURL) {
-  console.log('loadTokens')
-  return new Promise((resolve, reject) => {
-    const urlParts = url.parse(callbackURL, true)
-    const query = urlParts.query
+async function loadTokensFromCallbackURL (callbackURL) {
+  console.log('loadTokens with callback:', callbackURL)
+  const urlParts = url.parse(callbackURL, true)
+  const query = urlParts.query
+  return loadTokens(query.code)
+}
 
+async function loadTokens (code) {
+  return new Promise((resolve, reject) => {
     const exchangeOptions = {
       grant_type: 'authorization_code',
       client_id: clientId,
-      code: query.code,
+      code: code,
       redirect_uri: redirectUri
     }
 
@@ -136,6 +139,7 @@ export default {
   getAccessToken,
   getAuthenticationURL,
   getIdToken,
+  loadTokensFromCallbackURL,
   loadTokens,
   logout,
   refreshTokens
