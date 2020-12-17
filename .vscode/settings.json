@@ -10,4 +10,5 @@
   },
   "vetur.format.defaultFormatter.js": "prettier-eslint",
   "vetur.format.enable": false,
+  "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
 }
