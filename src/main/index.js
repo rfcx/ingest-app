@@ -7,11 +7,11 @@ import menuProcess from './processes/menus/main-menu'
 import aboutProcess from './processes/views/About/index'
 import preferenceProcess from './processes/views/Preference/index'
 import updateProcess from './processes/views/Update/index'
+import authProcess from './processes/views/Auth/index'
+import deeplinkService from './services/deeplink-service'
 import File from '../renderer/store/models/File'
 import settings from 'electron-settings'
-import authProcess from './services/auth-process'
 import authService from './services/auth-service'
-import Deeplink from '../../utils/Deeplink'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const setupEvents = require('./../../setupEvents')
@@ -28,7 +28,7 @@ log.transports.file.getFile()
 if (process.env.NODE_ENV !== 'development') {
   global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
-let mainWindow, backgroundAPIWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
+let mainWindow, backgroundAPIWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow, authWindow
 let idToken
 let refreshIntervalTimeout, expires
 let willQuitApp = false
@@ -78,23 +78,7 @@ function createWindow (openedAsHidden = false) {
   aboutWindow = aboutProcess.createWindow(false)
 
   preferencesPopupWindow = preferenceProcess.createWindow(false)
-
-  app.setAsDefaultProtocolClient('rfcx-uploader')
 }
-
-app.on('open-url', function (event, link) {
-  event.preventDefault()
-  let deeplink = new Deeplink(link)
-  console.log('open-url', link, deeplink)
-  if (deeplink.isAuth) { // TODO: check if already logged in
-    // TODO: handle auth
-    authService.loadTokens(deeplink.param).then(_ => {
-      createWindow(false)
-      global.firstLogIn = true
-      authProcess.destroyAuthWin()
-    })
-  }
-})
 
 function createAutoUpdaterSub () {
   updateProcess.createAutoUpdaterSub()
@@ -137,6 +121,18 @@ function createMenu () {
   menuProcess.createMenu(logoutFn, prefFn, aboutFn, updateFn)
 }
 
+function setupDeeplink () {
+  deeplinkService.intialize()
+
+  const authHandler = () => {
+    createWindow(false)
+    global.firstLogIn = true
+    authWindow.destroy()
+    authWindow = null
+  }
+  deeplinkService.addOpenURLListener(authHandler)
+}
+
 function showMainWindow () {
   console.log('showMainWindow')
   if (mainWindow === null) {
@@ -172,7 +168,7 @@ function closeMainWindow (e) {
   } else if (isLogOut) {
     console.log('mainWindow logout')
     resetTimers()
-    authProcess.createAuthWindow()
+    authWindow = authProcess.createWindow()
     if (mainWindow) {
       mainWindow.destroy()
       mainWindow = null
@@ -223,8 +219,8 @@ async function createAppWindow (openedAsHidden) {
     createWindow(openedAsHidden)
     resetFirstLogInCondition()
   } catch (err) {
-    console.log('An Entry for new users: createAuthWindow', err)
-    authProcess.createAuthWindow()
+    console.log('An Entry for new users: create auth window', err)
+    authWindow = authProcess.createWindow()
   }
 }
 
@@ -376,6 +372,7 @@ app.on('ready', () => {
   if (process.platform === 'darwin') openedAsHidden = app.getLoginItemSettings().wasOpenedAsHidden
   else openedAsHidden = (process.argv || []).indexOf('--hidden') !== -1
   console.log('open as hidden', openedAsHidden)
+  setupDeeplink()
   checkIngestServicelUrl()
   initialSettings()
   createAppWindow(openedAsHidden)
