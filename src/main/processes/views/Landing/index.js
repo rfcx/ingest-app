@@ -1,7 +1,7 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import File from '../../../../renderer/store/models/File'
 export default {
-  createWindow (isShow, onCloseHandler) {
+  createWindow (isShow, onCloseHandler, onClosedHandler) {
     console.log('preferences process: createWindow')
     const mainWindowURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080` : `file://${__dirname}/index.html`
     const mainWindow = new BrowserWindow({
@@ -17,14 +17,11 @@ export default {
     mainWindow.loadURL(mainWindowURL)
 
     mainWindow.on('close', (e) => {
-      onCloseHandler()
+      onCloseHandler(e)
     })
 
-    mainWindow.on('closed', () => {
-      // TODO: reset timer
-      if (mainWindow) {
-        mainWindow.destroy()
-      }
+    mainWindow.on('closed', (e) => {
+      onClosedHandler(e)
     })
 
     ipcMain.on('deleteFiles', async function (event, ids) {

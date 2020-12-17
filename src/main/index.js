@@ -37,15 +37,19 @@ function createWindow (openedAsHidden = false) {
    * Initial window options
    */
   createMenu()
-  mainWindow = mainProcess.createWindow(!openedAsHidden, (e) => {
-    if (mainWindow.isFullScreen()) {
-      mainWindow.once('leave-full-screen', (e1) => {
-        mainWindow.hide()
-      })
-      mainWindow.setFullScreen(false)
-    }
-    closeMainWindow(e)
-  })
+  mainWindow = mainProcess.createWindow(!openedAsHidden,
+    (e) => {
+      if (mainWindow.isFullScreen()) {
+        mainWindow.once('leave-full-screen', (e1) => {
+          mainWindow.hide()
+        })
+        mainWindow.setFullScreen(false)
+      }
+      closeMainWindow(e)
+    }, (e) => {
+      resetTimers()
+      mainWindow = null
+    })
 
   backgroundAPIWindow = backgroundProcess.createWindow()
 
