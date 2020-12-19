@@ -8,18 +8,6 @@ const { apiIdentifier, auth0Domain, clientId, redirectUri } = require('../../../
 
 const keytarAccount = os.userInfo().username
 
-let accessToken = null
-let profile = null
-let refreshToken = null
-
-async function getAccessToken () {
-  return new Promise(async (resolve, reject) => {
-    const access = await keytar.getPassword('ingest-app-access-token', keytarAccount)
-    if (!access) return reject(new Error('no access token available'))
-    resolve(access)
-  })
-}
-
 async function getIdToken () {
   return keytar.getPassword('ingest-app-id-token', keytarAccount)
 }
@@ -92,20 +80,22 @@ async function loadTokens (code) {
       }
       const responseBody = JSON.parse(body)
       await parseTokens(responseBody)
-      refreshToken = responseBody.refresh_token
-      await keytar.setPassword('ingest-app-refresh-token', keytarAccount, refreshToken)
+      await keytar.setPassword('ingest-app-refresh-token', keytarAccount, responseBody.refresh_token)
       resolve()
     })
   })
 }
 
 async function parseTokens (responseBody) {
+  await keytar.setPassword('ingest-app-access-token', keytarAccount, responseBody.access_token)
+  await keytar.setPassword('ingest-app-id-token', keytarAccount, responseBody.id_token)
+  saveUserInfoFromIdToken(responseBody.id_token)
+}
+
+function saveUserInfoFromIdToken (idToken) {
+  let profile = jwtDecode(idToken)
   let appMetadata = 'https://rfcx.org/app_metadata'
   let userMetadata = 'https://rfcx.org/user_metadata'
-  accessToken = responseBody.access_token
-  await keytar.setPassword('ingest-app-access-token', keytarAccount, accessToken)
-  profile = jwtDecode(responseBody.id_token)
-  await keytar.setPassword('ingest-app-id-token', keytarAccount, responseBody.id_token)
   if (profile && profile.given_name) {
     global.firstname = profile.given_name
   } else if (profile && profile[userMetadata] && profile[userMetadata].given_name) {
@@ -130,17 +120,14 @@ async function logout () {
   await keytar.deletePassword('ingest-app-refresh-token', keytarAccount)
   await keytar.deletePassword('ingest-app-access-token', keytarAccount)
   await keytar.deletePassword('ingest-app-id-token', keytarAccount)
-  accessToken = null
-  profile = null
-  refreshToken = null
 }
 
 export default {
-  getAccessToken,
   getAuthenticationURL,
   getIdToken,
   loadTokensFromCallbackURL,
   loadTokens,
   logout,
-  refreshTokens
+  refreshTokens,
+  saveUserInfoFromIdToken
 }

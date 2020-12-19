@@ -242,26 +242,7 @@ async function getUserInfo () {
       idToken = await authService.getIdToken()
       if (!idToken) return reject(new Error('no id token available'))
     }
-    let profile = jwtDecode(idToken)
-    let appMetadata = 'https://rfcx.org/app_metadata'
-    let userMetadata = 'https://rfcx.org/user_metadata'
-    if (profile && profile.given_name) {
-      global.firstname = profile.given_name
-    } else if (profile && profile[userMetadata] && profile[userMetadata].given_name) {
-      global.firstname = profile[userMetadata].given_name
-    }
-    if (profile && profile[appMetadata]) {
-      global.accessibleSites = profile[appMetadata].accessibleSites
-      global.defaultSite = profile[appMetadata].defaultSite
-    }
-    if (profile && profile.picture) {
-      global.picture = profile.picture
-    }
-    if (profile && profile.guid) {
-      global.userId = profile.guid
-    }
-    global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
-      profile[userMetadata].consentGiven.toString() === 'true'
+    authService.saveUserInfoFromIdToken(idToken)
     resolve()
   })
 }
