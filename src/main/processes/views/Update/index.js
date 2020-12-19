@@ -1,5 +1,4 @@
 import { app, remote, ipcMain, BrowserWindow, autoUpdater } from 'electron'
-import { commonProcess } from '../../../processes'
 import settings from 'electron-settings'
 const os = require('os')
 
