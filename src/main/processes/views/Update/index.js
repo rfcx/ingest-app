@@ -7,7 +7,7 @@ let dayInMs = 60 * 60 * 24 * 1000
 const updateURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080/#/update` : `file://${__dirname}/index.html#/update`
 
 export default {
-  createWindow (isShow) {
+  createWindow (isShow, updateAppHandler) {
     const updatePopupWindow = new BrowserWindow({
       width: 500,
       height: 300,
@@ -32,9 +32,14 @@ export default {
       updatePopupWindow.destroy()
     })
 
+    ipcMain.on('updateVersion', () => {
+      autoUpdater.quitAndInstall()
+      updateAppHandler()
+    })
+
     return updatePopupWindow
   },
-  createAutoUpdaterSub () {
+  createAutoUpdaterSub (updateNotAvaliableHandler, startUpdateAppHandler) {
     let platform = os.platform() + '_' + os.arch()
     let version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
     // let updaterFeedURL = 'https://localhost:3030/update/' + platform + '/' + version
@@ -44,8 +49,10 @@ export default {
       console.error('There was a problem updating the application', message)
     })
     autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
-    autoUpdater.on('update-available', () => {
-      console.log('update-available')
+    autoUpdater.on('update-available', () => { console.log('update-available') })
+    autoUpdater.on('update-not-available', () => {
+      console.log('update-not-available')
+      updateNotAvaliableHandler()
     })
     autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
       console.log('update-downloaded', releaseName, releaseNotes)
@@ -53,7 +60,7 @@ export default {
       if (releaseNotes) global.notes = releaseNotes
       const currentURL = remote.getCurrentWindow().webContents.getURL()
       if (currentURL && currentURL === this.updateURL) { return }
-      this.createWindow(true)
+      this.createWindow(true, startUpdateAppHandler)
     })
   },
   checkForUpdates () {
