@@ -197,8 +197,6 @@ function initialSettings () {
 
 async function createAppWindow (openedAsHidden) {
   try {
-    // An Entry for users who has already existing token
-    await authService.getIdToken()
     await checkToken()
     await getUserInfo()
     console.log('create main window')
