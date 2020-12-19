@@ -1,5 +1,7 @@
 import { BrowserWindow, ipcMain } from 'electron'
+import { commonProcess } from '../../../processes'
 import File from '../../../../renderer/store/models/File'
+
 export default {
   createWindow (isShow, onCloseHandler, onClosedHandler) {
     console.log('preferences process: createWindow')
@@ -28,6 +30,10 @@ export default {
       console.log('deleteFiles', ids)
       await Promise.all(ids.map(id => File.delete(id)))
       event.sender.send('filesDeleted')
+    })
+
+    ipcMain.on('resetFirstLogIn', () => {
+      commonProcess.resetFirstLogInCondition()
     })
 
     return mainWindow

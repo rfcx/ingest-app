@@ -1,5 +1,5 @@
 'use strict'
-import { app, ipcMain, autoUpdater } from 'electron'
+import { app, ipcMain } from 'electron'
 import { commonProcess, mainProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess, authProcess } from './processes'
 import { deeplinkService, authService } from './services'
 import settings from 'electron-settings'
@@ -67,13 +67,35 @@ function createListener () {
 }
 
 function createAutoUpdaterSub () {
-  updateProcess.createAutoUpdaterSub()
-  // TODO: move code below to update process
-  autoUpdater.on('update-not-available', () => {
-    console.log('update-not-available')
+  updateProcess.createAutoUpdaterSub(() => {
+    // update not avaliable
     if (mainWindow) {
       mainWindow.webContents.send('showUpToDatePopup', true)
     }
+  }, () => {
+    // start updating process
+    setTimeout(() => {
+      console.log('start updating')
+      mainWindow = null
+      if (backgroundAPIWindow) {
+        backgroundAPIWindow = null
+      }
+      if (preferencesPopupWindow) {
+        preferencesPopupWindow.destroy()
+        preferencesPopupWindow = null
+      }
+      if (updatePopupWindow) {
+        updatePopupWindow.destroy()
+        updatePopupWindow = null
+      }
+      if (aboutWindow) {
+        aboutWindow.destroy()
+        aboutWindow = null
+      }
+      resetTimers()
+      app.exit()
+      app.quit()
+    }, 2000)
   })
 }
 
@@ -293,33 +315,6 @@ if (!gotTheLock) {
   })
 }
 
-// TODO: move this to update process
-function updateApp () {
-  autoUpdater.quitAndInstall()
-  setTimeout(() => {
-    console.log('start updating')
-    mainWindow = null
-    if (backgroundAPIWindow) {
-      backgroundAPIWindow = null
-    }
-    if (preferencesPopupWindow) {
-      preferencesPopupWindow.destroy()
-      preferencesPopupWindow = null
-    }
-    if (updatePopupWindow) {
-      updatePopupWindow.destroy()
-      updatePopupWindow = null
-    }
-    if (aboutWindow) {
-      aboutWindow.destroy()
-      aboutWindow = null
-    }
-    resetTimers()
-    app.exit()
-    app.quit()
-  }, 2000)
-}
-
 function checkIngestServicelUrl () {
   if (process.env.npm_config_url) {
     global.ingestServicelUrl = process.env.npm_config_url
@@ -370,11 +365,6 @@ app.on('activate', () => {
 ipcMain.on('logOut', (event, data) => {
   console.log('logOut')
   logOut()
-})
-
-// TODO: move this to update process
-ipcMain.on('updateVersion', () => {
-  updateApp()
 })
 
 export default {
