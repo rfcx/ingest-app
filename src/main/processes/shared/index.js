@@ -13,6 +13,9 @@ export default {
       args: args
     })
   },
+  resetFirstLogInCondition () {
+    global.firstLogIn = false
+  },
   clearAllData () {
     File.deleteAll()
     Stream.deleteAll()

@@ -1,4 +1,5 @@
 import { app, remote, ipcMain, BrowserWindow, autoUpdater } from 'electron'
+import { commonProcess } from '../../../processes'
 import settings from 'electron-settings'
 const os = require('os')
 
@@ -30,6 +31,10 @@ export default {
     ipcMain.on('closeUpdatePopupWindow', () => {
       console.log('closeUpdatePopupWindow')
       updatePopupWindow.destroy()
+    })
+
+    ipcMain.on('resetFirstLogIn', () => {
+      commonProcess.resetFirstLogInCondition()
     })
 
     return updatePopupWindow

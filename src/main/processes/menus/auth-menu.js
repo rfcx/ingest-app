@@ -9,7 +9,8 @@ function createMenu (quitFunction) {
     {
       label: 'File',
       submenu: [
-        { label: 'Auto start',
+        {
+          label: 'Auto start',
           type: 'checkbox',
           checked: settings.get('settings.auto_start'),
           click: async (item) => {
@@ -19,13 +20,15 @@ function createMenu (quitFunction) {
             sharedProcess.setLoginItem(item.checked)
           }
         },
-        { label: 'Enable staging mode',
+        {
+          label: 'Enable staging mode',
           type: 'checkbox',
           click: async (item) => {
             settings.set('settings.production_env', !item.checked)
           }
         },
-        { label: 'Quit',
+        {
+          label: 'Quit',
           click: quitFunction
         }
       ]

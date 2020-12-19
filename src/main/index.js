@@ -203,7 +203,7 @@ async function createAppWindow (openedAsHidden) {
     await getUserInfo()
     console.log('create main window')
     createWindow(openedAsHidden)
-    resetFirstLogInCondition()
+    commonProcess.resetFirstLogInCondition()
   } catch (err) {
     console.log('An Entry for new users: create auth window', err)
     authWindow = authProcess.createWindow()
@@ -260,7 +260,7 @@ async function logOut () {
   settings.set('settings.production_env', true)
   commonProcess.clearAllData()
   hideMainWindowAndForceLogin()
-  resetFirstLogInCondition()
+  commonProcess.resetFirstLogInCondition()
 }
 
 function hideMainWindowAndForceLogin () {
@@ -293,10 +293,6 @@ if (!gotTheLock) {
       mainWindow.focus()
     }
   })
-}
-
-function resetFirstLogInCondition () {
-  global.firstLogIn = false
 }
 
 // TODO: move this to update process
@@ -381,10 +377,6 @@ ipcMain.on('logOut', (event, data) => {
 // TODO: move this to update process
 ipcMain.on('updateVersion', () => {
   updateApp()
-})
-
-ipcMain.on('resetFirstLogIn', () => {
-  resetFirstLogInCondition()
 })
 
 export default {
