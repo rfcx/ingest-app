@@ -1,10 +1,11 @@
 'use strict'
 
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, BrowserWindow } from 'electron'
 import { commonProcess, mainProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess } from './processes'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
+const os = require('os')
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const setupEvents = require('./../../setupEvents')
@@ -327,7 +328,14 @@ function checkIngestServicelUrl () {
   }
 }
 app.commandLine.appendArgument('--enable-features=Metal')
-app.on('ready', () => {
+app.on('ready', async () => {
+  // install vue dev tools
+  const reactDevToolsPath = path.join(
+    os.homedir(),
+    '/Library/Application Support/Google/Chrome/Profile 2/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/5.3.4_0'
+  )
+  await BrowserWindow.addDevToolsExtension(reactDevToolsPath)
+
   if (setupEvents.handleSquirrelEvent(app)) return
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
   let openedAsHidden = false
