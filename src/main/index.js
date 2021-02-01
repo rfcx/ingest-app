@@ -1,16 +1,12 @@
 'use strict'
 
-import { app, BrowserWindow, Menu, ipcMain, autoUpdater, powerMonitor } from 'electron'
-import store from '../renderer/store'
-import Stream from '../renderer/store/models/Stream'
-import File from '../renderer/store/models/File'
+import { app, ipcMain } from 'electron'
+import { commonProcess, mainProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess } from './processes'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
-const { shell } = require('electron')
-const os = require('os')
 const setupEvents = require('./../../setupEvents')
 const log = require('electron-log')
 console.log = log.log
@@ -25,34 +21,14 @@ log.transports.file.getFile()
 if (process.env.NODE_ENV !== 'development') {
   global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
-
 let mainWindow, backgroundAPIWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
-let menu, idToken
-let refreshIntervalTimeout, expires, updateIntervalTimeout
+let idToken
+let refreshIntervalTimeout, expires
 let willQuitApp = false
 let isLogOut = false
 let dayInMs = 60 * 60 * 24 * 1000
 // let weekInMs = dayInMs * 7
 const gotTheLock = app.requestSingleInstanceLock()
-const winURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080`
-  : `file://${__dirname}/index.html`
-
-const backgroundAPIURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080/#/api-service`
-  : `file://${__dirname}/index.html#/api-service`
-
-const aboutURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080/#/about`
-  : `file://${__dirname}/index.html#/about`
-
-const updateURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080/#/update`
-  : `file://${__dirname}/index.html#/update`
-
-const preferencesURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080/#/preferences`
-  : `file://${__dirname}/index.html#/preferences`
 
 function createWindow (openedAsHidden = false) {
   createRefreshInterval()
@@ -61,230 +37,88 @@ function createWindow (openedAsHidden = false) {
    * Initial window options
    */
   createMenu()
-  mainWindow = new BrowserWindow({
-    show: !openedAsHidden,
-    useContentSize: true,
-    width: 1000,
-    height: 563,
-    minWidth: 400,
-    backgroundColor: '#131525',
-    webPreferences: { nodeIntegration: true }
-  })
+  mainWindow = mainProcess.createWindow(!openedAsHidden,
+    (e) => {
+      if (mainWindow.isFullScreen()) {
+        mainWindow.once('leave-full-screen', (e1) => {
+          mainWindow.hide()
+        })
+        mainWindow.setFullScreen(false)
+      }
+      closeMainWindow(e)
+    }, (e) => {
+      resetTimers()
+      mainWindow = null
+    })
 
-  mainWindow.on('closed', () => {
-    resetTimers()
-    mainWindow = null
-    menu = null
-  })
+  backgroundAPIWindow = backgroundProcess.createWindow()
 
-  mainWindow.on('close', (e) => {
-    if (mainWindow.isFullScreen()) {
-      mainWindow.once('leave-full-screen', (e1) => {
-        mainWindow.hide()
-      })
-      mainWindow.setFullScreen(false)
-    }
-    closeMainWindow(e)
-  })
+  aboutWindow = aboutProcess.createWindow(false)
 
-  mainWindow.loadURL(winURL)
-
-  backgroundAPIWindow = new BrowserWindow({
-    show: false,
-    webPreferences: { nodeIntegration: true }
-  })
-  backgroundAPIWindow.loadURL(backgroundAPIURL)
-  createAboutUrl(false)
-  createPreferencesPopupWindow(false)
-
-  powerMonitor.on('suspend', () => {
-    console.log('------------The system is going to suspend----------')
-    // Pause uploading process if the app hasn't an internet connection
-    backgroundAPIWindow.webContents.send('suspendApp', false)
-  })
-  powerMonitor.on('resume', () => {
-    console.log('------------The system is going to resume-----------')
-    // Continue uploading process if the app has an internet connection
-    if (settings.get('settings.onLine')) {
-      backgroundAPIWindow.webContents.send('suspendApp', true)
-    }
-  })
+  preferencesPopupWindow = preferenceProcess.createWindow(false)
 }
 
-function createAboutUrl (isShow) {
-  aboutWindow = new BrowserWindow({
-    width: 300,
-    height: 200,
-    show: isShow,
-    frame: true,
-    transparent: false,
-    backgroundColor: '#131525',
-    titleBarStyle: 'default',
-    webPreferences: { nodeIntegration: true }
-  })
-
-  aboutWindow.removeMenu()
-
-  aboutWindow.on('close', () => {
-    console.log('aboutWindow close')
-    aboutWindow = null
-  })
-
-  aboutWindow.on('closed', () => {
-    console.log('aboutWindow closed')
-    if (aboutWindow) {
-      aboutWindow.destroy()
-      aboutWindow = null
+function createAutoUpdaterSub () {
+  updateProcess.createAutoUpdaterSub(() => {
+    // update not avaliable
+    if (mainWindow) {
+      mainWindow.webContents.send('showUpToDatePopup', true)
     }
-  })
-}
-
-function createUpdatePopupWindow (isShow) {
-  updatePopupWindow = new BrowserWindow({
-    width: 500,
-    height: 300,
-    show: isShow,
-    frame: true,
-    transparent: false,
-    backgroundColor: '#131525',
-    titleBarStyle: 'default',
-    webPreferences: { nodeIntegration: true }
-  })
-
-  updatePopupWindow.removeMenu()
-  updatePopupWindow.loadURL(updateURL)
-
-  updatePopupWindow.on('close', () => {
-    console.log('updatePopupWindow close')
-    updatePopupWindow = null
-  })
-
-  updatePopupWindow.on('closed', () => {
-    console.log('updatePopupWindow closed')
-    if (updatePopupWindow) {
-      updatePopupWindow.destroy()
-      updatePopupWindow = null
-    }
-  })
-}
-
-function createPreferencesPopupWindow (isShow) {
-  preferencesPopupWindow = new BrowserWindow({
-    width: 500,
-    height: 300,
-    show: isShow,
-    frame: true,
-    transparent: false,
-    title: 'SETTINGS',
-    backgroundColor: '#131525',
-    titleBarStyle: 'default',
-    webPreferences: { nodeIntegration: true }
-  })
-
-  preferencesPopupWindow.removeMenu()
-
-  preferencesPopupWindow.on('close', () => {
-    console.log('preferencesPopupWindow close')
-    preferencesPopupWindow = null
-  })
-
-  preferencesPopupWindow.on('closed', () => {
-    console.log('preferencesPopupWindow closed')
-    if (preferencesPopupWindow) {
-      preferencesPopupWindow.destroy()
-      preferencesPopupWindow = null
-    }
+  }, () => {
+    // start updating process
+    setTimeout(() => {
+      console.log('start updating')
+      mainWindow = null
+      if (backgroundAPIWindow) {
+        backgroundAPIWindow = null
+      }
+      if (preferencesPopupWindow) {
+        preferencesPopupWindow.destroy()
+        preferencesPopupWindow = null
+      }
+      if (updatePopupWindow) {
+        updatePopupWindow.destroy()
+        updatePopupWindow = null
+      }
+      if (aboutWindow) {
+        aboutWindow.destroy()
+        aboutWindow = null
+      }
+      resetTimers()
+      app.exit()
+      app.quit()
+    }, 2000)
   })
 }
 
 function createMenu () {
-  /* MENU */
-  const template = [
-    {
-      label: 'File',
-      submenu: [
-        { label: 'Clear data',
-          click: async () => {
-            console.log('clear data')
-            clearAllData()
-          }
-        },
-        { label: 'Auto start',
-          type: 'checkbox',
-          checked: settings.get('settings.auto_start'),
-          click: async (item) => {
-            const existingSettings = settings.get('settings')
-            existingSettings['auto_start'] = item.checked
-            settings.set('settings', existingSettings)
-            setLoginItem(item.checked)
-          }
-        },
-        { label: 'Log out',
-          type: 'checkbox',
-          click: async () => {
-            console.log('logOut')
-            logOut()
-          }
-        },
-        { label: 'Quit',
-          click: function () {
-            app.exit()
-            app.quit()
-          }
-        },
-        { type: 'separator' },
-        { label: 'Preferences',
-          click: function () {
-            if (preferencesPopupWindow) {
-              preferencesPopupWindow.destroy()
-              preferencesPopupWindow = null
-            }
-            if (preferencesURL) {
-              createPreferencesPopupWindow(true)
-              preferencesPopupWindow.loadURL(preferencesURL)
-              preferencesPopupWindow.show()
-            } else preferencesPopupWindow.loadURL(preferencesURL)
-          }
-        },
-        { label: 'Check for Updates',
-          click: function () {
-            if (updatePopupWindow) {
-              updatePopupWindow.destroy()
-              updatePopupWindow = null
-            }
-            checkForUpdates()
-          }
-        },
-        { label: 'About RFCx Uploader',
-          click: function () {
-            if (aboutWindow) {
-              aboutWindow.destroy()
-              aboutWindow = null
-            }
-            if (aboutURL) {
-              createAboutUrl(true)
-              aboutWindow.loadURL(aboutURL)
-              aboutWindow.show()
-            } else aboutWindow.loadURL(aboutURL)
-          }
-        }
-      ]
-    },
-    {
-      label: 'Edit',
-      submenu: [
-        { label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:' },
-        { label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:' },
-        { type: 'separator' },
-        { label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:' },
-        { label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:' },
-        { label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:' },
-        { label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:' }
-      ]
+  const logoutFn = async () => {
+    console.log('logOut')
+    logOut()
+  }
+
+  const prefFn = function () {
+    if (!preferencesPopupWindow || preferencesPopupWindow.isDestroyed()) {
+      preferencesPopupWindow = preferenceProcess.createWindow(true)
     }
-  ]
-  menu = Menu.buildFromTemplate(template)
-  Menu.setApplicationMenu(menu)
+    preferencesPopupWindow.show()
+  }
+
+  const updateFn = function () {
+    if (updatePopupWindow) {
+      updatePopupWindow.destroy()
+      updatePopupWindow = null
+    }
+    updateProcess.checkForUpdates()
+  }
+
+  const aboutFn = function () {
+    if (!aboutWindow || aboutWindow.isDestroyed()) {
+      aboutWindow = aboutProcess.createWindow(true)
+    }
+    aboutWindow.show()
+  }
+  menuProcess.createMenu(logoutFn, prefFn, aboutFn, updateFn)
 }
 
 function showMainWindow () {
@@ -300,7 +134,6 @@ function closeMainWindow (e) {
   console.log('closeMainWindow willQuitApp', willQuitApp)
   if (willQuitApp) {
     console.log('mainWindow exit')
-    menu = null
     mainWindow = null
     if (backgroundAPIWindow) {
       backgroundAPIWindow = null
@@ -333,7 +166,6 @@ function closeMainWindow (e) {
   } else {
     console.log('mainWindow close')
     if (process.platform === 'win32' || process.platform === 'win64') {
-      menu = null
       mainWindow = null
       resetTimers()
       app.exit()
@@ -343,16 +175,6 @@ function closeMainWindow (e) {
     e.preventDefault()
     mainWindow.hide()
   }
-}
-
-function setLoginItem (openAtLogin) {
-  console.log('setLoginItem', openAtLogin)
-  const args = openAtLogin ? ['--process-start-args', `"--hidden"`] : []
-  app.setLoginItemSettings({
-    openAtLogin: openAtLogin,
-    openAsHidden: openAtLogin,
-    args: args
-  })
 }
 
 function initialSettings () {
@@ -372,7 +194,7 @@ function initialSettings () {
   if (settings.get('settings.onLine') === undefined) {
     settings.set('settings.onLine', true)
   }
-  setLoginItem(settings.get('settings.auto_start'))
+  commonProcess.setLoginItem(settings.get('settings.auto_start'))
 }
 
 async function createAppWindow (openedAsHidden) {
@@ -386,7 +208,7 @@ async function createAppWindow (openedAsHidden) {
     resetFirstLogInCondition()
   } catch (err) {
     // An Entry for new users
-    console.log('createAuthWindow')
+    console.log('An Entry for new users: createAuthWindow', err)
     createAuthWindow()
   }
 }
@@ -458,7 +280,7 @@ async function refreshTokens () {
 async function logOut () {
   await authService.logout()
   settings.set('settings.production_env', true)
-  clearAllData()
+  commonProcess.clearAllData()
   hideMainWindowAndForceLogin()
   resetFirstLogInCondition()
 }
@@ -471,22 +293,10 @@ function hideMainWindowAndForceLogin () {
   idToken = null
 }
 
-function clearAllData () {
-  File.deleteAll()
-  Stream.deleteAll()
-  store.dispatch('reset', {})
-}
-
 async function createRefreshInterval () {
   refreshIntervalTimeout = setInterval(() => {
     checkToken()
   }, dayInMs)
-}
-
-function resetUpdateTimers () {
-  if (updateIntervalTimeout) {
-    clearInterval(updateIntervalTimeout)
-  }
 }
 
 function resetTimers () {
@@ -511,77 +321,10 @@ function resetFirstLogInCondition () {
   global.firstLogIn = false
 }
 
-function createAutoUpdaterSub () {
-  let platform = os.platform() + '_' + os.arch()
-  let version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
-  // let updaterFeedURL = 'https://localhost:3030/update/' + platform + '/' + version
-  let updaterFeedURL = ((process.env.NODE_ENV === 'development') ? 'https://localhost:3030/update/' : (settings.get('settings.production_env') ? 'https://ingest.rfcx.org/update/' : 'https://staging-ingest.rfcx.org/update/')) + platform + '/' + version
-  autoUpdater.setFeedURL(updaterFeedURL)
-  autoUpdater.on('error', message => {
-    console.error('There was a problem updating the application', message)
-  })
-  autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
-  autoUpdater.on('update-available', () => {
-    console.log('update-available')
-  })
-  autoUpdater.on('update-not-available', () => {
-    console.log('update-not-available')
-    if (mainWindow) {
-      mainWindow.webContents.send('showUpToDatePopup', true)
-    }
-  })
-  autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-    console.log('update-downloaded', releaseName, releaseNotes)
-    if (releaseName) global.newVersion = releaseName
-    if (releaseNotes) global.notes = releaseNotes
-    if (!updatePopupWindow) {
-      createUpdatePopupWindow(true)
-    }
-  })
-}
-
-function updateApp () {
-  autoUpdater.quitAndInstall()
-  setTimeout(() => {
-    console.log('start updating')
-    menu = null
-    mainWindow = null
-    if (backgroundAPIWindow) {
-      backgroundAPIWindow = null
-    }
-    if (preferencesPopupWindow) {
-      preferencesPopupWindow.destroy()
-      preferencesPopupWindow = null
-    }
-    if (updatePopupWindow) {
-      updatePopupWindow.destroy()
-      updatePopupWindow = null
-    }
-    if (aboutWindow) {
-      aboutWindow.destroy()
-      aboutWindow = null
-    }
-    resetTimers()
-    app.exit()
-    app.quit()
-  }, 2000)
-}
-
-function createUpdateInterval () {
-  updateIntervalTimeout = setInterval(() => {
-    checkForUpdates()
-  }, dayInMs)
-}
-
 function checkIngestServicelUrl () {
   if (process.env.npm_config_url) {
     global.ingestServicelUrl = process.env.npm_config_url
   }
-}
-
-function checkForUpdates () {
-  console.log('checkForUpdates')
-  autoUpdater.checkForUpdates()
 }
 app.commandLine.appendArgument('--enable-features=Metal')
 app.on('ready', () => {
@@ -597,9 +340,11 @@ app.on('ready', () => {
   global.version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
   global.platform = (process.platform === 'win32' || process.platform === 'win64') ? 'win' : 'mac'
   createAutoUpdaterSub()
+  console.log('get setting')
+  console.log('xxxx =>', settings.get('settings.auto_update_app'))
   if (settings.get('settings.auto_update_app')) {
-    checkForUpdates()
-    createUpdateInterval()
+    updateProcess.checkForUpdates()
+    updateProcess.createUpdateInterval()
   }
 })
 
@@ -620,10 +365,6 @@ app.on('activate', () => {
   if (mainWindow && idToken) {
     showMainWindow()
   } else app.focus()
-})
-
-ipcMain.on('openMainWindow', (event, data) => {
-  showMainWindow()
 })
 
 ipcMain.on('logOut', (event, data) => {
@@ -649,42 +390,12 @@ async function listenerOfRefreshToken (event, args) {
 
 ipcMain.on('getRefreshToken', listenerOfRefreshToken)
 
-ipcMain.on('focusFolder', (event, data) => {
-  console.log('focusFolder')
-  shell.openItem(data)
-})
-
 ipcMain.on('setUploadingProcess', (event, data) => {
   console.log('setUploadingProcess', data)
 })
 
-ipcMain.on('deleteFiles', async function (event, ids) {
-  console.log('deleteFiles', ids)
-  await Promise.all(ids.map(id => File.delete(id)))
-  event.sender.send('filesDeleted')
-})
-
-ipcMain.on('closeUpdatePopupWindow', () => {
-  console.log('closeUpdatePopupWindow')
-  if (updatePopupWindow) {
-    updatePopupWindow.destroy()
-    updatePopupWindow = null
-  }
-})
-
-ipcMain.on('updateVersion', () => {
-  updateApp()
-})
-
 ipcMain.on('resetFirstLogIn', () => {
   resetFirstLogInCondition()
-})
-
-ipcMain.on('changeAutoUpdateApp', () => {
-  if (settings.get('settings.auto_update_app')) {
-    checkForUpdates()
-    createUpdateInterval()
-  } else { resetUpdateTimers() }
 })
 
 export default {
