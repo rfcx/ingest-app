@@ -12,6 +12,7 @@ const mutations = {
   },
   RESET (state, object) {
     state.selectedTabs = object
+    state.currentUploadingSessionId = null
   }
 }
 
