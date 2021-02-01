@@ -1,5 +1,8 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import File from '../../../../renderer/store/models/File'
+import store from '../../../../renderer/store'
+import FileState from '../../../../../utils/fileState'
+
 export default {
   createWindow (isShow, onCloseHandler, onClosedHandler) {
     console.log('preferences process: createWindow')
@@ -25,9 +28,27 @@ export default {
     })
 
     ipcMain.on('deleteFiles', async function (event, ids) {
-      console.log('deleteFiles', ids)
-      await Promise.all(ids.map(id => File.delete(id)))
+      await File.delete(file => ids.includes(file.id))
       event.sender.send('filesDeleted')
+    })
+
+    ipcMain.on('deletePreparedFiles', async function (event, streamId) {
+      await File.delete(file => FileState.isInPreparedGroup(file.state) && file.streamId === streamId)
+      event.sender.send('preparedFilesDeleted')
+    })
+
+    ipcMain.on('putFilesIntoUploadingQueue', async function (event, data) {
+      console.log(`putFilesIntoUploadingQueue ${data.streamId} ${data.sessionId}`)
+      const files = File.query().where((file) => file.streamId === data.streamId && FileState.isPreparing(file.state)).get().reduce((result, file) => {
+        result[file.id] = { ...file, state: 'waiting', stateMessage: '', sessionId: data.sessionId }
+        return result
+      }, {})
+      console.log('files to update', files.length)
+      store.commit('entities/insertRecords', {
+        entity: 'files',
+        records: files
+      })
+      event.sender.send('putFilesIntoUploadingQueueDone')
     })
 
     return mainWindow

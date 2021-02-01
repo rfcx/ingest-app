@@ -47,7 +47,6 @@
 <script>
 
 import { mapState } from 'vuex'
-import File from '../../../store/models/File'
 import Stream from '../../../store/models/Stream'
 import FileNameFormatSettings from '../FileNameFormatSettings/FileNameFormatSettings.vue'
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
@@ -67,6 +66,7 @@ export default {
     return {
       showSettingModal: false,
       isDeletingAllFiles: false,
+      isQueuingToUpload: false,
       showFileNameFormatDropDown: false,
       isUpdatingFilenameFormat: false,
       errorMessage: null
@@ -96,8 +96,29 @@ export default {
     }
   },
   methods: {
-    queueToUpload () {
-      this.$file.putFilesIntoUploadingQueue(this.readyToUploadFiles)
+    async queueToUpload () {
+      this.isQueuingToUpload = true
+
+      // set session id
+      const sessionId = this.$store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
+      this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
+
+      // completion listener
+      const t0 = performance.now()
+      let listen = (event, arg) => {
+        this.$electron.ipcRenderer.removeListener('putFilesIntoUploadingQueueDone', listen)
+        console.log('putFilesIntoUploadingQueueDone')
+        this.isQueuingToUpload = false
+        const t1 = performance.now()
+        console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
+      }
+
+      // emit to main process to put file in uploading queue
+      const data = {streamId: this.selectedStreamId, sessionId: sessionId}
+      this.$electron.ipcRenderer.send('putFilesIntoUploadingQueue', data)
+      this.$electron.ipcRenderer.on('putFilesIntoUploadingQueueDone', listen)
+
+      // set selected tab to be queue tab
       const tabObject = {}
       tabObject[this.selectedStreamId] = 'Queued'
       this.$store.dispatch('setSelectedTab', tabObject)
@@ -105,12 +126,18 @@ export default {
     confirmToClearAllFiles () {
       this.clearAllFiles()
     },
-    clearAllFiles () {
+    async clearAllFiles () {
       this.isDeletingAllFiles = true
-      this.preparingFiles.forEach(file => {
-        File.delete(file.id)
-      })
-      // the component will be removed once delete successfully, and isDeletingAllFiles will be automatically changed to be 'false' automatically
+      const t0 = performance.now()
+      let listen = (event, arg) => {
+        this.$electron.ipcRenderer.removeListener('preparedFilesDeleted', listen)
+        console.log('files deleted')
+        this.isDeletingAllFiles = false
+        const t1 = performance.now()
+        console.log('[Measure] delete prepare files ' + (t1 - t0) + ' ms')
+      }
+      this.$electron.ipcRenderer.send('deletePreparedFiles', this.selectedStreamId)
+      this.$electron.ipcRenderer.on('preparedFilesDeleted', listen)
     },
     hide () {
       this.showFileNameFormatDropDown = false
