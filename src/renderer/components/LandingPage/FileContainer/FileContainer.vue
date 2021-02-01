@@ -32,12 +32,19 @@ export default {
       return savedSelectedTab || this.getDefaultSelectedTab()
     },
     files () {
-      return File.query().where('streamId', this.selectedStreamId).get()
+      const t0 = performance.now()
+      const files = File.query().where('streamId', this.selectedStreamId).get()
+      const t1 = performance.now()
+      console.log('[Measure] query files ' + (t1 - t0) + ' ms' + ` ${files.length} files`)
+      const sortedFiles = files
         .sort((fileA, fileB) => {
           return new Date(fileB.timestamp) - new Date(fileA.timestamp)
         }).sort((fileA, fileB) => {
           return FileState.getStatePriority(fileA.state, fileA.stateMessage) - FileState.getStatePriority(fileB.state, fileB.stateMessage)
         })
+      const t2 = performance.now()
+      console.log('[Measure] sort files ' + (t2 - t1) + ' ms')
+      return sortedFiles
     },
     preparingFiles () {
       return this.files.filter(file => FileState.isInPreparedGroup(file.state))
