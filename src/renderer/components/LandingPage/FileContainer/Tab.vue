@@ -20,7 +20,6 @@
 
 <script>
 import { mapState } from 'vuex'
-import FileState from '../../../../../utils/fileState'
 
 export default {
   data () {
@@ -29,7 +28,9 @@ export default {
     }
   },
   props: {
-    files: Array,
+    preparingFiles: Array,
+    queuingFiles: Array,
+    completedFiles: Array,
     selectedTab: String
   },
   computed: {
@@ -41,17 +42,11 @@ export default {
     getFiles (tab) {
       switch (tab) {
         case 'Prepared':
-          return this.files.filter((file) =>
-            FileState.isInPreparedGroup(file.state)
-          )
+          return this.preparingFiles
         case 'Queued':
-          return this.files.filter((file) =>
-            FileState.isInQueuedGroup(file.state)
-          )
+          return this.queuingFiles
         case 'Completed':
-          return this.files.filter((file) =>
-            FileState.isInCompletedGroup(file.state)
-          )
+          return this.completedFiles
       }
     },
     getNumberOfFiles (tab) {
