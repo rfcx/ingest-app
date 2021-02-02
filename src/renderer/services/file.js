@@ -12,7 +12,6 @@ import FileInfo from './FileInfo'
 import fs from 'fs'
 import Analytics from 'electron-ga'
 import env from '../../../env.json'
-import fileState from '../../../utils/fileState'
 
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
@@ -25,7 +24,6 @@ class FileProvider {
     // 1. Convert dropped files (from drag&drop) to database file objects
     // 2. Insert files to database
     // 3. Get file duration
-    console.log('writeDroppedFilesToDatabase', droppedFiles, selectedStream)
     let fileObjects = []
     let fileObjectsInFolder = []
     if (!droppedFiles) {
@@ -185,10 +183,10 @@ class FileProvider {
   }
 
   /**
-   * @param {*} stream file's stream
-   * @param {*} file target file to rename
-   * @param {*} filename new file name
-   */
+     * @param {*} stream file's stream
+     * @param {*} file target file to rename
+     * @param {*} filename new file name
+     */
   async renameFile (file, filename) {
     const streamId = file.streamId
     const stream = Stream.find(streamId)
@@ -198,13 +196,13 @@ class FileProvider {
     }
 
     /**
-     * File list from stream
-    */
+         * File list from stream
+        */
     const files = [...(stream.files || [])]
 
     /**
-     * Check already exists file name
-    */
+         * Check already exists file name
+        */
     const checkFileAlreadyExists = filePath => {
       // check new file path in stream & file state on preparing
       const fileIdx = files.findIndex(f => (f.path === filePath && ['local_error', 'preparing'].includes(f.state)))
@@ -214,9 +212,9 @@ class FileProvider {
     }
 
     /**
-     * @ function rename file name
-     * @ convert callback to promise
-    */
+         * @ function rename file name
+         * @ convert callback to promise
+        */
     const renameFileOnDisk = () => {
       const path = file.path
       const oldFilename = file.name
@@ -290,18 +288,20 @@ class FileProvider {
 
   /* -- API Wrapper -- */
   uploadFile (file, idToken) {
-    console.log('\nupload file ', file)
+    console.log('\nupload file ', file.id)
     if (!fileHelper.isExist(file.path)) {
-      File.update({ where: file.id,
-        data: {state: 'server_error', stateMessage: 'File does not exist'}
+      File.update({
+        where: file.id,
+        data: { state: 'server_error', stateMessage: 'File does not exist' }
       })
       return Promise.reject(new Error('File does not exist'))
     }
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.utcTimestamp,
       file.sizeInByte, idToken, (progress) => {
-      // FIX progress scale when we will start work with google cloud
-        return File.update({ where: file.id,
-          data: {state: 'uploading'}
+        // FIX progress scale when we will start work with google cloud
+        return File.update({
+          where: file.id,
+          data: { state: 'uploading' }
         })
       }).then((uploadId) => {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
@@ -309,20 +309,24 @@ class FileProvider {
     }).catch((error) => {
       console.log('===> ERROR UPLOAD FILE', error, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
-        return File.update({ where: file.id,
-          data: {state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB'}
+        return File.update({
+          where: file.id,
+          data: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
         })
       } else if (file.retries < 3) {
-        return File.update({ where: file.id,
+        return File.update({
+          where: file.id,
           data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
         })
       } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
-        return File.update({ where: file.id,
-          data: {state: 'server_error', stateMessage: 'Network Error'}
+        return File.update({
+          where: file.id,
+          data: { state: 'server_error', stateMessage: 'Network Error' }
         })
       } else {
-        return File.update({ where: file.id,
-          data: {state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.'}
+        return File.update({
+          where: file.id,
+          data: { state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.' }
         })
       }
     })
@@ -424,22 +428,26 @@ class FileProvider {
 
   /* -- Database wrapper -- */
   async insertNewFiles (files, selectedStream) {
+    const t0 = performance.now()
     await this.insertFiles(files)
     await this.insertFilesToStream(files, selectedStream)
+    const t1 = performance.now()
+    console.log('[Measure] insertNewFiles ' + (t1 - t0) + ' ms')
   }
 
   async insertFiles (files) {
     await File.insert({ data: files })
-    console.log('insert files: ', files)
+    console.log('insert files: ', files.length)
   }
 
   // This function supports only @vuex-orm/core@0.32.2 version.
   async insertFilesToStream (files, stream) {
-    await Stream.update({ where: stream.id,
+    await Stream.update({
+      where: stream.id,
       data: { files: files, updatedAt: Date.now() },
       insert: ['files']
     })
-    console.log('insert files to stream:', files)
+    console.log('insert files to stream:', files.length)
   }
 
   /* -- Helper -- */
@@ -512,13 +520,13 @@ class FileProvider {
   getState (timestamp, fileExt, hasUploadedBefore) {
     const momentDate = dateHelper.getMomentDateFromISODate(timestamp)
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
-      return {state: 'local_error', message: 'File extension is not supported'}
+      return { state: 'local_error', message: 'File extension is not supported' }
     } else if (hasUploadedBefore) {
-      return {state: 'local_error', message: 'Duplicate file'}
+      return { state: 'local_error', message: 'Duplicate file' }
     } else if (!momentDate.isValid()) {
-      return {state: 'local_error', message: 'Filename does not match with a filename format'}
+      return { state: 'local_error', message: 'Filename does not match with a filename format' }
     } else {
-      return {state: 'preparing', message: ''}
+      return { state: 'preparing', message: '' }
     }
   }
 
