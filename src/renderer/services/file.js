@@ -1,3 +1,4 @@
+import electron from 'electron'
 import settings from 'electron-settings'
 import api from '../../../utils/api'
 import File from '../store/models/File'
@@ -11,6 +12,7 @@ import FileInfo from './FileInfo'
 import fs from 'fs'
 import Analytics from 'electron-ga'
 import env from '../../../env.json'
+import fileState from '../../../utils/fileState'
 
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
@@ -126,55 +128,49 @@ class FileProvider {
   }
 
   /**
-   * Update preparing file format
-   * @param {*} format string of format
-   * @param {*} fileObjectList list of files
-   * @param {*} stream file's stream
-   */
+     * Update preparing file format
+     * @param {*} format string of format
+     * @param {*} fileObjectList list of files
+     * @param {*} stream file's stream
+     */
   async updateFilesFormat (stream, fileObjectList, format = FORMAT_AUTO_DETECT) {
-    const updatedFiles = []
-    if (Array.isArray(fileObjectList) && fileObjectList.length > 0) {
-      for await (const file of fileObjectList) {
-        let timestamp
-        if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
-          console.log('create file object with file info yes!')
-          const info = new FileInfo(file.path)
-          const momentDate = info.recordedDate
-          if (momentDate) {
-            timestamp = momentDate.format()
-          }
-          console.log('create file object fileinfo', info)
+    const t0 = performance.now()
+    const updatedFiles = fileObjectList.map(file => {
+      let timestamp
+      if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
+        console.log('create file object with file info yes!')
+        const info = new FileInfo(file.path)
+        const momentDate = info.recordedDate
+        if (momentDate) {
+          timestamp = momentDate.format()
         }
-        if (!timestamp) {
-          timestamp = dateHelper.getIsoDateWithFormat(format, file.name)
-        }
-        const hasUploadedBefore = this.hasUploadedBefore(file.path, stream.id)
-        const stateObj = this.getState(timestamp, file.extension, hasUploadedBefore)
-        const state = stateObj.state
-        const stateMessage = stateObj.message
-        const newFile = { ...file }
-        // update fields
-        newFile.state = state
-        newFile.stateMessage = stateMessage
-        newFile.timestamp = timestamp
-
-        updatedFiles.push(newFile)
-
-        try {
-          await File.update({
-            where: file.id,
-            data: { state, stateMessage, timestamp: timestamp },
-            update: ['state', 'stateMessage', 'timestamp']
-          })
-        } catch (e) {
-          console.log(`Update file '${file.id}' error`, e)
-        }
+        console.log('create file object fileinfo', info)
       }
-
-      console.log(
-        `Updated ${fileObjectList.length} files with format '${format}'`
-      )
+      if (!timestamp) {
+        timestamp = dateHelper.getIsoDateWithFormat(format, file.name)
+      }
+      const hasUploadedBefore = this.hasUploadedBefore(file.path, stream.id)
+      const stateObj = this.getState(timestamp, file.extension, hasUploadedBefore)
+      const state = stateObj.state
+      const stateMessage = stateObj.message
+      const newFile = { ...file }
+      // update fields
+      newFile.state = state
+      newFile.stateMessage = stateMessage
+      newFile.timestamp = timestamp
+      return newFile
+    })
+    const t1 = performance.now()
+    console.log('[Measure] finish forming objects ' + (t1 - t0) + ' ms')
+    let listen = (event, arg) => {
+      electron.ipcRenderer.removeListener('updateTimestampFormatComplete', listen)
+      console.log('updateTimestampFormatComplete')
+      const t2 = performance.now()
+      console.log('[Measure] update timestamp format ' + (t2 - t1) + ' ms')
     }
+    const data = {streamId: stream.id, files: updatedFiles, format: format}
+    electron.ipcRenderer.send('updateTimestampFormat', data)
+    electron.ipcRenderer.on('updateTimestampFormatComplete', listen)
 
     await Stream.update({
       where: stream.id,

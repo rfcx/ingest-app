@@ -51,6 +51,20 @@ export default {
       event.sender.send('putFilesIntoUploadingQueueDone')
     })
 
+    ipcMain.on('updateTimestampFormat', async function (event, data) {
+      console.log(`updateTimestampFormat ${data.streamId} ${data.files} ${data.format}`)
+      const updatedFiles = data.files.reduce((result, file) => {
+        result[file.id] = { ...file }
+        return result
+      }, {})
+      console.log('files to update', updatedFiles.length)
+      store.commit('entities/insertRecords', {
+        entity: 'files',
+        records: updatedFiles
+      })
+      event.sender.send('updateTimestampFormatComplete')
+    })
+
     return mainWindow
   }
 }
