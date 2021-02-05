@@ -1,7 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron'
-import File from '../../../../renderer/store/models/File'
-import store from '../../../../renderer/store'
-import FileState from '../../../../../utils/fileState'
+import database from '../../shared/database'
 
 export default {
   createWindow (isShow, onCloseHandler, onClosedHandler) {
@@ -28,41 +26,19 @@ export default {
     })
 
     ipcMain.on('deleteFiles', async function (event, ids) {
-      await File.delete(file => ids.includes(file.id))
-      event.sender.send('filesDeleted')
+      database.deleteFiles(event, ids)
     })
 
     ipcMain.on('deletePreparedFiles', async function (event, streamId) {
-      await File.delete(file => FileState.isInPreparedGroup(file.state) && file.streamId === streamId)
-      event.sender.send('preparedFilesDeleted')
+      database.deletePreparingFiles(event, streamId)
     })
 
     ipcMain.on('putFilesIntoUploadingQueue', async function (event, data) {
-      console.log(`putFilesIntoUploadingQueue ${data.streamId} ${data.sessionId}`)
-      const files = File.query().where((file) => file.streamId === data.streamId && FileState.isPreparing(file.state)).get().reduce((result, file) => {
-        result[file.id] = { ...file, state: 'waiting', stateMessage: '', sessionId: data.sessionId }
-        return result
-      }, {})
-      console.log('files to update', files.length)
-      store.commit('entities/insertRecords', {
-        entity: 'files',
-        records: files
-      })
-      event.sender.send('putFilesIntoUploadingQueueDone')
+      database.putFilesIntoUploadingQueue(event, data.streamId, data.sessionId)
     })
 
     ipcMain.on('updateTimestampFormat', async function (event, data) {
-      console.log(`updateTimestampFormat ${data.streamId} ${data.files} ${data.format}`)
-      const updatedFiles = data.files.reduce((result, file) => {
-        result[file.id] = { ...file }
-        return result
-      }, {})
-      console.log('files to update', updatedFiles.length)
-      store.commit('entities/insertRecords', {
-        entity: 'files',
-        records: updatedFiles
-      })
-      event.sender.send('updateTimestampFormatComplete')
+      database.updateTimestampFormat(event, data.format, data.streamId, data.files)
     })
 
     return mainWindow
