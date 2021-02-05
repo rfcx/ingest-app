@@ -51,6 +51,7 @@ import Stream from '../../store/models/Stream'
 import File from '../../store/models/File'
 import streamHelper from '../../../../utils/streamHelper'
 import dateHelper from '../../../../utils/dateHelper'
+import DatabaseEventName from '../../../../utils/DatabaseEventName'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
 import Map from '../CreateStream/Map'
@@ -134,12 +135,12 @@ export default {
     },
     async updateFilesTimezone (timezone) {
       let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener('updateFilesTimezoneComplete', listen)
+        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFilesTimezoneResponse, listen)
         console.log('updateFilesTimezone completed')
       }
       const params = { streamId: this.selectedStreamId, timezone: timezone }
-      this.$electron.ipcRenderer.send('updateFilesTimezone', params)
-      this.$electron.ipcRenderer.on('updateFilesTimezoneComplete', listen)
+      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFilesTimezoneRequest, params)
+      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFilesTimezoneResponse, listen)
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true
@@ -170,12 +171,12 @@ export default {
       let ids = File.query().where('streamId', this.selectedStreamId).get().map((file) => { return file.id })
       if (ids && ids.length > 0) {
         let listen = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
+          this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
           console.log('files deleted')
           Stream.delete(selectedStreamId)
         }
-        this.$electron.ipcRenderer.send('deleteFiles', ids)
-        this.$electron.ipcRenderer.on('filesDeleted', listen)
+        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteAllFilesRequest, ids)
+        this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
       } else {
         Stream.delete(selectedStreamId)
       }

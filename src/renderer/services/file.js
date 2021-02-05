@@ -6,6 +6,7 @@ import Stream from '../store/models/Stream'
 import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import FileFormat from '../../../utils/FileFormat'
+import DatabaseEventName from '../../../utils/DatabaseEventName'
 import cryptoJS from 'crypto-js'
 import store from '../store'
 import FileInfo from './FileInfo'
@@ -161,14 +162,13 @@ class FileProvider {
     const t1 = performance.now()
     console.log('[Measure] finish forming objects ' + (t1 - t0) + ' ms')
     let listen = (event, arg) => {
-      electron.ipcRenderer.removeListener('updateTimestampFormatComplete', listen)
-      console.log('updateTimestampFormatComplete')
+      electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFileTimestampResponse, listen)
       const t2 = performance.now()
       console.log('[Measure] update timestamp format ' + (t2 - t1) + ' ms')
     }
     const data = {streamId: stream.id, files: updatedFiles, format: format}
-    electron.ipcRenderer.send('updateTimestampFormat', data)
-    electron.ipcRenderer.on('updateTimestampFormatComplete', listen)
+    electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFileTimestampRequest, data)
+    electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFileTimestampResponse, listen)
 
     await Stream.update({
       where: stream.id,

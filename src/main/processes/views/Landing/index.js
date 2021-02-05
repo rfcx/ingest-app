@@ -1,5 +1,6 @@
 import { BrowserWindow, ipcMain } from 'electron'
 import database from '../../shared/database'
+import DatabaseEventName from '../../../../../utils/DatabaseEventName'
 
 export default {
   createWindow (isShow, onCloseHandler, onClosedHandler) {
@@ -25,28 +26,39 @@ export default {
       onClosedHandler(e)
     })
 
-    ipcMain.on('deleteFiles', async function (event, ids) {
-      database.deleteFiles(event, ids)
+    ipcMain.on(DatabaseEventName.eventsName.deleteAllFilesRequest, async function (event, ids) {
+      await database.deleteFiles(ids)
+      event.sender.send(DatabaseEventName.eventsName.deleteAllFilesResponse)
     })
 
-    ipcMain.on('deletePreparedFiles', async function (event, streamId) {
-      database.deletePreparingFiles(event, streamId)
+    ipcMain.on(DatabaseEventName.eventsName.deletePreparingFilesRequest, async function (event, streamId) {
+      await database.deletePreparingFiles(streamId)
+      event.sender.send(DatabaseEventName.eventsName.deletePreparingFilesResponse)
     })
 
-    ipcMain.on('deleteOutdatedFiles', async function (event) {
-      database.deleteOutdatedFiles(event)
+    ipcMain.on(DatabaseEventName.eventsName.deleteOutdatedFilesRequest, async function (event) {
+      await database.deleteOutdatedFiles()
+      event.sender.send(DatabaseEventName.eventsName.deleteOutdatedFilesResponse)
     })
 
-    ipcMain.on('putFilesIntoUploadingQueue', async function (event, data) {
-      database.putFilesIntoUploadingQueue(event, data.streamId, data.sessionId)
+    ipcMain.on(DatabaseEventName.eventsName.putFilesIntoUploadingQueueRequest, async function (event, data) {
+      await database.putFilesIntoUploadingQueue(data.streamId, data.sessionId)
+      event.sender.send(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse)
     })
 
-    ipcMain.on('updateFilesTimezone', async function (event, data) {
-      database.updateFilesTimezone(event, data.streamId, data.timezone)
+    ipcMain.on(DatabaseEventName.eventsName.updateFilesTimezoneRequest, async function (event, data) {
+      await database.updateFilesTimezone(data.streamId, data.timezone)
+      event.sender.send(DatabaseEventName.eventsName.updateFilesTimezoneResponse)
     })
 
-    ipcMain.on('updateTimestampFormat', async function (event, data) {
-      database.updateTimestampFormat(event, data.format, data.streamId, data.files)
+    ipcMain.on(DatabaseEventName.eventsName.updateFileTimestampRequest, async function (event, data) {
+      await database.updateTimestampFormat(data.format, data.streamId, data.files)
+      event.sender.send(DatabaseEventName.eventsName.updateFileTimestampResponse)
+    })
+
+    ipcMain.on(DatabaseEventName.eventsName.updateFileDurationRequest, async function (event, files) {
+      await database.updateFilesDuration(files)
+      event.sender.send(DatabaseEventName.eventsName.updateFileDurationResponse)
     })
 
     return mainWindow

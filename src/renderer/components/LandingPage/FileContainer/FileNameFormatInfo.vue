@@ -52,6 +52,7 @@ import FileNameFormatSettings from '../FileNameFormatSettings/FileNameFormatSett
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
 import fileState from '../../../../../utils/fileState'
 import fileFormat from '../../../../../utils/FileFormat'
+import DatabaseEventName from '../../../../../utils/DatabaseEventName'
 import ErrorAlert from '../../Common/ErrorAlert'
 
 export default {
@@ -106,8 +107,7 @@ export default {
       // completion listener
       const t0 = performance.now()
       let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener('putFilesIntoUploadingQueueDone', listen)
-        console.log('putFilesIntoUploadingQueueDone')
+        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
         this.isQueuingToUpload = false
         const t1 = performance.now()
         console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
@@ -115,8 +115,8 @@ export default {
 
       // emit to main process to put file in uploading queue
       const data = {streamId: this.selectedStreamId, sessionId: sessionId}
-      this.$electron.ipcRenderer.send('putFilesIntoUploadingQueue', data)
-      this.$electron.ipcRenderer.on('putFilesIntoUploadingQueueDone', listen)
+      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.putFilesIntoUploadingQueueRequest, data)
+      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
 
       // set selected tab to be queue tab
       const tabObject = {}
@@ -130,14 +130,13 @@ export default {
       this.isDeletingAllFiles = true
       const t0 = performance.now()
       let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener('preparedFilesDeleted', listen)
-        console.log('files deleted')
+        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
         this.isDeletingAllFiles = false
         const t1 = performance.now()
         console.log('[Measure] delete prepare files ' + (t1 - t0) + ' ms')
       }
-      this.$electron.ipcRenderer.send('deletePreparedFiles', this.selectedStreamId)
-      this.$electron.ipcRenderer.on('preparedFilesDeleted', listen)
+      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deletePreparingFilesRequest, this.selectedStreamId)
+      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
     },
     hide () {
       this.showFileNameFormatDropDown = false

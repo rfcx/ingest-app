@@ -6,6 +6,7 @@
   import { mapState } from 'vuex'
   import File from '../store/models/File'
   import fileHelper from './../../../utils/fileHelper'
+  import DatabaseEventName from './../../../utils/DatabaseEventName'
 
   const workerTimeoutMinimum = 3000
 
@@ -197,12 +198,7 @@
         }
       },
       async removeOutdatedFiles () {
-        let listen = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('deleteOutdatedFilesOnComplete', listen)
-          console.log('outdated files deleted')
-        }
-        this.$electron.ipcRenderer.send('deleteOutdatedFiles')
-        this.$electron.ipcRenderer.on('deleteOutdatedFilesOnComplete', listen)
+        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteOutdatedFilesRequest)
       },
       sendCompleteNotification (numberOfCompletedFiles, numberOfFailedFiles) {
         const completedText = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'} uploaded`

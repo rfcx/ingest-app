@@ -5,21 +5,44 @@ import FileHelper from '../.././../../utils/fileHelper'
 
 export default {
   // prepare
-  updateFilesTimezone: (event, streamId, timezone) => {
+  updateFilesTimezone: async (streamId, timezone) => {
     console.log(`updateFilesTimezone ${streamId} ${timezone}`)
-    const preparingFiles = File.query().where(file => file.streamId === streamId && file.isInPreparedGroup).get()
-    const updatedFiles = preparingFiles.reduce((result, file) => {
-      result[file.id] = { ...file, timezone: timezone }
+    return new Promise((resolve, reject) => {
+      const preparingFiles = File.query().where(file => file.streamId === streamId && file.isInPreparedGroup).get()
+      const updatedFiles = preparingFiles.reduce((result, file) => {
+        result[file.id] = { ...file, timezone: timezone }
+        return result
+      }, {})
+      console.log('files to update timezone', preparingFiles.length)
+      store.commit('entities/insertRecords', {
+        entity: 'files',
+        records: updatedFiles
+      })
+      resolve()
+    })
+  },
+  updateFilesDuration: async (files) => {
+    console.log(`updateFilesDuration ${files.length}`)
+    const filesWithDuration = await Promise.all(files.map(async file => {
+      try {
+        const durationInSecond = await FileHelper.getFileDuration(file.path)
+        return { ...file, durationInSecond: durationInSecond }
+      } catch (error) {
+        return { ...file, state: 'local_error', stateMessage: `File duration is not found` }
+      }
+    }))
+    const updatedFiles = filesWithDuration.reduce((result, file) => {
+      result[file.id] = { ...file }
       return result
     }, {})
-    console.log('files to update', updatedFiles.length)
+    console.log('files to updateFilesDuration', filesWithDuration.length)
     store.commit('entities/insertRecords', {
       entity: 'files',
       records: updatedFiles
     })
-    event.sender.send('updateFilesTimezoneComplete')
+    event.sender.send('updateFilesDurationComplete')
   },
-  updateTimestampFormat: (event, format, streamId, files) => {
+  updateTimestampFormat: (format, streamId, files) => {
     console.log(`updateTimestampFormat ${streamId} ${files.length} ${format}`)
     const updatedFiles = files.reduce((result, file) => {
       result[file.id] = { ...file }
@@ -30,10 +53,10 @@ export default {
       entity: 'files',
       records: updatedFiles
     })
-    event.sender.send('updateTimestampFormatComplete')
+    return Promise.resolve()
   },
   // queue
-  putFilesIntoUploadingQueue: (event, streamId, sessionId) => {
+  putFilesIntoUploadingQueue: async (streamId, sessionId) => {
     console.log(`putFilesIntoUploadingQueue ${streamId} ${sessionId}`)
     const files = File.query().where((file) => file.streamId === streamId && FileState.isPreparing(file.state)).get().reduce((result, file) => {
       result[file.id] = { ...file, state: 'waiting', stateMessage: '', sessionId: sessionId }
@@ -44,20 +67,21 @@ export default {
       entity: 'files',
       records: files
     })
-    event.sender.send('putFilesIntoUploadingQueueDone')
+    return Promise.resolve()
   },
   // delete
-  deleteFiles: async (event, ids) => { // TODO: change to be 'deleteAllFiles' with stream id params
+  deleteFiles: async (ids) => { // TODO: change to be 'deleteAllFiles' with stream id params
     await File.delete(file => ids.includes(file.id))
-    event.sender.send('filesDeleted')
+    return Promise.resolve()
   },
-  deletePreparingFiles: async (event, streamId) => {
+  deletePreparingFiles: async (streamId) => {
     await File.delete(file => FileState.isInPreparedGroup(file.state) && file.streamId === streamId)
-    event.sender.send('preparedFilesDeleted')
+    return Promise.resolve()
   },
-  deleteOutdatedFiles: async (event) => {
+  deleteOutdatedFiles: async () => {
     await File.delete(file => FileState.isCompleted(file.state) && FileHelper.isOutdatedFile(file))
-    event.sender.send('deleteOutdatedFilesOnComplete')
+    console.log('deleting outdated files complete')
+    return Promise.resolve()
   },
   // other
   toggleUploadingProcess: (event, files, isToggledUploadingProcess) => {
