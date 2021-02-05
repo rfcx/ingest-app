@@ -193,7 +193,6 @@
           })
       },
       checkFilesInUploadingSessionId (files) {
-        console.log('checkFilesInUploadingSessionId', files)
         if (files.length === 0) return
         const completedFiles = files.filter(file => file.isInCompletedGroup && !file.isError)
         const failedFiles = files.filter(file => file.isInCompletedGroup && file.isError)
