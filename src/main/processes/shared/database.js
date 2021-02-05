@@ -4,6 +4,20 @@ import FileState from '../.././../../utils/fileState'
 
 export default {
   // prepare
+  updateFilesTimezone: (event, streamId, timezone) => {
+    console.log(`updateFilesTimezone ${streamId} ${timezone}`)
+    const preparingFiles = File.query().where(file => file.streamId === streamId && file.isInPreparedGroup).get()
+    const updatedFiles = preparingFiles.reduce((result, file) => {
+      result[file.id] = { ...file, timezone: timezone }
+      return result
+    }, {})
+    console.log('files to update', updatedFiles.length)
+    store.commit('entities/insertRecords', {
+      entity: 'files',
+      records: updatedFiles
+    })
+    event.sender.send('updateFilesTimezoneComplete')
+  },
   updateTimestampFormat: (event, format, streamId, files) => {
     console.log(`updateTimestampFormat ${streamId} ${files.length} ${format}`)
     const updatedFiles = files.reduce((result, file) => {

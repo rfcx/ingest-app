@@ -37,6 +37,10 @@ export default {
       database.putFilesIntoUploadingQueue(event, data.streamId, data.sessionId)
     })
 
+    ipcMain.on('updateFilesTimezone', async function (event, data) {
+      database.updateFilesTimezone(event, data.streamId, data.timezone)
+    })
+
     ipcMain.on('updateTimestampFormat', async function (event, data) {
       database.updateTimestampFormat(event, data.format, data.streamId, data.files)
     })

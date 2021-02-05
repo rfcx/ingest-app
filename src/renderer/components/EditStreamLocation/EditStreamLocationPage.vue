@@ -133,12 +133,13 @@ export default {
       return this.selectedStream.longitude ? [this.selectedStream.longitude, this.selectedStream.latitude] : null
     },
     async updateFilesTimezone (timezone) {
-      const preparingFiles = File.query().where(file => file.streamId === this.selectedStreamId && file.isInPreparedGroup).get()
-      await preparingFiles.forEach(file => {
-        File.update({ where: file.id,
-          data: { timezone: timezone }
-        })
-      })
+      let listen = (event, arg) => {
+        this.$electron.ipcRenderer.removeListener('updateFilesTimezoneComplete', listen)
+        console.log('updateFilesTimezone completed')
+      }
+      const params = { streamId: this.selectedStreamId, timezone: timezone }
+      this.$electron.ipcRenderer.send('updateFilesTimezone', params)
+      this.$electron.ipcRenderer.on('updateFilesTimezoneComplete', listen)
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true
