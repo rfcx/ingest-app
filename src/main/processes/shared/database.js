@@ -1,6 +1,7 @@
 import store from '../../../renderer/store'
 import File from '../../../renderer/store/models/File'
 import FileState from '../.././../../utils/fileState'
+import FileHelper from '../.././../../utils/fileHelper'
 
 export default {
   // prepare
@@ -53,6 +54,10 @@ export default {
   deletePreparingFiles: async (event, streamId) => {
     await File.delete(file => FileState.isInPreparedGroup(file.state) && file.streamId === streamId)
     event.sender.send('preparedFilesDeleted')
+  },
+  deleteOutdatedFiles: async (event) => {
+    await File.delete(file => FileState.isCompleted(file.state) && FileHelper.isOutdatedFile(file))
+    event.sender.send('deleteOutdatedFilesOnComplete')
   },
   // other
   toggleUploadingProcess: (event, files, isToggledUploadingProcess) => {

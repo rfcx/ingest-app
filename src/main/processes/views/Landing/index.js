@@ -33,6 +33,10 @@ export default {
       database.deletePreparingFiles(event, streamId)
     })
 
+    ipcMain.on('deleteOutdatedFiles', async function (event) {
+      database.deleteOutdatedFiles(event)
+    })
+
     ipcMain.on('putFilesIntoUploadingQueue', async function (event, data) {
       database.putFilesIntoUploadingQueue(event, data.streamId, data.sessionId)
     })

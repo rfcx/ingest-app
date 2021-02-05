@@ -98,11 +98,6 @@
           return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== '' && file.uploaded === true
         }).orderBy('timestamp').limit(5).get()
       },
-      getCompletedFiles () {
-        return File.query().where(file =>
-          file.state === 'completed' && fileHelper.isOutdatedFile(file))
-          .orderBy('timestamp', 'asc').get()
-      },
       uploadFile (file) {
         return new Promise((resolve, reject) => {
           let listener = (event, arg) => {
@@ -202,12 +197,12 @@
         }
       },
       async removeOutdatedFiles () {
-        const files = this.getCompletedFiles()
-        if (files && files.length) {
-          for (let file of files) {
-            await File.delete(file.id)
-          }
+        let listen = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener('deleteOutdatedFilesOnComplete', listen)
+          console.log('outdated files deleted')
         }
+        this.$electron.ipcRenderer.send('deleteOutdatedFiles')
+        this.$electron.ipcRenderer.on('deleteOutdatedFilesOnComplete', listen)
       },
       sendCompleteNotification (numberOfCompletedFiles, numberOfFailedFiles) {
         const completedText = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'} uploaded`
