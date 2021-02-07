@@ -329,12 +329,15 @@ function checkIngestServicelUrl () {
 }
 app.commandLine.appendArgument('--enable-features=Metal')
 app.on('ready', async () => {
-  // install vue dev tools
-  const reactDevToolsPath = path.join(
-    os.homedir(),
-    '/Library/Application Support/Google/Chrome/Profile 2/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/5.3.4_0'
-  )
-  await BrowserWindow.addDevToolsExtension(reactDevToolsPath)
+  if (process.env.NODE_ENV !== 'production') {
+    // Install vue dev tools
+    // TODO: the path should be configurable by the developer
+    const devToolsPath = path.join(
+      os.homedir(),
+      '/Library/Application Support/Google/Chrome/Profile 2/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/5.3.4_0'
+    )
+    await BrowserWindow.addDevToolsExtension(devToolsPath)
+  }
 
   if (setupEvents.handleSquirrelEvent(app)) return
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
