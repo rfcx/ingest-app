@@ -406,6 +406,12 @@ ipcMain.on('resetFirstLogIn', () => {
   resetFirstLogInCondition()
 })
 
+ipcMain.on('getFileDurationRequest', async function (event) {
+  console.log('getFileDurationRequest')
+  event.sender.send('getFileDurationTrigger')
+  backgroundAPIWindow.webContents.send('getFileDurationTrigger')
+})
+
 export default {
   createWindow
 }

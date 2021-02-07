@@ -19,7 +19,7 @@ const analytics = new Analytics(env.analytics.id)
 
 class FileProvider {
   /* -- Import files -- */
-  handleDroppedFiles (droppedFiles, selectedStream) {
+  async handleDroppedFiles (droppedFiles, selectedStream) {
     // read file header
 
     // 1. Convert dropped files (from drag&drop) to database file objects
@@ -45,16 +45,11 @@ class FileProvider {
     })
     const allFileObjects = fileObjects.concat(fileObjectsInFolder)
     // insert converted files into db
-    this.insertNewFiles(allFileObjects, selectedStream)
-    // update file duration
-    this.updateFilesDuration(
-      allFileObjects.filter((file) =>
-        fileHelper.isSupportedFileExtension(file.extension)
-      )
-    )
+    await this.insertNewFiles(allFileObjects, selectedStream)
+    electron.ipcRenderer.send('getFileDurationRequest')
   }
 
-  handleDroppedFolder (folderPath, selectedStream) {
+  async handleDroppedFolder (folderPath, selectedStream) {
     if (!folderPath) return
     console.log('handleDroppedFolder', folderPath, selectedStream)
     let fileObjectsInFolder = []
@@ -62,13 +57,8 @@ class FileProvider {
       this.getFileObjectsFromFolder(folderPath, selectedStream, null)
     ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
     // insert converted files into db
-    this.insertNewFiles(fileObjectsInFolder, selectedStream)
-    // update file duration
-    this.updateFilesDuration(
-      fileObjectsInFolder.filter((file) =>
-        fileHelper.isSupportedFileExtension(file.extension)
-      )
-    )
+    await this.insertNewFiles(fileObjectsInFolder, selectedStream)
+    electron.ipcRenderer.send('getFileDurationRequest')
   }
 
   getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null) {
@@ -100,18 +90,20 @@ class FileProvider {
     return fileObjects
   }
   async updateFilesDuration (files) {
-    // get updated data
-    Promise.all(files.map(async file => {
+    let listen = (event, arg) => {
+      electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFileDurationResponse, listen)
+      console.log('update files duration completed')
+    }
+    const filesWithDuration = await Promise.all(files.map(async file => {
       try {
         const durationInSecond = await fileHelper.getFileDuration(file.path)
-        return { id: file.id, durationInSecond: durationInSecond }
+        return { ...file, durationInSecond: durationInSecond }
       } catch (error) {
-        return { id: file.id, state: 'local_error', stateMessage: `File duration is not found` }
+        return { ...file, state: 'local_error', stateMessage: `File duration is not found` }
       }
-    })
-    ).then(updatedData => {
-      File.update({ data: updatedData })
-    })
+    }))
+    electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFileDurationRequest, filesWithDuration)
+    electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFileDurationResponse, listen)
   }
 
   putFilesIntoUploadingQueue (files) {

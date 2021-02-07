@@ -23,24 +23,16 @@ export default {
   },
   updateFilesDuration: async (files) => {
     console.log(`updateFilesDuration ${files.length}`)
-    const filesWithDuration = await Promise.all(files.map(async file => {
-      try {
-        const durationInSecond = await FileHelper.getFileDuration(file.path)
-        return { ...file, durationInSecond: durationInSecond }
-      } catch (error) {
-        return { ...file, state: 'local_error', stateMessage: `File duration is not found` }
-      }
-    }))
-    const updatedFiles = filesWithDuration.reduce((result, file) => {
+    const updatedFiles = files.reduce((result, file) => {
       result[file.id] = { ...file }
       return result
     }, {})
-    console.log('files to updateFilesDuration', filesWithDuration.length)
+    console.log('files to updateFilesDuration', files.length)
     store.commit('entities/insertRecords', {
       entity: 'files',
       records: updatedFiles
     })
-    event.sender.send('updateFilesDurationComplete')
+    return Promise.resolve()
   },
   updateTimestampFormat: (format, streamId, files) => {
     console.log(`updateTimestampFormat ${streamId} ${files.length} ${format}`)

@@ -241,6 +241,10 @@
       this.tickCheckStatus()
       this.checkFilesInUploadingSessionId(this.filesInUploadingSession)
       this.removeOutdatedFiles()
+      this.$electron.ipcRenderer.on('getFileDurationTrigger', () => {
+        console.log('getFileDurationTrigger')
+        this.updateFilesDuration()
+      })
     },
     beforeDestroy () {
       console.log('\nclearInterval')
