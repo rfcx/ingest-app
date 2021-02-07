@@ -13,25 +13,28 @@ import FileInfo from './FileInfo'
 import fs from 'fs'
 import Analytics from 'electron-ga'
 import env from '../../../env.json'
+import fileState from '../../../utils/fileState'
 
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
 
 class FileProvider {
-  /* -- Import files -- */
+  /**
+  * Import files
+  * @param {FileList} droppedFiles
+  * @param {Stream} selectedStream
+  */
   async handleDroppedFiles (droppedFiles, selectedStream) {
-    // read file header
-
-    // 1. Convert dropped files (from drag&drop) to database file objects
-    // 2. Insert files to database
-    // 3. Get file duration
-    let fileObjects = []
-    let fileObjectsInFolder = []
-    if (!droppedFiles) {
-      // no files
+    if (droppedFiles.length === 0) {
       return
     }
-    [...droppedFiles].forEach((file) => {
+
+    // Convert dropped files (from drag&drop) to database file objects
+    const t0 = performance.now()
+    let fileObjects = []
+    let fileObjectsInFolder = []
+    for (let i = 0; i < droppedFiles.length; i++) {
+      const file = droppedFiles[i]
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
           this.getFileObjectsFromFolder(file.path, selectedStream, null)
@@ -42,10 +45,30 @@ class FileProvider {
           fileObjects.push(fileObject)
         }
       }
-    })
+    }
     const allFileObjects = fileObjects.concat(fileObjectsInFolder)
-    // insert converted files into db
-    await this.insertNewFiles(allFileObjects, selectedStream)
+    const t1 = performance.now()
+    console.log('[Measure] forming file objects ' + (t1 - t0) + ' ms')
+
+    // Remove duplicates that are already in prepare tab
+    const existingPreparedFilePaths = File.query().where((file) => file.streamId === selectedStream.id).get().reduce((result, value) => {
+      result[value.path] = value.state
+      return result
+    }, {})
+    const allFileObjectsFiltered = allFileObjects.filter(file => existingPreparedFilePaths[file.path] === undefined || !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path]))
+    // Set error message for duplicates that are either uploading or completed
+    allFileObjectsFiltered.forEach(file => {
+      const hasUploadedBefore = existingPreparedFilePaths[file.path] !== undefined && !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path])
+      if (hasUploadedBefore) {
+        file.state = 'local_error'
+        file.stateMessage = 'Duplicate (uploading or complete)'
+      }
+    })
+    const t2 = performance.now()
+    console.log('[Measure] perform duplicate checks ' + (t2 - t1) + ' ms')
+
+    // Insert converted files into db
+    await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
     electron.ipcRenderer.send('getFileDurationRequest')
   }
 
@@ -140,14 +163,11 @@ class FileProvider {
       if (!timestamp) {
         timestamp = dateHelper.getIsoDateWithFormat(format, file.name)
       }
-      const hasUploadedBefore = this.hasUploadedBefore(file.path, stream.id)
-      const stateObj = this.getState(timestamp, file.extension, hasUploadedBefore)
-      const state = stateObj.state
-      const stateMessage = stateObj.message
+      const { state, message } = this.getState(timestamp, file.extension)
       const newFile = { ...file }
       // update fields
       newFile.state = state
-      newFile.stateMessage = stateMessage
+      newFile.stateMessage = message
       newFile.timestamp = timestamp
       return newFile
     })
@@ -444,29 +464,7 @@ class FileProvider {
 
   /* -- Helper -- */
 
-  existingSameFilePathsInStream (filePath, streamId) {
-    return File.query().where((file) => {
-      return file.path === filePath && file.streamId === streamId
-    }).get()
-  }
-
-  fileIsExist (filePath, streamId) {
-    return this.existingSameFilePathsInStream(filePath, streamId).length > 0
-  }
-
-  hasUploadedBefore (filePath, streamId) {
-    const existingFiles = this.existingSameFilePathsInStream(filePath, streamId)
-    if (existingFiles.length === 0) return false
-    return !(existingFiles[0].isInPreparedGroup)
-  }
-
   createFileObject (filePath, stream) {
-    const hasUploadedBefore = this.hasUploadedBefore(filePath, stream.id)
-    if (this.fileIsExist(filePath, stream.id) && !hasUploadedBefore) {
-      console.log('this file is already in prepare tab')
-      return
-    }
-
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
 
@@ -489,7 +487,9 @@ class FileProvider {
     if (!timestamp) {
       timestamp = dateHelper.getIsoDateWithFormat(stream.timestampFormat, fileName)
     }
-    const state = this.getState(timestamp, fileExt, hasUploadedBefore)
+
+    const { state, message } = this.getState(timestamp, fileExt)
+
     return {
       id: this.getFileId(filePath),
       name: fileName,
@@ -502,19 +502,17 @@ class FileProvider {
       timestamp: timestamp,
       timezone: stream.defaultTimezone, // TODO: change to selected timezone (configure by user)
       streamId: stream.id,
-      state: state.state,
-      stateMessage: state.message,
+      state: state,
+      stateMessage: message,
       deviceId,
       deploymentId
     }
   }
 
-  getState (timestamp, fileExt, hasUploadedBefore) {
+  getState (timestamp, fileExt) {
     const momentDate = dateHelper.getMomentDateFromISODate(timestamp)
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
       return { state: 'local_error', message: 'File extension is not supported' }
-    } else if (hasUploadedBefore) {
-      return { state: 'local_error', message: 'Duplicate file' }
     } else if (!momentDate.isValid()) {
       return { state: 'local_error', message: 'Filename does not match with a filename format' }
     } else {
