@@ -33,7 +33,7 @@ Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 Vue.config.devtools = process.env.NODE_ENV !== 'production'
 
-Vue.component('font-awesome-icon', FontAwesomeIcon)
+Vue.component('fa-icon', FontAwesomeIcon)
 Vue.directive('click-outside', {
   bind: function (el, binding, vNode) {
     // Provided expression must evaluate to a function.

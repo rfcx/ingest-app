@@ -76,7 +76,6 @@
 <script>
 import File from '../../../store/models/File'
 import fileState from '../../../../../utils/fileState'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faRedo, faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 import AudioMothTag from '../../Common/AudioMothTag'
 
@@ -92,7 +91,6 @@ export default {
     error: null
   }),
   components: {
-    'fa-icon': FontAwesomeIcon,
     AudioMothTag
   },
   mounted () {

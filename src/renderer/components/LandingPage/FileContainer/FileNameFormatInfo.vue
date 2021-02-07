@@ -7,7 +7,7 @@
           <button class="button" :class="{'is-loading': isUpdatingFilenameFormat}" aria-haspopup="true" aria-controls="dropdown-menu" @click="showFileNameFormatDropDown = !showFileNameFormatDropDown" v-click-outside="hide">
             <span>{{ (isCustomTimestampFormat ? 'custom ・ ' : '') + selectedStream.timestampFormat }}</span>
             <span class="icon is-small">
-              <font-awesome-icon :icon="icons.arrowDown" aria-hidden="true" />
+              <fa-icon :icon="icons.arrowDown" aria-hidden="true" />
             </span>
           </button>
         </div>

@@ -36,7 +36,7 @@
         <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'wrapper__stream-row_active': isActive(stream)}">
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="wrapper__stream-name">{{ stream.name }}</div>
-            <font-awesome-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></font-awesome-icon>
+            <fa-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
             <img :src="getStateImgUrl(stream.state)">
           </div>
         </div>
@@ -61,7 +61,6 @@
   import api from '../../../../utils/api'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
-  import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
   import { faRedo } from '@fortawesome/free-solid-svg-icons'
   const { remote } = window.require('electron')
 
@@ -84,7 +83,7 @@
       }
     },
     components: {
-      FontAwesomeIcon, ConfirmAlert
+      ConfirmAlert
     },
     computed: {
       selectedStreamId () {

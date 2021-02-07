@@ -1,7 +1,7 @@
 <template>
   <div class="modal-card">
 		<header class="modal-card-head">
-			<font-awesome-icon :icon="ICON_CLOCK" size="2x"/>
+			<fa-icon :icon="ICON_CLOCK" size="2x"/>
 			<h1 class="title">Custom Filename Format</h1>
 		</header>
 		<section class="modal-card-body">

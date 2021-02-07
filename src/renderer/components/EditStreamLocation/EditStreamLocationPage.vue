@@ -27,7 +27,7 @@
             <button type="button" class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!hasEditedData" @click.prevent="updateStream">Apply</button>
           </p>
         </div>
-        <button type="button" class="button is-danger is-rounded is-outlined" :class="{'is-loading': isDeleting}" @click.prevent="showConfirmToDeleteStreamModal"><font-awesome-icon class="iconTrash" :icon="iconTrash"></font-awesome-icon> Delete Site</button>
+        <button type="button" class="button is-danger is-rounded is-outlined" :class="{'is-loading': isDeleting}" @click.prevent="showConfirmToDeleteStreamModal"><fa-icon class="iconTrash" :icon="iconTrash"></fa-icon> Delete Site</button>
       </div>
     </fieldset>
     <!-- Modal -->

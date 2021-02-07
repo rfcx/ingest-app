@@ -5,7 +5,7 @@
         <router-link title="Edit site location" to="/edit-stream-location">
           <span class="stream-info__title">{{ selectedStream.name }}</span>
           <span class="stream-info__edit-icon" title="Edit the site">
-            <font-awesome-icon :icon="iconPencil"></font-awesome-icon>
+            <fa-icon :icon="iconPencil"></fa-icon>
           </span>
         </router-link>
       </div>
@@ -16,7 +16,7 @@
         <span v-if="selectedStream" class="stream-info__coordinates">{{ selectedStream.siteGuid || selectedStream.location }}</span></router-link>
     </div>
     <a title="Redirect to Arbimon" class="button is-rounded rounded-button" :class="{ 'rounded-button__disabled': !isStreamCompleted || !files.length}" @click="redirectToArbimon()">
-      <font-awesome-icon class="faExternal" :icon="faExternalLinkAlt"></font-awesome-icon>
+      <fa-icon class="faExternal" :icon="faExternalLinkAlt"></fa-icon>
       <span>Arbimon</span>
     </a>
     <div class="notification fixed-notice default-notice" v-if="showNavigateMessage">
