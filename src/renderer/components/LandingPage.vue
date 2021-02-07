@@ -78,12 +78,13 @@
         e.dataTransfer.effectAllowed = 'uninitialized'
         e.dataTransfer.dropEffect = 'none'
       },
-      handleDrop (e) {
-        let dt = e.dataTransfer
-        let files = dt.files
-        this.handleFiles(files)
+      async handleDrop (e) {
+        const t0 = performance.now()
+        await this.handleFiles(e.dataTransfer.files)
+        const t1 = performance.now()
+        console.log('[Measure] handleDrop ' + (t1 - t0) + ' ms')
       },
-      handleFiles (files) {
+      async handleFiles (files) {
         this.isDragging = false
         if (!files) { return }
         if (!(this.streams && this.streams.length > 0)) { // create new streams with files
@@ -101,10 +102,8 @@
           return
         }
         // reset selected tab
-        const tabObject = {}
-        tabObject[this.selectedStreamId] = 'Prepared'
-        this.$store.dispatch('setSelectedTab', tabObject)
-        this.$file.handleDroppedFiles(files, this.selectedStream)
+        await this.$store.dispatch('setSelectedTab', { [this.selectedStreamId]: 'Prepared' })
+        await this.$file.handleDroppedFiles(files, this.selectedStream)
       },
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0
