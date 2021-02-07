@@ -96,7 +96,9 @@ export default {
       this.hasClosedNotice = true
     },
     loadMore () {
-      this.visibleRows = this.visibleRows + PAGE_SIZE
+      if (this.visibleRows < this.files.length) {
+        this.visibleRows = this.visibleRows + PAGE_SIZE
+      }
     },
     resetLoadMore () {
       this.visibleRows = PAGE_SIZE

@@ -68,13 +68,12 @@ export default {
       this.$emit('onImportFiles', files)
     },
     loadMore () {
-      console.log('loadMore')
       this.$refs.fileList.loadMore()
     }
   },
   watch: {
     selectedTab: (previousTabName, newTabName) => {
-      console.log('selectedTab', previousTabName, newTabName)
+      if (!this) return // Weird error that this is sometimes undefined
       if (previousTabName !== newTabName) {
         this.$refs.fileList.resetLoadMore()
       }
