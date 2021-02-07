@@ -38,7 +38,7 @@ export default {
       const files = File.query().where('streamId', this.selectedStreamId).get()
       const sortedFiles = files
         .sort((fileA, fileB) => {
-          return new Date(fileB.timestamp) - new Date(fileA.timestamp)
+          return new Date(fileA.timestamp) - new Date(fileB.timestamp)
         }).sort((fileA, fileB) => {
           return FileState.getStatePriority(fileA.state, fileA.stateMessage) - FileState.getStatePriority(fileB.state, fileB.stateMessage)
         })
