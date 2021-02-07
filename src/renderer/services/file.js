@@ -310,10 +310,6 @@ class FileProvider {
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.utcTimestamp,
       file.sizeInByte, idToken, (progress) => {
         // FIX progress scale when we will start work with google cloud
-        return File.update({
-          where: file.id,
-          data: { state: 'uploading' }
-        })
       }).then((uploadId) => {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
       return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
@@ -367,6 +363,7 @@ class FileProvider {
             }
             return
           case 10:
+            if (file.state === 'ingesting') return
             return File.update({
               where: file.id,
               data: { state: 'ingesting', stateMessage: '', progress: 100 }

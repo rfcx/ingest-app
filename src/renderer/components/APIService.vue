@@ -5,14 +5,15 @@
 <script>
   import { mapState } from 'vuex'
   import File from '../store/models/File'
-  import fileHelper from './../../../utils/fileHelper'
   import DatabaseEventName from './../../../utils/DatabaseEventName'
 
   const workerTimeoutMinimum = 3000
+  const queueFileToUploadWorkerTimeoutMinimum = 1000
 
   export default {
     data: () => {
       return {
+        numberOfUploadingFiles: 0,
         checkStatusWorkerTimeout: workerTimeoutMinimum,
         checkWaitingFilesInterval: null,
         isQueuing: false
@@ -63,18 +64,10 @@
         })
       },
       getUnsyncedFile () {
-        return new Promise((resolve, reject) => {
-          const file = File.query().where('state', 'waiting')
-            .orderBy('retries', 'desc')
-            .orderBy('timestamp', 'asc')
-            .first()
-          console.log('\nwaiting file ', file)
-          if (file != null) {
-            resolve(file)
-          } else {
-            reject(new Error('No waiting files'))
-          }
-        })
+        return File.query().where('state', 'waiting')
+          .orderBy('retries', 'desc')
+          .orderBy('timestamp', 'asc')
+          .first()
       },
       getUnsyncedFiles () {
         return File.query().where('state', 'waiting')
@@ -113,14 +106,14 @@
       },
       // queue 10 files to upload each time
       queueFilesToUpload () {
-        const unsyncedFiles = this.getUnsyncedFiles()
-        if (unsyncedFiles.length <= 0 || this.isQueuing) { return }
-        this.isQueuing = true
-        return Promise.all(unsyncedFiles.map((file) => this.uploadFile(file))).then(() => {
-          this.isQueuing = false
-        }).catch((err) => {
-          this.isQueuing = false
-          console.log(err)
+        if (this.numberOfUploadingFiles >= 5) return
+        const unsyncedFile = this.getUnsyncedFile()
+        if (!unsyncedFile) return
+        this.numberOfUploadingFiles += 1
+        this.uploadFile(unsyncedFile).then(() => {
+          this.numberOfUploadingFiles -= 1
+        }).catch(() => {
+          this.numberOfUploadingFiles -= 1
         })
       },
       queueJobToCheckStatus () {
@@ -128,22 +121,10 @@
           let listener = async (event, idToken) => {
             this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
             try {
-              const files = await Promise.all(this.getUploadedFiles())
+              const files = this.getUploadedFiles()
               for (let file of files) {
-                if (fileHelper.isOutdatedFile(file)) {
-                  await File.update({
-                    where: file.id,
-                    data: {
-                      state: 'waiting',
-                      uploadId: '',
-                      stateMessage: '',
-                      progress: 0,
-                      retries: file.retries + 1
-                    }
-                  })
-                } else {
-                  await this.$file.checkStatus(file, idToken, false)
-                }
+                await this.$file.checkStatus(file, idToken, false)
+                // TODO: what happen if the ingest service never ingest/change the status
               }
               resolve()
             } catch (e) {
@@ -237,7 +218,7 @@
       this.updateFilesDuration()
       this.checkWaitingFilesInterval = setInterval(() => {
         this.tickUpload()
-      }, workerTimeoutMinimum)
+      }, queueFileToUploadWorkerTimeoutMinimum)
       this.tickCheckStatus()
       this.checkFilesInUploadingSessionId(this.filesInUploadingSession)
       this.removeOutdatedFiles()
