@@ -15,11 +15,7 @@
         @clickNewSiteButton="toggleNewSiteDropDown" 
         @clickOutSideNewSiteButton="hideNewSiteDropDown"
       />
-      <div class="column content is-desktop" v-if="streams && streams.length > 0">
-        <empty-view v-if="isEmptyStream()" :isEmptyStream="isEmptyStream()"></empty-view>
-        <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
-      </div>
-      <div class="column content is-desktop" v-else>
+      <div class="column content is-desktop">
         <empty-view v-if="isEmptyStream()" :isEmptyStream="isEmptyStream()"></empty-view>
         <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>

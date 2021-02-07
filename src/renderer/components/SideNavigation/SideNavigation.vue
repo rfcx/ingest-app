@@ -96,43 +96,11 @@
       streams () {
         return Stream.query().with('files').orderBy('updatedAt', 'desc').get()
       },
-      allFiles () {
-        return File.all()
-      },
-      files () {
-        return File.query().where('streamId', this.selectedStreamId).orderBy('name').get()
-      },
-      getUnsyncedFiles () {
-        return File.query().where('state', 'waiting').orderBy('timestamp').get()
-      },
-      getUploadedFiles () {
-        return File.query().where((file) => {
-          return file.state === 'ingesting' && file.uploadId !== ''
-        }).orderBy('timestamp').get()
-      },
-      isInprogessOfUploading () {
-        return this.getUnsyncedFiles.length > 0 || this.getUploadedFiles.length > 0
-      },
       isRequiredSymbols () {
         return this.searchStr && this.searchStr.length > 0 && this.searchStr.length < 3
       }
     },
     methods: {
-      getAllFilesSize () {
-        let size = 0
-        this.allFiles.forEach(file => { size += file.sizeInByte })
-        return this.getFileSize(size)
-      },
-      getFileSize (bytes) {
-        var sizes = ['bytes', 'kb', 'mb', 'gb', 'tb']
-        if (bytes === 0) {
-          this.mesure = sizes[0]
-          return '0'
-        }
-        var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
-        this.mesure = sizes[i]
-        return Math.round(bytes / Math.pow(1024, i), 2)
-      },
       toggleUserMenu () {
         this.showUserMenu = !this.showUserMenu
       },

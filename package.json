@@ -121,6 +121,7 @@
     "sox": "^0.1.0",
     "vue": "^2.5.16",
     "vue-electron": "^1.0.6",
+    "vue-infinite-scroll": "^2.0.2",
     "vue-mapbox": "^0.4.1",
     "vue-router": "^3.0.1",
     "vuex": "^3.1.2",

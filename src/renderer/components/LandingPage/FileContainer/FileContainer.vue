@@ -1,9 +1,9 @@
 <template>
-  <div class="wrapper">
+  <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10">
     <header-view></header-view>
     <tab :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
-    <file-list :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab" :isDragging="isDragging" @onImportFiles="onImportFiles"></file-list>
+    <file-list ref="fileList" :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab" :isDragging="isDragging" :isProcessing="isProcessing" @onImportFiles="onImportFiles"></file-list>
   </div>
 </template>
 
@@ -15,8 +15,10 @@ import Tab from './Tab'
 import FileNameFormatInfo from './FileNameFormatInfo'
 import FileList from './FileList'
 import FileState from '../../../../../utils/fileState'
+import infiniteScroll from 'vue-infinite-scroll'
 
 export default {
+  directives: { infiniteScroll },
   props: {
     isDragging: Boolean
   },
@@ -34,16 +36,14 @@ export default {
     files () {
       const t0 = performance.now()
       const files = File.query().where('streamId', this.selectedStreamId).get()
-      const t1 = performance.now()
-      console.log('[Measure] query files ' + (t1 - t0) + ' ms' + ` ${files.length} files`)
       const sortedFiles = files
         .sort((fileA, fileB) => {
           return new Date(fileB.timestamp) - new Date(fileA.timestamp)
         }).sort((fileA, fileB) => {
           return FileState.getStatePriority(fileA.state, fileA.stateMessage) - FileState.getStatePriority(fileB.state, fileB.stateMessage)
         })
-      const t2 = performance.now()
-      console.log('[Measure] sort files ' + (t2 - t1) + ' ms')
+      const t1 = performance.now()
+      console.log('[Measure] Query files ' + (t1 - t0) + ' ms')
       return sortedFiles
     },
     preparingFiles () {
@@ -66,6 +66,18 @@ export default {
     onImportFiles (files) {
       console.log('onImportFiles = filecontainer', files)
       this.$emit('onImportFiles', files)
+    },
+    loadMore () {
+      console.log('loadMore')
+      this.$refs.fileList.loadMore()
+    }
+  },
+  watch: {
+    selectedTab: (previousTabName, newTabName) => {
+      console.log('selectedTab', previousTabName, newTabName)
+      if (previousTabName !== newTabName) {
+        this.$refs.fileList.resetLoadMore()
+      }
     }
   }
 }

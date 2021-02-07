@@ -16,7 +16,7 @@
         </tr>
       </thead>
       <tbody>
-        <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :file="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
+        <file-row :selectedTab="selectedTab" v-for="file in files.slice(0, visibleRows)" :key="file.id" :file="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
     </table>
     <empty-view v-if="files.length === 0" :hasFileInQueued="queuingFiles.length > 0" :isDragging="isDragging" @onImportFiles="onImportFiles"></empty-view>
@@ -36,6 +36,8 @@ import ConfirmAlert from '../../Common/ConfirmAlert'
 import EmptyView from '../EmptyView'
 import FileRow from './FileRow'
 
+const PAGE_SIZE = 20
+
 export default {
   props: {
     preparingFiles: Array,
@@ -49,7 +51,8 @@ export default {
     deleteAlertTitle: 'Are you sure you want to remove this file?',
     shouldShowConfirmToDeleteAlert: false,
     fileToBeDeleted: null,
-    hasClosedNotice: false
+    hasClosedNotice: false,
+    visibleRows: PAGE_SIZE
   }),
   components: {
     EmptyView, FileRow, ConfirmAlert
@@ -91,6 +94,12 @@ export default {
     },
     onCloseNotice () {
       this.hasClosedNotice = true
+    },
+    loadMore () {
+      this.visibleRows = this.visibleRows + PAGE_SIZE
+    },
+    resetLoadMore () {
+      this.visibleRows = PAGE_SIZE
     }
   }
 }
