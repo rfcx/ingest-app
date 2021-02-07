@@ -93,7 +93,7 @@
         return Stream.find(this.selectedStreamId)
       },
       streams () {
-        return Stream.query().with('files').orderBy('updatedAt', 'desc').get()
+        return Stream.query().orderBy('updatedAt', 'desc').get()
       },
       isRequiredSymbols () {
         return this.searchStr && this.searchStr.length > 0 && this.searchStr.length < 3

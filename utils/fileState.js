@@ -1,13 +1,11 @@
-const getStatePriority = function (state, message) {
+const getStatePriority = function (state) {
   switch (state) {
     case 'preparing': return 0
-    case 'waiting': return 3
     case 'uploading': return 1
     case 'ingesting': return 2
-    case 'local_error': return 5
-    case 'server_error':
-      if (message && message.toLowerCase().includes('duplicate')) return 4
-      else return 5
+    case 'waiting': return 3
+    case 'local_error':
+    case 'server_error': return 5
     case 'duplicated': return 6
     case 'completed': return 7
   }
