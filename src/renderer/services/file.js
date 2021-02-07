@@ -117,15 +117,14 @@ class FileProvider {
       electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFileDurationResponse, listen)
       console.log('update files duration completed')
     }
-    const filesWithDuration = await Promise.all(files.map(async file => {
+    const fileDurationUpdates = []
+    for (const file of files) {
       try {
         const durationInSecond = await fileHelper.getFileDuration(file.path)
-        return { ...file, durationInSecond: durationInSecond }
-      } catch (error) {
-        return { ...file, state: 'local_error', stateMessage: `File duration is not found` }
-      }
-    }))
-    electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFileDurationRequest, filesWithDuration)
+        fileDurationUpdates.push({ id: file.id, durationInSecond: durationInSecond })
+      } catch (error) { }
+    }
+    electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFileDurationRequest, fileDurationUpdates)
     electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFileDurationResponse, listen)
   }
 

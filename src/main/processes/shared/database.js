@@ -22,12 +22,14 @@ export default {
     })
   },
   updateFilesDuration: async (files) => {
-    console.log(`updateFilesDuration ${files.length}`)
     const updatedFiles = files.reduce((result, file) => {
-      result[file.id] = { ...file }
+      const existingFile = File.find(file.id)
+      if (existingFile) {
+        result[file.id] = { ...existingFile, ...file }
+      }
       return result
     }, {})
-    console.log('files to updateFilesDuration', files.length)
+    console.log('files to updateFilesDuration', updatedFiles)
     store.commit('entities/insertRecords', {
       entity: 'files',
       records: updatedFiles
