@@ -17,6 +17,13 @@ import FileList from './FileList'
 import FileState from '../../../../../utils/fileState'
 import infiniteScroll from 'vue-infinite-scroll'
 
+const fileComparator = (fileA, fileB) => {
+  const stateResult = FileState.getStatePriority(fileA.state) - FileState.getStatePriority(fileB.state)
+  if (stateResult !== 0) {
+    return stateResult
+  }
+  return new Date(fileA.timestamp) - new Date(fileB.timestamp)
+}
 export default {
   directives: { infiniteScroll },
   props: {
@@ -34,26 +41,17 @@ export default {
       return savedSelectedTab || this.getDefaultSelectedTab()
     },
     files () {
-      const t0 = performance.now()
       const files = File.query().where('streamId', this.selectedStreamId).get()
-      const sortedFiles = files
-        .sort((fileA, fileB) => {
-          return new Date(fileA.timestamp) - new Date(fileB.timestamp)
-        }).sort((fileA, fileB) => {
-          return FileState.getStatePriority(fileA.state, fileA.stateMessage) - FileState.getStatePriority(fileB.state, fileB.stateMessage)
-        })
-      const t1 = performance.now()
-      console.log('[Measure] Query files ' + (t1 - t0) + ' ms')
-      return sortedFiles
+      return files
     },
     preparingFiles () {
-      return this.files.filter(file => FileState.isInPreparedGroup(file.state))
+      return this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
     },
     queuingFiles () {
-      return this.files.filter(file => FileState.isInQueuedGroup(file.state))
+      return this.files.filter(file => FileState.isInQueuedGroup(file.state)).sort(fileComparator)
     },
     completedFiles () {
-      return this.files.filter(file => FileState.isInCompletedGroup(file.state))
+      return this.files.filter(file => FileState.isInCompletedGroup(file.state)).sort(fileComparator)
     }
   },
   methods: {
