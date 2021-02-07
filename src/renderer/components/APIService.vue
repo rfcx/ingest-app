@@ -14,8 +14,8 @@
     data: () => {
       return {
         numberOfUploadingFiles: 0,
-        checkStatusWorkerTimeout: workerTimeoutMinimum,
         checkWaitingFilesInterval: null,
+        checkStatusInterval: null,
         isQueuing: false
       }
     },
@@ -69,24 +69,6 @@
           .orderBy('timestamp', 'asc')
           .first()
       },
-      getUnsyncedFiles () {
-        return File.query().where('state', 'waiting')
-          .orderBy('retries', 'desc')
-          .orderBy('timestamp', 'asc')
-          .limit(10).get()
-      },
-      getUploadedFile () {
-        return new Promise((resolve, reject) => {
-          const file = File.query().where((file) => {
-            return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== '' && file.uploaded === true
-          }).orderBy('timestamp').first()
-          if (file != null) {
-            resolve(file)
-          } else {
-            reject(new Error('No uploaded files'))
-          }
-        })
-      },
       getUploadedFiles () {
         return File.query().where((file) => {
           return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== '' && file.uploaded === true
@@ -104,7 +86,6 @@
           this.$electron.ipcRenderer.on('sendIdToken', listener)
         })
       },
-      // queue 10 files to upload each time
       queueFilesToUpload () {
         if (this.numberOfUploadingFiles >= 5) return
         const unsyncedFile = this.getUnsyncedFile()
@@ -117,23 +98,20 @@
         })
       },
       queueJobToCheckStatus () {
-        return new Promise((resolve, reject) => {
-          let listener = async (event, idToken) => {
-            this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+        let listener = async (event, idToken) => {
+          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          const files = this.getUploadedFiles()
+          for (let file of files) {
             try {
-              const files = this.getUploadedFiles()
-              for (let file of files) {
-                await this.$file.checkStatus(file, idToken, false)
-                // TODO: what happen if the ingest service never ingest/change the status
-              }
-              resolve()
+              await this.$file.checkStatus(file, idToken, false)
+              // TODO: what happen if the ingest service never ingest/change the status
             } catch (e) {
-              reject(e)
+              console.log('checkStatus failed', e)
             }
           }
-          this.$electron.ipcRenderer.on('sendIdToken', listener)
-          this.$electron.ipcRenderer.send('getIdToken')
-        })
+        }
+        this.$electron.ipcRenderer.on('sendIdToken', listener)
+        this.$electron.ipcRenderer.send('getIdToken')
       },
       tickUpload () {
         if (!this.isUploadingProcessEnabled) return
@@ -141,13 +119,7 @@
       },
       tickCheckStatus () {
         if (!this.isUploadingProcessEnabled) return
-        this.queueJobToCheckStatus().then(() => {
-          this.checkStatusWorkerTimeout = workerTimeoutMinimum
-          setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
-        }).catch((err) => {
-          console.log(err)
-          setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
-        })
+        this.queueJobToCheckStatus()
       },
       async updateFilesDuration () {
         this.$file.updateFilesDuration(this.noDurationFiles)
@@ -219,7 +191,9 @@
       this.checkWaitingFilesInterval = setInterval(() => {
         this.tickUpload()
       }, queueFileToUploadWorkerTimeoutMinimum)
-      this.tickCheckStatus()
+      this.checkStatusInterval = setInterval(() => {
+        this.tickCheckStatus()
+      }, workerTimeoutMinimum)
       this.checkFilesInUploadingSessionId(this.filesInUploadingSession)
       this.removeOutdatedFiles()
       this.$electron.ipcRenderer.on('getFileDurationTrigger', () => {
@@ -232,6 +206,10 @@
       if (this.checkWaitingFilesInterval) {
         clearInterval(this.checkWaitingFilesInterval)
         this.checkWaitingFilesInterval = null
+      }
+      if (this.checkStatusInterval) {
+        clearInterval(this.checkStatusInterval)
+        this.checkStatusInterval = null
       }
     }
   }
