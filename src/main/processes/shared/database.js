@@ -29,7 +29,7 @@ export default {
       }
       return result
     }, {})
-    console.log('files to updateFilesDuration', updatedFiles)
+    console.log('files to updateFilesDuration', Object.keys(updatedFiles).length)
     store.commit('entities/insertRecords', {
       entity: 'files',
       records: updatedFiles

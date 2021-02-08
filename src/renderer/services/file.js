@@ -191,6 +191,7 @@ class FileProvider {
       `Updated ${updatedFiles.length} file(s) to stream '${stream.id}'`
     )
     console.log(`Updated timestampFormat '${format}' to stream '${stream.id}'`)
+    electron.ipcRenderer.send('getFileDurationRequest')
   }
 
   /**
