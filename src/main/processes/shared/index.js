@@ -1,7 +1,5 @@
 import { app } from 'electron'
 import store from '../../../renderer/store'
-import Stream from '../../../renderer/store/models/Stream'
-import File from '../../../renderer/store/models/File'
 
 export default {
   setLoginItem (openAtLogin) {
@@ -14,8 +12,7 @@ export default {
     })
   },
   clearAllData () {
-    File.deleteAll()
-    Stream.deleteAll()
+    store.dispatch('entities/deleteAll')
     store.dispatch('reset', {})
   }
 }

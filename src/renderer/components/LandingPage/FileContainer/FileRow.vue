@@ -45,7 +45,7 @@
         </template>
         <template v-else>
           <div class="cell-file-name" v-text="file.name" />
-          <AudioMothTag :show="file.deviceId" :isSelected="true" />
+          <AudioMothTag :show="file.deviceId" isSelected="true" />
           <button class="button edit-file-name-btn" @click="editClick()" title="Edit file name" v-if="canEdit">
             <fa-icon class="icon-redo" :icon="icons.edit" />
           </button>
@@ -76,7 +76,6 @@
 <script>
 import File from '../../../store/models/File'
 import fileState from '../../../../../utils/fileState'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { faRedo, faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 import AudioMothTag from '../../Common/AudioMothTag'
 
@@ -92,7 +91,6 @@ export default {
     error: null
   }),
   components: {
-    'fa-icon': FontAwesomeIcon,
     AudioMothTag
   },
   mounted () {

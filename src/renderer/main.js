@@ -28,9 +28,12 @@ firebase.performance()
 library.add(faChevronUp, faChevronDown, faPencilAlt, faRedo, faEyeSlash, faExternalLinkAlt)
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
+
 Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
-Vue.component('font-awesome-icon', FontAwesomeIcon)
+Vue.config.devtools = process.env.NODE_ENV !== 'production'
+
+Vue.component('fa-icon', FontAwesomeIcon)
 Vue.directive('click-outside', {
   bind: function (el, binding, vNode) {
     // Provided expression must evaluate to a function.

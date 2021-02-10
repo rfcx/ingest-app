@@ -1,3 +1,4 @@
+import electron from 'electron'
 import settings from 'electron-settings'
 import api from '../../../utils/api'
 import File from '../store/models/File'
@@ -5,32 +6,35 @@ import Stream from '../store/models/Stream'
 import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import FileFormat from '../../../utils/FileFormat'
+import DatabaseEventName from '../../../utils/DatabaseEventName'
 import cryptoJS from 'crypto-js'
 import store from '../store'
 import FileInfo from './FileInfo'
 import fs from 'fs'
 import Analytics from 'electron-ga'
 import env from '../../../env.json'
+import fileState from '../../../utils/fileState'
 
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
 
 class FileProvider {
-  /* -- Import files -- */
-  handleDroppedFiles (droppedFiles, selectedStream) {
-    // read file header
-
-    // 1. Convert dropped files (from drag&drop) to database file objects
-    // 2. Insert files to database
-    // 3. Get file duration
-    console.log('writeDroppedFilesToDatabase', droppedFiles, selectedStream)
-    let fileObjects = []
-    let fileObjectsInFolder = []
-    if (!droppedFiles) {
-      // no files
+  /**
+  * Import files
+  * @param {FileList} droppedFiles
+  * @param {Stream} selectedStream
+  */
+  async handleDroppedFiles (droppedFiles, selectedStream) {
+    if (droppedFiles.length === 0) {
       return
     }
-    [...droppedFiles].forEach((file) => {
+
+    // Convert dropped files (from drag&drop) to database file objects
+    const t0 = performance.now()
+    let fileObjects = []
+    let fileObjectsInFolder = []
+    for (let i = 0; i < droppedFiles.length; i++) {
+      const file = droppedFiles[i]
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
           this.getFileObjectsFromFolder(file.path, selectedStream, null)
@@ -41,19 +45,34 @@ class FileProvider {
           fileObjects.push(fileObject)
         }
       }
-    })
+    }
     const allFileObjects = fileObjects.concat(fileObjectsInFolder)
-    // insert converted files into db
-    this.insertNewFiles(allFileObjects, selectedStream)
-    // update file duration
-    this.updateFilesDuration(
-      allFileObjects.filter((file) =>
-        fileHelper.isSupportedFileExtension(file.extension)
-      )
-    )
+    const t1 = performance.now()
+    console.log('[Measure] forming file objects ' + (t1 - t0) + ' ms')
+
+    // Remove duplicates that are already in prepare tab
+    const existingPreparedFilePaths = File.query().where((file) => file.streamId === selectedStream.id).get().reduce((result, value) => {
+      result[value.path] = value.state
+      return result
+    }, {})
+    const allFileObjectsFiltered = allFileObjects.filter(file => existingPreparedFilePaths[file.path] === undefined || !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path]))
+    // Set error message for duplicates that are either uploading or completed
+    allFileObjectsFiltered.forEach(file => {
+      const hasUploadedBefore = existingPreparedFilePaths[file.path] !== undefined && !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path])
+      if (hasUploadedBefore) {
+        file.state = 'local_error'
+        file.stateMessage = 'Duplicate (uploading or complete)'
+      }
+    })
+    const t2 = performance.now()
+    console.log('[Measure] perform duplicate checks ' + (t2 - t1) + ' ms')
+
+    // Insert converted files into db
+    await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
+    electron.ipcRenderer.send('getFileDurationRequest')
   }
 
-  handleDroppedFolder (folderPath, selectedStream) {
+  async handleDroppedFolder (folderPath, selectedStream) {
     if (!folderPath) return
     console.log('handleDroppedFolder', folderPath, selectedStream)
     let fileObjectsInFolder = []
@@ -61,13 +80,8 @@ class FileProvider {
       this.getFileObjectsFromFolder(folderPath, selectedStream, null)
     ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
     // insert converted files into db
-    this.insertNewFiles(fileObjectsInFolder, selectedStream)
-    // update file duration
-    this.updateFilesDuration(
-      fileObjectsInFolder.filter((file) =>
-        fileHelper.isSupportedFileExtension(file.extension)
-      )
-    )
+    await this.insertNewFiles(fileObjectsInFolder, selectedStream)
+    electron.ipcRenderer.send('getFileDurationRequest')
   }
 
   getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null) {
@@ -99,18 +113,19 @@ class FileProvider {
     return fileObjects
   }
   async updateFilesDuration (files) {
-    // get updated data
-    Promise.all(files.map(async file => {
+    let listen = (event, arg) => {
+      electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFileDurationResponse, listen)
+      console.log('update files duration completed')
+    }
+    const fileDurationUpdates = []
+    for (const file of files) {
       try {
         const durationInSecond = await fileHelper.getFileDuration(file.path)
-        return { id: file.id, durationInSecond: durationInSecond }
-      } catch (error) {
-        return { id: file.id, state: 'local_error', stateMessage: `File duration is not found` }
-      }
-    })
-    ).then(updatedData => {
-      File.update({ data: updatedData })
-    })
+        fileDurationUpdates.push({ id: file.id, durationInSecond: durationInSecond })
+      } catch (error) { }
+    }
+    electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFileDurationRequest, fileDurationUpdates)
+    electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFileDurationResponse, listen)
   }
 
   putFilesIntoUploadingQueue (files) {
@@ -126,55 +141,45 @@ class FileProvider {
   }
 
   /**
-   * Update preparing file format
-   * @param {*} format string of format
-   * @param {*} fileObjectList list of files
-   * @param {*} stream file's stream
-   */
+     * Update preparing file format
+     * @param {*} format string of format
+     * @param {*} fileObjectList list of files
+     * @param {*} stream file's stream
+     */
   async updateFilesFormat (stream, fileObjectList, format = FORMAT_AUTO_DETECT) {
-    const updatedFiles = []
-    if (Array.isArray(fileObjectList) && fileObjectList.length > 0) {
-      for await (const file of fileObjectList) {
-        let timestamp
-        if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
-          console.log('create file object with file info yes!')
-          const info = new FileInfo(file.path)
-          const momentDate = info.recordedDate
-          if (momentDate) {
-            timestamp = momentDate.format()
-          }
-          console.log('create file object fileinfo', info)
+    const t0 = performance.now()
+    const updatedFiles = fileObjectList.map(file => {
+      let timestamp
+      if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
+        console.log('create file object with file info yes!')
+        const info = new FileInfo(file.path)
+        const momentDate = info.recordedDate
+        if (momentDate) {
+          timestamp = momentDate.format()
         }
-        if (!timestamp) {
-          timestamp = dateHelper.getIsoDateWithFormat(format, file.name)
-        }
-        const hasUploadedBefore = this.hasUploadedBefore(file.path, stream.id)
-        const stateObj = this.getState(timestamp, file.extension, hasUploadedBefore)
-        const state = stateObj.state
-        const stateMessage = stateObj.message
-        const newFile = { ...file }
-        // update fields
-        newFile.state = state
-        newFile.stateMessage = stateMessage
-        newFile.timestamp = timestamp
-
-        updatedFiles.push(newFile)
-
-        try {
-          await File.update({
-            where: file.id,
-            data: { state, stateMessage, timestamp: timestamp },
-            update: ['state', 'stateMessage', 'timestamp']
-          })
-        } catch (e) {
-          console.log(`Update file '${file.id}' error`, e)
-        }
+        console.log('create file object fileinfo', info)
       }
-
-      console.log(
-        `Updated ${fileObjectList.length} files with format '${format}'`
-      )
+      if (!timestamp) {
+        timestamp = dateHelper.getIsoDateWithFormat(format, file.name)
+      }
+      const { state, message } = this.getState(timestamp, file.extension)
+      const newFile = { ...file }
+      // update fields
+      newFile.state = state
+      newFile.stateMessage = message
+      newFile.timestamp = timestamp
+      return newFile
+    })
+    const t1 = performance.now()
+    console.log('[Measure] finish forming objects ' + (t1 - t0) + ' ms')
+    let listen = (event, arg) => {
+      electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFileTimestampResponse, listen)
+      const t2 = performance.now()
+      console.log('[Measure] update timestamp format ' + (t2 - t1) + ' ms')
     }
+    const data = {streamId: stream.id, files: updatedFiles, format: format}
+    electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFileTimestampRequest, data)
+    electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFileTimestampResponse, listen)
 
     await Stream.update({
       where: stream.id,
@@ -186,13 +191,14 @@ class FileProvider {
       `Updated ${updatedFiles.length} file(s) to stream '${stream.id}'`
     )
     console.log(`Updated timestampFormat '${format}' to stream '${stream.id}'`)
+    electron.ipcRenderer.send('getFileDurationRequest')
   }
 
   /**
-   * @param {*} stream file's stream
-   * @param {*} file target file to rename
-   * @param {*} filename new file name
-   */
+     * @param {*} stream file's stream
+     * @param {*} file target file to rename
+     * @param {*} filename new file name
+     */
   async renameFile (file, filename) {
     const streamId = file.streamId
     const stream = Stream.find(streamId)
@@ -202,13 +208,13 @@ class FileProvider {
     }
 
     /**
-     * File list from stream
-    */
+         * File list from stream
+        */
     const files = [...(stream.files || [])]
 
     /**
-     * Check already exists file name
-    */
+         * Check already exists file name
+        */
     const checkFileAlreadyExists = filePath => {
       // check new file path in stream & file state on preparing
       const fileIdx = files.findIndex(f => (f.path === filePath && ['local_error', 'preparing'].includes(f.state)))
@@ -218,9 +224,9 @@ class FileProvider {
     }
 
     /**
-     * @ function rename file name
-     * @ convert callback to promise
-    */
+         * @ function rename file name
+         * @ convert callback to promise
+        */
     const renameFileOnDisk = () => {
       const path = file.path
       const oldFilename = file.name
@@ -294,39 +300,41 @@ class FileProvider {
 
   /* -- API Wrapper -- */
   uploadFile (file, idToken) {
-    console.log('\nupload file ', file)
+    console.log('\nupload file ', file.id)
     if (!fileHelper.isExist(file.path)) {
-      File.update({ where: file.id,
-        data: {state: 'server_error', stateMessage: 'File does not exist'}
+      File.update({
+        where: file.id,
+        data: { state: 'server_error', stateMessage: 'File does not exist' }
       })
       return Promise.reject(new Error('File does not exist'))
     }
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.utcTimestamp,
       file.sizeInByte, idToken, (progress) => {
-      // FIX progress scale when we will start work with google cloud
-        return File.update({ where: file.id,
-          data: {state: 'uploading'}
-        })
+        // FIX progress scale when we will start work with google cloud
       }).then((uploadId) => {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
       return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
     }).catch((error) => {
       console.log('===> ERROR UPLOAD FILE', error, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
-        return File.update({ where: file.id,
-          data: {state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB'}
+        return File.update({
+          where: file.id,
+          data: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
         })
       } else if (file.retries < 3) {
-        return File.update({ where: file.id,
+        return File.update({
+          where: file.id,
           data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
         })
       } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
-        return File.update({ where: file.id,
-          data: {state: 'server_error', stateMessage: 'Network Error'}
+        return File.update({
+          where: file.id,
+          data: { state: 'server_error', stateMessage: 'Network Error' }
         })
       } else {
-        return File.update({ where: file.id,
-          data: {state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.'}
+        return File.update({
+          where: file.id,
+          data: { state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.' }
         })
       }
     })
@@ -356,6 +364,7 @@ class FileProvider {
             }
             return
           case 10:
+            if (file.state === 'ingesting') return
             return File.update({
               where: file.id,
               data: { state: 'ingesting', stateMessage: '', progress: 100 }
@@ -428,49 +437,31 @@ class FileProvider {
 
   /* -- Database wrapper -- */
   async insertNewFiles (files, selectedStream) {
+    const t0 = performance.now()
     await this.insertFiles(files)
     await this.insertFilesToStream(files, selectedStream)
+    const t1 = performance.now()
+    console.log('[Measure] insertNewFiles ' + (t1 - t0) + ' ms')
   }
 
   async insertFiles (files) {
     await File.insert({ data: files })
-    console.log('insert files: ', files)
+    console.log('insert files: ', files.length)
   }
 
   // This function supports only @vuex-orm/core@0.32.2 version.
   async insertFilesToStream (files, stream) {
-    await Stream.update({ where: stream.id,
+    await Stream.update({
+      where: stream.id,
       data: { files: files, updatedAt: Date.now() },
       insert: ['files']
     })
-    console.log('insert files to stream:', files)
+    console.log('insert files to stream:', files.length)
   }
 
   /* -- Helper -- */
 
-  existingSameFilePathsInStream (filePath, streamId) {
-    return File.query().where((file) => {
-      return file.path === filePath && file.streamId === streamId
-    }).get()
-  }
-
-  fileIsExist (filePath, streamId) {
-    return this.existingSameFilePathsInStream(filePath, streamId).length > 0
-  }
-
-  hasUploadedBefore (filePath, streamId) {
-    const existingFiles = this.existingSameFilePathsInStream(filePath, streamId)
-    if (existingFiles.length === 0) return false
-    return !(existingFiles[0].isInPreparedGroup)
-  }
-
   createFileObject (filePath, stream) {
-    const hasUploadedBefore = this.hasUploadedBefore(filePath, stream.id)
-    if (this.fileIsExist(filePath, stream.id) && !hasUploadedBefore) {
-      console.log('this file is already in prepare tab')
-      return
-    }
-
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
 
@@ -493,7 +484,9 @@ class FileProvider {
     if (!timestamp) {
       timestamp = dateHelper.getIsoDateWithFormat(stream.timestampFormat, fileName)
     }
-    const state = this.getState(timestamp, fileExt, hasUploadedBefore)
+
+    const { state, message } = this.getState(timestamp, fileExt)
+
     return {
       id: this.getFileId(filePath),
       name: fileName,
@@ -506,23 +499,21 @@ class FileProvider {
       timestamp: timestamp,
       timezone: stream.defaultTimezone, // TODO: change to selected timezone (configure by user)
       streamId: stream.id,
-      state: state.state,
-      stateMessage: state.message,
+      state: state,
+      stateMessage: message,
       deviceId,
       deploymentId
     }
   }
 
-  getState (timestamp, fileExt, hasUploadedBefore) {
+  getState (timestamp, fileExt) {
     const momentDate = dateHelper.getMomentDateFromISODate(timestamp)
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
-      return {state: 'local_error', message: 'File extension is not supported'}
-    } else if (hasUploadedBefore) {
-      return {state: 'local_error', message: 'Duplicate file'}
+      return { state: 'local_error', message: 'File extension is not supported' }
     } else if (!momentDate.isValid()) {
-      return {state: 'local_error', message: 'Filename does not match with a filename format'}
+      return { state: 'local_error', message: 'Filename does not match with a filename format' }
     } else {
-      return {state: 'preparing', message: ''}
+      return { state: 'preparing', message: '' }
     }
   }
 

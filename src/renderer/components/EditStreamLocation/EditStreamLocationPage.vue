@@ -27,7 +27,7 @@
             <button type="button" class="button is-rounded is-primary" :class="{ 'is-loading': isLoading }" :disabled="!hasEditedData" @click.prevent="updateStream">Apply</button>
           </p>
         </div>
-        <button type="button" class="button is-danger is-rounded is-outlined" :class="{'is-loading': isDeleting}" @click.prevent="showConfirmToDeleteStreamModal"><font-awesome-icon class="iconTrash" :icon="iconTrash"></font-awesome-icon> Delete Site</button>
+        <button type="button" class="button is-danger is-rounded is-outlined" :class="{'is-loading': isDeleting}" @click.prevent="showConfirmToDeleteStreamModal"><fa-icon class="iconTrash" :icon="iconTrash"></fa-icon> Delete Site</button>
       </div>
     </fieldset>
     <!-- Modal -->
@@ -51,6 +51,7 @@ import Stream from '../../store/models/Stream'
 import File from '../../store/models/File'
 import streamHelper from '../../../../utils/streamHelper'
 import dateHelper from '../../../../utils/dateHelper'
+import DatabaseEventName from '../../../../utils/DatabaseEventName'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
 import Map from '../CreateStream/Map'
@@ -133,12 +134,13 @@ export default {
       return this.selectedStream.longitude ? [this.selectedStream.longitude, this.selectedStream.latitude] : null
     },
     async updateFilesTimezone (timezone) {
-      const preparingFiles = File.query().where(file => file.streamId === this.selectedStreamId && file.isInPreparedGroup).get()
-      await preparingFiles.forEach(file => {
-        File.update({ where: file.id,
-          data: { timezone: timezone }
-        })
-      })
+      let listen = (event, arg) => {
+        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFilesTimezoneResponse, listen)
+        console.log('updateFilesTimezone completed')
+      }
+      const params = { streamId: this.selectedStreamId, timezone: timezone }
+      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFilesTimezoneRequest, params)
+      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFilesTimezoneResponse, listen)
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true
@@ -169,12 +171,12 @@ export default {
       let ids = File.query().where('streamId', this.selectedStreamId).get().map((file) => { return file.id })
       if (ids && ids.length > 0) {
         let listen = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('filesDeleted', listen)
+          this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
           console.log('files deleted')
           Stream.delete(selectedStreamId)
         }
-        this.$electron.ipcRenderer.send('deleteFiles', ids)
-        this.$electron.ipcRenderer.on('filesDeleted', listen)
+        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteAllFilesRequest, ids)
+        this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
       } else {
         Stream.delete(selectedStreamId)
       }

@@ -7,7 +7,7 @@
           <button class="button" :class="{'is-loading': isUpdatingFilenameFormat}" aria-haspopup="true" aria-controls="dropdown-menu" @click="showFileNameFormatDropDown = !showFileNameFormatDropDown" v-click-outside="hide">
             <span>{{ (isCustomTimestampFormat ? 'custom ・ ' : '') + selectedStream.timestampFormat }}</span>
             <span class="icon is-small">
-              <font-awesome-icon :icon="icons.arrowDown" aria-hidden="true" />
+              <fa-icon :icon="icons.arrowDown" aria-hidden="true" />
             </span>
           </button>
         </div>
@@ -47,12 +47,12 @@
 <script>
 
 import { mapState } from 'vuex'
-import File from '../../../store/models/File'
 import Stream from '../../../store/models/Stream'
 import FileNameFormatSettings from '../FileNameFormatSettings/FileNameFormatSettings.vue'
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
 import fileState from '../../../../../utils/fileState'
 import fileFormat from '../../../../../utils/FileFormat'
+import DatabaseEventName from '../../../../../utils/DatabaseEventName'
 import ErrorAlert from '../../Common/ErrorAlert'
 
 export default {
@@ -67,6 +67,7 @@ export default {
     return {
       showSettingModal: false,
       isDeletingAllFiles: false,
+      isQueuingToUpload: false,
       showFileNameFormatDropDown: false,
       isUpdatingFilenameFormat: false,
       errorMessage: null
@@ -96,8 +97,28 @@ export default {
     }
   },
   methods: {
-    queueToUpload () {
-      this.$file.putFilesIntoUploadingQueue(this.readyToUploadFiles)
+    async queueToUpload () {
+      this.isQueuingToUpload = true
+
+      // set session id
+      const sessionId = this.$store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
+      this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
+
+      // completion listener
+      const t0 = performance.now()
+      let listen = (event, arg) => {
+        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
+        this.isQueuingToUpload = false
+        const t1 = performance.now()
+        console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
+      }
+
+      // emit to main process to put file in uploading queue
+      const data = {streamId: this.selectedStreamId, sessionId: sessionId}
+      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.putFilesIntoUploadingQueueRequest, data)
+      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
+
+      // set selected tab to be queue tab
       const tabObject = {}
       tabObject[this.selectedStreamId] = 'Queued'
       this.$store.dispatch('setSelectedTab', tabObject)
@@ -105,12 +126,17 @@ export default {
     confirmToClearAllFiles () {
       this.clearAllFiles()
     },
-    clearAllFiles () {
+    async clearAllFiles () {
       this.isDeletingAllFiles = true
-      this.preparingFiles.forEach(file => {
-        File.delete(file.id)
-      })
-      // the component will be removed once delete successfully, and isDeletingAllFiles will be automatically changed to be 'false' automatically
+      const t0 = performance.now()
+      let listen = (event, arg) => {
+        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
+        this.isDeletingAllFiles = false
+        const t1 = performance.now()
+        console.log('[Measure] delete prepare files ' + (t1 - t0) + ' ms')
+      }
+      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deletePreparingFilesRequest, this.selectedStreamId)
+      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
     },
     hide () {
       this.showFileNameFormatDropDown = false

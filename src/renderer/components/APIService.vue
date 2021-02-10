@@ -5,15 +5,17 @@
 <script>
   import { mapState } from 'vuex'
   import File from '../store/models/File'
-  import fileHelper from './../../../utils/fileHelper'
+  import DatabaseEventName from './../../../utils/DatabaseEventName'
 
   const workerTimeoutMinimum = 3000
+  const queueFileToUploadWorkerTimeoutMinimum = 1000
 
   export default {
     data: () => {
       return {
-        checkStatusWorkerTimeout: workerTimeoutMinimum,
+        numberOfUploadingFiles: 0,
         checkWaitingFilesInterval: null,
+        checkStatusInterval: null,
         isQueuing: false
       }
     },
@@ -62,46 +64,15 @@
         })
       },
       getUnsyncedFile () {
-        return new Promise((resolve, reject) => {
-          const file = File.query().where('state', 'waiting')
-            .orderBy('retries', 'desc')
-            .orderBy('timestamp', 'asc')
-            .first()
-          console.log('\nwaiting file ', file)
-          if (file != null) {
-            resolve(file)
-          } else {
-            reject(new Error('No waiting files'))
-          }
-        })
-      },
-      getUnsyncedFiles () {
         return File.query().where('state', 'waiting')
           .orderBy('retries', 'desc')
           .orderBy('timestamp', 'asc')
-          .limit(10).get()
-      },
-      getUploadedFile () {
-        return new Promise((resolve, reject) => {
-          const file = File.query().where((file) => {
-            return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== '' && file.uploaded === true
-          }).orderBy('timestamp').first()
-          if (file != null) {
-            resolve(file)
-          } else {
-            reject(new Error('No uploaded files'))
-          }
-        })
+          .first()
       },
       getUploadedFiles () {
         return File.query().where((file) => {
           return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== '' && file.uploaded === true
         }).orderBy('timestamp').limit(5).get()
-      },
-      getCompletedFiles () {
-        return File.query().where(file =>
-          file.state === 'completed' && fileHelper.isOutdatedFile(file))
-          .orderBy('timestamp', 'asc').get()
       },
       uploadFile (file) {
         return new Promise((resolve, reject) => {
@@ -115,48 +86,32 @@
           this.$electron.ipcRenderer.on('sendIdToken', listener)
         })
       },
-      // queue 10 files to upload each time
       queueFilesToUpload () {
-        const unsyncedFiles = this.getUnsyncedFiles()
-        if (unsyncedFiles.length <= 0 || this.isQueuing) { return }
-        this.isQueuing = true
-        return Promise.all(unsyncedFiles.map((file) => this.uploadFile(file))).then(() => {
-          this.isQueuing = false
-        }).catch((err) => {
-          this.isQueuing = false
-          console.log(err)
+        if (this.numberOfUploadingFiles >= 5) return
+        const unsyncedFile = this.getUnsyncedFile()
+        if (!unsyncedFile) return
+        this.numberOfUploadingFiles += 1
+        this.uploadFile(unsyncedFile).then(() => {
+          this.numberOfUploadingFiles -= 1
+        }).catch(() => {
+          this.numberOfUploadingFiles -= 1
         })
       },
       queueJobToCheckStatus () {
-        return new Promise((resolve, reject) => {
-          let listener = async (event, idToken) => {
-            this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+        let listener = async (event, idToken) => {
+          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          const files = this.getUploadedFiles()
+          for (let file of files) {
             try {
-              const files = await Promise.all(this.getUploadedFiles())
-              for (let file of files) {
-                if (fileHelper.isOutdatedFile(file)) {
-                  await File.update({
-                    where: file.id,
-                    data: {
-                      state: 'waiting',
-                      uploadId: '',
-                      stateMessage: '',
-                      progress: 0,
-                      retries: file.retries + 1
-                    }
-                  })
-                } else {
-                  await this.$file.checkStatus(file, idToken, false)
-                }
-              }
-              resolve()
+              await this.$file.checkStatus(file, idToken, false)
+              // TODO: what happen if the ingest service never ingest/change the status
             } catch (e) {
-              reject(e)
+              console.log('checkStatus failed', e)
             }
           }
-          this.$electron.ipcRenderer.on('sendIdToken', listener)
-          this.$electron.ipcRenderer.send('getIdToken')
-        })
+        }
+        this.$electron.ipcRenderer.on('sendIdToken', listener)
+        this.$electron.ipcRenderer.send('getIdToken')
       },
       tickUpload () {
         if (!this.isUploadingProcessEnabled) return
@@ -164,13 +119,7 @@
       },
       tickCheckStatus () {
         if (!this.isUploadingProcessEnabled) return
-        this.queueJobToCheckStatus().then(() => {
-          this.checkStatusWorkerTimeout = workerTimeoutMinimum
-          setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
-        }).catch((err) => {
-          console.log(err)
-          setTimeout(() => { this.tickCheckStatus() }, this.checkStatusWorkerTimeout)
-        })
+        this.queueJobToCheckStatus()
       },
       async updateFilesDuration () {
         this.$file.updateFilesDuration(this.noDurationFiles)
@@ -193,7 +142,6 @@
           })
       },
       checkFilesInUploadingSessionId (files) {
-        console.log('checkFilesInUploadingSessionId', files)
         if (files.length === 0) return
         const completedFiles = files.filter(file => file.isInCompletedGroup && !file.isError)
         const failedFiles = files.filter(file => file.isInCompletedGroup && file.isError)
@@ -203,12 +151,7 @@
         }
       },
       async removeOutdatedFiles () {
-        const files = this.getCompletedFiles()
-        if (files && files.length) {
-          for (let file of files) {
-            await File.delete(file.id)
-          }
-        }
+        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteOutdatedFilesRequest)
       },
       sendCompleteNotification (numberOfCompletedFiles, numberOfFailedFiles) {
         const completedText = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'} uploaded`
@@ -247,16 +190,26 @@
       this.updateFilesDuration()
       this.checkWaitingFilesInterval = setInterval(() => {
         this.tickUpload()
+      }, queueFileToUploadWorkerTimeoutMinimum)
+      this.checkStatusInterval = setInterval(() => {
+        this.tickCheckStatus()
       }, workerTimeoutMinimum)
-      this.tickCheckStatus()
       this.checkFilesInUploadingSessionId(this.filesInUploadingSession)
       this.removeOutdatedFiles()
+      this.$electron.ipcRenderer.on('getFileDurationTrigger', () => {
+        console.log('getFileDurationTrigger')
+        this.updateFilesDuration()
+      })
     },
     beforeDestroy () {
       console.log('\nclearInterval')
       if (this.checkWaitingFilesInterval) {
         clearInterval(this.checkWaitingFilesInterval)
         this.checkWaitingFilesInterval = null
+      }
+      if (this.checkStatusInterval) {
+        clearInterval(this.checkStatusInterval)
+        this.checkStatusInterval = null
       }
     }
   }
