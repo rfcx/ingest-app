@@ -2,6 +2,9 @@ import getAudioDurationInSeconds from './fileDurationHelper'
 const fs = require('fs')
 const path = require('path')
 const cryptoJS = require('crypto-js')
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
+const ffmpeg = require('fluent-ffmpeg')
+ffmpeg.setFfmpegPath(ffmpegPath)
 const dayInMs = 1000 * 60 * 60 * 24
 
 const getFilePath = (directoryPath, fileName) => {
@@ -94,6 +97,54 @@ const rename = (path, newPath, maxRetires) => new Promise((resolve, reject) => {
   })
 })
 
+const convert = (sourceFile, destinationPath) => {
+  console.log('converting: ', sourceFile, destinationPath)
+  return new Promise((resolve, reject) => {
+    const command = ffmpeg(sourceFile)
+      .noVideo()
+      .output(destinationPath)
+      .on('start', function (commandLine) {
+        // console.log('Spawned Ffmpeg with command: ' + commandLine)
+      }).on('progress', function (progress) {
+        // console.log('Processing: ' + progress.percent + '% done')
+      })
+
+    const timeout = setTimeout(function () {
+      command.kill()
+      reject(Error('Timeout')) // TODO: move to errors
+    }, 60000)
+
+    command
+      .on('error', function (err, stdout, stderr) {
+        clearTimeout(timeout)
+        reject(err)
+      })
+      .on('end', async function (stdout, stderr) {
+        clearTimeout(timeout)
+        // console.log('end: ' + destinationPath)
+        try {
+          resolve({
+            path: destinationPath
+          })
+        } catch (e) { reject(e) }
+      })
+      .run()
+  })
+}
+
+const remove = (path) => {
+  return new Promise((resolve, reject) => {
+    fs.unlink(path, (err) => {
+      if (err) {
+        console.error(err)
+        reject(err)
+      } else {
+        resolve('file delete successfully')
+      }
+    })
+  })
+}
+
 export default {
   getFilesFromDirectoryPath,
   readFile,
@@ -109,5 +160,7 @@ export default {
   isFolder,
   getCheckSum,
   isOutdatedFile,
-  rename
+  rename,
+  convert,
+  remove
 }

@@ -308,10 +308,9 @@ class FileProvider {
       })
       return Promise.reject(new Error('File does not exist'))
     }
-    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.utcTimestamp,
-      file.sizeInByte, idToken, (progress) => {
-        // FIX progress scale when we will start work with google cloud
-      }).then((uploadId) => {
+    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.utcTimestamp, idToken, (progress) => {
+      // FIX progress scale when we will start work with google cloud
+    }).then((uploadId) => {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
       return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
     }).catch((error) => {

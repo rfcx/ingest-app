@@ -85,6 +85,7 @@
     }
   },
   "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
     "@ffprobe-installer/ffprobe": "^1.0.12",
     "@fortawesome/fontawesome-svg-core": "1.2.25",
     "@fortawesome/free-brands-svg-icons": "5.11.2",
@@ -107,6 +108,7 @@
     "electron-squirrel-startup": "^1.0.0",
     "execa": "^4.0.2",
     "firebase": "^8.1.1",
+    "fluent-ffmpeg": "^2.1.2",
     "geo-tz": "^6.0.0",
     "is-online": "^8.2.1",
     "is-stream": "^2.0.0",
