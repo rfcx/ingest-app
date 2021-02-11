@@ -71,7 +71,7 @@
       },
       getUploadedFiles () {
         return File.query().where((file) => {
-          return ['converting', 'uploading', 'ingesting'].includes(file.state) && file.uploadId !== '' && file.uploaded === true
+          return ['uploading', 'ingesting'].includes(file.state) && file.uploadId !== '' && file.uploaded === true
         }).orderBy('timestamp').limit(5).get()
       },
       uploadFile (file) {
