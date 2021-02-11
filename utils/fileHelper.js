@@ -2,9 +2,11 @@ import getAudioDurationInSeconds from './fileDurationHelper'
 const fs = require('fs')
 const path = require('path')
 const cryptoJS = require('crypto-js')
+
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
 const ffmpeg = require('fluent-ffmpeg')
 ffmpeg.setFfmpegPath(ffmpegPath)
+
 const dayInMs = 1000 * 60 * 60 * 24
 
 const getFilePath = (directoryPath, fileName) => {
@@ -97,7 +99,12 @@ const rename = (path, newPath, maxRetires) => new Promise((resolve, reject) => {
   })
 })
 
-const convert = (sourceFile, destinationPath) => {
+const getTempPath = (tmpPath, fileName) => {
+  return `${tmpPath}/${fileName}`
+}
+
+const convert = (sourceFile, tempPath) => {
+  const destinationPath = `${getTempPath(tempPath, getFileNameFromFilePath(sourceFile))}.flac`
   console.log('converting: ', sourceFile, destinationPath)
   return new Promise((resolve, reject) => {
     const command = ffmpeg(sourceFile)
