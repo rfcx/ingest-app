@@ -59,7 +59,7 @@
       },
       getSuspendedFiles () {
         return new Promise((resolve, reject) => {
-          let files = File.query().where(file => { return ['uploading', 'converting'].includes(file.state) && file.uploadId !== '' && file.uploaded === false }).orderBy('timestamp').get()
+          let files = File.query().where(file => { return ['uploading', 'converting'].includes(file.state) && file.uploaded === false }).orderBy('timestamp').get()
           resolve(files != null ? files : [])
         })
       },
@@ -71,7 +71,7 @@
       },
       getUploadedFiles () {
         return File.query().where((file) => {
-          return (file.state === 'ingesting' || file.state === 'uploading') && file.uploadId !== '' && file.uploaded === true
+          return ['converting', 'uploading', 'ingesting'].includes(file.state) && file.uploadId !== '' && file.uploaded === true
         }).orderBy('timestamp').limit(5).get()
       },
       uploadFile (file) {
