@@ -399,13 +399,11 @@ class FileProvider {
                 data: { state: 'server_error', stateMessage: failureMessage }
               })
             }
-          case 31:
+          default:
             return File.update({
               where: file.id,
               data: { state: 'server_error', stateMessage: failureMessage }
             })
-          default:
-            break
         }
       })
       .catch((error) => {
