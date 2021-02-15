@@ -51,7 +51,6 @@
     components: { SideNavigation, EmptyView, FileList, FileContainer, GlobalProgress, ConfirmAlert },
     data () {
       return {
-        uploadingProcessText: 'The uploading process has been paused',
         alertTitle: 'You are up to date',
         alertContent: this.getContent(),
         executed: false,
