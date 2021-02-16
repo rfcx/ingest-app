@@ -74,7 +74,7 @@ export default {
   components: { Map },
   computed: {
     ...mapState({
-      selectedStreamId: state => state.Stream.selectedStreamId,
+      selectedStreamId: state => state.AppSetting.selectedStreamId,
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
     }),
     selectedStream () {

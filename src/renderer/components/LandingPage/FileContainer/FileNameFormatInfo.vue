@@ -78,7 +78,7 @@ export default {
       arrowDown: faAngleDown
     }),
     ...mapState({
-      selectedStreamId: state => state.Stream.selectedStreamId
+      selectedStreamId: state => state.AppSetting.selectedStreamId
     }),
     selectedStream () {
       return Stream.find(this.selectedStreamId)

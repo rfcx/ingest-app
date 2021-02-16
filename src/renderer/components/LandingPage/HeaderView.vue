@@ -50,7 +50,7 @@ export default {
       return File.query().where('sessionId', this.currentUploadingSessionId).get()
     },
     selectedStreamId () {
-      return this.$store.state.Stream.selectedStreamId
+      return this.$store.state.AppSetting.selectedStreamId
     },
     selectedStream () {
       return Stream.find(this.selectedStreamId)

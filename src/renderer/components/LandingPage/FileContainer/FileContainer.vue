@@ -34,7 +34,7 @@ export default {
   },
   computed: {
     ...mapState({
-      selectedStreamId: state => state.Stream.selectedStreamId
+      selectedStreamId: state => state.AppSetting.selectedStreamId
     }),
     selectedTab () {
       const savedSelectedTab = this.$store.getters.getSelectedTabByStreamId(this.selectedStreamId)

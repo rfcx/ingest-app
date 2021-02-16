@@ -121,11 +121,19 @@
       },
       hideNewSiteDropDown () {
         this.shouldShowNewSiteDropDown = false
+      },
+      migrateDatabase () {
+        // vuex migration
+        const selectedStreamIdInAppSettingModel = this.$store.state.AppSetting.selectedStreamId
+        const selectedStreamIdInStreamModel = this.$store.state.Stream.selectedStreamId
+        if (!selectedStreamIdInAppSettingModel && selectedStreamIdInStreamModel) {
+          this.$store.dispatch('setSelectedStreamId', selectedStreamIdInStreamModel)
+        }
       }
     },
     computed: {
       ...mapState({
-        selectedStreamId: state => state.Stream.selectedStreamId,
+        selectedStreamId: state => state.AppSetting.selectedStreamId,
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
       }),
       streams () {
@@ -143,6 +151,7 @@
       }
     },
     created () {
+      this.migrateDatabase()
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()

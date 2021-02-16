@@ -35,7 +35,7 @@ export default {
   },
   computed: {
     ...mapState({
-      selectedStreamId: (state) => state.Stream.selectedStreamId
+      selectedStreamId: (state) => state.AppSetting.selectedStreamId
     })
   },
   methods: {

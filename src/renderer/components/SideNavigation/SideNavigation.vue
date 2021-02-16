@@ -87,7 +87,7 @@
     },
     computed: {
       selectedStreamId () {
-        return this.$store.state.Stream.selectedStreamId
+        return this.$store.state.AppSetting.selectedStreamId
       },
       selectedStream () {
         return Stream.find(this.selectedStreamId)
