@@ -38,46 +38,13 @@
         this.onLine = type === 'online'
         if (!this.onLine) {
           console.log('\nupdateOnlineStatus', this.onLine)
-          this.updateUploadingProcess(this.onLine)
           settings.set('settings.onLine', this.onLine)
-          this.checkAfterSuspended()
         } else {
           isOnline().then(online => {
             console.log('\nupdateOnlineStatus', online)
-            this.updateUploadingProcess(online)
             settings.set('settings.onLine', online)
           })
         }
-      },
-      updateUploadingProcess (arg) {
-        const files = this.getAllFilesInTheSession()
-        files.forEach(file => {
-          File.update({ where: file.id,
-            data: { paused: !arg }
-          })
-        })
-      },
-      checkAfterSuspended () {
-        return this.getSuspendedFiles()
-          .then((files) => {
-            if (files.length) {
-              let listener = (event, arg) => {
-                this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-                let idToken = arg
-                for (let file of files) {
-                  return this.$file.checkStatus(file, idToken, true)
-                }
-              }
-              this.$electron.ipcRenderer.send('getIdToken')
-              this.$electron.ipcRenderer.on('sendIdToken', listener)
-            }
-          })
-      },
-      getSuspendedFiles () {
-        return new Promise((resolve, reject) => {
-          let files = File.query().where(file => { return file.state === 'uploading' && file.uploadId !== '' && file.uploaded === false }).orderBy('timestamp').get()
-          resolve(files != null ? files : [])
-        })
       }
     }
   }
