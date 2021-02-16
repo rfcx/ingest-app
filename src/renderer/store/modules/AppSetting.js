@@ -1,6 +1,7 @@
 const state = {
   selectedTabs: {},
-  currentUploadingSessionId: null
+  currentUploadingSessionId: null,
+  isUploadingProcessEnabled: true
 }
 
 const mutations = {
@@ -10,9 +11,13 @@ const mutations = {
   SET_UPLOADING_SESSION_ID (state, id) {
     state.currentUploadingSessionId = id
   },
+  ENABLE_UPLOADING_PROCESS (state, enabled) {
+    state.isUploadingProcessEnabled = enabled
+  },
   RESET (state, object) {
     state.selectedTabs = object
     state.currentUploadingSessionId = null
+    state.isUploadingProcessEnabled = true
   }
 }
 
@@ -22,6 +27,9 @@ const actions = {
   },
   setCurrentUploadingSessionId ({ commit }, id) {
     commit('SET_UPLOADING_SESSION_ID', id)
+  },
+  enableUploadingProcess ({ commit }, enabled) {
+    commit('ENABLE_UPLOADING_PROCESS', enabled)
   },
   reset ({ commit }, object) {
     commit('RESET', object)

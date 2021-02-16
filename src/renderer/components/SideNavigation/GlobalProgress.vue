@@ -17,14 +17,10 @@
 import { mapState } from 'vuex'
 import File from '../../store/models/File'
 export default {
-  data () {
-    return {
-      isUploadingProcessEnabled: true
-    }
-  },
   computed: {
     ...mapState({
-      currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
+      currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
+      isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
     }),
     shouldShowProgress () {
       const allFiles = this.getAllFilesInTheSession()
@@ -33,10 +29,6 @@ export default {
     completedFiles () {
       const files = this.getAllFilesInTheSession()
       return files.filter(f => f.isInCompletedGroup)
-    },
-    isUploadingEnabled () {
-      const files = this.getAllFilesInTheSession()
-      return files.every(file => { return !file.paused })
     }
   },
   watch: {
@@ -63,13 +55,8 @@ export default {
       return require(`../../assets/ic-uploading-${state}-green.svg`)
     },
     toggleUploadingProcess () {
-      this.isUploadingProcessEnabled = !this.isUploadingProcessEnabled
-      const files = this.getAllFilesInTheSession()
-      files.forEach(file => {
-        File.update({ where: file.id,
-          data: { paused: !this.isUploadingProcessEnabled }
-        })
-      })
+      // this.isUploadingProcessEnabled = !this.isUploadingProcessEnabled
+      this.$store.dispatch('enableUploadingProcess', !this.isUploadingProcessEnabled)
     },
     getProgressPercent () {
       const files = this.getAllFilesInTheSession()

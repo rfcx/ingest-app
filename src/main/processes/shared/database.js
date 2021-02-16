@@ -76,18 +76,5 @@ export default {
     await File.delete(file => FileState.isCompleted(file.state) && FileHelper.isOutdatedFile(file))
     console.log('deleting outdated files complete')
     return Promise.resolve()
-  },
-  // other
-  toggleUploadingProcess: (event, files, isToggledUploadingProcess) => {
-    console.log(`toggleUploadingSession ${files.length} ${isToggledUploadingProcess}`)
-    const updatedFiles = files.reduce((result, file) => {
-      result[file.id] = { ...file, paused: !isToggledUploadingProcess }
-      return result
-    }, {})
-    store.commit('entities/insertRecords', {
-      entity: 'files',
-      records: updatedFiles
-    })
-    event.sender.send('toggleUploadingSessionComplete')
   }
 }

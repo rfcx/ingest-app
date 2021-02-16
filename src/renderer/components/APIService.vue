@@ -21,7 +21,8 @@
     },
     computed: {
       ...mapState({
-        currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
+        currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
+        isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
       }),
       filesInUploadingSession () {
         if (!this.currentUploadingSessionId) return []
@@ -29,14 +30,11 @@
       },
       noDurationFiles () {
         return File.query().where(file => { return file.durationInSecond === -1 }).orderBy('timestamp').get()
-      },
-      isUploadingProcessEnabled () {
-        const files = this.getAllFilesInTheSession()
-        return files.every(file => { return !file.paused })
       }
     },
     watch: {
       isUploadingProcessEnabled (val, oldVal) {
+        console.log('isUploadingProcessEnabled set', val, oldVal)
         if (val === oldVal) return
         this.checkStatusWorkerTimeout = workerTimeoutMinimum
         this.tickCheckStatus()
@@ -168,21 +166,6 @@
       resetUploadingSessionId () {
         this.$store.dispatch('setCurrentUploadingSessionId', null)
       }
-    },
-    mounted () {
-      let listener = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener('suspendApp', listener)
-        // Continue uploading process if the app resumes
-        const files = this.getAllFilesInTheSession()
-        files.forEach(file => {
-          File.update({ where: file.id,
-            data: { paused: !arg }
-          })
-        })
-        this.$electron.ipcRenderer.send('setUploadingProcess', arg)
-        if (arg === true) { this.checkAfterSuspended() }
-      }
-      this.$electron.ipcRenderer.on('suspendApp', listener)
     },
     created () {
       console.log('API Service')
