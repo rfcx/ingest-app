@@ -5,6 +5,7 @@
 <script>
   import { mapState } from 'vuex'
   import File from '../store/models/File'
+  import FileHelper from '../../../utils/fileHelper'
   import DatabaseEventName from './../../../utils/DatabaseEventName'
 
   const workerTimeoutMinimum = 3000
@@ -29,7 +30,7 @@
         return File.query().where('sessionId', this.currentUploadingSessionId).get()
       },
       noDurationFiles () {
-        return File.query().where(file => { return file.durationInSecond === -1 }).orderBy('timestamp').get()
+        return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 }).orderBy('timestamp').get()
       }
     },
     watch: {
