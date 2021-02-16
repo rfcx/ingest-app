@@ -1,6 +1,7 @@
 const getStatePriority = function (state) {
   switch (state) {
     case 'preparing': return 0
+    case 'converting':
     case 'uploading': return 1
     case 'ingesting': return 2
     case 'waiting': return 3
@@ -14,6 +15,7 @@ const getStatePriority = function (state) {
 const getName = function (state, message) {
   switch (state) {
     case 'preparing': return ''
+    case 'converting': return 'compressing'
     case 'waiting': return 'waiting'
     case 'uploading': return 'uploading'
     case 'ingesting': return 'ingesting'
@@ -31,6 +33,7 @@ const getIconName = function (state) {
     case 'preparing':
     case 'waiting':
       return 'ic-state-waiting.svg'
+    case 'converting':
     case 'uploading':
     case 'uploaded':
       return 'ic-state-uploading.svg'
@@ -51,7 +54,7 @@ const isInPreparedGroup = function (state) {
 }
 
 const isInQueuedGroup = function (state) {
-  return state === 'waiting' || state === 'uploading' || state === 'ingesting'
+  return ['waiting', 'uploading', 'converting', 'ingesting'].includes(state)
 }
 
 const isInCompletedGroup = function (state) {
