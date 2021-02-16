@@ -91,12 +91,10 @@ const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, 
   console.log('===> requestUploadUrl for', originalFilename)
   const sha1 = fileHelper.getCheckSum(filePath)
   const params = { filename: originalFilename, checksum: sha1, stream: streamId, timestamp: timestamp }
-  console.log(JSON.stringify(params))
   return httpClient.post(apiUrl(env) + '/uploads', params, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const url = response.data.url
       const uploadId = response.data.uploadId
-      console.log('===> getUploadUrl for', originalFilename, uploadId)
       return { url, uploadId }
     })
 }
@@ -106,7 +104,7 @@ const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, 
 const fs = require('fs')
 
 function performUpload (signedUrl, signId, filePath, fileExt, progressCallback) {
-  console.log(`===> performUpload to upload file ${signedUrl} ${signId}, ${filePath}`)
+  console.log(`===> performUpload to upload file ${signId}`)
   var headers = {
     'Content-Type': `audio/${fileExt}`
   }

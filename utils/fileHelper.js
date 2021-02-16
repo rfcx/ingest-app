@@ -110,11 +110,6 @@ const convert = (sourceFile, tempPath) => {
     const command = ffmpeg(sourceFile)
       .noVideo()
       .output(destinationPath)
-      .on('start', function (commandLine) {
-        // console.log('Spawned Ffmpeg with command: ' + commandLine)
-      }).on('progress', function (progress) {
-        // console.log('Processing: ' + progress.percent + '% done')
-      })
 
     const timeout = setTimeout(function () {
       command.kill()
@@ -128,7 +123,6 @@ const convert = (sourceFile, tempPath) => {
       })
       .on('end', async function (stdout, stderr) {
         clearTimeout(timeout)
-        // console.log('end: ' + destinationPath)
         try {
           resolve({
             path: destinationPath
