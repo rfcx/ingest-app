@@ -188,13 +188,6 @@ export default {
       if (stream) {
         this.$store.dispatch('setSelectedStreamId', stream.id)
       }
-      // If a stream deleted when the uploading process was paused.
-      const files = File.query().where('sessionId', this.currentUploadingSessionId).get()
-      files.forEach(file => {
-        File.update({ where: file.id,
-          data: { paused: false }
-        })
-      })
       this.isDeleting = false
       this.redirectToMainScreen()
     },

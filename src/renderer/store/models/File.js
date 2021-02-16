@@ -31,7 +31,6 @@ export default class File extends Model {
       notified: this.boolean(false),
       retries: this.number(0),
       uploaded: this.boolean(false),
-      paused: this.boolean(false),
       sessionId: this.attr(''),
       deviceId: this.string(''),
       deploymentId: this.string('')

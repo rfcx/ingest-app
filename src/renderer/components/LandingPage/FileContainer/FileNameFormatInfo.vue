@@ -122,6 +122,9 @@ export default {
       const tabObject = {}
       tabObject[this.selectedStreamId] = 'Queued'
       this.$store.dispatch('setSelectedTab', tabObject)
+
+      // always enable uploading process
+      this.$store.dispatch('enableUploadingProcess', true)
     },
     confirmToClearAllFiles () {
       this.clearAllFiles()
