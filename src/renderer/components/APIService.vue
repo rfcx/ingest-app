@@ -28,7 +28,7 @@
         return File.query().where('sessionId', this.currentUploadingSessionId).get()
       },
       noDurationFiles () {
-        return File.query().where(file => { return file.state === 'preparing' && file.durationInSecond === -1 }).orderBy('timestamp').get()
+        return File.query().where(file => { return file.durationInSecond === -1 }).orderBy('timestamp').get()
       },
       isUploadingProcessEnabled () {
         const files = this.getAllFilesInTheSession()
