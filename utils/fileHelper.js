@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const cryptoJS = require('crypto-js')
 
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path.replace('app.asar', 'app.asar.unpacked')
 const ffmpeg = require('fluent-ffmpeg')
 ffmpeg.setFfmpegPath(ffmpegPath)
 
