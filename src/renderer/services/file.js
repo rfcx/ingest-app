@@ -298,10 +298,10 @@ class FileProvider {
   // - check status
 
   /* -- API Wrapper -- */
-  uploadFile (file, idToken) {
+  async uploadFile (file, idToken) {
     console.log('\nupload file ', file.id)
     if (!fileHelper.isExist(file.path)) {
-      File.update({
+      await File.update({
         where: file.id,
         data: { state: 'server_error', stateMessage: 'File does not exist' }
       })
