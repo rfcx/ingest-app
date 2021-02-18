@@ -142,12 +142,13 @@
       selectedStream () {
         return Stream.find(this.selectedStreamId)
       },
-      allFilesInTheSession () {
-        return File.query().where('sessionId', this.currentUploadingSessionId).get()
-      },
       shouldShowProgress () {
-        const allFiles = this.allFilesInTheSession
-        return allFiles.length !== allFiles.filter(file => file.isInCompletedGroup).length
+        const numberOfAllFiles = File.query().where('sessionId', this.currentUploadingSessionId).count()
+        const numberOfCompletedFiles = File.query().where(file => {
+          return file.sessionId === this.currentUploadingSessionId && file.isInCompletedGroup
+        }).count()
+        console.log(`uploading => ${numberOfCompletedFiles}/${numberOfAllFiles}`)
+        return numberOfAllFiles !== numberOfCompletedFiles
       }
     },
     created () {
