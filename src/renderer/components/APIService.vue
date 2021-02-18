@@ -4,6 +4,7 @@
 
 <script>
   import { mapState } from 'vuex'
+  import settings from 'electron-settings'
   import File from '../store/models/File'
   import FileHelper from '../../../utils/fileHelper'
   import DatabaseEventName from './../../../utils/DatabaseEventName'
@@ -98,11 +99,13 @@
         this.$electron.ipcRenderer.send('getIdToken')
       },
       tickUpload () {
-        if (!this.isUploadingProcessEnabled) return
+        if (!settings.get('settings.onLine')) { console.log('tickUpload: not online'); return }
+        if (!this.isUploadingProcessEnabled) { console.log('tickUpload: not enable uploading process'); return }
         this.queueFilesToUpload()
       },
       tickCheckStatus () {
-        if (!this.isUploadingProcessEnabled) return
+        if (!settings.get('settings.onLine')) { console.log('tickCheckStatus: not online', settings.get('settings')); return }
+        if (!this.isUploadingProcessEnabled) { console.log('tickCheckStatus: not enable uploading process'); return }
         this.queueJobToCheckStatus()
       },
       async updateFilesDuration (files) {
