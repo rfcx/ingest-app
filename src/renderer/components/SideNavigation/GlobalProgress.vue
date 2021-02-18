@@ -23,12 +23,26 @@ export default {
       isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
     }),
     shouldShowProgress () {
-      const allFiles = this.getAllFilesInTheSession()
-      return allFiles.length !== allFiles.filter(file => file.isInCompletedGroup).length
+      return this.numberOfAllFilesInTheSession !== this.numberOfCompleteFilesInTheSession
     },
-    completedFiles () {
-      const files = this.getAllFilesInTheSession()
-      return files.filter(f => f.isInCompletedGroup)
+    numberOfAllFilesInTheSession () {
+      return File.query().where('sessionId', this.currentUploadingSessionId).count()
+    },
+    numberOfCompleteFilesInTheSession () {
+      return this.numberOfSuccessFilesInTheSession + this.numberOfFailFilesInTheSession
+    },
+    numberOfSuccessFilesInTheSession () {
+      return File.query()
+        .where(file => {
+          return file.sessionId === this.currentUploadingSessionId && file.isInCompletedGroup && !file.isError
+        })
+        .count()
+    },
+    numberOfFailFilesInTheSession () {
+      return File.query()
+        .where(file => {
+          return file.sessionId === this.currentUploadingSessionId && file.isInCompletedGroup && file.isError
+        }).count()
     }
   },
   watch: {
@@ -38,14 +52,10 @@ export default {
     }
   },
   methods: {
-    getAllFilesInTheSession () {
-      return File.query().where('sessionId', this.currentUploadingSessionId).get()
-    },
     getState () {
-      const files = this.getAllFilesInTheSession()
-      const completed = this.completedFiles.length
-      const error = files.filter(f => f.isError).length
-      const total = files.length
+      const completed = this.numberOfSuccessFilesInTheSession
+      const error = this.numberOfFailFilesInTheSession
+      const total = this.numberOfAllFilesInTheSession
       let text = `${completed}/${total} files`
       text += error > 0 ? ` ${error} ${error <= 1 ? 'error' : 'errors'}` : ''
       return text
@@ -59,9 +69,8 @@ export default {
       this.$store.dispatch('enableUploadingProcess', !this.isUploadingProcessEnabled)
     },
     getProgressPercent () {
-      const files = this.getAllFilesInTheSession()
-      if (!files.length || !this.completedFiles.length) return 0
-      else return ((this.completedFiles.length / files.length) * 100)
+      if (!this.numberOfAllFilesInTheSession || !this.numberOfCompleteFilesInTheSession) return 0
+      else return ((this.numberOfCompleteFilesInTheSession / this.numberOfAllFilesInTheSession) * 100)
     }
   }
 }
