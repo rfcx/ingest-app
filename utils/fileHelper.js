@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const cryptoJS = require('crypto-js')
 
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path.replace('app.asar', 'app.asar.unpacked')
 const ffmpeg = require('fluent-ffmpeg')
 ffmpeg.setFfmpegPath(ffmpegPath)
 
@@ -78,7 +78,7 @@ const getFileDuration = (filePath) => {
 
 const isSupportedFileExtension = (fileExtension) => {
   let extension = fileExtension.toLowerCase()
-  return extension === 'wav' || extension === 'opus' || extension === 'flac'
+  return ['wav', 'opus', 'flac'].includes(extension)
 }
 
 const isOutdatedFile = (file) => {

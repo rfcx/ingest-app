@@ -69,7 +69,7 @@ class FileProvider {
 
     // Insert converted files into db
     await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
-    electron.ipcRenderer.send('getFileDurationRequest')
+    electron.ipcRenderer.send('getFileDurationRequest', allFileObjectsFiltered)
   }
 
   async handleDroppedFolder (folderPath, selectedStream) {
@@ -81,7 +81,7 @@ class FileProvider {
     ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
     // insert converted files into db
     await this.insertNewFiles(fileObjectsInFolder, selectedStream)
-    electron.ipcRenderer.send('getFileDurationRequest')
+    electron.ipcRenderer.send('getFileDurationRequest', fileObjectsInFolder)
   }
 
   getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null) {
@@ -191,7 +191,6 @@ class FileProvider {
       `Updated ${updatedFiles.length} file(s) to stream '${stream.id}'`
     )
     console.log(`Updated timestampFormat '${format}' to stream '${stream.id}'`)
-    electron.ipcRenderer.send('getFileDurationRequest')
   }
 
   /**
@@ -299,10 +298,10 @@ class FileProvider {
   // - check status
 
   /* -- API Wrapper -- */
-  uploadFile (file, idToken) {
+  async uploadFile (file, idToken) {
     console.log('\nupload file ', file.id)
     if (!fileHelper.isExist(file.path)) {
-      File.update({
+      await File.update({
         where: file.id,
         data: { state: 'server_error', stateMessage: 'File does not exist' }
       })

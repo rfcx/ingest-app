@@ -5,6 +5,7 @@
 <script>
   import { mapState } from 'vuex'
   import File from '../store/models/File'
+  import FileHelper from '../../../utils/fileHelper'
   import DatabaseEventName from './../../../utils/DatabaseEventName'
 
   const workerTimeoutMinimum = 3000
@@ -29,7 +30,7 @@
         return File.query().where('sessionId', this.currentUploadingSessionId).get()
       },
       noDurationFiles () {
-        return File.query().where(file => { return file.state === 'preparing' && file.durationInSecond === -1 }).orderBy('timestamp').get()
+        return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 }).orderBy('timestamp').get()
       }
     },
     watch: {
@@ -119,8 +120,15 @@
         if (!this.isUploadingProcessEnabled) return
         this.queueJobToCheckStatus()
       },
-      async updateFilesDuration () {
-        this.$file.updateFilesDuration(this.noDurationFiles)
+      async updateFilesDuration (files) {
+        if (files && files.length > 0) {
+          console.log('update file duration with files params', files.length)
+          this.$file.updateFilesDuration(files)
+        } else {
+          const noDurationFiles = this.noDurationFiles
+          console.log('update file duration with no duration files from query snapshot', noDurationFiles.length)
+          this.$file.updateFilesDuration(noDurationFiles)
+        }
       },
       checkAfterSuspended () {
         return this.getSuspendedFiles()
@@ -179,10 +187,13 @@
       }, workerTimeoutMinimum)
       this.checkFilesInUploadingSessionId(this.filesInUploadingSession)
       this.removeOutdatedFiles()
-      this.$electron.ipcRenderer.on('getFileDurationTrigger', () => {
+      // add get file duration listener
+      let getFileDurationListener = (event, files) => {
+        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, getFileDurationListener)
         console.log('getFileDurationTrigger')
-        this.updateFilesDuration()
-      })
+        this.updateFilesDuration(files)
+      }
+      this.$electron.ipcRenderer.on('getFileDurationTrigger', getFileDurationListener)
     },
     beforeDestroy () {
       console.log('\nclearInterval')
