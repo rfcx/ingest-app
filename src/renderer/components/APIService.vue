@@ -34,12 +34,6 @@
       }
     },
     watch: {
-      isUploadingProcessEnabled (val, oldVal) {
-        console.log('isUploadingProcessEnabled set', val, oldVal)
-        if (val === oldVal) return
-        this.checkStatusWorkerTimeout = workerTimeoutMinimum
-        this.tickCheckStatus()
-      },
       filesInUploadingSession (val, oldVal) {
         if (val === oldVal) return
         // all files in the session has completed
@@ -47,15 +41,6 @@
       }
     },
     methods: {
-      getAllFilesInTheSession () {
-        return File.query().where('sessionId', this.currentUploadingSessionId).get()
-      },
-      getUploadingFiles () {
-        return new Promise((resolve, reject) => {
-          let files = File.query().where('state', 'uploading').orderBy('timestamp').get()
-          resolve(files != null ? files : [])
-        })
-      },
       getSuspendedFiles () {
         return new Promise((resolve, reject) => {
           let files = File.query().where(file => { return ['uploading', 'converting'].includes(file.state) && file.uploaded === false }).orderBy('timestamp').get()
