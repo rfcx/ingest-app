@@ -58,7 +58,10 @@
           return ['uploading', 'ingesting'].includes(file.state) && file.uploadId !== '' && file.uploaded === true
         }).orderBy('timestamp').limit(5).get()
       },
-      uploadFile (file) {
+      getNoDurationFiles () {
+        return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 && !file.isError }).orderBy('timestamp').get()
+      },
+      async uploadFile (file) {
         return new Promise((resolve, reject) => {
           let listener = (event, arg) => {
             this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
@@ -113,7 +116,7 @@
           console.log('update file duration with files params', files.length)
           this.$file.updateFilesDuration(files)
         } else {
-          const noDurationFiles = this.noDurationFiles
+          const noDurationFiles = this.getNoDurationFiles()
           console.log('update file duration with no duration files from query snapshot', noDurationFiles.length)
           this.$file.updateFilesDuration(noDurationFiles)
         }
