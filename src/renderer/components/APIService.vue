@@ -15,10 +15,9 @@
   export default {
     data: () => {
       return {
-        numberOfUploadingFiles: 0,
+        filesInUploadingQueue: [],
         checkWaitingFilesInterval: null,
-        checkStatusInterval: null,
-        isQueuing: false
+        checkStatusInterval: null
       }
     },
     computed: {
@@ -72,14 +71,15 @@
         })
       },
       queueFilesToUpload () {
-        if (this.numberOfUploadingFiles >= 5) return
+        if (this.filesInUploadingQueue.length >= 5) return
         const unsyncedFile = this.getUnsyncedFile()
-        if (!unsyncedFile) return
-        this.numberOfUploadingFiles += 1
+        if (!unsyncedFile) return // no unsync file
+        if (this.filesInUploadingQueue.includes(unsyncedFile.id)) return // that file is already in the queue
+        this.filesInUploadingQueue.push(unsyncedFile.id)
         this.uploadFile(unsyncedFile).then(() => {
-          this.numberOfUploadingFiles -= 1
+          this.filesInUploadingQueue.pop(unsyncedFile.id)
         }).catch(() => {
-          this.numberOfUploadingFiles -= 1
+          this.filesInUploadingQueue.pop(unsyncedFile.id)
         })
       },
       queueJobToCheckStatus () {
