@@ -368,6 +368,7 @@ class FileProvider {
               data: { state: 'ingesting', stateMessage: '', progress: 100 }
             })
           case 20:
+            if (file.state === 'completed') return
             const uploadTime = Date.now() - file.uploadedTime
             const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.ingest, 'el': `${file.name}/${file.uploadId}`, 'ev': uploadTime }
             await analytics.send('event', analyticsEventObj)
@@ -406,7 +407,7 @@ class FileProvider {
         }
       })
       .catch((error) => {
-        console.log('error', error)
+        console.log('check status error', error)
         if (file.retries < 3) {
           return File.update({
             where: file.id,
