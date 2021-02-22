@@ -129,6 +129,7 @@ function showMainWindow () {
   } else {
     mainWindow.show()
   }
+  mainWindow.webContents.send('getUserSitesTrigger')
 }
 
 function closeMainWindow (e) {

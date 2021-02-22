@@ -251,6 +251,14 @@
       if (remote.getGlobal('firstLogIn')) {
         this.getUserSites()
         this.$electron.ipcRenderer.send('resetFirstLogIn')
+      } else {
+      // add get file duration listener
+        let getUserSitesListener = (event) => {
+          this.$electron.ipcRenderer.removeListener('getUserSitesTrigger', getUserSitesListener)
+          console.log('getUserSitesTrigger')
+          this.getUserSites()
+        }
+        this.$electron.ipcRenderer.on('getUserSitesTrigger', getUserSitesListener)
       }
     }
   }
