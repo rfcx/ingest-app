@@ -129,6 +129,7 @@ function showMainWindow () {
   } else {
     mainWindow.show()
   }
+  mainWindow.webContents.send('onMainWindowIsActive')
 }
 
 function closeMainWindow (e) {
@@ -352,7 +353,6 @@ app.on('ready', async () => {
   global.platform = (process.platform === 'win32' || process.platform === 'win64') ? 'win' : 'mac'
   createAutoUpdaterSub()
   console.log('get setting')
-  console.log('xxxx =>', settings.get('settings.auto_update_app'))
   if (settings.get('settings.auto_update_app')) {
     updateProcess.checkForUpdates()
     updateProcess.createUpdateInterval()
