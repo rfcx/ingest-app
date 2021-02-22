@@ -37,7 +37,7 @@
         <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'wrapper__stream-row_active': isActive(stream)}">
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="wrapper__stream-name">{{ stream.name }}</div>
-            <fa-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
+            <fa-icon class="iconRedo" v-if="stream.canRedo" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
             <img :src="getStateImgUrl(stream.state)">
           </div>
         </div>
@@ -56,7 +56,6 @@
 
 <script>
   import Stream from '../../store/models/Stream'
-  import File from '../../store/models/File'
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
   import api from '../../../../utils/api'
@@ -95,7 +94,7 @@
         return Stream.find(this.selectedStreamId)
       },
       streams () {
-        return Stream.query().with('files').orderBy('updatedAt', 'desc').get()
+        return Stream.query().orderBy('updatedAt', 'desc').get()
       },
       isRequiredSymbols () {
         return this.searchStr && this.searchStr.length > 0 && this.searchStr.length < 3
@@ -174,39 +173,9 @@
         if (this.selectedStream === null) return false
         return stream.id === this.selectedStream.id
       },
-      checkWarningLoad (stream) {
-        let countFailed = 0
-        let countCompleted = 0
-        let countDisabled = 0
-        stream.files.forEach((file) => {
-          if (file.disabled === true) {
-            countDisabled++
-          } else if (file.state === 'failed' || file.state === 'duplicated') {
-            countFailed++
-          } else if (file.state === 'completed') {
-            countCompleted++
-          }
-        })
-        if (countFailed !== stream.files.length && countCompleted !== stream.files.length && (countFailed + countCompleted + countDisabled) === stream.files.length &&
-          (countDisabled + countCompleted) !== stream.files.length && (countDisabled + countFailed + countCompleted) === stream.files.length) return true
-        else return false
-      },
-      isFilesHidden (stream) {
-        let count = 0
-        stream.files.forEach(file => {
-          if (file.disabled === true || file.state === 'completed') {
-            count++
-          }
-        })
-        if (count === stream.files.length) return true
-        else return false
-      },
       repeatUploading (streamId) {
         console.log('repeatUploading')
-        const files = File.query().where((file) => {
-          return file.canRedo && file.streamId === streamId
-        }).get()
-        this.$file.putFilesIntoUploadingQueue(files)
+        // TODO: not implemented
       },
       showPopupToLogOut () {
         this.showConfirmToLogOut = true

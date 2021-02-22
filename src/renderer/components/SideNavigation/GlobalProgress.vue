@@ -15,7 +15,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import File from '../../store/models/File'
+import Stream from '../../store/models/Stream'
 export default {
   computed: {
     ...mapState({
@@ -26,23 +26,16 @@ export default {
       return this.numberOfAllFilesInTheSession !== this.numberOfCompleteFilesInTheSession
     },
     numberOfAllFilesInTheSession () {
-      return File.query().where('sessionId', this.currentUploadingSessionId).count()
+      return Stream.query().sum('sessionTotalCount')
     },
     numberOfCompleteFilesInTheSession () {
       return this.numberOfSuccessFilesInTheSession + this.numberOfFailFilesInTheSession
     },
     numberOfSuccessFilesInTheSession () {
-      return File.query()
-        .where(file => {
-          return file.sessionId === this.currentUploadingSessionId && file.isInCompletedGroup && !file.isError
-        })
-        .count()
+      return Stream.query().sum('sessionSuccessCount')
     },
     numberOfFailFilesInTheSession () {
-      return File.query()
-        .where(file => {
-          return file.sessionId === this.currentUploadingSessionId && file.isInCompletedGroup && file.isError
-        }).count()
+      return Stream.query().sum('sessionFailCount')
     }
   },
   watch: {

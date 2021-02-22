@@ -2,6 +2,7 @@ import store from '../../../renderer/store'
 import File from '../../../renderer/store/models/File'
 import FileState from '../.././../../utils/fileState'
 import FileHelper from '../.././../../utils/fileHelper'
+import Stream from '../../../renderer/store/models/Stream'
 
 export default {
   // prepare
@@ -34,7 +35,6 @@ export default {
       entity: 'files',
       records: updatedFiles
     })
-    return Promise.resolve()
   },
   updateTimestampFormat: (format, streamId, files) => {
     console.log(`updateTimestampFormat ${streamId} ${files.length} ${format}`)
@@ -47,7 +47,6 @@ export default {
       entity: 'files',
       records: updatedFiles
     })
-    return Promise.resolve()
   },
   // queue
   putFilesIntoUploadingQueue: async (streamId, sessionId) => {
@@ -56,25 +55,32 @@ export default {
       result[file.id] = { ...file, state: 'waiting', stateMessage: '', sessionId: sessionId }
       return result
     }, {})
-    console.log('files to update', files.length)
+    const numberOfFiles = Object.keys(files).length
+    console.log('files to update', numberOfFiles)
     store.commit('entities/insertRecords', {
       entity: 'files',
       records: files
     })
-    return Promise.resolve()
+    const stream = Stream.find(streamId)
+    await Stream.update({
+      where: streamId,
+      data: { sessionTotalCount: stream.sessionTotalCount + numberOfFiles, preparingCount: stream.preparingCount - numberOfFiles } // TODO: it might not work for double call
+    })
   },
   // delete
-  deleteFiles: async (ids) => { // TODO: change to be 'deleteAllFiles' with stream id params
-    await File.delete(file => ids.includes(file.id))
-    return Promise.resolve()
+  deleteStream: async (streamId) => {
+    await File.delete(file => file.streamId === streamId)
+    await Stream.delete(streamId)
   },
   deletePreparingFiles: async (streamId) => {
     await File.delete(file => FileState.isInPreparedGroup(file.state) && file.streamId === streamId)
-    return Promise.resolve()
+    await Stream.update({
+      where: streamId,
+      data: { preparingCount: 0 }
+    })
   },
   deleteOutdatedFiles: async () => {
     await File.delete(file => FileState.isCompleted(file.state) && FileHelper.isOutdatedFile(file))
     console.log('deleting outdated files complete')
-    return Promise.resolve()
   }
 }

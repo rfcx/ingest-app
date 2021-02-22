@@ -22,8 +22,8 @@ const checkMaxLength = (streamName) => {
 }
 
 const insertSites = async function (sites) {
-  await Stream.insert({ data: sites })
-  console.log('insert sites: ', sites.length)
+  await Stream.insertOrUpdate({ data: sites })
+  console.log('insertOrUpdate sites: ', sites.length)
 }
 
 const parseUserSites = (sites) => {

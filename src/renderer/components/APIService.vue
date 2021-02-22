@@ -6,6 +6,7 @@
   import { mapState } from 'vuex'
   import settings from 'electron-settings'
   import File from '../store/models/File'
+  import Stream from '../store/models/Stream'
   import FileHelper from '../../../utils/fileHelper'
   import DatabaseEventName from './../../../utils/DatabaseEventName'
 
@@ -25,19 +26,27 @@
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
         isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
       }),
-      filesInUploadingSession () {
-        if (!this.currentUploadingSessionId) return []
-        return File.query().where('sessionId', this.currentUploadingSessionId).get()
+      numberOfAllFilesInTheSession () {
+        return Stream.query().sum('sessionTotalCount')
       },
-      noDurationFiles () {
-        return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 }).orderBy('timestamp').get()
+      numberOfCompleteFilesInTheSession () {
+        return this.numberOfSuccessFilesInTheSession + this.numberOfFailFilesInTheSession
+      },
+      numberOfSuccessFilesInTheSession () {
+        return Stream.query().sum('sessionSuccessCount')
+      },
+      numberOfFailFilesInTheSession () {
+        return Stream.query().sum('sessionFailCount')
+      },
+      isCompleted () {
+        return this.numberOfAllFilesInTheSession > 0 && this.numberOfCompleteFilesInTheSession === this.numberOfAllFilesInTheSession
       }
     },
     watch: {
-      filesInUploadingSession (val, oldVal) {
-        if (val === oldVal) return
-        // all files in the session has completed
-        this.checkFilesInUploadingSessionId(val)
+      async isCompleted (oldVal, newVal) {
+        if (oldVal === newVal || newVal === false) return
+        this.sendCompleteNotification(this.numberOfSuccessFilesInTheSession, this.numberOfFailFilesInTheSession)
+        await this.resetUploadingSessionId()
       }
     },
     methods: {
@@ -138,15 +147,6 @@
             }
           })
       },
-      checkFilesInUploadingSessionId (files) {
-        if (files.length === 0) return
-        const completedFiles = files.filter(file => file.isInCompletedGroup && !file.isError)
-        const failedFiles = files.filter(file => file.isInCompletedGroup && file.isError)
-        if (files.length === completedFiles.length + failedFiles.length) { // all files has completed
-          this.sendCompleteNotification(completedFiles.length, failedFiles.length)
-          this.resetUploadingSessionId()
-        }
-      },
       async removeOutdatedFiles () {
         this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteOutdatedFilesRequest)
       },
@@ -162,8 +162,12 @@
           console.log('show notification')
         }
       },
-      resetUploadingSessionId () {
+      async resetUploadingSessionId () {
         this.$store.dispatch('setCurrentUploadingSessionId', null)
+        await Stream.update({
+          // where: record => true,
+          data: { sessionTotalCount: 0, sessionSuccessCount: 0, sessionFailCount: 0 }
+        })
       }
     },
     created () {
@@ -176,7 +180,6 @@
       this.checkStatusInterval = setInterval(() => {
         this.tickCheckStatus()
       }, workerTimeoutMinimum)
-      this.checkFilesInUploadingSessionId(this.filesInUploadingSession)
       this.removeOutdatedFiles()
       // add get file duration listener
       let getFileDurationListener = (event, files) => {

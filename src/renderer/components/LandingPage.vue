@@ -20,7 +20,7 @@
         <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>
     <!-- </section> -->
-    <global-progress></global-progress>
+    <global-progress ref="globalProgress"></global-progress>
     <confirm-alert
       :title="alertTitle"
       :content="alertContent"
@@ -38,7 +38,6 @@
   import FileContainer from './LandingPage/FileContainer/FileContainer'
   import ConfirmAlert from './Common/ConfirmAlert'
   import { mapState } from 'vuex'
-  import File from '../store/models/File'
   import Stream from '../store/models/Stream'
   import Analytics from 'electron-ga'
   import env from '../../../env.json'
@@ -143,12 +142,7 @@
         return Stream.find(this.selectedStreamId)
       },
       shouldShowProgress () {
-        const numberOfAllFiles = File.query().where('sessionId', this.currentUploadingSessionId).count()
-        const numberOfCompletedFiles = File.query().where(file => {
-          return file.sessionId === this.currentUploadingSessionId && file.isInCompletedGroup
-        }).count()
-        console.log(`uploading => ${numberOfCompletedFiles}/${numberOfAllFiles}`)
-        return numberOfAllFiles !== numberOfCompletedFiles
+        return this.$refs.globalProgress && this.$refs.globalProgress.shouldShowProgress
       }
     },
     created () {

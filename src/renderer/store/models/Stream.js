@@ -26,21 +26,19 @@ export default class Stream extends Model {
       updatedAt: this.attr(''),
       env: this.string(''),
       visibility: this.string(''),
-      deviceId: this.string('')
+      deviceId: this.string(''),
+      preparingCount: this.number(0),
+      sessionTotalCount: this.number(0),
+      sessionSuccessCount: this.number(0),
+      sessionFailCount: this.number(0)
     }
   }
 
   get state () {
-    if (this.files.length === 0) { return '' }
-    const errorFiles = this.files.filter(file => FileState.isError(file.state, file.stateMessage))
-    const preparingFiles = this.files.filter(file => FileState.isInPreparedGroup(file.state))
-    const uploadingFiles = this.files.filter(file => FileState.isInQueuedGroup(file.state))
-    const completedFiles = this.files.filter(file => FileState.isInCompletedGroup(file.state))
-    const isCompleted = this.files.length === completedFiles.length
-    if (uploadingFiles.length > 0) return 'uploading'
-    if (errorFiles.length > 0) return 'failed'
-    if (preparingFiles.length > 0) return 'preparing'
-    if (isCompleted) return 'completed'
+    if (this.isUploading) return 'uploading'
+    if (this.sessionFailCount > 0) return 'failed'
+    if (this.preparingCount > 0) return 'preparing'
+    if (this.isCompleted) return 'completed'
     return ''
   }
 
@@ -60,19 +58,20 @@ export default class Stream extends Model {
     return FileState.isError(this.state)
   }
 
-  get isUploading () {
-    return this.files.filter(file => FileState.isInQueuedGroup(file.state)).length > 0
+  get isPreparing () {
+    console.log('isPreparing', this.preparingCount)
+    return this.preparingCount > 0
   }
 
-  get isDuplicated () {
-    return this.state === 'duplicated'
+  get isUploading () {
+    return this.sessionTotalCount > 0 && this.sessionTotalCount !== this.sessionSuccessCount + this.sessionFailCount
   }
 
   get isCompleted () {
-    return this.state === 'completed'
+    return this.sessionTotalCount > 0 && this.sessionTotalCount === this.sessionSuccessCount + this.sessionFailCount
   }
 
   get canRedo () {
-    return this.files.filter(file => FileState.canRedo(file.state, file.stateMessage)).length > 0
+    return false
   }
 }

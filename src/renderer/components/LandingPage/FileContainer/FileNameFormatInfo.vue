@@ -30,7 +30,7 @@
     </div>
     <div>
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
-      <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="readyToUploadFiles.length < 1 || isDeletingAllFiles">Start upload ({{readyToUploadFiles.length}})</button>
+      <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="numberOfReadyToUploadFiles < 1 || isDeletingAllFiles">Start upload ({{numberOfReadyToUploadFiles}})</button>
     </div>
     <div class="modal is-active" v-if="showSettingModal">
       <div class="modal-background"></div>
@@ -86,8 +86,8 @@ export default {
     selectedTimestampFormat () {
       return this.selectedStream.timestampFormat
     },
-    readyToUploadFiles () {
-      return this.preparingFiles.filter(file => file.isPreparing)
+    numberOfReadyToUploadFiles () {
+      return this.preparingFiles.filter(file => file.isPreparing).length
     },
     fileNameFormatOptions () {
       return Object.values(fileFormat.fileFormat)
@@ -102,7 +102,7 @@ export default {
 
       // set session id
       const sessionId = this.$store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
-      this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
+      await this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
 
       // completion listener
       const t0 = performance.now()
@@ -121,10 +121,10 @@ export default {
       // set selected tab to be queue tab
       const tabObject = {}
       tabObject[this.selectedStreamId] = 'Queued'
-      this.$store.dispatch('setSelectedTab', tabObject)
+      await this.$store.dispatch('setSelectedTab', tabObject)
 
       // always enable uploading process
-      this.$store.dispatch('enableUploadingProcess', true)
+      await this.$store.dispatch('enableUploadingProcess', true)
     },
     confirmToClearAllFiles () {
       this.clearAllFiles()
@@ -165,6 +165,7 @@ export default {
     }
   },
   watch: {
+    // TODO: check if we really need this
     selectedTimestampFormat (newValue, oldValue) {
       if (newValue === oldValue) return
       this.isUpdatingFilenameFormat = false
