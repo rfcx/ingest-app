@@ -22,6 +22,7 @@
     <div class="wrapper__title">
       <span>Sites</span>
       <div class="loader" v-if="isFetching"></div>
+      <button class="button is-small is-rounded" @click.prevent="getUserSites()" v-else><fa-icon class="iconRefresh" :icon="iconRefresh"></fa-icon></button>
     </div>
     <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">
       <input type="text" class="input wrapper__input" placeholder="Filter" v-model="searchStr"
@@ -61,13 +62,14 @@
   import api from '../../../../utils/api'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
-  import { faRedo } from '@fortawesome/free-solid-svg-icons'
+  import { faRedo, faSync } from '@fortawesome/free-solid-svg-icons'
   const { remote } = window.require('electron')
 
   export default {
     data () {
       return {
         iconRedo: faRedo,
+        iconRefresh: faSync,
         uploadingStreams: {},
         timeoutKeyboard: {},
         searchStr: '',
@@ -225,7 +227,9 @@
                 let userSites = streamHelper.parseUserSites(sites)
                 streamHelper.insertSites(userSites)
                 // set selected site
-                this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
+                if (!this.selectedStreamId) {
+                  this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
+                }
               }
             }).catch(error => {
               this.isFetching = false
@@ -419,6 +423,11 @@
     font-size: 13px;
     cursor: pointer;
     margin: 6px 6px 6px 0;
+  }
+  .iconRefresh {
+    color: white;
+    font-size: 9px;
+    cursor: pointer;
   }
   input[type="text"]::-webkit-input-placeholder {
     color: $input-placeholder !important;
