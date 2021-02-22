@@ -4,6 +4,18 @@ import FileState from '../.././../../utils/fileState'
 import FileHelper from '../.././../../utils/fileHelper'
 
 export default {
+  insertSites: async (sites) => {
+    console.log(`insertSites ${sites.length}`)
+    const sitesObject = sites.reduce((result, site) => {
+      result[site.id] = { ...site }
+      return result
+    }, {})
+    store.commit('entities/insertRecords', {
+      entity: 'streams',
+      records: sitesObject
+    })
+    return Promise.resolve()
+  },
   // prepare
   updateFilesTimezone: async (streamId, timezone) => {
     console.log(`updateFilesTimezone ${streamId} ${timezone}`)

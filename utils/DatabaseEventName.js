@@ -1,4 +1,6 @@
 const eventsName = {
+  insertSitesRequest: 'insertSitesRequest',
+  insertSitesResponse: 'insertSitesResponse',
   updateFileTimestampRequest: 'updateFileTimestampRequest',
   updateFileTimestampResponse: 'updateFileTimestampResponse',
   updateFileDurationRequest: 'updateFileDurationRequest',

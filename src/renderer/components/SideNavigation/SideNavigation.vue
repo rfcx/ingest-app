@@ -60,6 +60,7 @@
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
   import api from '../../../../utils/api'
+  import DatabaseEventName from '../../../../utils/DatabaseEventName'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
   import { faRedo, faSync } from '@fortawesome/free-solid-svg-icons'
@@ -220,16 +221,21 @@
       getUserSites () {
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          console.log('getUserSites')
           api.getUserSites(this.isProductionEnv(), arg)
             .then(sites => {
               this.isFetching = false
               if (sites && sites.length) {
                 let userSites = streamHelper.parseUserSites(sites)
-                streamHelper.insertSites(userSites)
-                // set selected site
-                if (!this.selectedStreamId) {
-                  this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
+                let insertSiteListener = (event, arg) => {
+                  this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.insertSitesResponse, insertSiteListener)
+                  // insert site success set selected site
+                  if (!this.selectedStreamId) {
+                    this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
+                  }
                 }
+                this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.insertSitesRequest, userSites)
+                this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.insertSitesResponse, insertSiteListener)
               }
             }).catch(error => {
               this.isFetching = false

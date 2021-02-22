@@ -26,6 +26,12 @@ export default {
       onClosedHandler(e)
     })
 
+    ipcMain.on(DatabaseEventName.eventsName.insertSitesRequest, async function (event, sites) {
+      console.log('request to insert sites')
+      await database.insertSites(sites)
+      event.sender.send(DatabaseEventName.eventsName.insertSitesResponse)
+    })
+
     ipcMain.on(DatabaseEventName.eventsName.deleteAllFilesRequest, async function (event, ids) {
       await database.deleteFiles(ids)
       event.sender.send(DatabaseEventName.eventsName.deleteAllFilesResponse)
