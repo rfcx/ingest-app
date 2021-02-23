@@ -22,6 +22,7 @@ const mutations = {
     state.selectedTabs = object
     state.currentUploadingSessionId = null
     state.isUploadingProcessEnabled = true
+    state.selectedStreamId = null
   }
 }
 
