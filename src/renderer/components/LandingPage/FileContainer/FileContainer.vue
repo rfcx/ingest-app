@@ -3,7 +3,7 @@
     <header-view></header-view>
     <tab :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && selectedStream.isPreparing" :preparingFiles="preparingFiles"></file-name-format-info>
-    <file-list ref="fileList" :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab" :isDragging="isDragging" @onImportFiles="onImportFiles"></file-list>
+    <file-list ref="fileList" :files="getFilesInSelectedTab()" :numberOfQueuingFiles="queuingFiles.length" :selectedTab="selectedTab" :isDragging="isDragging" @onImportFiles="onImportFiles"></file-list>
   </div>
 </template>
 
@@ -70,6 +70,13 @@ export default {
     },
     loadMore () {
       this.$refs.fileList.loadMore()
+    },
+    getFilesInSelectedTab () {
+      switch (this.selectedTab) {
+        case 'Prepared': return this.preparingFiles
+        case 'Queued': return this.queuingFiles
+        case 'Completed': return this.completedFiles
+      }
     }
   },
   watch: {
