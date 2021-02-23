@@ -170,8 +170,8 @@
         const iconName = fileState.getIconName(state)
         return require(`../../assets/${iconName}`)
       },
-      selectItem (stream) {
-        this.$store.dispatch('setSelectedStreamId', stream.id)
+      async selectItem (stream) {
+        await this.$store.dispatch('setSelectedStreamId', stream.id)
       },
       isActive (stream) {
         if (this.selectedStream === null) return false
@@ -202,7 +202,7 @@
                 await streamHelper.insertSites(userSites)
                 // insert site success set selected site
                 if (!this.selectedStreamId) {
-                  this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
+                  await this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
                 }
               }
             }).catch(error => {
