@@ -126,10 +126,10 @@ function showMainWindow () {
   console.log('showMainWindow')
   if (mainWindow === null) {
     createWindow()
+    mainWindow.webContents.send('onMainWindowIsActive')
   } else {
     mainWindow.show()
   }
-  mainWindow.webContents.send('onMainWindowIsActive')
 }
 
 function closeMainWindow (e) {
