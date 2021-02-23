@@ -20,9 +20,13 @@
       </button>
     </div>
     <div class="wrapper__title">
-      <span>Sites</span>
-      <div class="loader" v-if="isFetching"></div>
-      <button class="button is-small is-rounded" @click.prevent="getUserSites()" v-else><fa-icon class="iconRefresh" :icon="iconRefresh"></fa-icon></button>
+      <span>
+        Sites
+        <div class="wrapper__loader">
+          <fa-icon class="iconRefresh" :icon="iconRefresh" @click.prevent="getUserSites()" v-if="!isFetching"></fa-icon>
+          <div class="loader" v-if="isFetching"></div>
+        </div>
+      </span>
     </div>
     <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">
       <input type="text" class="input wrapper__input" placeholder="Filter" v-model="searchStr"
@@ -363,6 +367,10 @@
       margin-right: 3px;
       align-self: center;
     }
+    &__loader {
+      display: inline-block;
+      margin: 0 4px;
+    }
   }
   .rounded-button {
     span {
@@ -433,9 +441,12 @@
     margin: 6px 6px 6px 0;
   }
   .iconRefresh {
-    color: white;
-    font-size: 9px;
+    color: grey;
+    font-size: 13px;
     cursor: pointer;
+  }
+  .iconRefresh:hover {
+    color: white;
   }
   input[type="text"]::-webkit-input-placeholder {
     color: $input-placeholder !important;
