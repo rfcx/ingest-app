@@ -32,6 +32,7 @@
 
 <script>
 import File from '../../../store/models/File'
+import Stream from '../../../store/models/Stream'
 import ConfirmAlert from '../../Common/ConfirmAlert'
 import EmptyView from '../EmptyView'
 import FileRow from './FileRow'
@@ -77,6 +78,7 @@ export default {
     async deleteFile () {
       if (!(this.fileToBeDeleted && this.fileToBeDeleted.canRemove)) return
       this.isDeleting = true
+      await this.removePreparingFilesCount(this.fileToBeDeleted.streamId)
       await File.delete(this.fileToBeDeleted.id)
       this.isDeleting = false
       this.hideConfirmToDeleteDialog()
@@ -94,6 +96,14 @@ export default {
     },
     resetLoadMore () {
       this.visibleRows = PAGE_SIZE
+    },
+    async removePreparingFilesCount (streamId) {
+    // TODO currently not safe: another thread could modify the field between find and update
+      const stream = Stream.find(streamId)
+      await Stream.update({
+        where: streamId,
+        data: { preparingCount: stream.preparingCount - 1 }
+      })
     }
   }
 }
