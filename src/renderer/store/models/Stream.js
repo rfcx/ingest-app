@@ -59,7 +59,6 @@ export default class Stream extends Model {
   }
 
   get isPreparing () {
-    console.log('isPreparing', this.preparingCount)
     return this.preparingCount > 0
   }
 

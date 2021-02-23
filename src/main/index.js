@@ -282,7 +282,7 @@ async function refreshTokens () {
 async function logOut () {
   await authService.logout()
   settings.set('settings.production_env', true)
-  commonProcess.clearAllData()
+  await commonProcess.clearAllData()
   hideMainWindowAndForceLogin()
   resetFirstLogInCondition()
 }

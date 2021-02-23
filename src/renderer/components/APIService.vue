@@ -163,7 +163,7 @@
         }
       },
       async resetUploadingSessionId () {
-        this.$store.dispatch('setCurrentUploadingSessionId', null)
+        await this.$store.dispatch('setCurrentUploadingSessionId', null)
         await Stream.update({
           // where: record => true,
           data: { sessionTotalCount: 0, sessionSuccessCount: 0, sessionFailCount: 0 }

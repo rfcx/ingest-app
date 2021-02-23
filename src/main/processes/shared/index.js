@@ -11,8 +11,8 @@ export default {
       args: args
     })
   },
-  clearAllData () {
-    store.dispatch('entities/deleteAll')
-    store.dispatch('reset', {})
+  async clearAllData () {
+    await store.dispatch('entities/deleteAll')
+    await store.dispatch('reset', {})
   }
 }
