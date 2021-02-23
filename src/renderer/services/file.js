@@ -305,6 +305,7 @@ class FileProvider {
         where: file.id,
         data: { state: 'server_error', stateMessage: 'File does not exist' }
       })
+      await this.incrementFilesCount(file.streamId, false)
       return Promise.reject(new Error('File does not exist'))
     }
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.utcTimestamp, idToken, (progress) => {
@@ -315,25 +316,28 @@ class FileProvider {
     }).catch((error) => {
       console.log('===> ERROR UPLOAD FILE', error, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
-        return File.update({
+        File.update({
           where: file.id,
           data: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
         })
+        return this.incrementFilesCount(file.streamId, false)
       } else if (file.retries < 3) {
         return File.update({
           where: file.id,
           data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
         })
       } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
-        return File.update({
+        File.update({
           where: file.id,
           data: { state: 'server_error', stateMessage: 'Network Error' }
         })
+        return this.incrementFilesCount(file.streamId, false)
       } else {
-        return File.update({
+        File.update({
           where: file.id,
           data: { state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.' }
         })
+        return this.incrementFilesCount(file.streamId, false)
       }
     })
   }
