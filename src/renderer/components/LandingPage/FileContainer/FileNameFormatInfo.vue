@@ -157,6 +157,7 @@ export default {
       const objectFiles = this.preparingFiles.filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage)) || []
       this.isUpdatingFilenameFormat = true
       this.$file.updateFilesFormat(this.selectedStream, objectFiles, format).then(_ => {
+        this.isUpdatingFilenameFormat = false
       }).catch(error => {
         this.isUpdatingFilenameFormat = false
         console.log(`Error update files format '${format}'`, error.message)
