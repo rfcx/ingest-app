@@ -14,6 +14,7 @@ const getStatePriority = function (state) {
 
 const getName = function (state, message) {
   switch (state) {
+    case 'queued': return ''
     case 'preparing': return ''
     case 'converting': return 'compressing'
     case 'waiting': return 'waiting'
@@ -30,6 +31,7 @@ const getName = function (state, message) {
 
 const getIconName = function (state) {
   switch (state) {
+    case 'queued':
     case 'preparing':
     case 'waiting':
       return 'ic-state-waiting.svg'

@@ -29,6 +29,12 @@ const arbimonWebUrl = (isProd, streamId = null) => {
   return baseUrl + query
 }
 
+const unWaitFile = async (fileId) => {
+  File.update({ where: fileId,
+    data: {state: 'queued', uploaded: false}
+  })
+}
+
 const uploadFile = async (environment, fileId, fileName, filePath, fileExt, streamId, timestamp, idToken, progressCallback) => {
   const now = Date.now()
   const analytics = new Analytics(env.analytics.id)
@@ -193,6 +199,7 @@ export default {
   arbimonWebUrl,
   createStream,
   updateStream,
+  unWaitFile,
   uploadFile,
   checkStatus,
   renameStream,

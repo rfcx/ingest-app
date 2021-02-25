@@ -33,6 +33,8 @@
     npm run dev --url=`http://localhost:3030`
     ```
 
+If you want to use Vue.js dev tool extension, install it, then open `src/main/index.js` and uncomment lines 332 - 342
+
 ### Build
 
 Build electron application for production

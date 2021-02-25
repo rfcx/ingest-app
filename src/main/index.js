@@ -1,11 +1,10 @@
 'use strict'
 
-import { app, ipcMain, BrowserWindow } from 'electron'
+import { app, ipcMain } from 'electron'
 import { commonProcess, mainProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess } from './processes'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
-const os = require('os')
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const setupEvents = require('./../../setupEvents')
@@ -329,15 +328,18 @@ function checkIngestServicelUrl () {
 }
 app.commandLine.appendArgument('--enable-features=Metal')
 app.on('ready', async () => {
-  if (process.env.NODE_ENV !== 'production') {
-    // Install vue dev tools
-    // TODO: the path should be configurable by the developer
-    const devToolsPath = path.join(
-      os.homedir(),
-      '/Library/Application Support/Google/Chrome/Profile 2/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/5.3.4_0'
-    )
-    await BrowserWindow.addDevToolsExtension(devToolsPath)
-  }
+  // Uncomment if you want to use vue dev tool extension
+  // if (process.env.NODE_ENV !== 'production') {
+  //   // Install vue dev tools
+  //   // TODO: the path should be configurable by the developer
+  //   import { BrowserWindow } from 'electron'
+  //   const os = require('os')
+  //   const devToolsPath = path.join(
+  //     os.homedir(),
+  //     '/Library/Application Support/Google/Chrome/Profile 2/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/5.3.4_0'
+  //   )
+  //   await BrowserWindow.addDevToolsExtension(devToolsPath)
+  // }
 
   if (setupEvents.handleSquirrelEvent(app)) return
   process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'

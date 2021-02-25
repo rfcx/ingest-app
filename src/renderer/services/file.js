@@ -297,6 +297,10 @@ class FileProvider {
   // - Upload
   // - check status
 
+  async unWaitFile (file) {
+    return api.unWaitFile(file.id)
+  }
+
   /* -- API Wrapper -- */
   async uploadFile (file, idToken) {
     console.log('\nupload file ', file.id)

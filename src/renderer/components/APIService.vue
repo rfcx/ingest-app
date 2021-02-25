@@ -73,6 +73,9 @@
           return ['uploading', 'ingesting'].includes(file.state) && file.uploadId !== '' && file.uploaded === true
         }).orderBy('timestamp').limit(5).get()
       },
+      unWaitFile (file) {
+        this.$file.unWaitFile(file)
+      },
       uploadFile (file) {
         return new Promise((resolve, reject) => {
           let listener = (event, arg) => {
@@ -89,6 +92,7 @@
         if (this.numberOfUploadingFiles >= 5) return
         const unsyncedFile = this.getUnsyncedFile()
         if (!unsyncedFile) return
+        this.unWaitFile(unsyncedFile)
         this.numberOfUploadingFiles += 1
         this.uploadFile(unsyncedFile).then(() => {
           this.numberOfUploadingFiles -= 1
