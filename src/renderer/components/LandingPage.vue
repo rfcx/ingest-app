@@ -17,7 +17,7 @@
       />
       <div class="column content is-desktop">
         <empty-view v-if="isEmptyStream()" :isEmptyStream="isEmptyStream()"></empty-view>
-        <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
+        <file-container ref="fileContainer" v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>
     <!-- </section> -->
     <global-progress ref="globalProgress"></global-progress>
@@ -77,6 +77,7 @@
         await this.handleFiles(e.dataTransfer.files)
         const t1 = performance.now()
         console.log('[Measure] handleDrop ' + (t1 - t0) + ' ms')
+        this.$refs.fileContainer.reloadFiles()
       },
       async handleFiles (files) {
         this.isDragging = false

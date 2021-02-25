@@ -27,6 +27,12 @@ const fileComparator = (fileA, fileB) => {
 }
 export default {
   directives: { infiniteScroll },
+  data () {
+    return {
+      files: [],
+      fetchFilesInterval: null
+    }
+  },
   props: {
     isDragging: Boolean
   },
@@ -43,9 +49,6 @@ export default {
     selectedTab () {
       const savedSelectedTab = this.$store.getters.getSelectedTabByStreamId(this.selectedStreamId)
       return savedSelectedTab || this.getDefaultSelectedTab()
-    },
-    files () {
-      return File.query().where('streamId', this.selectedStreamId).get()
     },
     preparingFiles () {
       return this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
@@ -77,14 +80,41 @@ export default {
         case 'Queued': return this.queuingFiles
         case 'Completed': return this.completedFiles
       }
+    },
+    reloadFiles () {
+      console.log('fetching files...')
+      this.files = File.query().where('streamId', this.selectedStreamId).get()
+    },
+    initFilesFetcher () {
+      // fetch at first load
+      this.reloadFiles()
+      // and set timer to fetch
+      this.fetchFilesInterval = setInterval(() => {
+        this.reloadFiles()
+      }, 2000)
     }
   },
   watch: {
-    selectedTab: (previousTabName, newTabName) => {
-      if (!this) return // Weird error that this is sometimes undefined
+    selectedStreamId: {
+      handler: function (previousStream, newStream) {
+        if (previousStream === newStream) return
+        this.reloadFiles()
+      }
+    },
+    selectedTab (previousTabName, newTabName) {
       if (previousTabName !== newTabName) {
         this.$refs.fileList.resetLoadMore()
+        this.reloadFiles()
       }
+    }
+  },
+  created () {
+    this.initFilesFetcher()
+  },
+  beforeDestroy () {
+    if (this.fetchFilesInterval) {
+      clearInterval(this.fetchFilesInterval)
+      this.fetchFilesInterval = null
     }
   }
 }
