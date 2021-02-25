@@ -155,7 +155,7 @@ export default {
             // add files to site/stream
             if (this.selectedFolderPath) {
               stream.defaultTimezone = dateHelper.getDefaultTimezone(stream.latitude, stream.longitude)
-              this.$file.handleDroppedFolder(this.selectedFolderPath, stream, { deviceId: this.deviceId, deploymentId: this.deploymentInfo.id }) // TODO: pass deployment id
+              this.$file.handleDroppedFolder(this.selectedFolderPath, stream, { deviceId: this.deviceId, deploymentId: this.deploymentInfo ? this.deploymentInfo.id : '' }) // TODO: pass deployment id
             }
             if (this.selectedFiles && this.selectedFiles.length > 0) {
               this.$file.handleDroppedFiles(this.selectedFiles, stream)
