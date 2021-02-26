@@ -92,7 +92,6 @@ export default {
       return files.filter((file) => file.isError).length > 0
     },
     reloadFiles () {
-      console.log('fetching files...')
       this.files = File.query().where('streamId', this.selectedStreamId).get()
     },
     initFilesFetcher () {
