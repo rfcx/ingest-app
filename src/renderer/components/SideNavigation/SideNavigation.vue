@@ -16,7 +16,7 @@
     </div>
     <div class="menu-container wrapper__controls">
       <button type="button" class="button is-rounded rounded-button" @click="showDropDownMenu" v-click-outside="hideDropDownMenu">
-        <span>+</span>New Site
+        <span>+</span>Upload Audio
       </button>
     </div>
     <div class="wrapper__title">
