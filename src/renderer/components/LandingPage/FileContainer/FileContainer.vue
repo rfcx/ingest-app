@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10">
     <header-view></header-view>
-    <tab :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab"></tab>
+    <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && selectedStream.isPreparing" :preparingFiles="preparingFiles"></file-name-format-info>
     <file-list ref="fileList" :files="getFilesInSelectedTab()" :numberOfQueuingFiles="queuingFiles.length" :selectedTab="selectedTab" :isDragging="isDragging" @onImportFiles="onImportFiles"></file-list>
   </div>
@@ -27,6 +27,12 @@ const fileComparator = (fileA, fileB) => {
 }
 export default {
   directives: { infiniteScroll },
+  data () {
+    return {
+      files: [],
+      fetchFilesInterval: null
+    }
+  },
   props: {
     isDragging: Boolean
   },
@@ -43,9 +49,6 @@ export default {
     selectedTab () {
       const savedSelectedTab = this.$store.getters.getSelectedTabByStreamId(this.selectedStreamId)
       return savedSelectedTab || this.getDefaultSelectedTab()
-    },
-    files () {
-      return File.query().where('streamId', this.selectedStreamId).get()
     },
     preparingFiles () {
       return this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
@@ -77,14 +80,51 @@ export default {
         case 'Queued': return this.queuingFiles
         case 'Completed': return this.completedFiles
       }
+    },
+    getNumberOfFilesAndStatusToRenderInTab (tab) {
+      switch (tab) {
+        case 'Prepared': return { numberOfFiles: this.preparingFiles.length, hasErrorFiles: this.checkIfHasErrorFiles(this.preparingFiles) }
+        case 'Queued': return { numberOfFiles: this.queuingFiles.length, hasErrorFiles: this.checkIfHasErrorFiles(this.queuingFiles) }
+        case 'Completed': return { numberOfFiles: this.completedFiles.length, hasErrorFiles: this.checkIfHasErrorFiles(this.completedFiles) }
+      }
+    },
+    checkIfHasErrorFiles (files) {
+      return files.filter((file) => file.isError).length > 0
+    },
+    reloadFiles () {
+      console.log('fetching files...')
+      this.files = File.query().where('streamId', this.selectedStreamId).get()
+    },
+    initFilesFetcher () {
+      // fetch at first load
+      this.reloadFiles()
+      // and set timer to fetch
+      this.fetchFilesInterval = setInterval(() => {
+        this.reloadFiles()
+      }, 2000)
     }
   },
   watch: {
-    selectedTab: (previousTabName, newTabName) => {
-      if (!this) return // Weird error that this is sometimes undefined
+    selectedStreamId: {
+      handler: function (previousStream, newStream) {
+        if (previousStream === newStream) return
+        this.reloadFiles()
+      }
+    },
+    selectedTab (previousTabName, newTabName) {
       if (previousTabName !== newTabName) {
         this.$refs.fileList.resetLoadMore()
+        this.reloadFiles()
       }
+    }
+  },
+  created () {
+    this.initFilesFetcher()
+  },
+  beforeDestroy () {
+    if (this.fetchFilesInterval) {
+      clearInterval(this.fetchFilesInterval)
+      this.fetchFilesInterval = null
     }
   }
 }
