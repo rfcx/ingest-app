@@ -43,7 +43,7 @@
       }
     },
     watch: {
-      async isCompleted (oldVal, newVal) {
+      async isCompleted (newVal, oldVal) {
         if (oldVal === newVal || newVal === false) return
         this.sendCompleteNotification(this.numberOfSuccessFilesInTheSession, this.numberOfFailFilesInTheSession)
         await this.resetUploadingSessionId()
