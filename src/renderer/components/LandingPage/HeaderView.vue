@@ -15,11 +15,11 @@
         <img src="~@/assets/ic-pin.svg">
         <span v-if="selectedStream" class="stream-info__coordinates">{{ selectedStream.siteGuid || selectedStream.location }}</span></router-link>
     </div>
-    <a title="Redirect to Arbimon" class="button is-rounded rounded-button" :class="{ 'rounded-button__disabled': !isStreamCompleted || !files.length}" @click="redirectToArbimon()">
+    <a title="Redirect to Arbimon" class="button is-rounded rounded-button" @click="redirectToArbimon()">
       <fa-icon class="faExternal" :icon="faExternalLinkAlt"></fa-icon>
       <span>Arbimon</span>
     </a>
-    <div class="notification fixed-notice default-notice" v-if="showNavigateMessage">
+    <div class="notification fixed-notice default-notice" v-if="showNavigateMessage && !hasClosedNavigateMessage">
       <button class="delete" aria-label="delete" @click="onCloseAlert()"></button>
       <strong>Your audio has completed uploading. Click <a @click="redirectToArbimon()">here</a> to navigate to Arbimon for analysis.</strong>
     </div>
@@ -28,7 +28,6 @@
 
 <script>
 import Stream from '../../store/models/Stream'
-import File from '../../store/models/File'
 import api from '../../../../utils/api'
 import { faPencilAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
@@ -38,53 +37,30 @@ export default {
     return {
       iconPencil: faPencilAlt,
       faExternalLinkAlt: faExternalLinkAlt,
-      showNavigateMessage: false
+      hasClosedNavigateMessage: false
     }
   },
   computed: {
     ...mapState({
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
     }),
-    filesInUploadingSession () {
-      if (!this.currentUploadingSessionId) return []
-      return File.query().where('sessionId', this.currentUploadingSessionId).get()
-    },
     selectedStreamId () {
-      return this.$store.state.Stream.selectedStreamId
+      return this.$store.state.AppSetting.selectedStreamId
     },
     selectedStream () {
       return Stream.find(this.selectedStreamId)
     },
-    files () {
-      return File.query().where('streamId', this.selectedStreamId).orderBy('name').get()
-    },
-    isStreamCompleted () {
-      return this.completedFiles.length > 0
-    },
-    completedFiles () {
-      return this.files.filter(file => file.isInCompletedGroup && !file.isError)
-    },
-    allFilesInUploadingSessionCompleted () {
-      const allFilesInSiteInUploadingSession = this.files.filter(file => file.sessionId === this.currentUploadingSessionId)
-      const completedFilesInSiteInUploadingSession = this.files.filter(file => file.isInCompletedGroup && file.sessionId === this.currentUploadingSessionId)
-      if (completedFilesInSiteInUploadingSession.length === 0 || allFilesInSiteInUploadingSession === 0) return false
-      return completedFilesInSiteInUploadingSession.length === allFilesInSiteInUploadingSession.length
+    showNavigateMessage () {
+      return this.selectedStream.isCompleted
     }
   },
   methods: {
     onCloseAlert () {
-      this.showNavigateMessage = false
+      this.hasClosedNavigateMessage = true
     },
     redirectToArbimon () {
       const isProd = this.selectedStream.env && this.selectedStream.env === 'production'
       this.$electron.shell.openExternal(api.arbimonWebUrl(isProd, this.selectedStreamId))
-    }
-  },
-  watch: {
-    filesInUploadingSession () {
-      if (this.allFilesInUploadingSessionCompleted) {
-        this.showNavigateMessage = true
-      }
     }
   }
 }

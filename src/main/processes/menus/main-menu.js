@@ -12,7 +12,7 @@ function createMenu (logoutFunction, preferenceFunction, aboutFunction, updateFu
         { label: 'Clear data',
           click: async () => {
             console.log('clear data')
-            sharedProcess.clearAllData()
+            await sharedProcess.clearAllData()
           }
         },
         { label: 'Auto start',

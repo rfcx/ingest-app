@@ -4,7 +4,9 @@
 
 <script>
   import { mapState } from 'vuex'
+  import settings from 'electron-settings'
   import File from '../store/models/File'
+  import Stream from '../store/models/Stream'
   import FileHelper from '../../../utils/fileHelper'
   import DatabaseEventName from './../../../utils/DatabaseEventName'
 
@@ -14,10 +16,9 @@
   export default {
     data: () => {
       return {
-        numberOfUploadingFiles: 0,
+        filesInUploadingQueue: [],
         checkWaitingFilesInterval: null,
-        checkStatusInterval: null,
-        isQueuing: false
+        checkStatusInterval: null
       }
     },
     computed: {
@@ -25,37 +26,30 @@
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
         isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
       }),
-      filesInUploadingSession () {
-        if (!this.currentUploadingSessionId) return []
-        return File.query().where('sessionId', this.currentUploadingSessionId).get()
+      numberOfAllFilesInTheSession () {
+        return Stream.query().sum('sessionTotalCount')
       },
-      noDurationFiles () {
-        return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 }).orderBy('timestamp').get()
+      numberOfCompleteFilesInTheSession () {
+        return this.numberOfSuccessFilesInTheSession + this.numberOfFailFilesInTheSession
+      },
+      numberOfSuccessFilesInTheSession () {
+        return Stream.query().sum('sessionSuccessCount')
+      },
+      numberOfFailFilesInTheSession () {
+        return Stream.query().sum('sessionFailCount')
+      },
+      isCompleted () {
+        return this.numberOfAllFilesInTheSession > 0 && this.numberOfCompleteFilesInTheSession === this.numberOfAllFilesInTheSession
       }
     },
     watch: {
-      isUploadingProcessEnabled (val, oldVal) {
-        console.log('isUploadingProcessEnabled set', val, oldVal)
-        if (val === oldVal) return
-        this.checkStatusWorkerTimeout = workerTimeoutMinimum
-        this.tickCheckStatus()
-      },
-      filesInUploadingSession (val, oldVal) {
-        if (val === oldVal) return
-        // all files in the session has completed
-        this.checkFilesInUploadingSessionId(val)
+      async isCompleted (oldVal, newVal) {
+        if (oldVal === newVal || newVal === false) return
+        this.sendCompleteNotification(this.numberOfSuccessFilesInTheSession, this.numberOfFailFilesInTheSession)
+        await this.resetUploadingSessionId()
       }
     },
     methods: {
-      getAllFilesInTheSession () {
-        return File.query().where('sessionId', this.currentUploadingSessionId).get()
-      },
-      getUploadingFiles () {
-        return new Promise((resolve, reject) => {
-          let files = File.query().where('state', 'uploading').orderBy('timestamp').get()
-          resolve(files != null ? files : [])
-        })
-      },
       getSuspendedFiles () {
         return new Promise((resolve, reject) => {
           let files = File.query().where(file => { return ['uploading', 'converting'].includes(file.state) && file.uploaded === false }).orderBy('timestamp').get()
@@ -73,7 +67,10 @@
           return ['uploading', 'ingesting'].includes(file.state) && file.uploadId !== '' && file.uploaded === true
         }).orderBy('timestamp').limit(5).get()
       },
-      uploadFile (file) {
+      getNoDurationFiles () {
+        return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 && !file.isError }).orderBy('timestamp').get()
+      },
+      async uploadFile (file) {
         return new Promise((resolve, reject) => {
           let listener = (event, arg) => {
             this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
@@ -86,14 +83,15 @@
         })
       },
       queueFilesToUpload () {
-        if (this.numberOfUploadingFiles >= 5) return
+        if (this.filesInUploadingQueue.length >= 5) return
         const unsyncedFile = this.getUnsyncedFile()
-        if (!unsyncedFile) return
-        this.numberOfUploadingFiles += 1
+        if (!unsyncedFile) return // no unsync file
+        if (this.filesInUploadingQueue.includes(unsyncedFile.id)) return // that file is already in the queue
+        this.filesInUploadingQueue.push(unsyncedFile.id)
         this.uploadFile(unsyncedFile).then(() => {
-          this.numberOfUploadingFiles -= 1
+          this.filesInUploadingQueue.pop(unsyncedFile.id)
         }).catch(() => {
-          this.numberOfUploadingFiles -= 1
+          this.filesInUploadingQueue.pop(unsyncedFile.id)
         })
       },
       queueJobToCheckStatus () {
@@ -113,11 +111,13 @@
         this.$electron.ipcRenderer.send('getIdToken')
       },
       tickUpload () {
-        if (!this.isUploadingProcessEnabled) return
+        if (!settings.get('settings.onLine')) { console.log('tickUpload: not online'); return }
+        if (!this.isUploadingProcessEnabled) { console.log('tickUpload: not enable uploading process'); return }
         this.queueFilesToUpload()
       },
       tickCheckStatus () {
-        if (!this.isUploadingProcessEnabled) return
+        if (!settings.get('settings.onLine')) { console.log('tickCheckStatus: not online', settings.get('settings')); return }
+        if (!this.isUploadingProcessEnabled) { console.log('tickCheckStatus: not enable uploading process'); return }
         this.queueJobToCheckStatus()
       },
       async updateFilesDuration (files) {
@@ -125,7 +125,7 @@
           console.log('update file duration with files params', files.length)
           this.$file.updateFilesDuration(files)
         } else {
-          const noDurationFiles = this.noDurationFiles
+          const noDurationFiles = this.getNoDurationFiles()
           console.log('update file duration with no duration files from query snapshot', noDurationFiles.length)
           this.$file.updateFilesDuration(noDurationFiles)
         }
@@ -147,15 +147,6 @@
             }
           })
       },
-      checkFilesInUploadingSessionId (files) {
-        if (files.length === 0) return
-        const completedFiles = files.filter(file => file.isInCompletedGroup && !file.isError)
-        const failedFiles = files.filter(file => file.isInCompletedGroup && file.isError)
-        if (files.length === completedFiles.length + failedFiles.length) { // all files has completed
-          this.sendCompleteNotification(completedFiles.length, failedFiles.length)
-          this.resetUploadingSessionId()
-        }
-      },
       async removeOutdatedFiles () {
         this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteOutdatedFilesRequest)
       },
@@ -171,8 +162,12 @@
           console.log('show notification')
         }
       },
-      resetUploadingSessionId () {
-        this.$store.dispatch('setCurrentUploadingSessionId', null)
+      async resetUploadingSessionId () {
+        await this.$store.dispatch('setCurrentUploadingSessionId', null)
+        await Stream.update({
+          // where: record => true,
+          data: { sessionTotalCount: 0, sessionSuccessCount: 0, sessionFailCount: 0 }
+        })
       }
     },
     created () {
@@ -185,7 +180,6 @@
       this.checkStatusInterval = setInterval(() => {
         this.tickCheckStatus()
       }, workerTimeoutMinimum)
-      this.checkFilesInUploadingSessionId(this.filesInUploadingSession)
       this.removeOutdatedFiles()
       // add get file duration listener
       let getFileDurationListener = (event, files) => {

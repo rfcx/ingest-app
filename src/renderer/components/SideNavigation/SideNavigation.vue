@@ -20,8 +20,13 @@
       </button>
     </div>
     <div class="wrapper__title">
-      <span>Sites</span>
-      <div class="loader" v-if="isFetching"></div>
+      <span>
+        Sites
+        <div class="wrapper__loader">
+          <fa-icon class="iconRefresh" :icon="iconRefresh" @click.prevent="getUserSites()" v-if="!isFetching"></fa-icon>
+          <div class="loader" v-if="isFetching"></div>
+        </div>
+      </span>
     </div>
     <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">
       <input type="text" class="input wrapper__input" placeholder="Filter" v-model="searchStr"
@@ -36,7 +41,7 @@
         <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'wrapper__stream-row_active': isActive(stream)}">
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="wrapper__stream-name">{{ stream.name }}</div>
-            <fa-icon class="iconRedo" v-if="stream.canRedo || checkWarningLoad(stream)" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
+            <fa-icon class="iconRedo" v-if="stream.canRedo" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
             <img :src="getStateImgUrl(stream.state)">
           </div>
         </div>
@@ -55,19 +60,19 @@
 
 <script>
   import Stream from '../../store/models/Stream'
-  import File from '../../store/models/File'
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
   import api from '../../../../utils/api'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
-  import { faRedo } from '@fortawesome/free-solid-svg-icons'
+  import { faRedo, faSync } from '@fortawesome/free-solid-svg-icons'
   const { remote } = window.require('electron')
 
   export default {
     data () {
       return {
         iconRedo: faRedo,
+        iconRefresh: faSync,
         uploadingStreams: {},
         timeoutKeyboard: {},
         searchStr: '',
@@ -87,13 +92,13 @@
     },
     computed: {
       selectedStreamId () {
-        return this.$store.state.Stream.selectedStreamId
+        return this.$store.state.AppSetting.selectedStreamId
       },
       selectedStream () {
         return Stream.find(this.selectedStreamId)
       },
       streams () {
-        return Stream.query().with('files').orderBy('updatedAt', 'desc').get()
+        return Stream.query().orderBy('updatedAt', 'desc').get()
       },
       isRequiredSymbols () {
         return this.searchStr && this.searchStr.length > 0 && this.searchStr.length < 3
@@ -165,46 +170,16 @@
         const iconName = fileState.getIconName(state)
         return require(`../../assets/${iconName}`)
       },
-      selectItem (stream) {
-        this.$store.dispatch('setSelectedStreamId', stream.id)
+      async selectItem (stream) {
+        await this.$store.dispatch('setSelectedStreamId', stream.id)
       },
       isActive (stream) {
         if (this.selectedStream === null) return false
         return stream.id === this.selectedStream.id
       },
-      checkWarningLoad (stream) {
-        let countFailed = 0
-        let countCompleted = 0
-        let countDisabled = 0
-        stream.files.forEach((file) => {
-          if (file.disabled === true) {
-            countDisabled++
-          } else if (file.state === 'failed' || file.state === 'duplicated') {
-            countFailed++
-          } else if (file.state === 'completed') {
-            countCompleted++
-          }
-        })
-        if (countFailed !== stream.files.length && countCompleted !== stream.files.length && (countFailed + countCompleted + countDisabled) === stream.files.length &&
-          (countDisabled + countCompleted) !== stream.files.length && (countDisabled + countFailed + countCompleted) === stream.files.length) return true
-        else return false
-      },
-      isFilesHidden (stream) {
-        let count = 0
-        stream.files.forEach(file => {
-          if (file.disabled === true || file.state === 'completed') {
-            count++
-          }
-        })
-        if (count === stream.files.length) return true
-        else return false
-      },
       repeatUploading (streamId) {
         console.log('repeatUploading')
-        const files = File.query().where((file) => {
-          return file.canRedo && file.streamId === streamId
-        }).get()
-        this.$file.putFilesIntoUploadingQueue(files)
+        // TODO: not implemented
       },
       showPopupToLogOut () {
         this.showConfirmToLogOut = true
@@ -218,14 +193,17 @@
       getUserSites () {
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          console.log('getUserSites')
           api.getUserSites(this.isProductionEnv(), arg)
-            .then(sites => {
+            .then(async sites => {
               this.isFetching = false
               if (sites && sites.length) {
                 let userSites = streamHelper.parseUserSites(sites)
-                streamHelper.insertSites(userSites)
-                // set selected site
-                this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
+                await streamHelper.insertSites(userSites)
+                // insert site success set selected site
+                if (!this.selectedStreamId) {
+                  await this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
+                }
               }
             }).catch(error => {
               this.isFetching = false
@@ -241,6 +219,13 @@
       if (remote.getGlobal('firstLogIn')) {
         this.getUserSites()
         this.$electron.ipcRenderer.send('resetFirstLogIn')
+      } else {
+        let getUserSitesListener = (event) => {
+          this.$electron.ipcRenderer.removeListener('onMainWindowIsActive', getUserSitesListener)
+          console.log('onMainWindowIsActive')
+          this.getUserSites()
+        }
+        this.$electron.ipcRenderer.on('onMainWindowIsActive', getUserSitesListener)
       }
     }
   }
@@ -351,6 +336,10 @@
       margin-right: 3px;
       align-self: center;
     }
+    &__loader {
+      display: inline-block;
+      margin: 0 4px;
+    }
   }
   .rounded-button {
     span {
@@ -419,6 +408,14 @@
     font-size: 13px;
     cursor: pointer;
     margin: 6px 6px 6px 0;
+  }
+  .iconRefresh {
+    color: grey;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .iconRefresh:hover {
+    color: white;
   }
   input[type="text"]::-webkit-input-placeholder {
     color: $input-placeholder !important;

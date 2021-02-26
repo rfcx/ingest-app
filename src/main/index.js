@@ -126,6 +126,7 @@ function showMainWindow () {
   console.log('showMainWindow')
   if (mainWindow === null) {
     createWindow()
+    mainWindow.webContents.send('onMainWindowIsActive')
   } else {
     mainWindow.show()
   }
@@ -281,7 +282,7 @@ async function refreshTokens () {
 async function logOut () {
   await authService.logout()
   settings.set('settings.production_env', true)
-  commonProcess.clearAllData()
+  await commonProcess.clearAllData()
   hideMainWindowAndForceLogin()
   resetFirstLogInCondition()
 }
@@ -352,7 +353,6 @@ app.on('ready', async () => {
   global.platform = (process.platform === 'win32' || process.platform === 'win64') ? 'win' : 'mac'
   createAutoUpdaterSub()
   console.log('get setting')
-  console.log('xxxx =>', settings.get('settings.auto_update_app'))
   if (settings.get('settings.auto_update_app')) {
     updateProcess.checkForUpdates()
     updateProcess.createUpdateInterval()

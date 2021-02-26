@@ -20,7 +20,7 @@
         <file-container v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>
     <!-- </section> -->
-    <global-progress></global-progress>
+    <global-progress ref="globalProgress"></global-progress>
     <confirm-alert
       :title="alertTitle"
       :content="alertContent"
@@ -38,7 +38,6 @@
   import FileContainer from './LandingPage/FileContainer/FileContainer'
   import ConfirmAlert from './Common/ConfirmAlert'
   import { mapState } from 'vuex'
-  import File from '../store/models/File'
   import Stream from '../store/models/Stream'
   import Analytics from 'electron-ga'
   import env from '../../../env.json'
@@ -121,11 +120,19 @@
       },
       hideNewSiteDropDown () {
         this.shouldShowNewSiteDropDown = false
+      },
+      async migrateDatabase () {
+        // vuex migration
+        const selectedStreamIdInAppSettingModel = this.$store.state.AppSetting.selectedStreamId
+        const selectedStreamIdInStreamModel = this.$store.state.Stream.selectedStreamId
+        if (!selectedStreamIdInAppSettingModel && selectedStreamIdInStreamModel) {
+          await this.$store.dispatch('setSelectedStreamId', selectedStreamIdInStreamModel)
+        }
       }
     },
     computed: {
       ...mapState({
-        selectedStreamId: state => state.Stream.selectedStreamId,
+        selectedStreamId: state => state.AppSetting.selectedStreamId,
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
       }),
       streams () {
@@ -134,15 +141,12 @@
       selectedStream () {
         return Stream.find(this.selectedStreamId)
       },
-      allFilesInTheSession () {
-        return File.query().where('sessionId', this.currentUploadingSessionId).get()
-      },
       shouldShowProgress () {
-        const allFiles = this.allFilesInTheSession
-        return allFiles.length !== allFiles.filter(file => file.isInCompletedGroup).length
+        return this.$refs.globalProgress && this.$refs.globalProgress.shouldShowProgress
       }
     },
-    created () {
+    async created () {
+      await this.migrateDatabase()
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()

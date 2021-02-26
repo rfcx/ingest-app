@@ -1,5 +1,6 @@
 const state = {
   selectedTabs: {},
+  selectedStreamId: '',
   currentUploadingSessionId: null,
   isUploadingProcessEnabled: true
 }
@@ -7,6 +8,9 @@ const state = {
 const mutations = {
   SET_SELECTED_TAB (state, tabObject) {
     state.selectedTabs = Object.assign({}, state.selectedTabs, tabObject)
+  },
+  SET_SELECTED_STREAM_ID (state, streamId) {
+    state.selectedStreamId = streamId
   },
   SET_UPLOADING_SESSION_ID (state, id) {
     state.currentUploadingSessionId = id
@@ -18,12 +22,16 @@ const mutations = {
     state.selectedTabs = object
     state.currentUploadingSessionId = null
     state.isUploadingProcessEnabled = true
+    state.selectedStreamId = null
   }
 }
 
 const actions = {
   setSelectedTab ({ commit }, tabObject) {
     commit('SET_SELECTED_TAB', tabObject)
+  },
+  setSelectedStreamId ({ commit }, streamId) {
+    commit('SET_SELECTED_STREAM_ID', streamId)
   },
   setCurrentUploadingSessionId ({ commit }, id) {
     commit('SET_UPLOADING_SESSION_ID', id)

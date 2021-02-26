@@ -100,7 +100,8 @@ const rename = (path, newPath, maxRetires) => new Promise((resolve, reject) => {
 })
 
 const getTempPath = (tmpPath, fileName) => {
-  return `${tmpPath}/${fileName}`
+  const date = Date.now()
+  return `${tmpPath}/${fileName}-${date}`
 }
 
 const convert = (sourceFile, tempPath) => {

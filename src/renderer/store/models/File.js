@@ -12,8 +12,6 @@ export default class File extends Model {
     return {
       id: this.string(''),
       name: this.string(''),
-      hash: this.attr(''),
-      sha1: this.attr(''),
       path: this.string(''),
       sizeInByte: this.number(0),
       durationInSecond: this.number(-1), // -1: unknown (default value) -2: error, no duration
@@ -26,9 +24,7 @@ export default class File extends Model {
       stream: this.belongsTo(Stream, 'streamId'),
       uploadId: this.string(''),
       uploadedTime: this.string(''),
-      progress: this.number(0),
       disabled: this.boolean(false),
-      notified: this.boolean(false),
       retries: this.number(0),
       uploaded: this.boolean(false),
       sessionId: this.attr(''),

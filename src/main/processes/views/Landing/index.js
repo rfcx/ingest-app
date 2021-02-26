@@ -26,8 +26,8 @@ export default {
       onClosedHandler(e)
     })
 
-    ipcMain.on(DatabaseEventName.eventsName.deleteAllFilesRequest, async function (event, ids) {
-      await database.deleteFiles(ids)
+    ipcMain.on(DatabaseEventName.eventsName.deleteAllFilesRequest, async function (event, streamId) {
+      await database.deleteStream(streamId)
       event.sender.send(DatabaseEventName.eventsName.deleteAllFilesResponse)
     })
 

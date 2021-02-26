@@ -48,7 +48,6 @@
 
 <script>
 import Stream from '../../store/models/Stream'
-import File from '../../store/models/File'
 import streamHelper from '../../../../utils/streamHelper'
 import dateHelper from '../../../../utils/dateHelper'
 import DatabaseEventName from '../../../../utils/DatabaseEventName'
@@ -74,7 +73,7 @@ export default {
   components: { Map },
   computed: {
     ...mapState({
-      selectedStreamId: state => state.Stream.selectedStreamId,
+      selectedStreamId: state => state.AppSetting.selectedStreamId,
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
     }),
     selectedStream () {
@@ -168,18 +167,12 @@ export default {
       this.$electron.ipcRenderer.on('sendIdToken', listener)
     },
     async removeStreamFromVuex (selectedStreamId) {
-      let ids = File.query().where('streamId', this.selectedStreamId).get().map((file) => { return file.id })
-      if (ids && ids.length > 0) {
-        let listen = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
-          console.log('files deleted')
-          Stream.delete(selectedStreamId)
-        }
-        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteAllFilesRequest, ids)
-        this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
-      } else {
-        Stream.delete(selectedStreamId)
+      let listen = (event, arg) => {
+        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
+        console.log('files deleted')
       }
+      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteAllFilesRequest, this.selectedStreamId)
+      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
     },
     modalHandler () {
       const stream = Stream.query().where((stream) => {

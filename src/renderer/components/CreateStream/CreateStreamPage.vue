@@ -160,7 +160,7 @@ export default {
             if (this.selectedFiles && this.selectedFiles.length > 0) {
               this.$file.handleDroppedFiles(this.selectedFiles, stream)
             }
-            this.$store.dispatch('setSelectedStreamId', stream.id)
+            await this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$router.push('/')
           })
           .catch(error => {

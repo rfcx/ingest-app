@@ -8,7 +8,6 @@
 </template>
 
 <script>
-  import File from './store/models/File'
   import settings from 'electron-settings'
   import { mapState } from 'vuex'
   const isOnline = require('is-online')
@@ -30,9 +29,6 @@
       })
     },
     methods: {
-      getAllFilesInTheSession () {
-        return File.query().where('sessionId', this.currentUploadingSessionId).get()
-      },
       updateOnlineStatus (e) {
         const { type } = e
         this.onLine = type === 'online'

@@ -305,6 +305,7 @@ class FileProvider {
         where: file.id,
         data: { state: 'server_error', stateMessage: 'File does not exist' }
       })
+      await this.incrementFilesCount(file.streamId, false)
       return Promise.reject(new Error('File does not exist'))
     }
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.utcTimestamp, idToken, (progress) => {
@@ -315,25 +316,28 @@ class FileProvider {
     }).catch((error) => {
       console.log('===> ERROR UPLOAD FILE', error, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
-        return File.update({
+        File.update({
           where: file.id,
           data: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
         })
+        return this.incrementFilesCount(file.streamId, false)
       } else if (file.retries < 3) {
         return File.update({
           where: file.id,
           data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
         })
       } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
-        return File.update({
+        File.update({
           where: file.id,
           data: { state: 'server_error', stateMessage: 'Network Error' }
         })
+        return this.incrementFilesCount(file.streamId, false)
       } else {
-        return File.update({
+        File.update({
           where: file.id,
           data: { state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.' }
         })
+        return this.incrementFilesCount(file.streamId, false)
       }
     })
   }
@@ -368,21 +372,24 @@ class FileProvider {
               data: { state: 'ingesting', stateMessage: '', progress: 100 }
             })
           case 20:
+            if (file.state === 'completed') return
             const uploadTime = Date.now() - file.uploadedTime
             const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.ingest, 'el': `${file.name}/${file.uploadId}`, 'ev': uploadTime }
             await analytics.send('event', analyticsEventObj)
-            return File.update({
+            File.update({
               where: file.id,
               data: { state: 'completed', stateMessage: '', progress: 100 }
             })
+            return this.incrementFilesCount(file.streamId, true)
           case 30:
             if (failureMessage.includes('is zero')) {
-              return File.update({
+              File.update({
                 where: file.id,
                 data: { state: 'server_error', stateMessage: 'Corrupted file' }
               })
+              return this.incrementFilesCount(file.streamId, false)
             } else if (file.retries < 3) {
-              return File.update({
+              File.update({
                 where: file.id,
                 data: {
                   state: 'waiting',
@@ -393,20 +400,23 @@ class FileProvider {
                 }
               })
             } else {
-              return File.update({
+              File.update({
                 where: file.id,
                 data: { state: 'server_error', stateMessage: failureMessage }
               })
+              return this.incrementFilesCount(file.streamId, false)
             }
+            break
           default:
-            return File.update({
+            File.update({
               where: file.id,
               data: { state: 'server_error', stateMessage: failureMessage }
             })
+            return this.incrementFilesCount(file.streamId, false)
         }
       })
       .catch((error) => {
-        console.log('error', error)
+        console.log('check status error', error)
         if (file.retries < 3) {
           return File.update({
             where: file.id,
@@ -419,12 +429,22 @@ class FileProvider {
             }
           })
         } else {
-          return File.update({
+          File.update({
             where: file.id,
             data: { state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.' }
           })
+          return this.incrementFilesCount(file.streamId, false)
         }
       })
+  }
+
+  async incrementFilesCount (streamId, success) {
+    // TODO currently not safe: another thread could modify the field between find and update
+    const stream = Stream.find(streamId)
+    await Stream.update({
+      where: streamId,
+      data: success ? { sessionSuccessCount: stream.sessionSuccessCount + 1 } : { sessionFailCount: stream.sessionFailCount + 1 }
+    })
   }
 
   isProductionEnv () {
@@ -436,6 +456,10 @@ class FileProvider {
     const t0 = performance.now()
     await this.insertFiles(files)
     await this.insertFilesToStream(files, selectedStream)
+    Stream.update({
+      where: selectedStream.id,
+      data: { preparingCount: files.length }
+    })
     const t1 = performance.now()
     console.log('[Measure] insertNewFiles ' + (t1 - t0) + ' ms')
   }
