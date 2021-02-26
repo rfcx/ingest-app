@@ -61,11 +61,7 @@ export default {
       entity: 'files',
       records: files
     })
-    const stream = Stream.find(streamId)
-    await Stream.update({
-      where: streamId,
-      data: { sessionTotalCount: stream.sessionTotalCount + numberOfFiles, preparingCount: stream.preparingCount - numberOfFiles } // TODO: it might not work for double call
-    })
+    await Stream.dispatch('filesAddedToUploadSession', { streamId, amount: numberOfFiles })
   },
   // delete
   deleteStream: async (streamId) => {

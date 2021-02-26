@@ -439,12 +439,7 @@ class FileProvider {
   }
 
   async incrementFilesCount (streamId, success) {
-    // TODO currently not safe: another thread could modify the field between find and update
-    const stream = Stream.find(streamId)
-    await Stream.update({
-      where: streamId,
-      data: success ? { sessionSuccessCount: stream.sessionSuccessCount + 1 } : { sessionFailCount: stream.sessionFailCount + 1 }
-    })
+    await Stream.dispatch('filesCompletedUploadSession', { streamId, amount: 1, success })
   }
 
   isProductionEnv () {
