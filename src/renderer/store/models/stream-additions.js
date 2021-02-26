@@ -11,6 +11,21 @@ function decrementStreamCount (state, { streamId, countName, amount }) {
   }
 }
 
+function resetAllSessionCounts (state) {
+  for (const key of Object.keys(state.data)) {
+    state.data[key].sessionSuccessCount = 0
+    state.data[key].sessionFailCount = 0
+    state.data[key].sessionTotalCount = 0
+  }
+}
+
+function filesRemovedFromPreparing (context, { streamId, amount }) {
+  return new Promise((resolve) => {
+    context.commit('decrementStreamCount', { streamId, amount, countName: 'preparingCount' })
+    resolve()
+  })
+}
+
 function filesAddedToUploadSession (context, { streamId, amount }) {
   return new Promise((resolve) => {
     context.commit('decrementStreamCount', { streamId, amount, countName: 'preparingCount' })
@@ -26,8 +41,15 @@ function filesCompletedUploadSession (context, { streamId, amount, success }) {
   })
 }
 
+function resetSession (context) {
+  return new Promise((resolve) => {
+    context.commit('resetAllSessionCounts')
+    resolve()
+  })
+}
+
 export default {
   state: {},
-  mutations: { incrementStreamCount, decrementStreamCount },
-  actions: { filesAddedToUploadSession, filesCompletedUploadSession }
+  mutations: { incrementStreamCount, decrementStreamCount, resetAllSessionCounts },
+  actions: { filesRemovedFromPreparing, filesAddedToUploadSession, filesCompletedUploadSession, resetSession }
 }
