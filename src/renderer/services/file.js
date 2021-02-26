@@ -314,11 +314,23 @@ class FileProvider {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
       return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
     }).catch((error) => {
-      console.log('===> ERROR UPLOAD FILE', error, error.message)
+      console.log('===> ERROR UPLOAD FILE', error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
         File.update({
           where: file.id,
           data: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
+        })
+        return this.incrementFilesCount(file.streamId, false)
+      } else if (error.message === 'Duplicate.') { // same file data + same name is already ingested
+        File.update({
+          where: file.id,
+          data: { state: 'completed', stateMessage: '' }
+        })
+        return this.incrementFilesCount(file.streamId, true)
+      } else if (error.message === 'Invalid.') { // same file data + different name is already ingested
+        File.update({
+          where: file.id,
+          data: { state: 'server_error', stateMessage: 'Duplicated' }
         })
         return this.incrementFilesCount(file.streamId, false)
       } else if (file.retries < 3) {

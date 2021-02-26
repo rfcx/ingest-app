@@ -92,10 +92,13 @@ const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, 
   const sha1 = fileHelper.getCheckSum(filePath)
   const params = { filename: originalFilename, checksum: sha1, stream: streamId, timestamp: timestamp }
   return httpClient.post(apiUrl(env) + '/uploads', params, { headers: { 'Authorization': 'Bearer ' + idToken } })
-    .then(function (response) {
+    .then(response => {
       const url = response.data.url
       const uploadId = response.data.uploadId
       return { url, uploadId }
+    }).catch(error => {
+      if (error.response.data) { throw new Error(error.response.data.message) }
+      throw error.response
     })
 }
 
