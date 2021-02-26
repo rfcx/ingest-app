@@ -349,6 +349,7 @@ class FileProvider {
         const status = data.status
         const failureMessage = data.failureMessage
         console.log(`===> ${file.name} ${file.uploadId} - Ingest status = ${status}`)
+        const currentStateOfFile = File.find(file.id).state
         switch (status) {
           case 0:
             if (isSuspended) {
@@ -366,13 +367,13 @@ class FileProvider {
             }
             return
           case 10:
-            if (file.state === 'ingesting') return
+            if (currentStateOfFile === 'ingesting') return
             return File.update({
               where: file.id,
               data: { state: 'ingesting', stateMessage: '', progress: 100 }
             })
           case 20:
-            if (file.state === 'completed') return
+            if (currentStateOfFile === 'completed') return
             const uploadTime = Date.now() - file.uploadedTime
             const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.ingest, 'el': `${file.name}/${file.uploadId}`, 'ev': uploadTime }
             await analytics.send('event', analyticsEventObj)
