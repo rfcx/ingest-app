@@ -35,7 +35,7 @@ export default {
   methods: {
     importFiles () {
       const streamId = this.existingStreamId
-      this.$file.handleDroppedFolder(this.selectedFolderPath, this.existingStream)
+      this.$file.handleDroppedFolder(this.selectedFolderPath, this.existingStream, { deviceId: this.deviceId, deploymentId: this.deploymentInfo ? this.deploymentInfo.id : null })
       this.$store.dispatch('setSelectedStreamId', streamId)
       this.$router.push('/')
     },
