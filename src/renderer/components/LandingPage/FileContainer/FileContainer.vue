@@ -2,7 +2,7 @@
   <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10">
     <header-view></header-view>
     <tab :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab"></tab>
-    <file-name-format-info v-if="selectedTab === 'Prepared' && selectedStream.isPreparing" :preparingFiles="preparingFiles"></file-name-format-info>
+    <file-name-format-info v-if="selectedTab === 'Prepared' && selectedStream && selectedStream.isPreparing" :preparingFiles="preparingFiles"></file-name-format-info>
     <file-list ref="fileList" :files="getFilesInSelectedTab()" :numberOfQueuingFiles="queuingFiles.length" :selectedTab="selectedTab" :isDragging="isDragging" @onImportFiles="onImportFiles"></file-list>
   </div>
 </template>
@@ -59,9 +59,10 @@ export default {
   },
   methods: {
     getDefaultSelectedTab () {
-      if (this.selectedStream.isPreparing) { return 'Prepared' }
-      if (this.selectedStream.isUploading) { return 'Queued' }
-      if (this.selectedStream.isCompleted) { return 'Completed' }
+      if (this.selectedStream) {
+        if (this.selectedStream.isUploading) return 'Queued'
+        if (this.selectedStream.isCompleted) return 'Completed'
+      }
       return 'Prepared'
     },
     onImportFiles (files) {
@@ -80,7 +81,7 @@ export default {
     }
   },
   watch: {
-    selectedTab: (previousTabName, newTabName) => {
+    selectedTab: (newTabName, previousTabName) => {
       if (!this) return // Weird error that this is sometimes undefined
       if (previousTabName !== newTabName) {
         this.$refs.fileList.resetLoadMore()
