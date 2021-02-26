@@ -42,7 +42,7 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       File.update({ where: fileId,
         data: {state: 'converting', uploaded: false}
       })
-      uploadFilePath = (await fileHelper.convert(filePath, remote.app.getPath('temp'))).path
+      uploadFilePath = (await fileHelper.convert(filePath, remote.app.getPath('temp'), streamId)).path
       uploadFileExt = 'flac'
       uploadFileName = fileHelper.getFileNameFromFilePath(uploadFilePath)
       isConverted = true
