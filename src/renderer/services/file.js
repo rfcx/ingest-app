@@ -330,7 +330,7 @@ class FileProvider {
       } else if (error.message === 'Invalid.') { // same file data + different name is already ingested
         File.update({
           where: file.id,
-          data: { state: 'server_error', stateMessage: 'Duplicated' }
+          data: { state: 'server_error', stateMessage: 'Duplicate file. Matching sha1 signature already ingested.' }
         })
         return this.incrementFilesCount(file.streamId, false)
       } else if (file.retries < 3) {
