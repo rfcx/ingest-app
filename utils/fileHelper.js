@@ -99,13 +99,12 @@ const rename = (path, newPath, maxRetires) => new Promise((resolve, reject) => {
   })
 })
 
-const getTempPath = (tmpPath, fileName) => {
-  const date = Date.now()
-  return `${tmpPath}/${fileName}-${date}`
+const getTempPath = (tmpPath, fileName, streamId) => {
+  return `${tmpPath}/${fileName}-${streamId}`
 }
 
-const convert = (sourceFile, tempPath) => {
-  const destinationPath = `${getTempPath(tempPath, getFileNameFromFilePath(sourceFile))}.flac`
+const convert = (sourceFile, tempPath, streamId) => {
+  const destinationPath = `${getTempPath(tempPath, getFileNameFromFilePath(sourceFile), streamId)}.flac`
   console.log('converting: ', sourceFile, destinationPath)
   return new Promise((resolve, reject) => {
     const command = ffmpeg(sourceFile)

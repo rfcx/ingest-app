@@ -124,7 +124,7 @@ export default {
       const visibility = false
       const latitude = this.selectedLatitude
       const longitude = this.selectedLongitude
-      const fileFormat = this.deviceId ? FileFormat.fileFormat.FILE_HEADER : FileFormat.fileFormat.AUTO_DETECT
+      const fileFormat = FileFormat.fileFormat.AUTO_DETECT
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         let idToken = arg
@@ -155,7 +155,7 @@ export default {
             // add files to site/stream
             if (this.selectedFolderPath) {
               stream.defaultTimezone = dateHelper.getDefaultTimezone(stream.latitude, stream.longitude)
-              this.$file.handleDroppedFolder(this.selectedFolderPath, stream) // TODO: fix to pass the stream model object in
+              this.$file.handleDroppedFolder(this.selectedFolderPath, stream, { deviceId: this.deviceId, deploymentId: this.deploymentInfo ? this.deploymentInfo.id : '' }) // TODO: pass deployment id
             }
             if (this.selectedFiles && this.selectedFiles.length > 0) {
               this.$file.handleDroppedFiles(this.selectedFiles, stream)

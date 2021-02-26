@@ -24,7 +24,7 @@ class FileProvider {
   * @param {FileList} droppedFiles
   * @param {Stream} selectedStream
   */
-  async handleDroppedFiles (droppedFiles, selectedStream) {
+  async handleDroppedFiles (droppedFiles, selectedStream, deploymentInfo = null) {
     if (droppedFiles.length === 0) {
       return
     }
@@ -40,7 +40,7 @@ class FileProvider {
           this.getFileObjectsFromFolder(file.path, selectedStream, null)
         ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
       } else {
-        const fileObject = this.createFileObject(file.path, selectedStream)
+        const fileObject = this.createFileObject(file.path, selectedStream, deploymentInfo)
         if (fileObject) {
           fileObjects.push(fileObject)
         }
@@ -72,19 +72,19 @@ class FileProvider {
     electron.ipcRenderer.send('getFileDurationRequest', allFileObjectsFiltered)
   }
 
-  async handleDroppedFolder (folderPath, selectedStream) {
+  async handleDroppedFolder (folderPath, selectedStream, deploymentInfo = null) {
     if (!folderPath) return
     console.log('handleDroppedFolder', folderPath, selectedStream)
     let fileObjectsInFolder = []
     fileObjectsInFolder = fileObjectsInFolder.concat(
-      this.getFileObjectsFromFolder(folderPath, selectedStream, null)
+      this.getFileObjectsFromFolder(folderPath, selectedStream, null, deploymentInfo)
     ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
     // insert converted files into db
     await this.insertNewFiles(fileObjectsInFolder, selectedStream)
     electron.ipcRenderer.send('getFileDurationRequest', fileObjectsInFolder)
   }
 
-  getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null) {
+  getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null, deploymentInfo = null) {
     // see all stuff in the directory
     const stuffInDirectory = fileHelper
       .getFilesFromDirectoryPath(folderPath)
@@ -98,7 +98,7 @@ class FileProvider {
     // write file into file object array
     let fileObjects = existingFileObjects || []
     files.forEach(file => {
-      const fileObject = this.createFileObject(file.path, selectedStream)
+      const fileObject = this.createFileObject(file.path, selectedStream, deploymentInfo)
       if (fileObject) {
         fileObjects.push(fileObject)
       }
@@ -108,7 +108,7 @@ class FileProvider {
       fileHelper.isFolder(file.path)
     )
     subfolders.forEach((folder) =>
-      this.getFileObjectsFromFolder(folder.path, selectedStream, fileObjects)
+      this.getFileObjectsFromFolder(folder.path, selectedStream, fileObjects, deploymentInfo)
     )
     return fileObjects
   }
@@ -314,11 +314,23 @@ class FileProvider {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
       return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
     }).catch((error) => {
-      console.log('===> ERROR UPLOAD FILE', error, error.message)
+      console.log('===> ERROR UPLOAD FILE', error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
         File.update({
           where: file.id,
           data: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
+        })
+        return this.incrementFilesCount(file.streamId, false)
+      } else if (error.message === 'Duplicate.') { // same file data + same name is already ingested
+        File.update({
+          where: file.id,
+          data: { state: 'completed', stateMessage: '' }
+        })
+        return this.incrementFilesCount(file.streamId, true)
+      } else if (error.message === 'Invalid.') { // same file data + different name is already ingested
+        File.update({
+          where: file.id,
+          data: { state: 'server_error', stateMessage: 'Duplicate file. Matching sha1 signature already ingested.' }
         })
         return this.incrementFilesCount(file.streamId, false)
       } else if (file.retries < 3) {
@@ -477,30 +489,21 @@ class FileProvider {
 
   /* -- Helper -- */
 
-  createFileObject (filePath, stream) {
+  createFileObject (filePath, stream, deploymentInfo = null) {
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
 
-    // read file header info
-    let deviceId, deploymentId, timestamp
-    if (fileExt === 'wav' && stream.timestampFormat === FileFormat.fileFormat.FILE_HEADER) {
-      const info = new FileInfo(filePath)
-      deviceId = info.deviceId
-      deploymentId = info.deployment
-      const momentDate = info.recordedDate
-      if (momentDate) {
-        timestamp = momentDate.format()
-      }
+    // TODO: request to read file info in bg thread if needed
+
+    // read deployment info
+    let deviceId, deploymentId
+    if (deploymentInfo) {
+      deviceId = deploymentInfo.deviceId
+      deploymentId = deploymentInfo.deploymentId
     }
 
-    // const data = fileHelper.getMD5Hash(filePath)
-    // const hash = data.hash
-    // const sha1 = data.sha1
     const size = fileHelper.getFileSize(filePath)
-    if (!timestamp) {
-      timestamp = dateHelper.getIsoDateWithFormat(stream.timestampFormat, fileName)
-    }
-
+    const timestamp = dateHelper.getIsoDateWithFormat(stream.timestampFormat, fileName)
     const { state, message } = this.getState(timestamp, fileExt)
 
     return {

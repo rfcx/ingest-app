@@ -56,9 +56,12 @@ export default {
         if (drives.length === 0) return
         this.drives = drives.map(drive => {
           const deviceInfo = this.getDeviceInfo(drive.path)
-          const deviceId = deviceInfo.deviceId
-          const deploymentId = deviceInfo.deploymentId
-          return {...drive, deviceId, deploymentId}
+          if (deviceInfo) {
+            const deviceId = deviceInfo.deviceId
+            const deploymentId = deviceInfo.deploymentId
+            return {...drive, deviceId, deploymentId}
+          }
+          return drive
         })
       })
     },
