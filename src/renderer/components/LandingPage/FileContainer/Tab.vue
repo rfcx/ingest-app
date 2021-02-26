@@ -28,9 +28,9 @@ export default {
     }
   },
   props: {
-    preparingFiles: Array,
-    queuingFiles: Array,
-    completedFiles: Array,
+    preparingGroup: Object,
+    queuedGroup: Object,
+    completedGroup: Object,
     selectedTab: String
   },
   computed: {
@@ -39,21 +39,19 @@ export default {
     })
   },
   methods: {
-    getFiles (tab) {
+    getNumberOfFiles (tab) {
       switch (tab) {
-        case 'Prepared':
-          return this.preparingFiles
-        case 'Queued':
-          return this.queuingFiles
-        case 'Completed':
-          return this.completedFiles
+        case 'Prepared': return this.preparingGroup.numberOfFiles
+        case 'Queued': return this.queuedGroup.numberOfFiles
+        case 'Completed': return this.completedGroup.numberOfFiles
       }
     },
-    getNumberOfFiles (tab) {
-      return this.getFiles(tab).length
-    },
     hasFailedFiles (tab) {
-      return this.getFiles(tab).filter((file) => file.isError).length > 0
+      switch (tab) {
+        case 'Prepared': return this.preparingGroup.hasErrorFiles
+        case 'Queued': return this.queuedGroup.hasErrorFiles
+        case 'Completed': return this.completedGroup.hasErrorFiles
+      }
     },
     setActive (tab) {
       const tabObject = {}

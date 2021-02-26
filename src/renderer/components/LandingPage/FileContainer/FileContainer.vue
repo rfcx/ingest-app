@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10">
     <header-view></header-view>
-    <tab :preparingFiles="preparingFiles" :queuingFiles="queuingFiles" :completedFiles="completedFiles" :selectedTab="selectedTab"></tab>
+    <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && selectedStream.isPreparing" :preparingFiles="preparingFiles"></file-name-format-info>
     <file-list ref="fileList" :files="getFilesInSelectedTab()" :numberOfQueuingFiles="queuingFiles.length" :selectedTab="selectedTab" :isDragging="isDragging" @onImportFiles="onImportFiles"></file-list>
   </div>
@@ -80,6 +80,16 @@ export default {
         case 'Queued': return this.queuingFiles
         case 'Completed': return this.completedFiles
       }
+    },
+    getNumberOfFilesAndStatusToRenderInTab (tab) {
+      switch (tab) {
+        case 'Prepared': return { numberOfFiles: this.preparingFiles.length, hasErrorFiles: this.checkIfHasErrorFiles(this.preparingFiles) }
+        case 'Queued': return { numberOfFiles: this.queuingFiles.length, hasErrorFiles: this.checkIfHasErrorFiles(this.queuingFiles) }
+        case 'Completed': return { numberOfFiles: this.completedFiles.length, hasErrorFiles: this.checkIfHasErrorFiles(this.completedFiles) }
+      }
+    },
+    checkIfHasErrorFiles (files) {
+      return files.filter((file) => file.isError).length > 0
     },
     reloadFiles () {
       console.log('fetching files...')
