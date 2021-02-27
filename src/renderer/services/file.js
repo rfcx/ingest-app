@@ -80,7 +80,23 @@ class FileProvider {
       this.getFileObjectsFromFolder(folderPath, selectedStream, null, deploymentInfo)
     ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
     // insert converted files into db
-    await this.insertNewFiles(fileObjectsInFolder, selectedStream)
+
+    // Remove duplicates that are already in prepare tab
+    const existingPreparedFilePaths = File.query().where((file) => file.streamId === selectedStream.id).get().reduce((result, value) => {
+      result[value.path] = value.state
+      return result
+    }, {})
+    const allFileObjectsFiltered = fileObjectsInFolder.filter(file => existingPreparedFilePaths[file.path] === undefined || !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path]))
+    // Set error message for duplicates that are either uploading or completed
+    allFileObjectsFiltered.forEach(file => {
+      const hasUploadedBefore = existingPreparedFilePaths[file.path] !== undefined && !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path])
+      if (hasUploadedBefore) {
+        file.state = 'local_error'
+        file.stateMessage = 'Duplicate (uploading or complete)'
+      }
+    })
+
+    await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
     electron.ipcRenderer.send('getFileDurationRequest', fileObjectsInFolder)
   }
 

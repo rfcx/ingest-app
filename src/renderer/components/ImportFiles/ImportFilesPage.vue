@@ -27,6 +27,8 @@ import SourceList from './SourceList'
 import Stream from '../../store/models/Stream'
 import HeaderView from '../Common/HeaderWithBackButton'
 import api from '../../../../utils/api'
+import FileFormat from '../../../../utils/FileFormat'
+import settings from 'electron-settings'
 
 export default {
   data: () => ({
@@ -50,12 +52,14 @@ export default {
           api.getDeploymentInfo(deploymentId, idToken)
             .then(response => {
               this.isLoading = false
-              console.log(response)
-              const locationName = response.locationName
-              const latitude = response.latitude
-              const longitude = response.longitude
-              resolve({locationName, coordinates: [longitude, latitude]})
-            }).catch(_ => {
+              console.log('getDeploymentInfo', response)
+              const stream = response.stream
+              const id = response.id
+              const deploymentType = response.deploymentType
+              const deployedAt = response.deployedAt
+              resolve({stream, id, deploymentType, deployedAt})
+            }).catch(error => {
+              console.log('getDeploymentInfo error', error)
               this.isLoading = false
               resolve(null)
             })
@@ -67,16 +71,53 @@ export default {
     },
     async importFiles () {
       const deploymentInfo = await this.getDeploymentInfo(this.deploymentId)
-      if (this.deviceId) {
-        const existingSiteWithDeviceId = Stream.query().where('deviceId', this.deviceId).get()
-        if (existingSiteWithDeviceId && existingSiteWithDeviceId.length > 0) {
-          const streamId = existingSiteWithDeviceId[0].id
-          console.log('existingSiteWithDeviceId', existingSiteWithDeviceId, streamId)
-          this.$router.push({path: '/import-to-existing-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, streamId: streamId, deploymentInfo: JSON.stringify(deploymentInfo) }})
-          return
-        }
+      if (!deploymentInfo) {
+        this.redirectUserToCreateSiteScreen(deploymentInfo)
+        return
       }
-      this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentInfo: JSON.stringify(deploymentInfo) }})
+      const attachedStream = deploymentInfo.stream
+      if (attachedStream.id) { // has stream infomation attached to deployment info
+        var existStreamInDB = Stream.find(attachedStream.id)
+        if (!existStreamInDB) { // no stream in local db
+          // if don't have premission to that stream, then suggest to create a new fresh stream
+          if ((['C', 'R', 'U', 'D'].every(i => attachedStream.permissions.includes(i)))) {
+            this.redirectUserToCreateSiteScreen(deploymentInfo)
+            return
+          }
+          // else auto create stream in local db
+          existStreamInDB = await this.autoCreateSiteInformation(deploymentInfo.stream)
+        }
+        // then add files to that stream in local db
+        await this.addFilesToExistingStream(existStreamInDB)
+        await this.redirectUserToTheStreamInMainPage(existStreamInDB.id)
+      } else { // no stream info in deployment
+        this.redirectUserToCreateSiteScreen(deploymentInfo)
+      }
+    },
+    async addFilesToExistingStream (stream) {
+      this.$file.handleDroppedFolder(this.selectedSource.path, stream, { deviceId: this.deviceId, deploymentId: this.deploymentInfo ? this.deploymentInfo.id : '' }) // TODO: pass deployment id
+    },
+    async autoCreateSiteInformation (stream) {
+      const streamObj = {
+        id: stream.id,
+        name: stream.name,
+        latitude: stream.latitude,
+        longitude: stream.longitude,
+        timestampFormat: FileFormat.fileFormat.AUTO_DETECT,
+        env: settings.get('settings.production_env') ? 'production' : 'staging',
+        visibility: stream.isPublic,
+        createdAt: stream.createdAt,
+        updatedAt: stream.updatedAt
+      }
+      return Stream.insert({ data: streamObj })
+    },
+    redirectUserToCreateSiteScreen (deploymentInfo) {
+      const deploymentInfoForCreateScreen = {locationName: deploymentInfo.stream.name, coordinates: [deploymentInfo.stream.longitude, deploymentInfo.stream.latitude]}
+      this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentInfo: JSON.stringify(deploymentInfoForCreateScreen) }})
+    },
+    async redirectUserToTheStreamInMainPage (streamId) {
+      await this.$store.dispatch('setSelectedStreamId', streamId)
+      this.$router.push('/')
     }
   }
 }
