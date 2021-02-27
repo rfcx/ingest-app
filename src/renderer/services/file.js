@@ -361,6 +361,7 @@ class FileProvider {
         const status = data.status
         const failureMessage = data.failureMessage
         console.log(`===> ${file.name} ${file.uploadId} - Ingest status = ${status}`)
+        const currentStateOfFile = File.find(file.id).state
         switch (status) {
           case 0:
             if (isSuspended) {
@@ -378,13 +379,13 @@ class FileProvider {
             }
             return
           case 10:
-            if (file.state === 'ingesting') return
+            if (currentStateOfFile === 'ingesting') return
             return File.update({
               where: file.id,
               data: { state: 'ingesting', stateMessage: '', progress: 100 }
             })
           case 20:
-            if (file.state === 'completed') return
+            if (currentStateOfFile === 'completed') return
             const uploadTime = Date.now() - file.uploadedTime
             const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.ingest, 'el': `${file.name}/${file.uploadId}`, 'ev': uploadTime }
             await analytics.send('event', analyticsEventObj)
@@ -451,12 +452,7 @@ class FileProvider {
   }
 
   async incrementFilesCount (streamId, success) {
-    // TODO currently not safe: another thread could modify the field between find and update
-    const stream = Stream.find(streamId)
-    await Stream.update({
-      where: streamId,
-      data: success ? { sessionSuccessCount: stream.sessionSuccessCount + 1 } : { sessionFailCount: stream.sessionFailCount + 1 }
-    })
+    await Stream.dispatch('filesCompletedUploadSession', { streamId, amount: 1, success })
   }
 
   isProductionEnv () {
@@ -468,10 +464,6 @@ class FileProvider {
     const t0 = performance.now()
     await this.insertFiles(files)
     await this.insertFilesToStream(files, selectedStream)
-    Stream.update({
-      where: selectedStream.id,
-      data: { preparingCount: files.length }
-    })
     const t1 = performance.now()
     console.log('[Measure] insertNewFiles ' + (t1 - t0) + ' ms')
   }
@@ -485,7 +477,7 @@ class FileProvider {
   async insertFilesToStream (files, stream) {
     await Stream.update({
       where: stream.id,
-      data: { files: files, updatedAt: Date.now() },
+      data: { preparingCount: files.length, files: files, updatedAt: Date.now() },
       insert: ['files']
     })
     console.log('insert files to stream:', files.length)
