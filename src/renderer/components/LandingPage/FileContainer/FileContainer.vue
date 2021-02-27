@@ -62,9 +62,10 @@ export default {
   },
   methods: {
     getDefaultSelectedTab () {
-      if (this.selectedStream.isPreparing) { return 'Prepared' }
-      if (this.selectedStream.isUploading) { return 'Queued' }
-      if (this.selectedStream.isCompleted) { return 'Completed' }
+      if (this.selectedStream) {
+        if (this.selectedStream.isUploading) return 'Queued'
+        if (this.selectedStream.isCompleted) return 'Completed'
+      }
       return 'Prepared'
     },
     onImportFiles (files) {

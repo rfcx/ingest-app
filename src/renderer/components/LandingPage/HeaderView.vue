@@ -51,7 +51,7 @@ export default {
       return Stream.find(this.selectedStreamId)
     },
     showNavigateMessage () {
-      return this.selectedStream.isCompleted
+      return this.selectedStream && this.selectedStream.isCompleted
     }
   },
   methods: {

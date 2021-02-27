@@ -43,7 +43,7 @@
       }
     },
     watch: {
-      async isCompleted (oldVal, newVal) {
+      async isCompleted (newVal, oldVal) {
         if (oldVal === newVal || newVal === false) return
         this.sendCompleteNotification(this.numberOfSuccessFilesInTheSession, this.numberOfFailFilesInTheSession)
         await this.resetUploadingSessionId()
@@ -163,11 +163,8 @@
         }
       },
       async resetUploadingSessionId () {
+        await Stream.dispatch('resetSession')
         await this.$store.dispatch('setCurrentUploadingSessionId', null)
-        await Stream.update({
-          // where: record => true,
-          data: { sessionTotalCount: 0, sessionSuccessCount: 0, sessionFailCount: 0 }
-        })
       }
     },
     created () {
