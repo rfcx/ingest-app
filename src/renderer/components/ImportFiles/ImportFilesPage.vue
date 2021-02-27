@@ -112,7 +112,7 @@ export default {
       return Stream.insert({ data: streamObj })
     },
     redirectUserToCreateSiteScreen (deploymentInfo) {
-      const deploymentInfoForCreateScreen = {locationName: deploymentInfo.stream.name, coordinates: [deploymentInfo.stream.longitude, deploymentInfo.stream.latitude]}
+      const deploymentInfoForCreateScreen = deploymentInfo && deploymentInfo.stream ? {locationName: deploymentInfo.stream.name, coordinates: [deploymentInfo.stream.longitude, deploymentInfo.stream.latitude]} : null
       this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentInfo: JSON.stringify(deploymentInfoForCreateScreen) }})
     },
     async redirectUserToTheStreamInMainPage (streamId) {
