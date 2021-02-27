@@ -464,10 +464,6 @@ class FileProvider {
     const t0 = performance.now()
     await this.insertFiles(files)
     await this.insertFilesToStream(files, selectedStream)
-    Stream.update({
-      where: selectedStream.id,
-      data: { preparingCount: files.length }
-    })
     const t1 = performance.now()
     console.log('[Measure] insertNewFiles ' + (t1 - t0) + ' ms')
   }
@@ -481,7 +477,7 @@ class FileProvider {
   async insertFilesToStream (files, stream) {
     await Stream.update({
       where: stream.id,
-      data: { files: files, updatedAt: Date.now() },
+      data: { preparingCount: files.length, files: files, updatedAt: Date.now() },
       insert: ['files']
     })
     console.log('insert files to stream:', files.length)
