@@ -79,12 +79,6 @@ export default {
       if (attachedStream.id) { // has stream infomation attached to deployment info
         var existStreamInDB = Stream.find(attachedStream.id)
         if (!existStreamInDB) { // no stream in local db
-          // if don't have premission to that stream, then suggest to create a new fresh stream
-          if ((['C', 'R', 'U', 'D'].every(i => attachedStream.permissions.includes(i)))) {
-            this.redirectUserToCreateSiteScreen(deploymentInfo)
-            return
-          }
-          // else auto create stream in local db
           existStreamInDB = await this.autoCreateSiteInformation(deploymentInfo.stream)
         }
         // then add files to that stream in local db
