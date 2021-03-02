@@ -38,8 +38,9 @@ class FileProvider {
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
           this.getFileObjectsFromFolder(file.path, selectedStream, null)
-        ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
+        ).filter(file => fileHelper.isSupportedFileExtension(file.extension))
       } else {
+        if (!fileHelper.isSupportedFileExtension(file.extension)) continue
         const fileObject = this.createFileObject(file.path, selectedStream, deploymentInfo)
         if (fileObject) {
           fileObjects.push(fileObject)
@@ -78,7 +79,7 @@ class FileProvider {
     let fileObjectsInFolder = []
     fileObjectsInFolder = fileObjectsInFolder.concat(
       this.getFileObjectsFromFolder(folderPath, selectedStream, null, deploymentInfo)
-    ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
+    ).filter(file => fileHelper.isSupportedFileExtension(file.extension))
     // insert converted files into db
 
     // Remove duplicates that are already in prepare tab
@@ -119,13 +120,6 @@ class FileProvider {
         fileObjects.push(fileObject)
       }
     })
-    // get subfolders
-    const subfolders = stuffInDirectory.filter((file) =>
-      fileHelper.isFolder(file.path)
-    )
-    subfolders.forEach((folder) =>
-      this.getFileObjectsFromFolder(folder.path, selectedStream, fileObjects, deploymentInfo)
-    )
     return fileObjects
   }
   async updateFilesDuration (files) {
