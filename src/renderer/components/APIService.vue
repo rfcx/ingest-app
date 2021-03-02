@@ -16,6 +16,7 @@
     data: () => {
       return {
         filesInUploadingQueue: [],
+        isCheckingStatus: false,
         checkWaitingFilesInterval: null,
         checkStatusInterval: null
       }
@@ -94,9 +95,12 @@
         })
       },
       queueJobToCheckStatus () {
+        if (this.isCheckingStatus) return
+        this.isCheckingStatus = true
         let listener = async (event, idToken) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           const files = this.getUploadedFiles()
+          console.log('check status for', files.map(file => file.name))
           for (let file of files) {
             try {
               await this.$file.checkStatus(file, idToken, false)
@@ -105,6 +109,8 @@
               console.log('checkStatus failed', e)
             }
           }
+          console.log('check status finish')
+          this.isCheckingStatus = false
         }
         this.$electron.ipcRenderer.on('sendIdToken', listener)
         this.$electron.ipcRenderer.send('getIdToken')
