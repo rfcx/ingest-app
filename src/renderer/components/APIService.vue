@@ -4,7 +4,6 @@
 
 <script>
   import { mapState } from 'vuex'
-  import settings from 'electron-settings'
   import File from '../store/models/File'
   import Stream from '../store/models/Stream'
   import FileHelper from '../../../utils/fileHelper'
@@ -111,12 +110,10 @@
         this.$electron.ipcRenderer.send('getIdToken')
       },
       tickUpload () {
-        if (!settings.get('settings.onLine')) { console.log('tickUpload: not online'); return }
         if (!this.isUploadingProcessEnabled) { console.log('tickUpload: not enable uploading process'); return }
         this.queueFilesToUpload()
       },
       tickCheckStatus () {
-        if (!settings.get('settings.onLine')) { console.log('tickCheckStatus: not online', settings.get('settings')); return }
         if (!this.isUploadingProcessEnabled) { console.log('tickCheckStatus: not enable uploading process'); return }
         this.queueJobToCheckStatus()
       },
