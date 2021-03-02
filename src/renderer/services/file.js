@@ -324,7 +324,7 @@ class FileProvider {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
       return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
     }).catch((error) => {
-      console.log('===> ERROR UPLOAD FILE', error.message)
+      console.log('===> ERROR UPLOAD FILE', file.name, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
         File.update({
           where: file.id,

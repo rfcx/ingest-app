@@ -109,7 +109,6 @@
               console.log('checkStatus failed', e)
             }
           }
-          console.log('check status finish')
           this.isCheckingStatus = false
         }
         this.$electron.ipcRenderer.on('sendIdToken', listener)
@@ -183,7 +182,6 @@
       this.removeOutdatedFiles()
       // add get file duration listener
       let getFileDurationListener = (event, files) => {
-        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, getFileDurationListener)
         console.log('getFileDurationTrigger')
         this.updateFilesDuration(files)
       }
