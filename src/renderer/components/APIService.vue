@@ -4,7 +4,6 @@
 
 <script>
   import { mapState } from 'vuex'
-  import settings from 'electron-settings'
   import File from '../store/models/File'
   import Stream from '../store/models/Stream'
   import FileHelper from '../../../utils/fileHelper'
@@ -17,6 +16,7 @@
     data: () => {
       return {
         filesInUploadingQueue: [],
+        isCheckingStatus: false,
         checkWaitingFilesInterval: null,
         checkStatusInterval: null
       }
@@ -95,9 +95,12 @@
         })
       },
       queueJobToCheckStatus () {
+        if (this.isCheckingStatus) return
+        this.isCheckingStatus = true
         let listener = async (event, idToken) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           const files = this.getUploadedFiles()
+          console.log('check status for', files.map(file => file.name))
           for (let file of files) {
             try {
               await this.$file.checkStatus(file, idToken, false)
@@ -106,17 +109,16 @@
               console.log('checkStatus failed', e)
             }
           }
+          this.isCheckingStatus = false
         }
         this.$electron.ipcRenderer.on('sendIdToken', listener)
         this.$electron.ipcRenderer.send('getIdToken')
       },
       tickUpload () {
-        if (!settings.get('settings.onLine')) { console.log('tickUpload: not online'); return }
         if (!this.isUploadingProcessEnabled) { console.log('tickUpload: not enable uploading process'); return }
         this.queueFilesToUpload()
       },
       tickCheckStatus () {
-        if (!settings.get('settings.onLine')) { console.log('tickCheckStatus: not online', settings.get('settings')); return }
         if (!this.isUploadingProcessEnabled) { console.log('tickCheckStatus: not enable uploading process'); return }
         this.queueJobToCheckStatus()
       },
@@ -180,7 +182,6 @@
       this.removeOutdatedFiles()
       // add get file duration listener
       let getFileDurationListener = (event, files) => {
-        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, getFileDurationListener)
         console.log('getFileDurationTrigger')
         this.updateFilesDuration(files)
       }

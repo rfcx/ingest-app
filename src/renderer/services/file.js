@@ -38,8 +38,9 @@ class FileProvider {
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
           this.getFileObjectsFromFolder(file.path, selectedStream, null)
-        ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
+        ).filter(file => fileHelper.isSupportedFileExtension(file.extension))
       } else {
+        if (!fileHelper.isSupportedFileExtension(file.extension)) continue
         const fileObject = this.createFileObject(file.path, selectedStream, deploymentInfo)
         if (fileObject) {
           fileObjects.push(fileObject)
@@ -78,9 +79,25 @@ class FileProvider {
     let fileObjectsInFolder = []
     fileObjectsInFolder = fileObjectsInFolder.concat(
       this.getFileObjectsFromFolder(folderPath, selectedStream, null, deploymentInfo)
-    ).filter(file => !(file.extension.toLowerCase() === 'txt' && file.name.toLowerCase() === 'config.txt'))
+    ).filter(file => fileHelper.isSupportedFileExtension(file.extension))
     // insert converted files into db
-    await this.insertNewFiles(fileObjectsInFolder, selectedStream)
+
+    // Remove duplicates that are already in prepare tab
+    const existingPreparedFilePaths = File.query().where((file) => file.streamId === selectedStream.id).get().reduce((result, value) => {
+      result[value.path] = value.state
+      return result
+    }, {})
+    const allFileObjectsFiltered = fileObjectsInFolder.filter(file => existingPreparedFilePaths[file.path] === undefined || !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path]))
+    // Set error message for duplicates that are either uploading or completed
+    allFileObjectsFiltered.forEach(file => {
+      const hasUploadedBefore = existingPreparedFilePaths[file.path] !== undefined && !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path])
+      if (hasUploadedBefore) {
+        file.state = 'local_error'
+        file.stateMessage = 'Duplicate (uploading or complete)'
+      }
+    })
+
+    await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
     electron.ipcRenderer.send('getFileDurationRequest', fileObjectsInFolder)
   }
 
@@ -103,13 +120,6 @@ class FileProvider {
         fileObjects.push(fileObject)
       }
     })
-    // get subfolders
-    const subfolders = stuffInDirectory.filter((file) =>
-      fileHelper.isFolder(file.path)
-    )
-    subfolders.forEach((folder) =>
-      this.getFileObjectsFromFolder(folder.path, selectedStream, fileObjects, deploymentInfo)
-    )
     return fileObjects
   }
   async updateFilesDuration (files) {
@@ -314,7 +324,7 @@ class FileProvider {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
       return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
     }).catch((error) => {
-      console.log('===> ERROR UPLOAD FILE', error.message)
+      console.log('===> ERROR UPLOAD FILE', file.name, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
         File.update({
           where: file.id,

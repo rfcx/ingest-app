@@ -1,6 +1,7 @@
 import File from '../src/renderer/store/models/File'
 import fileHelper from './fileHelper'
 import Analytics from 'electron-ga'
+import settings from 'electron-settings'
 
 const axios = require('axios')
 const fileStreamAxios = axios.create({
@@ -181,12 +182,12 @@ const getUserSites = (env, idToken) => {
 }
 
 const getDeploymentInfo = (deploymentId, idToken) => {
-  // only available in prod
-  return httpClient.get(apiUrl(true) + `/deployments/${deploymentId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  const isProd = settings.get('settings.production_env')
+  return httpClient.get(apiUrl(isProd) + `/deployments/${deploymentId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(response => {
       return response.data
     }).catch(error => {
-      console.log('error', error.response)
+      console.log('error', error)
       throw error.response
     })
 }

@@ -98,10 +98,15 @@ export default {
       console.log(event.target.files)
       const path = event.target.files[0].path
       const deviceInfo = this.getDeviceInfo(path)
-      const deviceId = deviceInfo.deviceId
-      const deploymentId = deviceInfo.deploymentId
-      this.selectedFolder = {path, deviceId, deploymentId}
-      this.selectedSource = {id: path, label: path, path: path, deviceId: deviceId, deploymentId: deploymentId}
+      if (deviceInfo) {
+        const deviceId = deviceInfo.deviceId
+        const deploymentId = deviceInfo.deploymentId
+        this.selectedFolder = {path, deviceId, deploymentId}
+        this.selectedSource = {id: path, label: path, path: path, deviceId: deviceId, deploymentId: deploymentId}
+      } else {
+        this.selectedFolder = { path }
+        this.selectedSource = {id: path, label: path, path: path, deviceId: null, deploymentId: null}
+      }
     },
     isSelected (type, drive = null) {
       switch (type) {
