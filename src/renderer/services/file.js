@@ -40,7 +40,6 @@ class FileProvider {
           this.getFileObjectsFromFolder(file.path, selectedStream, null)
         ).filter(file => fileHelper.isSupportedFileExtension(file.extension))
       } else {
-        if (!fileHelper.isSupportedFileExtension(file.extension)) continue
         const fileObject = this.createFileObject(file.path, selectedStream, deploymentInfo)
         if (fileObject) {
           fileObjects.push(fileObject)
