@@ -15,7 +15,7 @@ export default {
     const backgroundAPIURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080/#/api-service` : `file://${__dirname}/index.html#/api-service`
     const backgroundAPIWindow = new BrowserWindow({
       show: false,
-      webPreferences: { nodeIntegration: true }
+      webPreferences: { nodeIntegration: true, backgroundThrottling: true }
     })
     backgroundAPIWindow.loadURL(backgroundAPIURL)
 
