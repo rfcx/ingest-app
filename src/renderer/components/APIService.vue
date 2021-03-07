@@ -7,6 +7,7 @@
   import File from '../store/models/File'
   import Stream from '../store/models/Stream'
   import FileHelper from '../../../utils/fileHelper'
+  import FileState from '../../../utils/fileState'
   import DatabaseEventName from './../../../utils/DatabaseEventName'
 
   const workerTimeoutMinimum = 3000
@@ -19,7 +20,8 @@
         isHandlingFileNotExist: false,
         isCheckingStatus: false,
         checkWaitingFilesInterval: null,
-        checkStatusInterval: null
+        checkStatusInterval: null,
+        checkSessionInterval: null
       }
     },
     computed: {
@@ -87,7 +89,7 @@
         if (this.filesInUploadingQueue.length >= 5) return
         const unsyncedFile = this.getUnsyncedFile()
         if (!unsyncedFile) return // no unsync file
-        if (this.filesInUploadingQueue.includes(unsyncedFile.id)) return // that file is already in the queue
+        if (this.filesInUploadingQueue.includes(unsyncedFile.id)) { console.log('this id is already in queued', unsyncedFile.id); return } // that file is already in the queue
         this.filesInUploadingQueue.push(unsyncedFile.id)
         this.uploadFile(unsyncedFile).then(() => {
           this.filesInUploadingQueue.pop(unsyncedFile.id)
@@ -128,6 +130,29 @@
         if (this.isHandlingFileNotExist) { console.log('tickCheckStatus: clearing files that are not exist'); return }
         if (!this.isUploadingProcessEnabled) { console.log('tickCheckStatus: not enable uploading process'); return }
         this.queueJobToCheckStatus()
+      },
+      async tickCheckSession () {
+        const allFilesInSessionGroupedByStream = File.query().where('sessionId', this.currentUploadingSessionId).get().reduce(function (acc, obj) {
+          var key = obj.streamId
+          if (!acc[key]) {
+            acc[key] = []
+          }
+          acc[key].push(obj)
+          return acc
+        }, {})
+        if (allFilesInSessionGroupedByStream && Object.keys(allFilesInSessionGroupedByStream).length <= 0) { return }
+        for (const [streamId, filesInStream] of Object.entries(allFilesInSessionGroupedByStream)) {
+          const successFiles = filesInStream.filter(file => FileState.isCompleted(file.state))
+          const failedFiles = filesInStream.filter(file => FileState.isServerError(file.state))
+          await Stream.dispatch('updateSession',
+            { streamId,
+              data: {
+                sessionSuccessCount: successFiles.length,
+                sessionFailCount: failedFiles.length,
+                sessionTotalCount: filesInStream.length
+              }
+            })
+        }
       },
       async updateFilesDuration (files) {
         if (files && files.length > 0) {
@@ -200,6 +225,9 @@
       this.checkStatusInterval = setInterval(() => {
         this.tickCheckStatus()
       }, workerTimeoutMinimum)
+      this.checkSessionInterval = setInterval(() => {
+        this.tickCheckSession()
+      }, 4000)
       this.removeOutdatedFiles()
       // add get file duration listener
       let getFileDurationListener = (event, files) => {
@@ -217,6 +245,10 @@
       if (this.checkStatusInterval) {
         clearInterval(this.checkStatusInterval)
         this.checkStatusInterval = null
+      }
+      if (this.checkSessionInterval) {
+        clearInterval(this.checkSessionInterval)
+        this.checkSessionInterval = null
       }
     }
   }

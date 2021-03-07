@@ -456,7 +456,7 @@ class FileProvider {
   }
 
   async incrementFilesCount (streamId, success) {
-    await Stream.dispatch('filesCompletedUploadSession', { streamId, amount: 1, success })
+    // await Stream.dispatch('filesCompletedUploadSession', { streamId, amount: 1, success })
   }
 
   isProductionEnv () {
