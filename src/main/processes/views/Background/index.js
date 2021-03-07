@@ -1,4 +1,6 @@
-import { BrowserWindow, powerMonitor } from 'electron'
+import { BrowserWindow, powerMonitor, ipcMain } from 'electron'
+import database from '../../shared/database'
+import DatabaseEventName from '../../../../../utils/DatabaseEventName'
 import settings from 'electron-settings'
 
 export default {
@@ -22,6 +24,11 @@ export default {
       if (settings.get('settings.onLine')) {
         backgroundAPIWindow.webContents.send('suspendApp', true)
       }
+    })
+
+    ipcMain.on(DatabaseEventName.eventsName.updateFilesDoNotExistRequest, async function (event, files) {
+      await database.updateFilesDoNotExist(files)
+      event.sender.send(DatabaseEventName.eventsName.updateFilesDoNotExistResponse)
     })
 
     return backgroundAPIWindow

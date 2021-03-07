@@ -310,11 +310,6 @@ class FileProvider {
   async uploadFile (file, idToken) {
     console.log('\nupload file ', file.id)
     if (!fileHelper.isExist(file.path)) {
-      await File.update({
-        where: file.id,
-        data: { state: 'server_error', stateMessage: 'File does not exist' }
-      })
-      await this.incrementFilesCount(file.streamId, false)
       return Promise.reject(new Error('File does not exist'))
     }
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.utcTimestamp, idToken, (progress) => {

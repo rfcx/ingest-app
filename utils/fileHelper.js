@@ -62,6 +62,10 @@ const getFileNameFromFilePath = (filePath) => {
   return path.parse(filePath).base
 }
 
+const getDirectoryFromFilePath = (filePath) => {
+  return path.dirname(filePath)
+}
+
 const getFileName = (fileName) => {
   const ext = '.' + getExtension(fileName)
   return fileName.replace(ext, '')
@@ -153,6 +157,7 @@ export default {
   getMD5Hash,
   getFilePath,
   getFileNameFromFilePath,
+  getDirectoryFromFilePath,
   getFileName,
   getExtension,
   getFileSize,

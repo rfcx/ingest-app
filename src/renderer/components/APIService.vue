@@ -16,6 +16,7 @@
     data: () => {
       return {
         filesInUploadingQueue: [],
+        isHandlingFileNotExist: false,
         isCheckingStatus: false,
         checkWaitingFilesInterval: null,
         checkStatusInterval: null
@@ -90,7 +91,12 @@
         this.filesInUploadingQueue.push(unsyncedFile.id)
         this.uploadFile(unsyncedFile).then(() => {
           this.filesInUploadingQueue.pop(unsyncedFile.id)
-        }).catch(() => {
+        }).catch(async (error) => {
+          if (error.message === 'File does not exist') {
+            this.isHandlingFileNotExist = true
+            const directoryName = FileHelper.getDirectoryFromFilePath(unsyncedFile.path)
+            this.clearFilesDoNotExist(directoryName, unsyncedFile.streamId)
+          }
           this.filesInUploadingQueue.pop(unsyncedFile.id)
         })
       },
@@ -100,7 +106,6 @@
         let listener = async (event, idToken) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           const files = this.getUploadedFiles()
-          console.log('check status for', files.map(file => file.name))
           for (let file of files) {
             try {
               await this.$file.checkStatus(file, idToken, false)
@@ -115,10 +120,12 @@
         this.$electron.ipcRenderer.send('getIdToken')
       },
       tickUpload () {
+        if (this.isHandlingFileNotExist) { console.log('tickUpload: clearing files that are not exist'); return }
         if (!this.isUploadingProcessEnabled) { console.log('tickUpload: not enable uploading process'); return }
         this.queueFilesToUpload()
       },
       tickCheckStatus () {
+        if (this.isHandlingFileNotExist) { console.log('tickCheckStatus: clearing files that are not exist'); return }
         if (!this.isUploadingProcessEnabled) { console.log('tickCheckStatus: not enable uploading process'); return }
         this.queueJobToCheckStatus()
       },
@@ -131,6 +138,20 @@
           console.log('update file duration with no duration files from query snapshot', noDurationFiles.length)
           this.$file.updateFilesDuration(noDurationFiles)
         }
+      },
+      clearFilesDoNotExist (directoryName, streamId) {
+        const filesInStreamFromTheSameDirectory = File.query().where(file => {
+          return file.path.includes(directoryName) && file.isInQueuedGroup && file.streamId === streamId
+        }).get()
+        console.log('queueFilesToUpload File does not exist!', filesInStreamFromTheSameDirectory.length)
+        let updateFileDoNotExistCompleteListener = async (event) => {
+          this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFilesDoNotExistResponse, updateFileDoNotExistCompleteListener)
+          // update session count
+          await Stream.dispatch('filesCompletedUploadSession', { streamId, amount: filesInStreamFromTheSameDirectory.length, success: false })
+          this.isHandlingFileNotExist = false
+        }
+        this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFilesDoNotExistResponse, updateFileDoNotExistCompleteListener)
+        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFilesDoNotExistRequest, filesInStreamFromTheSameDirectory)
       },
       checkAfterSuspended () {
         return this.getSuspendedFiles()
