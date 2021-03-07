@@ -1,4 +1,6 @@
-import { BrowserWindow, powerMonitor, powerSaveBlocker } from 'electron'
+import { BrowserWindow, powerMonitor, powerSaveBlocker, ipcMain } from 'electron'
+import database from '../../shared/database'
+import DatabaseEventName from '../../../../../utils/DatabaseEventName'
 
 var suspendPowerSaveBlockerId
 var lockScreenPowerSaveBlockerId
@@ -42,6 +44,11 @@ export default {
         lockScreenPowerSaveBlockerId = null
         console.log('powerSaveBlocker for sleep is cleared')
       })
+    })
+
+    ipcMain.on(DatabaseEventName.eventsName.updateFilesDoNotExistRequest, async function (event, files) {
+      await database.updateFilesDoNotExist(files)
+      event.sender.send(DatabaseEventName.eventsName.updateFilesDoNotExistResponse)
     })
 
     return backgroundAPIWindow

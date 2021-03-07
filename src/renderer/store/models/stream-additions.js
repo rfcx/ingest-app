@@ -11,6 +11,12 @@ function decrementStreamCount (state, { streamId, countName, amount }) {
   }
 }
 
+function updateAllSessionCounts (state, { streamId, data }) {
+  if (state.data[streamId].sessionSuccessCount !== data.sessionSuccessCount) state.data[streamId].sessionSuccessCount = data.sessionSuccessCount
+  if (state.data[streamId].sessionFailCount !== data.sessionFailCount) state.data[streamId].sessionFailCount = data.sessionFailCount
+  if (state.data[streamId].sessionTotalCount !== data.sessionTotalCount) state.data[streamId].sessionTotalCount = data.sessionTotalCount
+}
+
 function resetAllSessionCounts (state) {
   for (const key of Object.keys(state.data)) {
     state.data[key].sessionSuccessCount = 0
@@ -41,6 +47,13 @@ function filesCompletedUploadSession (context, { streamId, amount, success }) {
   })
 }
 
+function updateSession (context, { streamId, data }) {
+  return new Promise((resolve) => {
+    context.commit('updateAllSessionCounts', { streamId, data })
+    resolve()
+  })
+}
+
 function resetSession (context) {
   return new Promise((resolve) => {
     context.commit('resetAllSessionCounts')
@@ -50,6 +63,6 @@ function resetSession (context) {
 
 export default {
   state: {},
-  mutations: { incrementStreamCount, decrementStreamCount, resetAllSessionCounts },
-  actions: { filesRemovedFromPreparing, filesAddedToUploadSession, filesCompletedUploadSession, resetSession }
+  mutations: { incrementStreamCount, decrementStreamCount, resetAllSessionCounts, updateAllSessionCounts },
+  actions: { filesRemovedFromPreparing, filesAddedToUploadSession, filesCompletedUploadSession, resetSession, updateSession }
 }

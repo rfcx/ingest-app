@@ -73,6 +73,10 @@ const isLocalError = function (state) {
   return state === 'local_error'
 }
 
+const isServerError = function (state) {
+  return state === 'server_error'
+}
+
 const isError = function (state) {
   return state.includes('error') || state === 'failed'
 }
@@ -108,6 +112,7 @@ export default {
   isPreparing,
   isWaiting,
   isLocalError,
+  isServerError,
   isError,
   isDuplicated,
   isCompleted,

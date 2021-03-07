@@ -7,6 +7,8 @@ const eventsName = {
   updateFilesTimezoneResponse: 'updateFilesTimezoneResponse',
   putFilesIntoUploadingQueueRequest: 'putFilesIntoUploadingQueueRequest',
   putFilesIntoUploadingQueueResponse: 'putFilesIntoUploadingQueueResponse',
+  updateFilesDoNotExistRequest: 'updateFilesDoNotExistRequest',
+  updateFilesDoNotExistResponse: 'updateFilesDoNotExistResponse',
   deleteAllFilesRequest: 'deleteAllFilesRequest',
   deleteAllFilesResponse: 'deleteAllFilesResponse',
   deletePreparingFilesRequest: 'deletePreparingFilesRequest',

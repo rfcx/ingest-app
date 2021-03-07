@@ -63,6 +63,18 @@ export default {
     })
     await Stream.dispatch('filesAddedToUploadSession', { streamId, amount: numberOfFiles })
   },
+  updateFilesDoNotExist: (files) => {
+    console.log(`updateFilesDoNotExist ${files.length}`)
+    const updatedFiles = files.reduce((result, file) => {
+      result[file.id] = { ...file, state: 'server_error', stateMessage: 'File does not exist' }
+      return result
+    }, {})
+    console.log('files to update', updatedFiles.length)
+    store.commit('entities/insertRecords', {
+      entity: 'files',
+      records: updatedFiles
+    })
+  },
   // delete
   deleteStream: async (streamId) => {
     await File.delete(file => file.streamId === streamId)
