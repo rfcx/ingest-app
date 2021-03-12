@@ -42,7 +42,7 @@ export default {
       result[file.id] = { ...file }
       return result
     }, {})
-    console.log('files to update', updatedFiles.length)
+    console.log('files to updateTimestampFormat', updatedFiles.length)
     store.commit('entities/insertRecords', {
       entity: 'files',
       records: updatedFiles
@@ -56,7 +56,21 @@ export default {
       return result
     }, {})
     const numberOfFiles = Object.keys(files).length
-    console.log('files to update', numberOfFiles)
+    console.log('files to putFilesIntoUploadingQueue', numberOfFiles)
+    store.commit('entities/insertRecords', {
+      entity: 'files',
+      records: files
+    })
+    await Stream.dispatch('filesAddedToUploadSession', { streamId, amount: numberOfFiles })
+  },
+  reuploadFailedFiles: async (streamId, sessionId) => {
+    console.log(`reuploadFailedFiles ${streamId} ${sessionId}`)
+    const files = File.query().where((file) => file.streamId === streamId && file.canRedo).get().reduce((result, file) => {
+      result[file.id] = { ...file, state: 'waiting', stateMessage: '', sessionId: sessionId, canRedo: false }
+      return result
+    }, {})
+    const numberOfFiles = Object.keys(files).length
+    console.log('files to reuploadFailedFiles', numberOfFiles)
     store.commit('entities/insertRecords', {
       entity: 'files',
       records: files
@@ -69,7 +83,7 @@ export default {
       result[file.id] = { ...file, state: 'server_error', stateMessage: 'File does not exist' }
       return result
     }, {})
-    console.log('files to update', updatedFiles.length)
+    console.log('files to updateFilesDoNotExist', updatedFiles.length)
     store.commit('entities/insertRecords', {
       entity: 'files',
       records: updatedFiles
