@@ -132,6 +132,7 @@
         this.queueJobToCheckStatus()
       },
       async tickCheckSession () {
+        if (!this.isUploadingProcessEnabled) { console.log('tickCheckSession: not enable uploading process'); return }
         const allFilesInSessionGroupedByStream = File.query().where('sessionId', this.currentUploadingSessionId).get().reduce(function (acc, obj) {
           var key = obj.streamId
           if (!acc[key]) {

@@ -60,7 +60,7 @@ function createAuthWindow () {
   })
   win.webContents.on('did-redirect-navigation', (event, url) => {
     if (currentUrl !== url) {
-      if (url.includes('https://rfcx.eu.auth0.com/login')) {
+      if (url.includes('https://auth.rfcx.org/login')) {
         menu.items[0].submenu.items[1].enabled = false
         return
       }
