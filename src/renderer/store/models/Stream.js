@@ -30,7 +30,8 @@ export default class Stream extends Model {
       preparingCount: this.number(0),
       sessionTotalCount: this.number(0),
       sessionSuccessCount: this.number(0),
-      sessionFailCount: this.number(0)
+      sessionFailCount: this.number(0),
+      canRedo: this.boolean(false)
     }
   }
 
@@ -68,9 +69,5 @@ export default class Stream extends Model {
 
   get isCompleted () {
     return this.sessionTotalCount > 0 && this.sessionTotalCount === this.sessionSuccessCount + this.sessionFailCount
-  }
-
-  get canRedo () {
-    return false
   }
 }

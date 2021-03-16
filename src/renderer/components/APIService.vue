@@ -49,6 +49,7 @@
       async isCompleted (newVal, oldVal) {
         if (oldVal === newVal || newVal === false) return
         this.sendCompleteNotification(this.numberOfSuccessFilesInTheSession, this.numberOfFailFilesInTheSession)
+        this.tickCheckSession() // check status 1 last time before reset uploading id (prevent cannot redo file doesn't exist issue)
         await this.resetUploadingSessionId()
       }
     },
@@ -132,6 +133,7 @@
         this.queueJobToCheckStatus()
       },
       async tickCheckSession () {
+        if (!this.isUploadingProcessEnabled) { console.log('tickCheckSession: not enable uploading process'); return }
         const allFilesInSessionGroupedByStream = File.query().where('sessionId', this.currentUploadingSessionId).get().reduce(function (acc, obj) {
           var key = obj.streamId
           if (!acc[key]) {
@@ -142,16 +144,16 @@
         }, {})
         if (allFilesInSessionGroupedByStream && Object.keys(allFilesInSessionGroupedByStream).length <= 0) { return }
         for (const [streamId, filesInStream] of Object.entries(allFilesInSessionGroupedByStream)) {
-          const successFiles = filesInStream.filter(file => FileState.isCompleted(file.state))
-          const failedFiles = filesInStream.filter(file => FileState.isServerError(file.state))
-          await Stream.dispatch('updateSession',
-            { streamId,
-              data: {
-                sessionSuccessCount: successFiles.length,
-                sessionFailCount: failedFiles.length,
-                sessionTotalCount: filesInStream.length
-              }
-            })
+          const canRedo = filesInStream.some(file => file.canRedo)
+          await Stream.update({
+            where: streamId,
+            data: {
+              sessionSuccessCount: filesInStream.filter(file => FileState.isCompleted(file.state)).length,
+              sessionFailCount: filesInStream.filter(file => FileState.isServerError(file.state)).length,
+              sessionTotalCount: filesInStream.length,
+              canRedo
+            }
+          })
         }
       },
       async updateFilesDuration (files) {
@@ -168,7 +170,6 @@
         const filesInStreamFromTheSameDirectory = File.query().where(file => {
           return file.path.includes(directoryName) && file.isInQueuedGroup && file.streamId === streamId
         }).get()
-        console.log('queueFilesToUpload File does not exist!', filesInStreamFromTheSameDirectory.length)
         let updateFileDoNotExistCompleteListener = async (event) => {
           this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFilesDoNotExistResponse, updateFileDoNotExistCompleteListener)
           // update session count

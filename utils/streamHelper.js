@@ -22,8 +22,15 @@ const checkMaxLength = (streamName) => {
 }
 
 const insertSites = async function (sites) {
-  await Stream.insertOrUpdate({ data: sites })
-  console.log('insertOrUpdate sites: ', sites.length)
+  const idOfSitesInUploadingSession = Stream.query().where(stream => {
+    return stream.sessionTotalCount > 0 || stream.sessionSuccessCount > 0 || stream.sessionFailCount > 0
+  }).get().map(stream => stream.id)
+  const sitesInuploadingSession = sites.filter(site => idOfSitesInUploadingSession.includes(site.id))
+  const otherSites = sites.filter(site => !idOfSitesInUploadingSession.includes(site.id))
+  await Stream.insertOrUpdate({ data: sitesInuploadingSession })
+  await Stream.insert({ data: otherSites })
+  console.log('[sitesInuploadingSession] insertOrUpdate sites', sitesInuploadingSession.length)
+  console.log('[otherSites] insert sites', otherSites.length)
 }
 
 const parseUserSites = (sites) => {

@@ -62,6 +62,7 @@
   import Stream from '../../store/models/Stream'
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
+  import DatabaseEventName from '../../../../utils/DatabaseEventName'
   import api from '../../../../utils/api'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
@@ -83,6 +84,7 @@
         userName: this.getUserName(),
         userSites: [],
         isFetching: false,
+        isRetryUploading: false,
         alertTitle: 'Are you sure you would like to continue?',
         alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.'
       }
@@ -177,9 +179,35 @@
         if (this.selectedStream === null) return false
         return stream.id === this.selectedStream.id
       },
-      repeatUploading (streamId) {
+      async repeatUploading (streamId) {
+        if (this.isRetryUploading) return // prevent double click
         console.log('repeatUploading')
-        // TODO: not implemented
+        // set session id
+        const sessionId = this.$store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
+        await this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
+
+        // completion listener
+        const t0 = performance.now()
+        let listen = (event, arg) => {
+          this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
+          const t1 = performance.now()
+          this.isRetryUploading = false
+          console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
+        }
+
+        // emit to main process to put file in uploading queue
+        this.isRetryUploading = true
+        const data = {streamId: streamId, sessionId: sessionId}
+        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reuploadFailedFilesRequest, data)
+        this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
+
+        // set selected tab to be queue tab
+        const tabObject = {}
+        tabObject[this.selectedStreamId] = 'Queued'
+        await this.$store.dispatch('setSelectedTab', tabObject)
+
+        // always enable uploading process
+        await this.$store.dispatch('enableUploadingProcess', true)
       },
       showPopupToLogOut () {
         this.showConfirmToLogOut = true

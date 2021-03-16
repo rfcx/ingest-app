@@ -14,7 +14,9 @@ const eventsName = {
   deletePreparingFilesRequest: 'deletePreparingFilesRequest',
   deletePreparingFilesResponse: 'deletePreparingFilesResponse',
   deleteOutdatedFilesRequest: 'deleteOutdatedFilesRequest',
-  deleteOutdatedFilesResponse: 'deleteOutdatedFilesResponse'
+  deleteOutdatedFilesResponse: 'deleteOutdatedFilesResponse',
+  reuploadFailedFilesRequest: 'reuploadFailedFilesResponse',
+  reuploadFailedFilesResponse: 'reuploadFailedFilesResponse'
 }
 export default {
   eventsName
