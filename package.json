@@ -75,7 +75,6 @@
     "squirrelWindows": {
       "iconUrl": "https://rfcx.org/favicon.ico",
       "loadingGif": "build/icons/win-installer-loading.gif",
-      "remoteReleases": "http://localhost:5000/public",
       "useAppIdAsId": false
     },
     "linux": {
