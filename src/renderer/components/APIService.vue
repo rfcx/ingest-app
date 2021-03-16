@@ -144,14 +144,12 @@
         }, {})
         if (allFilesInSessionGroupedByStream && Object.keys(allFilesInSessionGroupedByStream).length <= 0) { return }
         for (const [streamId, filesInStream] of Object.entries(allFilesInSessionGroupedByStream)) {
-          const successFiles = filesInStream.filter(file => FileState.isCompleted(file.state))
-          const failedFiles = filesInStream.filter(file => FileState.isServerError(file.state))
           const canRedo = filesInStream.some(file => file.canRedo)
           await Stream.update({
             where: streamId,
             data: {
-              sessionSuccessCount: successFiles.length,
-              sessionFailCount: failedFiles.length,
+              sessionSuccessCount: filesInStream.filter(file => FileState.isCompleted(file.state)).length,
+              sessionFailCount: filesInStream.filter(file => FileState.isServerError(file.state)).length,
               sessionTotalCount: filesInStream.length,
               canRedo
             }

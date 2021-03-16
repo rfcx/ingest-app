@@ -182,7 +182,6 @@
       async repeatUploading (streamId) {
         if (this.isRetryUploading) return // prevent double click
         console.log('repeatUploading')
-        // TODO: not implemented
         // set session id
         const sessionId = this.$store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
         await this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
@@ -190,7 +189,7 @@
         // completion listener
         const t0 = performance.now()
         let listen = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.reUploadFailedFilesResponse, listen)
+          this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
           const t1 = performance.now()
           this.isRetryUploading = false
           console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
@@ -199,8 +198,8 @@
         // emit to main process to put file in uploading queue
         this.isRetryUploading = true
         const data = {streamId: streamId, sessionId: sessionId}
-        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reUploadFailedFilesRequest, data)
-        this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reUploadFailedFilesResponse, listen)
+        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reuploadFailedFilesRequest, data)
+        this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
 
         // set selected tab to be queue tab
         const tabObject = {}

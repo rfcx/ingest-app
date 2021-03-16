@@ -46,9 +46,9 @@ export default {
       event.sender.send(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse)
     })
 
-    ipcMain.on(DatabaseEventName.eventsName.reUploadFailedFilesRequest, async function (event, data) {
+    ipcMain.on(DatabaseEventName.eventsName.reuploadFailedFilesRequest, async function (event, data) {
       await database.reuploadFailedFiles(data.streamId, data.sessionId)
-      event.sender.send(DatabaseEventName.eventsName.reUploadFailedFilesResponse)
+      event.sender.send(DatabaseEventName.eventsName.reuploadFailedFilesResponse)
     })
 
     ipcMain.on(DatabaseEventName.eventsName.updateFilesTimezoneRequest, async function (event, data) {
