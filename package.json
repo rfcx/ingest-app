@@ -52,8 +52,8 @@
       "provisioningProfile": "Ingest.provisionprofile",
       "darkModeSupport": true,
       "hardenedRuntime": true,
-      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
-      "entitlements": "build/entitlements.mac.inherit.plist",
+      "entitlementsInherit": "build/resources/entitlements.mac.inherit.plist",
+      "entitlements": "build/resources/entitlements.mac.inherit.plist",
       "target": [
         "dmg",
         "zip"
