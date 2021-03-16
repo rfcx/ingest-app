@@ -14,10 +14,10 @@
     "appId": "org.rfcx.ingest",
     "afterSign": "./after-sign-hook.js",
     "directories": {
-      "output": "build"
+      "output": "."
     },
     "files": [
-      "dist/electron/**/*"
+      "../../dist/electron/**/*"
     ],
     "dmg": {
       "sign": false,
@@ -36,19 +36,19 @@
       ]
     },
     "mac": {
-      "icon": "build/icons/ingest-mac.png",
+      "icon": "./icons/ingest-mac.png",
       "provisioningProfile": "Ingest.provisionprofile",
       "darkModeSupport": true,
       "hardenedRuntime": true,
-      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
-      "entitlements": "build/entitlements.mac.inherit.plist",
+      "entitlementsInherit": "./entitlements.mac.inherit.plist",
+      "entitlements": "./entitlements.mac.inherit.plist",
       "target": [
         "dmg",
         "zip"
       ]
     },
     "win": {
-      "icon": "build/icons/ingest-windows.ico",
+      "icon": "./icons/ingest-windows.ico",
       "publisherName": "RFCx",
       "target": [
         {
@@ -62,12 +62,12 @@
     },
     "squirrelWindows": {
       "iconUrl": "https://rfcx.org/favicon.ico",
-      "loadingGif": "build/icons/win-installer-loading.gif",
+      "loadingGif": "./icons/win-installer-loading.gif",
       "remoteReleases": "http://localhost:5000/public",
       "useAppIdAsId": false
     },
     "linux": {
-      "icon": "build/icons"
+      "icon": "./icons"
     }
   },
   "dependencies": {
