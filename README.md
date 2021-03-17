@@ -40,11 +40,18 @@ Build electron application for production
 ## Build a notarized version of the app on Mac
 
 1. Get a certificate (.pem) with the password (.p12) from DevOps or Team Lead. Check the certificate in the Keychain: Developer ID Application: Rainforest Connection with the private key. (see the example: https://help.apple.com/xcode/mac/current/#/dev97211aeac).
-2. Go to https://appleid.apple.com/account/manage for creating your APP-SPECIFIC PASSWORDS for the Ingest App.
-3. Add to the local env the following:
-export appleId=**YOUR-APPLE-ID**
-export appleIdPassword=**APP-SPECIFIC PASSWORD**
+2. Also, Get an API Key (.p8) with API Key ID and API Key ISSUER ID from DevOps or Team Lead, or generate a new one at https://appstoreconnect.apple.com/access/api. The name of the p8 file should be `AuthKey_<api_key_id>.p8`
+3. Put the API Key (.p8) into one of these directory in your local development machine.
+* `./private_keys`
+* `~/private_keys`
+* `~/.private_keys`
+* `~/.appstoreconnect/private_keys`
+Based on the `API Key ID`, `altool` will look in the above places for the API Key file.
+3. Add to the .env the following:
+APPLE_API_KEY_ID=**API Key ID**
+APPLE_API_KEY_ISSUER_ID=**API Key Issuer ID**
 4. Use ```npm run build``` command for building the app.
+(The `after-sign-hook.js` will do its job, to notarize the app for you with the configuaration above)
 
 ## Build the app on Windows
 
