@@ -69,6 +69,8 @@ function build () {
     process.exit(1)
   })
 
+}
+
 function pack (config) {
   return new Promise((resolve, reject) => {
     config.mode = 'production'
