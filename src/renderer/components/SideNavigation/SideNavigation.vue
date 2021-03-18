@@ -42,7 +42,7 @@
           <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
             <div class="wrapper__stream-name">{{ stream.name }}</div>
             <fa-icon class="iconRedo" v-if="stream.canRedo" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
-            <img :src="getStateImgUrl(stream.state)">
+            <img :src="getStateImgUrl(getState(stream))">
           </div>
         </div>
       </li>
@@ -59,7 +59,6 @@
 </template>
 
 <script>
-  import Stream from '../../store/models/Stream'
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
   import DatabaseEventName from '../../../../utils/DatabaseEventName'
@@ -67,6 +66,7 @@
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
   import { faRedo, faSync } from '@fortawesome/free-solid-svg-icons'
+  import ipcRendererSend from '../../services/ipc'
   const { remote } = window.require('electron')
 
   export default {
@@ -86,7 +86,8 @@
         isFetching: false,
         isRetryUploading: false,
         alertTitle: 'Are you sure you would like to continue?',
-        alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.'
+        alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.',
+        streams: []
       }
     },
     components: {
@@ -97,10 +98,7 @@
         return this.$store.state.AppSetting.selectedStreamId
       },
       selectedStream () {
-        return Stream.find(this.selectedStreamId)
-      },
-      streams () {
-        return Stream.query().orderBy('updatedAt', 'desc').get()
+        return this.streams.find(s => s.id === this.selectedStreamId)
       },
       isRequiredSymbols () {
         return this.searchStr && this.searchStr.length > 0 && this.searchStr.length < 3
@@ -176,8 +174,11 @@
         await this.$store.dispatch('setSelectedStreamId', stream.id)
       },
       isActive (stream) {
-        if (this.selectedStream === null) return false
+        if (!stream || !this.selectedStream) return false
         return stream.id === this.selectedStream.id
+      },
+      getState (stream) {
+        return streamHelper.getState(stream)
       },
       async repeatUploading (streamId) {
         if (this.isRetryUploading) return // prevent double click
@@ -241,9 +242,12 @@
         this.isFetching = true
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
+      },
+      async getStreams () {
+        this.streams = await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { sort: {'updatedAt': 'desc'} })
       }
     },
-    created () {
+    async created () {
       if (remote.getGlobal('firstLogIn')) {
         this.getUserSites()
         this.$electron.ipcRenderer.send('resetFirstLogIn')
@@ -255,6 +259,7 @@
         }
         this.$electron.ipcRenderer.on('onMainWindowIsActive', getUserSitesListener)
       }
+      await this.getStreams()
     }
   }
 </script>

@@ -10,9 +10,9 @@
           </div>
         </div>
       </div>
-      <side-navigation 
-        :class="{ 'side-menu__with-progress': shouldShowProgress}" 
-        @clickNewSiteButton="toggleNewSiteDropDown" 
+      <side-navigation
+        :class="{ 'side-menu__with-progress': shouldShowProgress}"
+        @clickNewSiteButton="toggleNewSiteDropDown"
         @clickOutSideNewSiteButton="hideNewSiteDropDown"
       />
       <div class="column content is-desktop">
@@ -38,9 +38,9 @@
   import FileContainer from './LandingPage/FileContainer/FileContainer'
   import ConfirmAlert from './Common/ConfirmAlert'
   import { mapState } from 'vuex'
-  import Stream from '../store/models/Stream'
   import Analytics from 'electron-ga'
   import env from '../../../env.json'
+  import ipcRendererSend from '../services/ipc'
   const { remote } = window.require('electron')
   const log = require('electron-log')
   console.log = log.log
@@ -55,7 +55,8 @@
         executed: false,
         isDragging: false,
         isPopupOpened: false,
-        shouldShowNewSiteDropDown: false
+        shouldShowNewSiteDropDown: false,
+        streams: []
       }
     },
     methods: {
@@ -129,6 +130,9 @@
         if (!selectedStreamIdInAppSettingModel && selectedStreamIdInStreamModel) {
           await this.$store.dispatch('setSelectedStreamId', selectedStreamIdInStreamModel)
         }
+      },
+      async getStreams () {
+        this.streams = await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { sort: {'updatedAt': 'desc'} })
       }
     },
     computed: {
@@ -136,11 +140,8 @@
         selectedStreamId: state => state.AppSetting.selectedStreamId,
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
       }),
-      streams () {
-        return Stream.all()
-      },
       selectedStream () {
-        return Stream.find(this.selectedStreamId)
+        return this.streams.find(s => s.id === this.selectedStreamId)
       },
       shouldShowProgress () {
         return this.$refs.globalProgress && this.$refs.globalProgress.shouldShowProgress
@@ -154,6 +155,7 @@
       this.$electron.ipcRenderer.on('showUpToDatePopup', (event, message) => {
         this.isPopupOpened = message
       })
+      this.getStreams()
     }
   }
 </script>

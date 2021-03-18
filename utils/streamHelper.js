@@ -21,6 +21,14 @@ const checkMaxLength = (streamName) => {
   return streamName.trim().length && streamName.trim().length <= 40
 }
 
+const getState = function (stream) {
+  if (stream.isUploading) return 'uploading'
+  if (stream.sessionFailCount > 0) return 'failed'
+  if (stream.preparingCount > 0) return 'preparing'
+  if (stream.isCompleted) return 'completed'
+  return ''
+}
+
 const insertSites = async function (sites) {
   const idOfSitesInUploadingSession = Stream.query().where(stream => {
     return stream.sessionTotalCount > 0 || stream.sessionSuccessCount > 0 || stream.sessionFailCount > 0
@@ -58,5 +66,6 @@ export default {
   isValidName,
   getNameError,
   insertSites,
-  parseUserSites
+  parseUserSites,
+  getState
 }

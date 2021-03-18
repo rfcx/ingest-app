@@ -73,9 +73,9 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
 }
 
 // Part 0: Create stream
-const createStream = (env, streamName, latitude, longitude, visibility, deviceId, idToken) => {
+const createStream = (env, streamName, latitude, longitude, isPublic, deviceId, idToken) => {
   console.log('creating stream api:', streamName)
-  return httpClient.post(apiUrl(env) + '/streams', { name: streamName, latitude: latitude, longitude: longitude, is_public: visibility, device_id: deviceId }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.post(apiUrl(env) + '/streams', { name: streamName, latitude: latitude, longitude: longitude, is_public: isPublic, device_id: deviceId }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const streamId = response.data.id
       return streamId

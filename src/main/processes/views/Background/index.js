@@ -47,8 +47,12 @@ export default {
     })
 
     ipcMain.on(DatabaseEventName.eventsName.updateFilesDoNotExistRequest, async function (event, files) {
-      await database.updateFilesDoNotExist(files)
-      event.sender.send(DatabaseEventName.eventsName.updateFilesDoNotExistResponse)
+      try {
+        await database.updateFilesDoNotExist(files)
+        event.sender.send(DatabaseEventName.eventsName.updateFilesDoNotExistResponse)
+      } catch (e) {
+        console.error('Can not call database method', e)
+      }
     })
 
     return backgroundAPIWindow

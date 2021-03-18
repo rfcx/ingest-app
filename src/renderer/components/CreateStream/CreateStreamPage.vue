@@ -51,7 +51,6 @@
 </template>
 
 <script>
-import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
 import streamHelper from '../../../../utils/streamHelper'
 import dateHelper from '../../../../utils/dateHelper'
@@ -59,6 +58,7 @@ import FileFormat from '../../../../utils/FileFormat'
 import settings from 'electron-settings'
 import Map from './Map'
 import HeaderView from '../Common/HeaderWithBackButton'
+import ipcRendererSend from '../../services/ipc'
 
 export default {
   data () {
@@ -121,24 +121,15 @@ export default {
         this.error = streamHelper.getNameError(this.name)
         return
       }
-      const visibility = false
+      const isPublic = false
       const latitude = this.selectedLatitude
       const longitude = this.selectedLongitude
       const fileFormat = FileFormat.fileFormat.AUTO_DETECT
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         let idToken = arg
-        api
-          .createStream(
-            this.isProductionEnv(),
-            this.name,
-            latitude,
-            longitude,
-            visibility,
-            this.deviceId,
-            idToken
-          )
-          .then(async streamId => {
+        api.createStream(this.isProductionEnv(), this.name, latitude, longitude, isPublic, this.deviceId, idToken)
+          .then(async (streamId) => {
             const stream = {
               id: streamId,
               name: this.name,
@@ -146,20 +137,24 @@ export default {
               longitude: longitude,
               timestampFormat: fileFormat,
               env: this.isProductionEnv() ? 'production' : 'staging',
-              visibility: visibility,
+              isPublic: isPublic,
               createdAt: Date.now(),
               updatedAt: Date.now(),
               deviceId: this.deviceId || ''
             }
-            await Stream.insert({ data: stream })
-            // add files to site/stream
             if (this.selectedFolderPath) {
-              stream.defaultTimezone = dateHelper.getDefaultTimezone(stream.latitude, stream.longitude)
-              this.$file.handleDroppedFolder(this.selectedFolderPath, stream, { deviceId: this.deviceId, deploymentId: this.deploymentInfo ? this.deploymentInfo.id : '' }) // TODO: pass deployment id
+              stream.defaultTimezone = dateHelper.getDefaultTimezone(latitude, longitude)
+              this.$file.handleDroppedFolder(this.selectedFolderPath, stream, {
+                deviceId: this.deviceId,
+                deploymentId: this.deploymentInfo ? this.deploymentInfo.id : ''
+              }) // TODO: pass deployment id
             }
             if (this.selectedFiles && this.selectedFiles.length > 0) {
               this.$file.handleDroppedFiles(this.selectedFiles, stream)
             }
+            const topic = 'db.streams.create'
+            const cbTopic = `${topic}.${stream.id}`
+            await ipcRendererSend(topic, cbTopic, stream)
             await this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$router.push('/')
           })

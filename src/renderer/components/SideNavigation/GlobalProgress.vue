@@ -15,28 +15,23 @@
 
 <script>
 import { mapState } from 'vuex'
-import Stream from '../../store/models/Stream'
+import ipcRendererSend from '../../services/ipc'
 export default {
+  data () {
+    return {
+      numberOfAllFilesInTheSession: null,
+      numberOfCompleteFilesInTheSession: null,
+      numberOfSuccessFilesInTheSession: null,
+      numberOfFailFilesInTheSession: null,
+      shouldShowProgress: null,
+      refreshInterval: null
+    }
+  },
   computed: {
     ...mapState({
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
       isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
-    }),
-    shouldShowProgress () {
-      return this.numberOfAllFilesInTheSession !== this.numberOfCompleteFilesInTheSession
-    },
-    numberOfAllFilesInTheSession () {
-      return Stream.query().sum('sessionTotalCount')
-    },
-    numberOfCompleteFilesInTheSession () {
-      return this.numberOfSuccessFilesInTheSession + this.numberOfFailFilesInTheSession
-    },
-    numberOfSuccessFilesInTheSession () {
-      return Stream.query().sum('sessionSuccessCount')
-    },
-    numberOfFailFilesInTheSession () {
-      return Stream.query().sum('sessionFailCount')
-    }
+    })
   },
   watch: {
     isUploadingEnabled (val, oldVal) {
@@ -45,11 +40,17 @@ export default {
     }
   },
   methods: {
+    async getStats () {
+      const stats = await ipcRendererSend('db.streams.stats', `db.streams.stats.${Date.now()}`)
+      this.numberOfAllFilesInTheSession = stats.sessionTotalCount
+      this.numberOfSuccessFilesInTheSession = stats.sessionSuccessCount
+      this.numberOfFailFilesInTheSession = stats.sessionFailCount
+      this.numberOfCompleteFilesInTheSession = stats.sessionSuccessCount + stats.sessionFailCount
+      this.shouldShowProgress = this.numberOfAllFilesInTheSession && this.numberOfCompleteFilesInTheSession && this.numberOfAllFilesInTheSession !== this.numberOfCompleteFilesInTheSession
+    },
     getState () {
-      const completed = this.numberOfSuccessFilesInTheSession
       const error = this.numberOfFailFilesInTheSession
-      const total = this.numberOfAllFilesInTheSession
-      let text = `${completed}/${total} files`
+      let text = `${this.numberOfSuccessFilesInTheSession}/${this.numberOfAllFilesInTheSession} files`
       text += error > 0 ? ` ${error} ${error <= 1 ? 'error' : 'errors'}` : ''
       return text
     },
@@ -58,12 +59,23 @@ export default {
       return require(`../../assets/ic-uploading-${state}-green.svg`)
     },
     toggleUploadingProcess () {
-      // this.isUploadingProcessEnabled = !this.isUploadingProcessEnabled
       this.$store.dispatch('enableUploadingProcess', !this.isUploadingProcessEnabled)
     },
-    getProgressPercent () {
+    async getProgressPercent () {
       if (!this.numberOfAllFilesInTheSession || !this.numberOfCompleteFilesInTheSession) return 0
       else return ((this.numberOfCompleteFilesInTheSession / this.numberOfAllFilesInTheSession) * 100)
+    }
+  },
+  created () {
+    this.refreshInterval = setInterval(() => {
+      if (this.isUploadingProcessEnabled) {
+        this.getStats()
+      }
+    }, 1000)
+  },
+  beforeDestroy () {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval)
     }
   }
 }
