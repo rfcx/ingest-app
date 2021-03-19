@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <h1>Edit site</h1>
-    <fieldset>
+    <fieldset v-if="selectedStream">
       <div class="notification default-notice" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
         {{ error }}
@@ -54,6 +54,7 @@ import DatabaseEventName from '../../../../utils/DatabaseEventName'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
 import Map from '../CreateStream/Map'
+import ipcRendererSend from '../../services/ipc'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
 
@@ -67,7 +68,8 @@ export default {
       isDeleting: false,
       error: '',
       iconTrash: faTrash,
-      shouldShowConfirmToDeleteModal: false
+      shouldShowConfirmToDeleteModal: false,
+      selectedStream: null
     }
   },
   components: { Map },
@@ -76,9 +78,6 @@ export default {
       selectedStreamId: state => state.AppSetting.selectedStreamId,
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
     }),
-    selectedStream () {
-      return Stream.find(this.selectedStreamId)
-    },
     hasEditedData () {
       return this.name !== this.selectedStream.name || this.selectedLatitude !== this.selectedStream.latitude || this.selectedLongitude !== this.selectedStream.longitude
     }
@@ -108,9 +107,9 @@ export default {
           .updateStream(this.isProductionEnv(), this.selectedStreamId, opts, idToken)
           .then(async data => {
             console.log('stream coordinates is updated')
-            Stream.update({
-              where: this.selectedStream.id,
-              data: { latitude: latitude, longitude: longitude, name: name }
+            await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, {
+              id: this.selectedStream.id,
+              params: { latitude, longitude, name }
             })
             this.updateFilesTimezone(dateHelper.getDefaultTimezone(latitude, longitude))
             this.isLoading = false
@@ -154,25 +153,18 @@ export default {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         let idToken = null
         idToken = arg
-        api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
-          console.log('stream is deleted')
-          await this.removeStreamFromVuex(this.selectedStream.id)
-          this.modalHandler()
-        }).catch(error => {
-          console.log('error while deleting site', error)
-          this.errorHandler(error, true)
-        })
+        api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken)
+          .then(async (data) => {
+            console.log('stream is deleted')
+            await ipcRendererSend('db.streams.delete', `db.streams.delete.${Date.now()}`, this.selectedStream.id)
+            this.modalHandler()
+          }).catch(error => {
+            console.log('error while deleting site', error)
+            this.errorHandler(error, true)
+          })
       }
       this.$electron.ipcRenderer.send('getIdToken')
       this.$electron.ipcRenderer.on('sendIdToken', listener)
-    },
-    async removeStreamFromVuex (selectedStreamId) {
-      let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
-        console.log('files deleted')
-      }
-      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteAllFilesRequest, this.selectedStreamId)
-      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
     },
     modalHandler () {
       const stream = Stream.query().where((stream) => {
@@ -203,8 +195,9 @@ export default {
       this.error = null
     }
   },
-  mounted () {
-    this.name = this.selectedStream.name || ''
+  async created () {
+    this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)
+    this.name = this.selectedStream ? this.selectedStream.name : ''
   },
   watch: {
     name (val, oldVal) {
