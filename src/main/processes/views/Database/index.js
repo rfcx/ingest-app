@@ -1,5 +1,5 @@
 import { BrowserWindow, ipcMain } from 'electron'
-import dbService from '../../../services/db-service'
+import dbService from '../../../services/db/sqlite'
 
 export default {
   async createWindow () {
