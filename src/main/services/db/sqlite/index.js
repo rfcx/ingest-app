@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize')
 
-async function init () {
+async function init (app) {
+  const storagePath = `${app.getPath('userData')}/database.sqlite`
   const sequelize = new Sequelize('database', 'username', 'password', {
     host: 'localhost',
     dialect: 'sqlite',
@@ -11,7 +12,7 @@ async function init () {
       acquire: 30000,
       idle: 10000
     },
-    storage: './database.sqlite'
+    storage: storagePath
   })
   await sequelize.authenticate()
     .then(() => {
