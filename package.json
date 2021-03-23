@@ -24,7 +24,6 @@
   "build": {
     "productName": "RFCx Uploader",
     "appId": "org.rfcx.ingest",
-    "afterSign": "./after-sign-hook.js",
     "directories": {
       "output": "build"
     },
