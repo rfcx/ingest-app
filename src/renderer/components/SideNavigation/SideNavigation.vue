@@ -244,7 +244,7 @@
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       async getStreams () {
-        this.streams = await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { sort: {'updatedAt': 'desc'} })
+        this.streams = await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'desc']] })
       }
     },
     async created () {

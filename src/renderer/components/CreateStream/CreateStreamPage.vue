@@ -138,8 +138,6 @@ export default {
               timestampFormat: fileFormat,
               env: this.isProductionEnv() ? 'production' : 'staging',
               isPublic: isPublic,
-              createdAt: Date.now(),
-              updatedAt: Date.now(),
               deviceId: this.deviceId || ''
             }
             if (this.selectedFolderPath) {
@@ -152,9 +150,7 @@ export default {
             if (this.selectedFiles && this.selectedFiles.length > 0) {
               this.$file.handleDroppedFiles(this.selectedFiles, stream)
             }
-            const topic = 'db.streams.create'
-            const cbTopic = `${topic}.${stream.id}`
-            await ipcRendererSend(topic, cbTopic, stream)
+            await ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, stream)
             await this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$router.push('/')
           })

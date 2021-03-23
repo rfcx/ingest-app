@@ -131,8 +131,8 @@
           await this.$store.dispatch('setSelectedStreamId', selectedStreamIdInStreamModel)
         }
       },
-      async getStreams () {
-        this.streams = await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { sort: {'updatedAt': 'desc'} })
+      getStreams () {
+        return ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'desc']] })
       }
     },
     computed: {
@@ -155,7 +155,7 @@
       this.$electron.ipcRenderer.on('showUpToDatePopup', (event, message) => {
         this.isPopupOpened = message
       })
-      this.getStreams()
+      this.streams = await this.getStreams()
     }
   }
 </script>
