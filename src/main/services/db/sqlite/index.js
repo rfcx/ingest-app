@@ -11,9 +11,10 @@ function clean () {
   }
 }
 
-async function init () {
+async function init (app) {
   try {
     console.log('Initializaing database...')
+    const storage = `${app.getPath('userData')}/database.sqlite`
     sequelize = new Sequelize('database', 'username', 'password', {
       host: 'localhost',
       dialect: 'sqlite',
@@ -27,8 +28,8 @@ async function init () {
         acquire: 30000,
         idle: 10000
       },
-      storage: './database.sqlite',
-      logging: false
+      logging: false,
+      storage
     })
     await sequelize.authenticate()
     console.log('Database connection has been established successfully.')

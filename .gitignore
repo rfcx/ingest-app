@@ -4,6 +4,7 @@ dist/electron/*
 dist/web/*
 build/*
 !build/icons
+!build/resources
 node_modules/
 npm-debug.log
 npm-debug.log.*

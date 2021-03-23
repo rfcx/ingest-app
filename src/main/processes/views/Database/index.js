@@ -1,4 +1,4 @@
-import { BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import dbService from '../../../services/db/sqlite'
 
 export default {
@@ -11,7 +11,7 @@ export default {
     })
     dbWindow.loadURL(dbURL)
 
-    await dbService.init()
+    await dbService.init(app)
 
     Object.keys(dbService.collections).forEach((collection) => {
       Object.keys(dbService.collections[collection]).forEach((method) => {
