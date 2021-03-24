@@ -39,14 +39,14 @@
     npm run dev --url=`http://localhost:3030`
     ```
 
-### Build
+## Build
 Build electron application for production
 
 This project has got Github Action workflow integrated, which will start building and releasing the app automatically when PR merged to develop / pushed to master branch. 🦾
 
 Check the script in `.github/workflows/electron.yml` to see how it works.
 
-## Manually build a notarized version of the app on Mac
+### Manually build a notarized version of the app on Mac
 
 1. Get a certificate (.pem) with the password (.p12) from DevOps or Team Lead. Check the certificate in the Keychain: Developer ID Application: Rainforest Connection with the private key. (see the example: https://help.apple.com/xcode/mac/current/#/dev97211aeac).
 2. Also, Get an API Key (.p8) with API Key ID and API Key ISSUER ID from DevOps or Team Lead, or generate a new one at https://appstoreconnect.apple.com/access/api. The name of the p8 file should be `AuthKey_<api_key_id>.p8`
@@ -71,7 +71,7 @@ APPLE_API_KEY_ISSUER_ID=**API Key Issuer ID**
 4. Use ```npm run build``` command for building the app.
 (The `after-sign-hook.js` will do its job, to notarize the app for you with the configuaration above)
 
-## Manually build the app on Windows
+### Manually build the app on Windows
 
 1. Get a certificate with the password from DevOps or Team Lead.
 Add the following to the `.env` file:
@@ -99,6 +99,17 @@ Lint all JS/Vue component files in `src/`
 npm run lint
 ```
 
+## Generate test files
+This script will convert the audio files recorded by the guardian into AudioMoth file type. It will add `deployment_id` along with other metadata into the header of the files.
+
+1. Grab these original files:
+- https://rfcx-web-static.s3.eu-west-1.amazonaws.com/tmp/rfcx-uploader-test-sets/pre_3ad55a16413f.tar.gz
+- https://rfcx-web-static.s3.eu-west-1.amazonaws.com/tmp/rfcx-uploader-test-sets/pre_au3zcjx7nrrf.tar.gz
+2. Run the script from `convert_guardian_to_audiomoth.sh` to generate test files
+``` bash
+chmod +x convert_guardian_to_audiomoth.sh 
+./convert_guardian_to_audiomoth.sh [folder_name_of_original_files] [deployment_id]
+```
 ---
 
 ## Project structure
