@@ -105,7 +105,7 @@ This script will convert the audio files recorded by the guardian into AudioMoth
 1. Grab these original files:
 - https://rfcx-web-static.s3.eu-west-1.amazonaws.com/tmp/rfcx-uploader-test-sets/pre_3ad55a16413f.tar.gz
 - https://rfcx-web-static.s3.eu-west-1.amazonaws.com/tmp/rfcx-uploader-test-sets/pre_au3zcjx7nrrf.tar.gz
-2. Run the script from `convert_guardian_to_audiomoth.sh` to generate test files
+2. Run the script from `test/convert_guardian_to_audiomoth.sh` to generate test files
 ``` bash
 chmod +x convert_guardian_to_audiomoth.sh 
 ./convert_guardian_to_audiomoth.sh [folder_name_of_original_files] [deployment_id]
