@@ -41,6 +41,14 @@ export default {
       selectedStream: null
     }
   },
+  watch: {
+    selectedStreamId: {
+      handler: function (previousStream, newStream) {
+        if (previousStream === newStream) return
+        this.getCurrentStream()
+      }
+    }
+  },
   computed: {
     ...mapState({
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
@@ -65,10 +73,13 @@ export default {
         return ''
       }
       return this.selectedStream.siteGuid || `${this.selectedStream.latitude.toFixed(6)}, ${this.selectedStream.longitude.toFixed(6)}`
+    },
+    async getCurrentStream () {
+      this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)
     }
   },
   async created () {
-    this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)
+    this.getCurrentStream()
   }
 }
 </script>
