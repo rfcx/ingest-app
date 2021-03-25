@@ -49,10 +49,7 @@ export default class File extends Model {
     if (this.timestamp.substr(-1) === 'Z' || this.timestamp.substr(-6, 1) === '-' || this.timestamp.substr(-6, 1) === '+') {
       return moment.utc(this.timestamp).toISOString() // timezone is in the parsed timestamp
     }
-    if (!this.timezone) {
-      return this.timestamp + 'Z' // no timezone provided (assume UTC)
-    }
-    return moment.tz(this.timestamp, this.timezone).toISOString() // parse with timezone and return as UTC
+    return this.timestamp + 'Z'
   }
 
   get fileSize () {
