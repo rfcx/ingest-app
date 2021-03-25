@@ -12,6 +12,7 @@
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
     "build:win": "node .electron-vue/build.js && electron-builder build --win",
+    "build:ci": "node .electron-vue/build.js -p always",
     "dev": "node .electron-vue/dev-runner.js",
     "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter src",
     "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src",
@@ -23,7 +24,6 @@
   "build": {
     "productName": "RFCx Uploader",
     "appId": "org.rfcx.ingest",
-    "afterSign": "./after-sign-hook.js",
     "directories": {
       "output": "build"
     },
@@ -51,8 +51,8 @@
       "provisioningProfile": "Ingest.provisionprofile",
       "darkModeSupport": true,
       "hardenedRuntime": true,
-      "entitlementsInherit": "build/entitlements.mac.inherit.plist",
-      "entitlements": "build/entitlements.mac.inherit.plist",
+      "entitlementsInherit": "build/resources/entitlements.mac.inherit.plist",
+      "entitlements": "build/resources/entitlements.mac.inherit.plist",
       "target": [
         "dmg",
         "zip"
@@ -60,10 +60,7 @@
     },
     "win": {
       "icon": "build/icons/ingest-windows.ico",
-      "certificateFile": "./build/certs/certificate.p12",
-      "certificatePassword": "<YOUR_PASSWORD>",
       "publisherName": "RFCx",
-      "timeStampServer": "http://timestamp.globalsign.com/scripts/timstamp.dll",
       "target": [
         {
           "target": "squirrel",
@@ -77,7 +74,7 @@
     "squirrelWindows": {
       "iconUrl": "https://rfcx.org/favicon.ico",
       "loadingGif": "build/icons/win-installer-loading.gif",
-      "remoteReleases": "http://localhost:5000/public",
+      "remoteReleases": true,
       "useAppIdAsId": false
     },
     "linux": {
@@ -148,6 +145,7 @@
     "css-loader": "^3.2.0",
     "del": "^3.0.0",
     "devtron": "^1.4.0",
+    "dotenv": "^8.2.0",
     "electron": "^6.0.0",
     "electron-builder": "^22.3.2",
     "electron-builder-squirrel-windows": "^22.4.0",
