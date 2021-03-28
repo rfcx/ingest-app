@@ -46,7 +46,7 @@ export default {
       this.numberOfSuccessFilesInTheSession = stats.sessionSuccessCount
       this.numberOfFailFilesInTheSession = stats.sessionFailCount
       this.numberOfCompleteFilesInTheSession = stats.sessionSuccessCount + stats.sessionFailCount
-      this.shouldShowProgress = this.numberOfAllFilesInTheSession && this.numberOfCompleteFilesInTheSession && this.numberOfAllFilesInTheSession !== this.numberOfCompleteFilesInTheSession
+      this.shouldShowProgress = this.numberOfAllFilesInTheSession !== this.numberOfCompleteFilesInTheSession
     },
     getState () {
       const error = this.numberOfFailFilesInTheSession
@@ -67,11 +67,11 @@ export default {
     }
   },
   created () {
-    this.refreshInterval = setInterval(() => {
-      if (this.isUploadingProcessEnabled) {
-        this.getStats()
-      }
-    }, 1000)
+    // this.refreshInterval = setInterval(() => {
+    //   if (this.isUploadingProcessEnabled) {
+    //     this.getStats()
+    //   }
+    // }, 1000)
   },
   beforeDestroy () {
     if (this.refreshInterval) {

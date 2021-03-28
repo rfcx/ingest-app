@@ -11,7 +11,7 @@ export default function (sequelize) {
       allowNull: false
     },
     timestampFormat: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING, // Auto-detect, unix-hex, custom
       allowNull: false,
       defaultValue: 'Auto-detect'
     },
@@ -55,6 +55,10 @@ export default function (sequelize) {
       type: DataTypes.REAL,
       allowNull: true,
       defaultValue: 0
+    },
+    timezone: {
+      type: DataTypes.STRING,
+      allowNull: false
     },
     isPublic: {
       type: DataTypes.BOOLEAN,

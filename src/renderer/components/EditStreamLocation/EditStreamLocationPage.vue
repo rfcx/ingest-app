@@ -47,10 +47,9 @@
 </template>
 
 <script>
-import Stream from '../../store/models/Stream'
 import streamHelper from '../../../../utils/streamHelper'
 import dateHelper from '../../../../utils/dateHelper'
-import DatabaseEventName from '../../../../utils/DatabaseEventName'
+// import DatabaseEventName from '../../../../utils/DatabaseEventName'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
 import Map from '../CreateStream/Map'
@@ -107,11 +106,12 @@ export default {
           .updateStream(this.isProductionEnv(), this.selectedStreamId, opts, idToken)
           .then(async data => {
             console.log('stream coordinates is updated')
+            const timezone = dateHelper.getDefaultTimezone(latitude, longitude)
             await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, {
               id: this.selectedStream.id,
-              params: { latitude, longitude, name }
+              params: { latitude, longitude, name, timezone }
             })
-            this.updateFilesTimezone(dateHelper.getDefaultTimezone(latitude, longitude))
+            this.updateFilesTimezone(timezone)
             this.isLoading = false
             this.redirectToMainScreen()
           })
@@ -132,13 +132,10 @@ export default {
       return this.selectedStream.longitude ? [this.selectedStream.longitude, this.selectedStream.latitude] : null
     },
     async updateFilesTimezone (timezone) {
-      let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFilesTimezoneResponse, listen)
-        console.log('updateFilesTimezone completed')
-      }
-      const params = { streamId: this.selectedStreamId, timezone: timezone }
-      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFilesTimezoneRequest, params)
-      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFilesTimezoneResponse, listen)
+      await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
+        where: { streamId: this.selectedStreamId },
+        values: { timezone }
+      })
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true
@@ -167,12 +164,6 @@ export default {
       this.$electron.ipcRenderer.on('sendIdToken', listener)
     },
     modalHandler () {
-      const stream = Stream.query().where((stream) => {
-        return stream.id !== this.selectedStreamId
-      }).first()
-      if (stream) {
-        this.$store.dispatch('setSelectedStreamId', stream.id)
-      }
       this.isDeleting = false
       this.redirectToMainScreen()
     },

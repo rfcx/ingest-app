@@ -132,7 +132,7 @@
         }
       },
       getStreams () {
-        return ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'desc']] })
+        return ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
       }
     },
     computed: {

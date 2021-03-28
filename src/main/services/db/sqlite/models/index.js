@@ -1,6 +1,7 @@
 export default function init (sequelize) {
   const models = {
-    Stream: require('./stream').default(sequelize)
+    Stream: require('./stream').default(sequelize),
+    File: require('./file').default(sequelize)
   }
   // Create associations
   Object.keys(models).forEach((model) => {

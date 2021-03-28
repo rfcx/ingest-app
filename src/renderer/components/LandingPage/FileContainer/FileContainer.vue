@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10">
+  <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10" v-if="selectedStream">
     <header-view></header-view>
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
@@ -14,9 +14,10 @@ import Tab from './Tab'
 import FileNameFormatInfo from './FileNameFormatInfo'
 import FileList from './FileList'
 import FileState from '../../../../../utils/fileState'
-import File from '../../../store/models/File'
-import Stream from '../../../store/models/Stream'
+// import File from '../../../store/models/File'
+// import Stream from '../../../store/models/Stream'
 import infiniteScroll from 'vue-infinite-scroll'
+import ipcRendererSend from '../../../services/ipc'
 
 const fileComparator = (fileA, fileB) => {
   const stateResult = FileState.getStatePriority(fileA.state) - FileState.getStatePriority(fileB.state)
@@ -30,7 +31,11 @@ export default {
   data () {
     return {
       files: [],
-      fetchFilesInterval: null
+      preparingFiles: [],
+      queuingFiles: [],
+      completedFiles: [],
+      fetchFilesInterval: null,
+      selectedStream: null
     }
   },
   props: {
@@ -43,22 +48,19 @@ export default {
     ...mapState({
       selectedStreamId: state => state.AppSetting.selectedStreamId
     }),
-    selectedStream () {
-      return Stream.find(this.selectedStreamId)
-    },
     selectedTab () {
       const savedSelectedTab = this.$store.getters.getSelectedTabByStreamId(this.selectedStreamId)
       return savedSelectedTab || this.getDefaultSelectedTab()
-    },
-    preparingFiles () {
-      return this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
-    },
-    queuingFiles () {
-      return this.files.filter(file => FileState.isInQueuedGroup(file.state)).sort(fileComparator)
-    },
-    completedFiles () {
-      return this.files.filter(file => FileState.isInCompletedGroup(file.state)).sort(fileComparator)
     }
+    // preparingFiles () {
+    //   return this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
+    // },
+    // queuingFiles () {
+    //   return this.files.filter(file => FileState.isInQueuedGroup(file.state)).sort(fileComparator)
+    // },
+    // completedFiles () {
+    //   return this.files.filter(file => FileState.isInCompletedGroup(file.state)).sort(fileComparator)
+    // }
   },
   methods: {
     getDefaultSelectedTab () {
@@ -90,10 +92,13 @@ export default {
       }
     },
     checkIfHasErrorFiles (files) {
-      return files.filter((file) => file.isError).length > 0
+      return files.filter((file) => file.state.includes('error')).length > 0
     },
-    reloadFiles () {
-      this.files = File.query().where('streamId', this.selectedStreamId).get()
+    async reloadFiles () {
+      this.files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: this.selectedStreamId } })
+      this.preparingFiles = this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
+      this.queuingFiles = this.files.filter(file => FileState.isInQueuedGroup(file.state)).sort(fileComparator)
+      this.completedFiles = this.files.filter(file => FileState.isInCompletedGroup(file.state)).sort(fileComparator)
     },
     initFilesFetcher () {
       // fetch at first load
@@ -102,13 +107,17 @@ export default {
       this.fetchFilesInterval = setInterval(() => {
         this.reloadFiles()
       }, 2000)
+    },
+    async getCurrentStream () {
+      this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)
     }
   },
   watch: {
     selectedStreamId: {
-      handler: function (previousStream, newStream) {
+      handler: async function (previousStream, newStream) {
         if (previousStream === newStream) return
-        this.reloadFiles()
+        await this.getCurrentStream()
+        await this.reloadFiles()
       }
     },
     selectedTab (previousTabName, newTabName) {
@@ -118,7 +127,8 @@ export default {
       }
     }
   },
-  created () {
+  async created () {
+    await this.getCurrentStream()
     this.initFilesFetcher()
   },
   beforeDestroy () {

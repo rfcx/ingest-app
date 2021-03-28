@@ -24,11 +24,11 @@
 
 <script>
 import SourceList from './SourceList'
-import Stream from '../../store/models/Stream'
 import HeaderView from '../Common/HeaderWithBackButton'
 import api from '../../../../utils/api'
 import FileFormat from '../../../../utils/FileFormat'
 import settings from 'electron-settings'
+import ipcRendererSend from '../../services/ipc'
 
 export default {
   data: () => ({
@@ -77,7 +77,7 @@ export default {
       }
       const attachedStream = deploymentInfo.stream
       if (attachedStream.id) { // has stream infomation attached to deployment info
-        var existStreamInDB = Stream.find(attachedStream.id)
+        var existStreamInDB = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, attachedStream.id)
         if (!existStreamInDB) { // no stream in local db
           existStreamInDB = await this.autoCreateSiteInformation(deploymentInfo.stream)
         }
@@ -99,11 +99,11 @@ export default {
         longitude: stream.longitude,
         timestampFormat: FileFormat.fileFormat.AUTO_DETECT,
         env: settings.get('settings.production_env') ? 'production' : 'staging',
-        visibility: stream.isPublic,
+        isPublic: stream.isPublic,
         createdAt: stream.createdAt,
         updatedAt: stream.updatedAt
       }
-      return Stream.insert({ data: streamObj })
+      return ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, streamObj)
     },
     redirectUserToCreateSiteScreen (deploymentInfo) {
       const deploymentInfoForCreateScreen = deploymentInfo && deploymentInfo.stream ? {locationName: deploymentInfo.stream.name, coordinates: [deploymentInfo.stream.longitude, deploymentInfo.stream.latitude]} : null

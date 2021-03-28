@@ -1,12 +1,12 @@
 import electron from 'electron'
 import settings from 'electron-settings'
 import api from '../../../utils/api'
-import File from '../store/models/File'
-import Stream from '../store/models/Stream'
+// import File from '../store/models/File'
+// import Stream from '../store/models/Stream'
 import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import FileFormat from '../../../utils/FileFormat'
-import DatabaseEventName from '../../../utils/DatabaseEventName'
+// import DatabaseEventName from '../../../utils/DatabaseEventName'
 import cryptoJS from 'crypto-js'
 import store from '../store'
 import FileInfo from './FileInfo'
@@ -14,6 +14,8 @@ import fs from 'fs'
 import Analytics from 'electron-ga'
 import env from '../../../env.json'
 import fileState from '../../../utils/fileState'
+import ipcRendererSend from './ipc'
+import streamService from './stream'
 
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
@@ -51,10 +53,11 @@ class FileProvider {
     console.log('[Measure] forming file objects ' + (t1 - t0) + ' ms')
 
     // Remove duplicates that are already in prepare tab
-    const existingPreparedFilePaths = File.query().where((file) => file.streamId === selectedStream.id).get().reduce((result, value) => {
-      result[value.path] = value.state
-      return result
-    }, {})
+    // const existingPreparedFilePaths = File.query().where((file) => file.streamId === selectedStream.id).get().reduce((result, value) => {
+    //   result[value.path] = value.state
+    //   return result
+    // }, {})
+    const existingPreparedFilePaths = await this.getExistingPreparedFilePaths(selectedStream.id)
     const allFileObjectsFiltered = allFileObjects.filter(file => existingPreparedFilePaths[file.path] === undefined || !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path]))
     // Set error message for duplicates that are either uploading or completed
     allFileObjectsFiltered.forEach(file => {
@@ -82,10 +85,11 @@ class FileProvider {
     // insert converted files into db
 
     // Remove duplicates that are already in prepare tab
-    const existingPreparedFilePaths = File.query().where((file) => file.streamId === selectedStream.id).get().reduce((result, value) => {
-      result[value.path] = value.state
-      return result
-    }, {})
+    // const existingPreparedFilePaths = File.query().where((file) => file.streamId === selectedStream.id).get().reduce((result, value) => {
+    //   result[value.path] = value.state
+    //   return result
+    // }, {})
+    const existingPreparedFilePaths = await this.getExistingPreparedFilePaths(selectedStream.id)
     const allFileObjectsFiltered = fileObjectsInFolder.filter(file => existingPreparedFilePaths[file.path] === undefined || !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path]))
     // Set error message for duplicates that are either uploading or completed
     allFileObjectsFiltered.forEach(file => {
@@ -98,6 +102,16 @@ class FileProvider {
 
     await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
     electron.ipcRenderer.send('getFileDurationRequest', fileObjectsInFolder)
+  }
+
+  getExistingPreparedFilePaths (streamId) {
+    return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId } })
+      .then((files) => {
+        return files.reduce((result, value) => {
+          result[value.path] = value.state
+          return result
+        }, {})
+      })
   }
 
   getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null, deploymentInfo = null) {
@@ -122,19 +136,17 @@ class FileProvider {
     return fileObjects
   }
   async updateFilesDuration (files) {
-    let listen = (event, arg) => {
-      electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFileDurationResponse, listen)
-      console.log('update files duration completed')
-    }
-    const fileDurationUpdates = []
     for (const file of files) {
       try {
         const durationInSecond = await fileHelper.getFileDuration(file.path)
-        fileDurationUpdates.push({ id: file.id, durationInSecond: durationInSecond })
-      } catch (error) { }
+        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+          id: file.id,
+          params: { durationInSecond }
+        })
+      } catch (error) {
+        console.error('Failed updating file duration', error)
+      }
     }
-    electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFileDurationRequest, fileDurationUpdates)
-    electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFileDurationResponse, listen)
   }
 
   putFilesIntoUploadingQueue (files) {
@@ -143,8 +155,12 @@ class FileProvider {
     const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
     store.dispatch('setCurrentUploadingSessionId', sessionId)
     files.forEach(file => {
-      File.update({ where: file.id,
-        data: { state: 'waiting', stateMessage: '', sessionId: sessionId }
+      // File.update({ where: file.id,
+      //   data: { state: 'waiting', stateMessage: '', sessionId: sessionId }
+      // })
+      ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
+        id: file.id,
+        params: { state: 'waiting', stateMessage: null, sessionId: sessionId }
       })
     })
   }
@@ -181,24 +197,38 @@ class FileProvider {
     })
     const t1 = performance.now()
     console.log('[Measure] finish forming objects ' + (t1 - t0) + ' ms')
-    let listen = (event, arg) => {
-      electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFileTimestampResponse, listen)
-      const t2 = performance.now()
-      console.log('[Measure] update timestamp format ' + (t2 - t1) + ' ms')
+    // let listen = (event, arg) => {
+    //   electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFileTimestampResponse, listen)
+    //   const t2 = performance.now()
+    //   console.log('[Measure] update timestamp format ' + (t2 - t1) + ' ms')
+    // }
+    // const data = {streamId: stream.id, files: updatedFiles, format: format}
+    for (let file of updatedFiles) {
+      await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
+        id: file.id,
+        params: {
+          state: file.state,
+          stateMessage: file.stateMessage,
+          timestamp: file.timestamp
+        }
+      })
     }
-    const data = {streamId: stream.id, files: updatedFiles, format: format}
-    electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFileTimestampRequest, data)
-    electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFileTimestampResponse, listen)
+    const t2 = performance.now()
+    console.log('[Measure] update timestamp format ' + (t2 - t1) + ' ms')
+    // electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFileTimestampRequest, data)
+    // electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFileTimestampResponse, listen)
 
-    await Stream.update({
-      where: stream.id,
-      data: { files: updatedFiles, timestampFormat: format },
-      update: ['timestampFormat', 'files']
+    // await Stream.update({
+    //   where: stream.id,
+    //   data: { files: updatedFiles, timestampFormat: format },
+    //   update: ['timestampFormat', 'files']
+    // })
+    await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, {
+      id: stream.id,
+      params: { timestampFormat: format }
     })
 
-    console.log(
-      `Updated ${updatedFiles.length} file(s) to stream '${stream.id}'`
-    )
+    console.log(`Updated ${updatedFiles.length} file(s) to stream '${stream.id}'`)
     console.log(`Updated timestampFormat '${format}' to stream '${stream.id}'`)
   }
 
@@ -209,7 +239,8 @@ class FileProvider {
      */
   async renameFile (file, filename) {
     const streamId = file.streamId
-    const stream = Stream.find(streamId)
+    // const stream = Stream.find(streamId)
+    const stream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, streamId)
 
     if (!stream) {
       throw new Error(`Stream not fount`)
@@ -280,26 +311,30 @@ class FileProvider {
       name: filename,
       path: newPath
     }
-    await File.update({
-      where: file.id,
-      data: updateFields,
-      update: Object.keys(updateFields)
+    // await File.update({
+    //   where: file.id,
+    //   data: updateFields,
+    //   update: Object.keys(updateFields)
+    // })
+    await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+      id: file.id,
+      params: updateFields
     })
 
     console.log(`Update file success`)
 
-    const newFile = { ...file, ...updateFields }
-    const fileIdx = files.findIndex(f => f.id === file.id)
-    if (fileIdx > -1) {
-      files[fileIdx] = newFile
-      await Stream.update({
-        where: stream.id,
-        data: { files },
-        update: ['files']
-      })
+    // const newFile = { ...file, ...updateFields }
+    // const fileIdx = files.findIndex(f => f.id === file.id)
+    // if (fileIdx > -1) {
+    //   files[fileIdx] = newFile
+    //   await Stream.update({
+    //     where: stream.id,
+    //     data: { files },
+    //     update: ['files']
+    //   })
 
-      console.log(`Update stream success`)
-    }
+    //   console.log(`Update stream success`)
+    // }
   }
 
   // 2. Upload files
@@ -312,46 +347,75 @@ class FileProvider {
     if (!fileHelper.isExist(file.path)) {
       return Promise.reject(new Error('File does not exist'))
     }
-    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, file.utcTimestamp, idToken, (progress) => {
+    const timestamp = fileHelper.getUtcTimestamp(file)
+    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, timestamp, idToken, (progress) => {
       // FIX progress scale when we will start work with google cloud
     }).then((uploadId) => {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
-      return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
-    }).catch((error) => {
+      // return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
+      return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+        id: file.id,
+        params: { uploaded: true, uploadedTime: Date.now() }
+      })
+    }).catch(async (error) => {
       console.log('===> ERROR UPLOAD FILE', file.name, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {
-        File.update({
-          where: file.id,
-          data: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
+        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+          id: file.id,
+          params: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
         })
+        // File.update({
+        //   where: file.id,
+        //   data: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
+        // })
         return this.incrementFilesCount(file.streamId, false)
       } else if (error.message === 'Duplicate.') { // same file data + same name is already ingested
-        File.update({
-          where: file.id,
-          data: { state: 'completed', stateMessage: '' }
+        // File.update({
+        //   where: file.id,
+        //   data: { state: 'completed', stateMessage: '' }
+        // })
+        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+          id: file.id,
+          params: { state: 'completed', stateMessage: '' }
         })
-        return this.incrementFilesCount(file.streamId, true)
+        // return this.incrementFilesCount(file.streamId, true)
       } else if (error.message === 'Invalid.') { // same file data + different name is already ingested
-        File.update({
-          where: file.id,
-          data: { state: 'server_error', stateMessage: 'Duplicate file. Matching sha1 signature already ingested.' }
+        // File.update({
+        //   where: file.id,
+        //   data: { state: 'server_error', stateMessage: 'Duplicate file. Matching sha1 signature already ingested.' }
+        // })
+        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+          id: file.id,
+          params: { state: 'server_error', stateMessage: 'Duplicate file. Matching sha1 signature already ingested.' }
         })
         return this.incrementFilesCount(file.streamId, false)
       } else if (file.retries < 3) {
-        return File.update({
-          where: file.id,
-          data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
+        // return File.update({
+        //   where: file.id,
+        //   data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
+        // })
+        return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+          id: file.id,
+          params: { state: 'waiting', uploadId: null, stateMessage: null, progress: 0, retries: file.retries + 1 }
         })
       } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
-        File.update({
-          where: file.id,
-          data: { state: 'server_error', stateMessage: 'Network Error' }
+        // File.update({
+        //   where: file.id,
+        //   data: { state: 'server_error', stateMessage: 'Network Error' }
+        // })
+        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+          id: file.id,
+          params: { state: 'server_error', stateMessage: 'Network Error' }
         })
         return this.incrementFilesCount(file.streamId, false)
       } else {
-        File.update({
-          where: file.id,
-          data: { state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.' }
+        // File.update({
+        //   where: file.id,
+        //   data: { state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.' }
+        // })
+        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+          id: file.id,
+          params: { state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.' }
         })
         return this.incrementFilesCount(file.streamId, false)
       }
@@ -365,90 +429,109 @@ class FileProvider {
         const status = data.status
         const failureMessage = data.failureMessage
         console.log(`===> ${file.name} ${file.uploadId} - Ingest status = ${status}`)
-        const currentStateOfFile = File.find(file.id).state
+        // const currentStateOfFile = File.find(file.id).state
+        const currentStateOfFile = file.state
         switch (status) {
           case 0:
             if (isSuspended) {
               // If the app suspends/loses internet connection the uploading file changes the status to waiting
-              return File.update({
-                where: file.id,
-                data: {
-                  state: 'waiting',
-                  uploadId: '',
-                  stateMessage: '',
-                  progress: 0,
-                  retries: 0
-                }
+              // return File.update({
+              //   where: file.id,
+              //   data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: 0 }
+              // })
+              return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+                id: file.id,
+                params: { state: 'waiting', uploadId: null, stateMessage: null, progress: 0, retries: 0 }
               })
             }
             return
           case 10:
             if (currentStateOfFile === 'ingesting') return
-            return File.update({
-              where: file.id,
-              data: { state: 'ingesting', stateMessage: '', progress: 100 }
+            // return File.update({
+            //   where: file.id,
+            //   data: { state: 'ingesting', stateMessage: '', progress: 100 }
+            // })
+            return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+              id: file.id,
+              params: { state: 'ingesting', stateMessage: null, progress: 100 }
             })
           case 20:
             if (currentStateOfFile === 'completed') return
             const uploadTime = Date.now() - file.uploadedTime
             const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.ingest, 'el': `${file.name}/${file.uploadId}`, 'ev': uploadTime }
             await analytics.send('event', analyticsEventObj)
-            File.update({
-              where: file.id,
-              data: { state: 'completed', stateMessage: '', progress: 100 }
+            // File.update({
+            //   where: file.id,
+            //   data: { state: 'completed', stateMessage: '', progress: 100 }
+            // })
+            await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+              id: file.id,
+              params: { state: 'completed', stateMessage: null, progress: 100 }
             })
             return this.incrementFilesCount(file.streamId, true)
           case 30:
             if (failureMessage.includes('is zero')) {
-              File.update({
-                where: file.id,
-                data: { state: 'server_error', stateMessage: 'Corrupted file' }
+              // File.update({
+              //   where: file.id,
+              //   data: { state: 'server_error', stateMessage: 'Corrupted file' }
+              // })
+              await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+                id: file.id,
+                params: { state: 'server_error', stateMessage: 'Corrupted file' }
               })
               return this.incrementFilesCount(file.streamId, false)
             } else if (file.retries < 3) {
-              File.update({
-                where: file.id,
-                data: {
-                  state: 'waiting',
-                  uploadId: '',
-                  stateMessage: '',
-                  progress: 0,
-                  retries: file.retries + 1
-                }
+              // File.update({
+              //   where: file.id,
+              //   data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
+              // })
+              await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+                id: file.id,
+                params: { state: 'waiting', uploadId: null, stateMessage: null, progress: 0, retries: file.retries + 1 }
               })
             } else {
-              File.update({
-                where: file.id,
-                data: { state: 'server_error', stateMessage: failureMessage }
+              // File.update({
+              //   where: file.id,
+              //   data: { state: 'server_error', stateMessage: failureMessage }
+              // })
+              await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+                id: file.id,
+                params: { state: 'server_error', stateMessage: failureMessage }
               })
               return this.incrementFilesCount(file.streamId, false)
             }
             break
           default:
-            File.update({
-              where: file.id,
-              data: { state: 'server_error', stateMessage: failureMessage }
+            // File.update({
+            //   where: file.id,
+            //   data: { state: 'server_error', stateMessage: failureMessage }
+            // })
+            await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+              id: file.id,
+              params: { state: 'server_error', stateMessage: failureMessage }
             })
             return this.incrementFilesCount(file.streamId, false)
         }
       })
-      .catch((error) => {
+      .catch(async (error) => {
         console.log('check status error', error)
         if (file.retries < 3) {
-          return File.update({
-            where: file.id,
-            data: {
-              state: 'waiting',
-              uploadId: '',
-              stateMessage: '',
-              progress: 0,
-              retries: file.retries + 1
-            }
+          // return File.update({
+          //   where: file.id,
+          //   data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
+          // })
+          return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+            id: file.id,
+            params: { state: 'waiting', uploadId: null, stateMessage: null, progress: 0, retries: file.retries + 1 }
           })
         } else {
-          File.update({
-            where: file.id,
-            data: { state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.' }
+          // File.update({
+          //   where: file.id,
+          //   data: { state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.' }
+          // })
+          await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+            id: file.id,
+            params: { state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.' }
           })
           return this.incrementFilesCount(file.streamId, false)
         }
@@ -456,6 +539,9 @@ class FileProvider {
   }
 
   async incrementFilesCount (streamId, success) {
+    await streamService.updateStreamStats(streamId, [
+      { name: success ? 'sessionSuccessCount' : 'sessionFailCount', action: '+', diff: 1 }
+    ])
     // await Stream.dispatch('filesCompletedUploadSession', { streamId, amount: 1, success })
   }
 
@@ -473,18 +559,15 @@ class FileProvider {
   }
 
   async insertFiles (files) {
-    await File.insert({ data: files })
-    console.log('insert files: ', files.length)
+    await ipcRendererSend('db.files.bulkCreate', `db.streams.bulkCreate.${Date.now()}`, files)
   }
 
-  // This function supports only @vuex-orm/core@0.32.2 version.
   async insertFilesToStream (files, stream) {
-    await Stream.update({
-      where: stream.id,
-      data: { preparingCount: files.length, files: files, updatedAt: Date.now() },
-      insert: ['files']
+    const preparingCount = files.length
+    await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, {
+      id: stream.id,
+      params: { preparingCount }
     })
-    console.log('insert files to stream:', files.length)
   }
 
   /* -- Helper -- */
@@ -516,7 +599,7 @@ class FileProvider {
       sizeInByte: size,
       durationInSecond: -1,
       timestamp: timestamp,
-      timezone: stream.defaultTimezone, // TODO: change to selected timezone (configure by user)
+      timezone: stream.timezone, // TODO: change to selected timezone (configure by user)
       streamId: stream.id,
       state: state,
       stateMessage: message,

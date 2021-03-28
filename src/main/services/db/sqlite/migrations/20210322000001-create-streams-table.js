@@ -34,6 +34,10 @@ export default {
         allowNull: true,
         defaultValue: 0
       },
+      timezone: {
+        type: Sequelize.STRING,
+        allowNull: false
+      },
       is_public: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
