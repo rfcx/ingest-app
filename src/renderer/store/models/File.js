@@ -103,4 +103,73 @@ export default class File extends Model {
   // get canRename () {
   //   return !this.deviceId
   // }
+
+  // TODO: these functions are no more needed...
+  get fileDuration () {
+    if (this.durationInSecond < 0) { return '-' }
+    var date = new Date(0)
+    date.setSeconds(this.durationInSecond)
+    var timeString = date.toISOString().substr(11, 8)
+    return timeString
+  }
+
+  get displayTimestamp () {
+    return moment.parseZone(this.timestamp).format('YYYY-MM-DD HH:mm:ss Z')
+  }
+
+  get utcTimestamp () {
+    if (this.timestamp.substr(-1) === 'Z' || this.timestamp.substr(-6, 1) === '-' || this.timestamp.substr(-6, 1) === '+') {
+      return moment.utc(this.timestamp).toISOString() // timezone is in the parsed timestamp
+    }
+    return this.timestamp + 'Z'
+  }
+
+  get fileSize () {
+    const bytes = this.sizeInByte
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+    if (bytes === 0) return '0 Byte'
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
+    return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i]
+  }
+
+  get isPreparing () {
+    return FileState.isPreparing(this.state)
+  }
+
+  get isCompleted () {
+    return this.state === 'completed'
+  }
+
+  get isDuplicated () {
+    if (!this.stateMessage) return false
+    return this.stateMessage.includes('duplicate')
+  }
+
+  get isInPreparedGroup () {
+    return FileState.isInPreparedGroup(this.state)
+  }
+
+  get isInQueuedGroup () {
+    return FileState.isInQueuedGroup(this.state)
+  }
+
+  get isInCompletedGroup () {
+    return FileState.isInCompletedGroup(this.state)
+  }
+
+  get isError () {
+    return this.state.includes('error')
+  }
+
+  get canRedo () {
+    return FileState.canRedo(this.state, this.stateMessage)
+  }
+
+  get canRemove () {
+    return FileState.canRemove(this.state)
+  }
+
+  get canRename () {
+    return !this.deviceId
+  }
 }
