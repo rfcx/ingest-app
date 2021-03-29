@@ -53,7 +53,8 @@ const parseUserSites = (sites) => {
       createdAt: Date.parse(site.created_at),
       updatedAt: Date.parse(site.updated_at),
       env: isProductionEnv() ? 'production' : 'staging',
-      visibility: site.is_public
+      visibility: site.is_public,
+      timezone: ''
     }
   })
 }

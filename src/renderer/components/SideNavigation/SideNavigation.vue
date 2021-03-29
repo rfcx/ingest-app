@@ -71,6 +71,9 @@
   const { remote } = window.require('electron')
 
   export default {
+    props: {
+      localStreams: Array
+    },
     data () {
       return {
         iconRedo: faRedo,
@@ -250,11 +253,12 @@
               this.isFetching = false
               if (sites && sites.length) {
                 let userSites = streamHelper.parseUserSites(sites)
-                await streamHelper.insertSites(userSites)
+                await streamService.insertStreams(userSites)
                 // insert site success set selected site
                 if (!this.selectedStreamId) {
                   await this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
                 }
+                await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
               }
             }).catch(error => {
               this.isFetching = false
@@ -264,13 +268,16 @@
         this.isFetching = true
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
-      },
-      async getStreams () {
-        this.streams = await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
+      }
+    },
+    watch: {
+      localStreams (newValue, oldValue) {
+        if (newValue === oldValue) return
+        if (newValue === this.streams) return
+        this.streams = this.localStreams
       }
     },
     async created () {
-      await this.getStreams()
       if (remote.getGlobal('firstLogIn')) {
         this.getUserSites()
         this.$electron.ipcRenderer.send('resetFirstLogIn')

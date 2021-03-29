@@ -117,6 +117,12 @@ const collections = {
       return models.Stream.create(data)
         .then(s => s.toJSON())
     },
+    bulkCreate: function (data) {
+      console.log(`Database streams.bulkCreate is called with ${data.length} items.`)
+      return models.Stream.bulkCreate(data, {
+        validate: false // assume data is correct for speed boost
+      })
+    },
     update: function (data) {
       console.log('Database streams.update is called.', data)
       return models.Stream.findOne({ where: { id: data.id } })

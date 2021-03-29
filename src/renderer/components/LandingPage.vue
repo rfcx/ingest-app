@@ -11,6 +11,7 @@
         </div>
       </div>
       <side-navigation
+        :localStreams="streams" 
         :class="{ 'side-menu__with-progress': shouldShowProgress}"
         @clickNewSiteButton="toggleNewSiteDropDown"
         @clickOutSideNewSiteButton="hideNewSiteDropDown"
@@ -56,7 +57,8 @@
         isDragging: false,
         isPopupOpened: false,
         shouldShowNewSiteDropDown: false,
-        streams: []
+        streams: [],
+        fetchStreamsInterval: null
       }
     },
     methods: {
@@ -133,6 +135,14 @@
       },
       getStreams () {
         return ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
+      },
+      async initStreamsFetcher () {
+        // fetch at first load
+        this.streams = await this.getStreams()
+        // and set timer to fetch
+        this.fetchStreamsInterval = setInterval(async () => {
+          this.streams = await this.getStreams()
+        }, 2000)
       }
     },
     computed: {
@@ -149,13 +159,19 @@
     },
     async created () {
       await this.migrateDatabase()
+      await this.initStreamsFetcher()
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
       this.$electron.ipcRenderer.on('showUpToDatePopup', (event, message) => {
         this.isPopupOpened = message
       })
-      this.streams = await this.getStreams()
+    },
+    beforeDestroy () {
+      if (this.fetchStreamsInterval) {
+        clearInterval(this.fetchStreamsInterval)
+        this.fetchStreamsInterval = null
+      }
     }
   }
 </script>

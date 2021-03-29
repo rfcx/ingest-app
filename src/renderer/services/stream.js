@@ -9,6 +9,19 @@ const updateStreamStats = async (id, stats) => {
   await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id, params })
 }
 
+const insertStreams = async (streams) => {
+  await ipcRendererSend('db.streams.bulkCreate', `db.streams.bulkCreate.${Date.now()}`, streams)
+}
+
+const updateStreams = async (streams) => {
+  await ipcRendererSend('db.streams.bulkUpdate', `db.streams.bulkUpdate.${Date.now()}`, {
+    where: {},
+    values: streams
+  })
+}
+
 export default {
+  insertStreams,
+  updateStreams,
   updateStreamStats
 }
