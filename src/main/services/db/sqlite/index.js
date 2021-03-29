@@ -11,6 +11,17 @@ function clean () {
   }
 }
 
+async function deleteAllRecords () {
+  await models.File.destroy({
+    where: {},
+    truncate: true
+  })
+  await models.Stream.destroy({
+    where: {},
+    truncate: true
+  })
+}
+
 async function init (app) {
   try {
     console.log('Initializaing database...')
@@ -86,6 +97,13 @@ const collections = {
       const offset = opts.offset || null
       return models.File.findAll({ where, sort, limit, offset })
         .then((files) => files.map(f => f.toJSON()))
+    },
+    deleteAll: function () {
+      console.log('Database files.deleteAll is called.')
+      return models.File.destroy({
+        where: {},
+        truncate: true
+      })
     }
   },
   streams: {
@@ -125,6 +143,13 @@ const collections = {
           return sequelize.query('VACUUM;', { type: sequelize.QueryTypes.RAW })
         })
     },
+    deleteAll: function () {
+      console.log('Database streams.deleteAll is called.')
+      return models.Stream.destroy({
+        where: {},
+        truncate: true
+      })
+    },
     query: function (opts = {}) {
       console.log('Database streams.query is called', opts)
       const where = opts.where || null
@@ -157,5 +182,6 @@ const collections = {
 export default {
   init,
   clean,
+  deleteAllRecords,
   collections
 }
