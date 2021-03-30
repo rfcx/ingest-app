@@ -58,7 +58,7 @@ async function init (app) {
 const collections = {
   files: {
     bulkCreate: function (data) {
-      console.log(`Database streams.bulkCreate is called with ${data.length} items.`)
+      console.log(`Database files.bulkCreate is called with ${data.length} items.`)
       return models.File.bulkCreate(data, {
         validate: false // assume data is correct for speed boost
       })

@@ -101,7 +101,7 @@
         })
       },
       async queueFilesToUpload () {
-        if (this.filesInUploadingQueue.length > 0) return
+        if (this.filesInUploadingQueue.length > 5) return
         const unsyncedFiles = await this.getUnsyncedFile()
         const unsyncedFile = unsyncedFiles[0]
         if (!unsyncedFile) return // no unsync file

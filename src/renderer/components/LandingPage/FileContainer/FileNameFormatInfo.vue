@@ -118,17 +118,16 @@ export default {
       // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.putFilesIntoUploadingQueueRequest, data)
       // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
       const streamId = this.selectedStreamId
-      let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId, state: 'preparing' } })
-      for (let file of files) {
-        await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
-          id: file.id,
-          params: { state: 'waiting', stateMessage: null, sessionId }
-        })
-      }
-      // const stream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, streamId)
-      // const preparingCount = stream.preparingCount - files.length
-      // const sessionTotalCount = stream.sessionTotalCount + files.length
-      // await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: streamId, params: { preparingCount, sessionTotalCount } })
+      const query = { streamId, state: 'preparing' }
+      let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: query })
+      await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
+        where: query,
+        values: { state: 'waiting', stateMessage: null, sessionId }
+      })
+      const stream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, streamId)
+      const preparingCount = stream.preparingCount - files.length
+      const sessionTotalCount = stream.sessionTotalCount + files.length
+      await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: streamId, params: { preparingCount, sessionTotalCount } })
 
       await streamService.updateStreamStats(streamId, [
         { name: 'preparingCount', action: '-', diff: files.length },
