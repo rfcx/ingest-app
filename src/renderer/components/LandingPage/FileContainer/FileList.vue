@@ -31,11 +31,13 @@
 </template>
 
 <script>
-import File from '../../../store/models/File'
-import Stream from '../../../store/models/Stream'
+// import File from '../../../store/models/File'
+// import Stream from '../../../store/models/Stream'
 import ConfirmAlert from '../../Common/ConfirmAlert'
 import EmptyView from '../EmptyView'
 import FileRow from './FileRow'
+import FileState from '../../../../../utils/fileState'
+import ipcRendererSend from '../../../services/ipc'
 
 const PAGE_SIZE = 20
 
@@ -76,10 +78,12 @@ export default {
       this.fileToBeDeleted = null
     },
     async deleteFile () {
-      if (!(this.fileToBeDeleted && this.fileToBeDeleted.canRemove)) return
+      // if (!(this.fileToBeDeleted && this.fileToBeDeleted.canRemove)) return
+      if (!(this.fileToBeDeleted && FileState.canRemove(this.fileToBeDeleted.state))) return
       this.isDeleting = true
-      await Stream.dispatch('filesRemovedFromPreparing', { streamId: this.fileToBeDeleted.streamId, amount: 1 })
-      await File.delete(this.fileToBeDeleted.id)
+      // await Stream.dispatch('filesRemovedFromPreparing', { streamId: this.fileToBeDeleted.streamId, amount: 1 })
+      // await File.delete(this.fileToBeDeleted.id)
+      await ipcRendererSend('db.files.delete', `db.files.delete.${Date.now()}`, { where: { id: this.fileToBeDeleted.id } })
       this.isDeleting = false
       this.hideConfirmToDeleteDialog()
     },
@@ -135,7 +139,7 @@ export default {
       }
     }
   }
-  
+
   .notification {
     margin: auto $default-padding-margin;
   }

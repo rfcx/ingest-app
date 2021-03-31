@@ -1,7 +1,8 @@
-import File from '../src/renderer/store/models/File'
+// import File from '../src/renderer/store/models/File'
 import fileHelper from './fileHelper'
 import Analytics from 'electron-ga'
 import settings from 'electron-settings'
+import ipcRendererSend from '../src/renderer/services/ipc'
 
 const axios = require('axios')
 const fileStreamAxios = axios.create({
@@ -40,10 +41,16 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
   let uploadFileExt = fileExt
   if (fileExt === 'wav') {
     try {
-      File.update({ where: fileId,
-        data: {state: 'converting', uploaded: false}
+      // File.update({ where: fileId,
+      //   data: {state: 'converting', uploaded: false}
+      // })
+      await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+        id: fileId,
+        params: { state: 'converting', uploaded: false }
       })
+      console.log('\n\n\n\n\n CONVERT STARTED', new Date().toISOString(), '\n\n\n')
       uploadFilePath = (await fileHelper.convert(filePath, remote.app.getPath('temp'), streamId)).path
+      console.log('\n\n\n\n\n CONVERT ENDED', new Date().toISOString(), '\n\n\n')
       uploadFileExt = 'flac'
       uploadFileName = fileHelper.getFileNameFromFilePath(uploadFilePath)
       isConverted = true
@@ -57,9 +64,14 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       const getUploadIdTime = Date.now() - now
       const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.getUploadId, 'el': fileName, 'ev': getUploadIdTime }
       await analytics.send('event', analyticsEventObj)
-      File.update({ where: fileId,
-        data: {state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false}
+      // File.update({ where: fileId,
+      //   data: {state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false}
+      // })
+      await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+        id: fileId,
+        params: { state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false }
       })
+      console.log('\n\n\n\n\n UPLOAD STARTED', new Date().toISOString(), '\n\n\n')
       return performUpload(data.url, data.uploadId, uploadFilePath, uploadFileExt, progressCallback).then(async () => {
         const uploadTime = Date.now() - now
         const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.upload, 'el': fileName, 'ev': uploadTime }

@@ -74,14 +74,14 @@
 </template>
 
 <script>
-import File from '../../../store/models/File'
 import fileState from '../../../../../utils/fileState'
+import fileHelper from '../../../../../utils/fileHelper'
 import { faRedo, faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 import AudioMothTag from '../../Common/AudioMothTag'
 
 export default {
   props: {
-    file: File,
+    file: Object,
     selectedTab: String
   },
   data: () => ({
@@ -95,6 +95,9 @@ export default {
   },
   mounted () {
     this.fileName = this.file.name || ''
+  },
+  created () {
+    this.formatAttributes()
   },
   methods: {
     onInputKeyPress (e) {
@@ -148,6 +151,14 @@ export default {
     },
     remove (file) {
       this.$emit('onTrashPressed', file)
+    },
+    formatAttributes () {
+      this.file.displayTimestamp = fileHelper.getDisplayTimestamp(this.file)
+      this.file.fileDuration = fileHelper.getDisplayFileDuration(this.file)
+      this.file.fileSize = fileHelper.getDisplayFileSize(this.file)
+      this.file.isError = this.file.state.includes('error')
+      this.file.canRedo = fileState.canRedo(this.file.state, this.file.stateMessage)
+      this.file.canRemove = fileState.canRemove(this.file.state)
     }
   },
   computed: {
@@ -174,7 +185,14 @@ export default {
       return String(this.file.extension).toLowerCase() === String(arr[arr.length - 1]).toLowerCase()
     },
     canEdit () {
-      return ['local_error', 'preparing'].includes(this.file.state) && this.file.canRename
+      return ['local_error', 'preparing'].includes(this.file.state) && !this.file.deviceId
+    }
+  },
+  watch: {
+    file: {
+      handler: function () {
+        this.formatAttributes()
+      }
     }
   }
 }

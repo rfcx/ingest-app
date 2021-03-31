@@ -135,13 +135,14 @@ export default {
               name: this.name,
               latitude: latitude,
               longitude: longitude,
+              timezone: dateHelper.getDefaultTimezone(latitude, longitude),
               timestampFormat: fileFormat,
               env: this.isProductionEnv() ? 'production' : 'staging',
               isPublic: isPublic,
               deviceId: this.deviceId || ''
             }
             if (this.selectedFolderPath) {
-              stream.defaultTimezone = dateHelper.getDefaultTimezone(latitude, longitude)
+              // stream.defaultTimezone = dateHelper.getDefaultTimezone(latitude, longitude)
               this.$file.handleDroppedFolder(this.selectedFolderPath, stream, {
                 deviceId: this.deviceId,
                 deploymentId: this.deploymentInfo ? this.deploymentInfo.id : ''

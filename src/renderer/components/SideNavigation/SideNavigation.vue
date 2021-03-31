@@ -39,7 +39,7 @@
     <ul>
       <li v-for="stream in streams" :key="stream.id">
         <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'wrapper__stream-row_active': isActive(stream)}">
-          <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
+          <div class="menu-container" :class="{ 'menu-container-failed': stream.state === 'failed' || stream.state && stream.state.includes('error') }">
             <div class="wrapper__stream-name">{{ stream.name }}</div>
             <fa-icon class="iconRedo" v-if="stream.canRedo" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
             <img :src="getStateImgUrl(getState(stream))">
@@ -61,15 +61,19 @@
 <script>
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
-  import DatabaseEventName from '../../../../utils/DatabaseEventName'
+  // import DatabaseEventName from '../../../../utils/DatabaseEventName'
   import api from '../../../../utils/api'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
   import { faRedo, faSync } from '@fortawesome/free-solid-svg-icons'
   import ipcRendererSend from '../../services/ipc'
+  import streamService from '../../services/stream'
   const { remote } = window.require('electron')
 
   export default {
+    props: {
+      localStreams: Array
+    },
     data () {
       return {
         iconRedo: faRedo,
@@ -188,19 +192,40 @@
         await this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
 
         // completion listener
-        const t0 = performance.now()
-        let listen = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
-          const t1 = performance.now()
-          this.isRetryUploading = false
-          console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
+        // let listen = (event, arg) => {
+        //   this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
+        //   const t1 = performance.now()
+        //   this.isRetryUploading = false
+        //   console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
+        // }
+
+        // // emit to main process to put file in uploading queue
+        // this.isRetryUploading = true
+        // const data = {streamId: streamId, sessionId: sessionId}
+        // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reuploadFailedFilesRequest, data)
+        // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
+        this.isRetryUploading = true
+        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: streamId, state: ['failed', 'server_error'] } })
+        files = files.filter((f) => {
+          return fileState.canRedo(f.state, f.stateMessage)
+        })
+        for (let file of files) {
+          await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
+            id: file.id,
+            params: { state: 'waiting', stateMessage: null, sessionId }
+          })
         }
 
-        // emit to main process to put file in uploading queue
-        this.isRetryUploading = true
-        const data = {streamId: streamId, sessionId: sessionId}
-        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reuploadFailedFilesRequest, data)
-        this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
+        // const stream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, streamId)
+        // const preparingCount = stream.preparingCount - files.length
+        // const sessionTotalCount = stream.sessionTotalCount + files.length
+        // await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: streamId, params: { preparingCount, sessionTotalCount } })
+
+        await streamService.updateStreamStats(streamId, [
+          { name: 'preparingCount', action: '-', diff: files.length },
+          { name: 'sessionTotalCount', action: '+', diff: files.length }
+        ])
+        this.isRetryUploading = false
 
         // set selected tab to be queue tab
         const tabObject = {}
@@ -228,11 +253,12 @@
               this.isFetching = false
               if (sites && sites.length) {
                 let userSites = streamHelper.parseUserSites(sites)
-                await streamHelper.insertSites(userSites)
+                await streamService.insertStreams(userSites)
                 // insert site success set selected site
                 if (!this.selectedStreamId) {
                   await this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
                 }
+                await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
               }
             }).catch(error => {
               this.isFetching = false
@@ -242,9 +268,13 @@
         this.isFetching = true
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
-      },
-      async getStreams () {
-        this.streams = await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'desc']] })
+      }
+    },
+    watch: {
+      localStreams (newValue, oldValue) {
+        if (newValue === oldValue) return
+        if (newValue === this.streams) return
+        this.streams = this.localStreams
       }
     },
     async created () {
@@ -259,7 +289,6 @@
         }
         this.$electron.ipcRenderer.on('onMainWindowIsActive', getUserSitesListener)
       }
-      await this.getStreams()
     }
   }
 </script>
