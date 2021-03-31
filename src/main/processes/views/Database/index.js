@@ -6,7 +6,7 @@ export default {
     console.log('db process: createWindow')
     const dbURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080/static/empty.html` : `file://${__dirname}/static/empty.html`
     const dbWindow = new BrowserWindow({
-      show: true,
+      show: false,
       webPreferences: { nodeIntegration: true, backgroundThrottling: true }
     })
     dbWindow.loadURL(dbURL)
