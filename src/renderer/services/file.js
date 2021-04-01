@@ -355,7 +355,7 @@ class FileProvider {
       // return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
       return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: file.id,
-        params: { uploaded: true, uploadedTime: Date.now() }
+        params: { uploaded: true, uploadedTime: Date.now(), state: 'ingesting', stateMessage: '' }
       })
     }).catch(async (error) => {
       console.log('===> ERROR UPLOAD FILE', file.name, error.message)
