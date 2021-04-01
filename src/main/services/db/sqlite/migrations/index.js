@@ -1,19 +1,24 @@
-const fs = require('fs')
-const util = require('util')
 const Sequelize = require('sequelize')
-const readDir = util.promisify(fs.readdir)
-
 const sequelizeMetaTable = 'sequelize'
+const migrations = [
+  {
+    name: '20210322000001-create-streams-table.js',
+    file: require('./20210322000001-create-streams-table').default
+  },
+  {
+    name: '20210322000002-create-files-table.js',
+    file: require('./20210322000002-create-files-table').default
+  }
+]
 
 function getCompletedMigrations (sequelize) {
   return sequelize.query(`SELECT name FROM ${sequelizeMetaTable}`, { type: Sequelize.QueryTypes.SELECT })
     .then(migrations => migrations.map(m => m.name))
 }
 
-async function getMigrationFiles (sequelize) {
-  const files = await readDir(__dirname)
+async function getMigrations (sequelize) {
   const completedMigrations = await getCompletedMigrations(sequelize)
-  return files.filter(f => (f !== 'index.js' && !completedMigrations.includes(f)))
+  return migrations.filter(m => (!completedMigrations.includes(m.name)))
 }
 
 function createSequelizeMetatable (sequelize) {
@@ -28,19 +33,18 @@ export default async function migrate (sequelize) {
   console.log('Database migration: starting...')
   await createSequelizeMetatable(sequelize)
   console.log('Database migration: sequelize meta table found or created.')
-  const filenames = await getMigrationFiles(sequelize)
-  console.log(`Database migration: ${filenames.length} migrations to run.`)
-  for (const filename of filenames) {
+  const migrations = await getMigrations(sequelize)
+  console.log(`Database migration: ${migrations.length} migrations to run.`)
+  for (const migration of migrations) {
+    const name = migration.name
     try {
-      console.log(`Database migration: requesting "${filename}".`)
-      const migration = require(`./${filename}`).default
-      console.log(`Database migration: running "${filename}".`)
-      await migration.up(sequelize.queryInterface, Sequelize)
-      console.log(`Database migration: saving "${filename}" into sequelize meta table.`)
-      await saveMigrationMeta(sequelize, filename)
-      console.log(`Database migration: "${filename}" performed.`)
+      console.log(`Database migration: running "${name}".`)
+      await migration.file.up(sequelize.queryInterface, Sequelize)
+      console.log(`Database migration: saving "${name}" into sequelize meta table.`)
+      await saveMigrationMeta(sequelize, name)
+      console.log(`Database migration: "${name}" performed.`)
     } catch (err) {
-      console.error(`Database migration: "${filename}" failed`, err)
+      console.error(`Database migration: "${name}" failed`, err)
       break
     }
   }
