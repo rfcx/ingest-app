@@ -14,6 +14,7 @@
 
   const workerTimeoutMinimum = 3000
   const queueFileToUploadWorkerTimeoutMinimum = 1000
+  const parallelUploads = 10
 
   export default {
     data: () => {
@@ -21,9 +22,11 @@
         filesInUploadingQueue: [],
         isHandlingFileNotExist: false,
         isCheckingStatus: false,
+        isCalculatingDurations: false,
         checkWaitingFilesInterval: null,
         checkStatusInterval: null,
-        checkSessionInterval: null
+        checkSessionInterval: null,
+        checkCalcDurationInterval: null
       }
     },
     computed: {
@@ -85,7 +88,7 @@
         // }).orderBy('timestamp').limit(5).get()
       },
       getNoDurationFiles () {
-        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: 'preparing', durationInSecond: -1 } })
+        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: 'preparing', durationInSecond: -1 }, limit: parallelUploads })
         // return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 && !file.isError }).orderBy('timestamp').get()
       },
       async uploadFile (file) {
@@ -101,7 +104,7 @@
         })
       },
       async queueFilesToUpload () {
-        if (this.filesInUploadingQueue.length > 5) return
+        if (this.filesInUploadingQueue.length > parallelUploads) return
         const unsyncedFiles = await this.getUnsyncedFile()
         const unsyncedFile = unsyncedFiles[0]
         if (!unsyncedFile) return // no unsync file
@@ -151,6 +154,17 @@
         }
         this.$electron.ipcRenderer.on('sendIdToken', listener)
         this.$electron.ipcRenderer.send('getIdToken')
+      },
+      async tickCalcDuration () {
+        if (this.isCalculatingDurations) { return }
+        this.isCalculatingDurations = true
+        const files = await this.getNoDurationFiles()
+        if (files && files.length) {
+          await this.$file.updateFilesDuration(files)
+        } else {
+          this.stopCalcDurationTick()
+        }
+        this.isCalculatingDurations = false
       },
       tickUpload () {
         // if (this.isHandlingFileNotExist) { console.log('tickUpload: clearing files that are not exist'); return }
@@ -209,16 +223,16 @@
           this.resetUploadingSessionId()
         }
       },
-      async updateFilesDuration (files) {
-        if (files && files.length > 0) {
-          console.log('update file duration with files params', files.length)
-          this.$file.updateFilesDuration(files)
-        } else {
-          const noDurationFiles = this.getNoDurationFiles()
-          console.log('update file duration with no duration files from query snapshot', noDurationFiles.length)
-          this.$file.updateFilesDuration(noDurationFiles)
-        }
-      },
+      // async updateFilesDuration (files) {
+      //   if (files && files.length > 0) {
+      //     console.log('update file duration with files params', files.length)
+      //     this.$file.updateFilesDuration(files)
+      //   } else {
+      //     const noDurationFiles = this.getNoDurationFiles()
+      //     console.log('update file duration with no duration files from query snapshot', noDurationFiles.length)
+      //     this.$file.updateFilesDuration(noDurationFiles)
+      //   }
+      // },
       // clearFilesDoNotExist (directoryName, streamId) {
       // const filesInStreamFromTheSameDirectory = File.query().where(file => {
       //   return file.path.includes(directoryName) && file.isInQueuedGroup && file.streamId === streamId
@@ -279,12 +293,23 @@
           params: { sessionSuccessCount: 0, sessionFailCount: 0, sessionTotalCount: 0 }
         })
         await this.$store.dispatch('setCurrentUploadingSessionId', null)
+      },
+      startCalcDurationTick () {
+        if (this.checkCalcDurationInterval) { return }
+        this.checkCalcDurationInterval = setInterval(this.tickCalcDuration.bind(this), queueFileToUploadWorkerTimeoutMinimum)
+      },
+      stopCalcDurationTick () {
+        if (this.checkCalcDurationInterval) {
+          clearInterval(this.checkCalcDurationInterval)
+          this.checkCalcDurationInterval = null
+        }
       }
     },
     created () {
       console.log('API Service')
       this.checkAfterSuspended()
-      this.updateFilesDuration()
+      this.startCalcDurationTick()
+      // this.updateFilesDuration()
       this.checkWaitingFilesInterval = setInterval(() => {
         this.tickUpload()
       }, queueFileToUploadWorkerTimeoutMinimum)
@@ -298,11 +323,13 @@
         this.removeOutdatedFiles()
       }, 15000) // wait for 15 seconds to reduce pressure on db on app start
       // add get file duration listener
-      let getFileDurationListener = (event, files) => {
-        console.log('getFileDurationTrigger')
-        this.updateFilesDuration(files)
-      }
-      this.$electron.ipcRenderer.on('getFileDurationTrigger', getFileDurationListener)
+      // let getFileDurationListener = (event, files) => {
+      //   console.log('getFileDurationTrigger')
+      //   this.updateFilesDuration(files)
+      // }
+      // this.$electron.ipcRenderer.on('getFileDurationTrigger', getFileDurationListener)
+      // listen to file server for any new files added
+      this.$electron.ipcRenderer.on('services.file.new', this.startCalcDurationTick.bind(this))
     },
     beforeDestroy () {
       console.log('\nclearInterval')
@@ -318,6 +345,7 @@
         clearInterval(this.checkSessionInterval)
         this.checkSessionInterval = null
       }
+      this.stopCalcDurationTick()
     }
   }
 </script>

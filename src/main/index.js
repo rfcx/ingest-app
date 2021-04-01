@@ -420,11 +420,26 @@ ipcMain.on('resetFirstLogIn', () => {
   resetFirstLogInCondition()
 })
 
-ipcMain.on('getFileDurationRequest', async function (event, files) {
-  console.log('getFileDurationRequest')
-  event.sender.send('getFileDurationTrigger')
-  backgroundAPIWindow.webContents.send('getFileDurationTrigger', files)
+ipcMain.on('client.message', function (event, data) {
+  let client
+  switch (data.client) {
+    case 'api':
+      client = backgroundAPIWindow
+      break
+    case 'preferences':
+      client = preferencesPopupWindow
+      break
+    // add more if needed
+  }
+  if (client) {
+    client.webContents.send(data.topic, data.content)
+  }
 })
+// ipcMain.on('getFileDurationRequest', async function (event, files) {
+//   console.log('getFileDurationRequest')
+//   event.sender.send('getFileDurationTrigger')
+//   backgroundAPIWindow.webContents.send('getFileDurationTrigger', files)
+// })
 
 export default {
   createWindow

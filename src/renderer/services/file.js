@@ -72,7 +72,11 @@ class FileProvider {
 
     // Insert converted files into db
     await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
-    electron.ipcRenderer.send('getFileDurationRequest', allFileObjectsFiltered)
+    // electron.ipcRenderer.send('getFileDurationRequest', allFileObjectsFiltered)
+    electron.ipcRenderer.send('client.message', {
+      client: 'api',
+      topic: 'services.file.new'
+    })
   }
 
   async handleDroppedFolder (folderPath, selectedStream, deploymentInfo = null) {
@@ -101,7 +105,12 @@ class FileProvider {
     })
 
     await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
-    electron.ipcRenderer.send('getFileDurationRequest', fileObjectsInFolder)
+    // electron.ipcRenderer.send('getFileDurationRequest', fileObjectsInFolder)
+    // electron.ipcRenderer.send('services.file.added')
+    electron.ipcRenderer.send('client.message', {
+      client: 'api',
+      topic: 'services.file.new'
+    })
   }
 
   getExistingPreparedFilePaths (streamId) {
