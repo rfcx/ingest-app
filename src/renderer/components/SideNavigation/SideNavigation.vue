@@ -3,6 +3,7 @@
     <div class="wrapper__header">
       <div class="wrapper__logo">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
+        <span class="is-size-7">{{ !isProductionEnv() ? 'staging' : '' }}</span>
       </div>
       <div lass="wrapper__user-pic" v-click-outside="hide" @click="toggleUserMenu()">
         <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)">
