@@ -5,6 +5,7 @@ import { commonProcess, mainProcess, backgroundProcess, dbProcess, menuProcess, 
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
+import sharedProcess from './processes/shared'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const setupEvents = require('./../../setupEvents')
@@ -96,6 +97,11 @@ function createAutoUpdaterSub () {
 }
 
 function createMenu () {
+  const clearDataFunction = async () => {
+    await sharedProcess.clearAllData()
+    mainWindow.webContents.send('onClearAllData')
+  }
+
   const logoutFn = async () => {
     console.log('logOut')
     logOut()
@@ -122,7 +128,7 @@ function createMenu () {
     }
     aboutWindow.show()
   }
-  menuProcess.createMenu(logoutFn, prefFn, aboutFn, updateFn)
+  menuProcess.createMenu(clearDataFunction, logoutFn, prefFn, aboutFn, updateFn)
 }
 
 function showMainWindow () {

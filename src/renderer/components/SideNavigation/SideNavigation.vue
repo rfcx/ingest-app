@@ -23,7 +23,7 @@
       <span>
         Sites
         <div class="wrapper__loader">
-          <fa-icon class="iconRefresh" :icon="iconRefresh" @click.prevent="getUserSites()" v-if="!isFetching"></fa-icon>
+          <fa-icon class="iconRefresh" :icon="iconRefresh" @click.prevent="fetchUserSites()" v-if="!isFetching"></fa-icon>
           <div class="loader" v-if="isFetching"></div>
         </div>
       </span>
@@ -244,7 +244,7 @@
       isProductionEnv () {
         return settings.get('settings.production_env')
       },
-      getUserSites () {
+      fetchUserSites () {
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           console.log('getUserSites')
@@ -255,10 +255,10 @@
                 let userSites = streamHelper.parseUserSites(sites)
                 await streamService.insertStreams(userSites)
                 // insert site success set selected site
+                await this.reloadStreamListFromLocalDB()
                 if (!this.selectedStreamId) {
                   await this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
                 }
-                await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
               }
             }).catch(error => {
               this.isFetching = false
@@ -268,6 +268,10 @@
         this.isFetching = true
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
+      },
+      async reloadStreamListFromLocalDB () {
+        this.streams = await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
+        this.$emit('reFetchStreams', this.streams)
       }
     },
     watch: {
@@ -279,13 +283,13 @@
     },
     async created () {
       if (remote.getGlobal('firstLogIn')) {
-        this.getUserSites()
+        this.fetchUserSites()
         this.$electron.ipcRenderer.send('resetFirstLogIn')
       } else {
         let getUserSitesListener = (event) => {
           this.$electron.ipcRenderer.removeListener('onMainWindowIsActive', getUserSitesListener)
           console.log('onMainWindowIsActive')
-          this.getUserSites()
+          this.fetchUserSites()
         }
         this.$electron.ipcRenderer.on('onMainWindowIsActive', getUserSitesListener)
       }
