@@ -88,7 +88,7 @@
         // }).orderBy('timestamp').limit(5).get()
       },
       getNoDurationFiles () {
-        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: 'preparing', durationInSecond: -1 }, limit: parallelUploads })
+        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: ['preparing', 'waiting'], durationInSecond: -1 }, limit: parallelUploads })
         // return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 && !file.isError }).orderBy('timestamp').get()
       },
       async uploadFile (file) {
