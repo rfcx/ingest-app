@@ -254,7 +254,7 @@
               this.isFetching = false
               if (sites && sites.length) {
                 let userSites = streamHelper.parseUserSites(sites)
-                await streamService.insertStreams(userSites)
+                await streamService.upsertStreams(userSites)
                 // insert site success set selected site
                 await this.reloadStreamListFromLocalDB()
                 if (!this.selectedStreamId) {

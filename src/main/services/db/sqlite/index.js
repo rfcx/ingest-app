@@ -123,6 +123,14 @@ const collections = {
         validate: false // assume data is correct for speed boost
       })
     },
+    upsert: function (data) {
+      console.log(`Database streams.upsert is called with ${data.length} items.`)
+      return data.map(item => {
+        return models.Stream.upsert(item, {
+          validate: false // assume data is correct for speed boost
+        })
+      })
+    },
     update: function (data) {
       console.log('Database streams.update is called.', data)
       return models.Stream.findOne({ where: { id: data.id } })
