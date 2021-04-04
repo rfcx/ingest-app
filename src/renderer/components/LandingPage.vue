@@ -15,6 +15,7 @@
         :class="{ 'side-menu__with-progress': shouldShowProgress}"
         @clickNewSiteButton="toggleNewSiteDropDown"
         @clickOutSideNewSiteButton="hideNewSiteDropDown"
+        @reFetchStreams="updateStreamsList"
       />
       <div class="column content is-desktop">
         <empty-view v-if="isEmptyStream()" :isEmptyStream="isEmptyStream()"></empty-view>
@@ -57,8 +58,7 @@
         isDragging: false,
         isPopupOpened: false,
         shouldShowNewSiteDropDown: false,
-        streams: [],
-        fetchStreamsInterval: null
+        streams: []
       }
     },
     methods: {
@@ -136,13 +136,8 @@
       getStreams () {
         return ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
       },
-      async initStreamsFetcher () {
-        // fetch at first load
-        this.streams = await this.getStreams()
-        // and set timer to fetch
-        this.fetchStreamsInterval = setInterval(async () => {
-          this.streams = await this.getStreams()
-        }, 2000)
+      updateStreamsList (remoteStreams) {
+        this.streams = remoteStreams
       }
     },
     computed: {
@@ -159,19 +154,16 @@
     },
     async created () {
       await this.migrateDatabase()
-      await this.initStreamsFetcher()
+      this.streams = await this.getStreams()
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
       this.$electron.ipcRenderer.on('showUpToDatePopup', (event, message) => {
         this.isPopupOpened = message
       })
-    },
-    beforeDestroy () {
-      if (this.fetchStreamsInterval) {
-        clearInterval(this.fetchStreamsInterval)
-        this.fetchStreamsInterval = null
-      }
+      this.$electron.ipcRenderer.on('onClearAllData', async (event, message) => {
+        this.streams = await this.getStreams()
+      })
     }
   }
 </script>

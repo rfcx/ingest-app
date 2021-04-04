@@ -72,7 +72,11 @@ class FileProvider {
 
     // Insert converted files into db
     await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
-    electron.ipcRenderer.send('getFileDurationRequest', allFileObjectsFiltered)
+    // electron.ipcRenderer.send('getFileDurationRequest', allFileObjectsFiltered)
+    electron.ipcRenderer.send('client.message', {
+      client: 'api',
+      topic: 'services.file.new'
+    })
   }
 
   async handleDroppedFolder (folderPath, selectedStream, deploymentInfo = null) {
@@ -101,7 +105,12 @@ class FileProvider {
     })
 
     await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
-    electron.ipcRenderer.send('getFileDurationRequest', fileObjectsInFolder)
+    // electron.ipcRenderer.send('getFileDurationRequest', fileObjectsInFolder)
+    // electron.ipcRenderer.send('services.file.added')
+    electron.ipcRenderer.send('client.message', {
+      client: 'api',
+      topic: 'services.file.new'
+    })
   }
 
   getExistingPreparedFilePaths (streamId) {
@@ -355,7 +364,7 @@ class FileProvider {
       // return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
       return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: file.id,
-        params: { uploaded: true, uploadedTime: Date.now() }
+        params: { uploaded: true, uploadedTime: Date.now(), state: 'ingesting', stateMessage: '' }
       })
     }).catch(async (error) => {
       console.log('===> ERROR UPLOAD FILE', file.name, error.message)
