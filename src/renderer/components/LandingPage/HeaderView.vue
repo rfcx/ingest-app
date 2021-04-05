@@ -30,16 +30,17 @@
 import api from '../../../../utils/api'
 import { faPencilAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
-import ipcRendererSend from '../../services/ipc'
 
 export default {
   data () {
     return {
       iconPencil: faPencilAlt,
       faExternalLinkAlt: faExternalLinkAlt,
-      hasClosedNavigateMessage: false,
-      selectedStream: null
+      hasClosedNavigateMessage: false
     }
+  },
+  props: {
+    selectedStream: Object
   },
   watch: {
     selectedStreamId: {
@@ -73,13 +74,7 @@ export default {
         return ''
       }
       return this.selectedStream.siteGuid || `${this.selectedStream.latitude.toFixed(6)}, ${this.selectedStream.longitude.toFixed(6)}`
-    },
-    async getCurrentStream () {
-      this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)
     }
-  },
-  async created () {
-    this.getCurrentStream()
   }
 }
 </script>
