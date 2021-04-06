@@ -183,7 +183,7 @@ class FileProvider {
   async updateFilesFormat (stream, format = FORMAT_AUTO_DETECT) {
     const t0 = performance.now()
     const fileObjectList = (await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
-      where: {state: 'preparing'}
+      where: { state: fileState.preparedGroup }
     })).filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage))
     const updatedFiles = fileObjectList.map(file => {
       let timestamp
