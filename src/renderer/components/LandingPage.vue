@@ -81,6 +81,7 @@
         const t1 = performance.now()
         console.log('[Measure] handleDrop ' + (t1 - t0) + ' ms')
         this.$refs.fileContainer.reloadFiles()
+        this.streams = await this.getStreams() // reload stream list
       },
       async handleFiles (files) {
         this.isDragging = false

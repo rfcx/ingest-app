@@ -2,8 +2,8 @@
   <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10">
     <header-view :selectedStream="selectedStream"></header-view>
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
-    <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
-    <file-list ref="fileList" :files="getFilesInSelectedTab()" :numberOfQueuingFiles="queuingFiles.length" :selectedTab="selectedTab" :isDragging="isDragging" @onImportFiles="onImportFiles"></file-list>
+    <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream"></file-name-format-info>
+    <file-list ref="fileList" :files="files" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" @onImportFiles="onImportFiles"></file-list>
   </div>
 </template>
 
@@ -26,16 +26,18 @@ const fileComparator = (fileA, fileB) => {
   }
   return new Date(fileA.timestamp) - new Date(fileB.timestamp)
 }
+
+const DEFAULT_LIMIT = 30
+
 export default {
   directives: { infiniteScroll },
   data () {
     return {
       files: [],
-      preparingFiles: [],
-      queuingFiles: [],
-      completedFiles: [],
+      fileCount: [],
       fetchFilesInterval: null,
-      selectedStream: null
+      selectedStream: null,
+      offset: 0
     }
   },
   props: {
@@ -51,16 +53,17 @@ export default {
     selectedTab () {
       const savedSelectedTab = this.$store.getters.getSelectedTabByStreamId(this.selectedStreamId)
       return savedSelectedTab || this.getDefaultSelectedTab()
+    },
+    numberOfReadyToUploadFiles () {
+      const preparingGroup = this.fileCount.find(group => FileState.isPreparing(group.state))
+      return preparingGroup ? preparingGroup.stateCount : 0
+    },
+    hasPreparingFiles () {
+      return this.fileCount.find(group => FileState.isInPreparedGroup(group.state))
+    },
+    hasFileInQueued () {
+      return this.fileCount.find(group => FileState.isInQueuedGroup(group.state))
     }
-    // preparingFiles () {
-    //   return this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
-    // },
-    // queuingFiles () {
-    //   return this.files.filter(file => FileState.isInQueuedGroup(file.state)).sort(fileComparator)
-    // },
-    // completedFiles () {
-    //   return this.files.filter(file => FileState.isInCompletedGroup(file.state)).sort(fileComparator)
-    // }
   },
   methods: {
     getDefaultSelectedTab () {
@@ -71,34 +74,61 @@ export default {
       return 'Prepared'
     },
     onImportFiles (files) {
-      console.log('onImportFiles = filecontainer', files)
       this.$emit('onImportFiles', files)
     },
     loadMore () {
       this.$refs.fileList.loadMore()
     },
-    getFilesInSelectedTab () {
+    getStatesOfSelectedTab () {
       switch (this.selectedTab) {
-        case 'Prepared': return this.preparingFiles
-        case 'Queued': return this.queuingFiles
-        case 'Completed': return this.completedFiles
+        case 'Prepared': return FileState.preparedGroup
+        case 'Queued': return FileState.queuedGroup
+        case 'Completed': return FileState.completedGroup
       }
     },
     getNumberOfFilesAndStatusToRenderInTab (tab) {
+      let hasErrorFiles = false
       switch (tab) {
-        case 'Prepared': return { numberOfFiles: this.preparingFiles.length, hasErrorFiles: this.checkIfHasErrorFiles(this.preparingFiles) }
-        case 'Queued': return { numberOfFiles: this.queuingFiles.length, hasErrorFiles: this.checkIfHasErrorFiles(this.queuingFiles) }
-        case 'Completed': return { numberOfFiles: this.completedFiles.length, hasErrorFiles: this.checkIfHasErrorFiles(this.completedFiles) }
+        case 'Prepared':
+          hasErrorFiles = this.fileCount.find(group => FileState.isLocalError(group.state))
+          break
+        case 'Queued':
+          hasErrorFiles = false
+          break
+        case 'Completed':
+          hasErrorFiles = this.fileCount.find(group => FileState.isServerError(group.state))
+          break
+      }
+      return {
+        numberOfFiles: this.calculateNumberOfFilesInTab(tab),
+        hasErrorFiles
       }
     },
-    checkIfHasErrorFiles (files) {
-      return files.filter((file) => file.state.includes('error')).length > 0
+    calculateNumberOfFilesInTab (tab) {
+      let groupFileCount = []
+      switch (tab) {
+        case 'Prepared':
+          groupFileCount = this.fileCount.filter(group => FileState.isInPreparedGroup(group.state))
+          break
+        case 'Queued':
+          groupFileCount = this.fileCount.filter(group => FileState.isInQueuedGroup(group.state))
+          break
+        case 'Completed':
+          groupFileCount = this.fileCount.filter(group => FileState.isInCompletedGroup(group.state))
+          break
+      }
+      return groupFileCount.map(s => s.stateCount).reduce((a, b) => a + b, 0)
     },
     async reloadFiles () {
-      this.files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: this.selectedStreamId } })
-      this.preparingFiles = this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
-      this.queuingFiles = this.files.filter(file => FileState.isInQueuedGroup(file.state)).sort(fileComparator)
-      this.completedFiles = this.files.filter(file => FileState.isInCompletedGroup(file.state)).sort(fileComparator)
+      this.fileCount = await ipcRendererSend('db.files.filesCount', `db.files.filesCount.${Date.now()}`, { where: { streamId: this.selectedStreamId } })
+      this.files = (await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
+        where: {
+          streamId: this.selectedStreamId,
+          state: this.getStatesOfSelectedTab()
+        },
+        offset: this.offset,
+        limit: DEFAULT_LIMIT }))
+        .sort(fileComparator)
     },
     initFilesFetcher () {
       // fetch at first load
@@ -123,6 +153,7 @@ export default {
     selectedTab (previousTabName, newTabName) {
       if (previousTabName !== newTabName) {
         this.$refs.fileList.resetLoadMore()
+        this.offset = 0
         this.reloadFiles()
       }
     }

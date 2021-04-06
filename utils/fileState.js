@@ -49,16 +49,20 @@ const getIconName = function (state) {
   }
 }
 
+const preparedGroup = ['preparing', 'local_error']
+const queuedGroup = ['waiting', 'uploading', 'converting']
+const completedGroup = ['completed', 'ingesting', 'server_error', 'failed']
+
 const isInPreparedGroup = function (state) {
-  return state === 'preparing' || state === 'local_error'
+  return preparedGroup.includes(state)
 }
 
 const isInQueuedGroup = function (state) {
-  return ['waiting', 'uploading', 'converting'].includes(state)
+  return queuedGroup.includes(state)
 }
 
 const isInCompletedGroup = function (state) {
-  return ['completed', 'ingesting', 'server_error', 'failed'].includes(state)
+  return completedGroup.includes(state)
 }
 
 const isPreparing = function (state) {
@@ -103,6 +107,9 @@ const canChangeTimestampFormat = function (state, message) {
 }
 
 export default {
+  preparedGroup,
+  queuedGroup,
+  completedGroup,
   getStatePriority,
   getName,
   getIconName,
