@@ -42,6 +42,14 @@ export default {
   props: {
     selectedStream: Object
   },
+  watch: {
+    selectedStreamId: {
+      handler: function (previousStream, newStream) {
+        if (previousStream === newStream) return
+        this.getCurrentStream()
+      }
+    }
+  },
   computed: {
     ...mapState({
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId

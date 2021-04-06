@@ -90,7 +90,7 @@ const collections = {
         })
     },
     query: function (opts = {}) {
-      console.log('Database files.query is called', opts)
+      // console.log('Database files.query is called', opts)
       const where = opts.where || null
       const sort = opts.sort || null
       const limit = opts.limit || null
@@ -103,15 +103,6 @@ const collections = {
       return models.File.destroy({
         where: {},
         truncate: true
-      })
-    },
-    filesCount: function (opts) {
-      return models.File.findAll({
-        where: opts.where,
-        group: 'state',
-        attributes: ['state', [sequelize.fn('COUNT', 'state'), 'stateCount']]
-      }).then(states => {
-        return states.map(s => s.dataValues)
       })
     }
   },
