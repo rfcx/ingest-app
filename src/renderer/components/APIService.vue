@@ -179,6 +179,7 @@
       async tickCheckSession () {
         if (!this.isUploadingProcessEnabled) { console.log('tickCheckSession: not enable uploading process'); return }
         // const allFilesInSessionGroupedByStream = File.query().where('sessionId', this.currentUploadingSessionId).get().reduce(function (acc, obj) {
+        if (!this.currentUploadingSessionId) return
         let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { sessionId: this.currentUploadingSessionId } })
         this.processSessionStats(files)
         // let allFilesInSessionGroupedByStream = files.reduce(function (acc, obj) {
