@@ -85,6 +85,7 @@ export default {
       // await File.delete(this.fileToBeDeleted.id)
       await ipcRendererSend('db.files.delete', `db.files.delete.${Date.now()}`, { where: { id: this.fileToBeDeleted.id } })
       this.isDeleting = false
+      this.$emit('onNeedResetFileList')
       this.hideConfirmToDeleteDialog()
     },
     onImportFiles (files) {

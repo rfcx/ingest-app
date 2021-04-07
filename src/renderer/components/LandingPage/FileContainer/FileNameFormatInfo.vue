@@ -155,6 +155,7 @@ export default {
         }
       })
       await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: this.selectedStreamId, params: { preparingCount: 0 } })
+      this.$emit('onNeedResetFileList')
       this.isDeletingAllFiles = false
       // await streamService.updateStreamStats(streamId, [
       //   { name: 'preparingCount', action: '-', diff: files.length },

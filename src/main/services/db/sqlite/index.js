@@ -42,7 +42,8 @@ async function init (app) {
       logging: false,
       storage,
       operatorsAliases: {
-        $lt: Op.lt
+        $lt: Op.lt,
+        $gte: Op.gte
       }
     })
     await sequelize.authenticate()
@@ -90,7 +91,7 @@ const collections = {
         })
     },
     query: function (opts = {}) {
-      // console.log('Database files.query is called', opts)
+      console.log('Database files.query is called', opts)
       const where = opts.where || null
       const sort = opts.sort || null
       const limit = opts.limit || null

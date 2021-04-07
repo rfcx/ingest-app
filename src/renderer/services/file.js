@@ -182,9 +182,7 @@ class FileProvider {
      */
   async updateFilesFormat (stream, fileObjectList, format = FORMAT_AUTO_DETECT) {
     const t0 = performance.now()
-    const fileObjectList = (await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
-      where: { state: fileState.preparedGroup }
-    })).filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage))const updatedFiles = fileObjectList.map(file => {
+    const updatedFiles = fileObjectList.map(file => {
       let timestamp
       if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
         console.log('create file object with file info yes!')
