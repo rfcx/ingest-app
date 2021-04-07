@@ -102,6 +102,7 @@
         // reset selected tab
         await this.$store.dispatch('setSelectedTab', { [this.selectedStreamId]: 'Prepared' })
         await this.$file.handleDroppedFiles(files, this.selectedStream)
+        this.streams = await this.getStreams() // reload stream list
       },
       isEmptyStream () {
         return this.streams === undefined || this.streams.length === 0

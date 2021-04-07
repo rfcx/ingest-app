@@ -15,7 +15,6 @@ import Analytics from 'electron-ga'
 import env from '../../../env.json'
 import fileState from '../../../utils/fileState'
 import ipcRendererSend from './ipc'
-import streamService from './stream'
 
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
@@ -154,6 +153,10 @@ class FileProvider {
         })
       } catch (error) {
         console.error('Failed updating file duration', error)
+        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+          id: file.id,
+          params: { durationInSecond: -2, state: 'local_error', stateMessage: error.message || 'No duration found' }
+        })
       }
     }
   }
@@ -548,9 +551,6 @@ class FileProvider {
   }
 
   async incrementFilesCount (streamId, success) {
-    await streamService.updateStreamStats(streamId, [
-      { name: success ? 'sessionSuccessCount' : 'sessionFailCount', action: '+', diff: 1 }
-    ])
     // await Stream.dispatch('filesCompletedUploadSession', { streamId, amount: 1, success })
   }
 

@@ -4,7 +4,8 @@
       <button class="delete" @click="onCloseNotice()"></button>
       Completed uploads are shown for up to 30 days. To see all uploads, open in Arbimon.
     </div>
-    <table class="table file-list-table is-hoverable" v-if="files.length > 0">
+    <loader :show="isFetching" v-if="isFetching"></loader>
+    <table class="table file-list-table is-hoverable" v-else-if="files.length > 0">
       <thead>
         <tr>
           <td v-if="!isPreparedTab" class="file-list-table__cell file-list-table__cell_status"></td>
@@ -19,7 +20,7 @@
         <file-row :selectedTab="selectedTab" v-for="file in files.slice(0, visibleRows)" :key="file.id" :file="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
     </table>
-    <empty-view v-if="files.length === 0" :hasFileInQueued="numberOfQueuingFiles > 0" :isDragging="isDragging" @onImportFiles="onImportFiles"></empty-view>
+    <empty-view v-else-if="files.length === 0" :hasFileInQueued="numberOfQueuingFiles > 0" :isDragging="isDragging" @onImportFiles="onImportFiles"></empty-view>
     <confirm-alert
       :content="deleteAlertTitle"
       confirmButtonText="Delete"
@@ -34,6 +35,7 @@
 // import File from '../../../store/models/File'
 // import Stream from '../../../store/models/Stream'
 import ConfirmAlert from '../../Common/ConfirmAlert'
+import Loader from '../../Common/Loader'
 import EmptyView from '../EmptyView'
 import FileRow from './FileRow'
 import FileState from '../../../../../utils/fileState'
@@ -46,7 +48,8 @@ export default {
     files: Array,
     numberOfQueuingFiles: Number,
     selectedTab: String,
-    isDragging: Boolean
+    isDragging: Boolean,
+    isFetching: Boolean
   },
   data: () => ({
     isDeleting: false,
@@ -57,7 +60,7 @@ export default {
     visibleRows: PAGE_SIZE
   }),
   components: {
-    EmptyView, FileRow, ConfirmAlert
+    EmptyView, FileRow, ConfirmAlert, Loader
   },
   computed: {
     isPreparedTab () {
@@ -85,6 +88,7 @@ export default {
       // await File.delete(this.fileToBeDeleted.id)
       await ipcRendererSend('db.files.delete', `db.files.delete.${Date.now()}`, { where: { id: this.fileToBeDeleted.id } })
       this.isDeleting = false
+      this.$emit('onNeedResetFileList')
       this.hideConfirmToDeleteDialog()
     },
     onImportFiles (files) {

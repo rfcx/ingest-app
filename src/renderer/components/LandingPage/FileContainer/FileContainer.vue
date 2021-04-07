@@ -2,8 +2,8 @@
   <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10">
     <header-view :selectedStream="selectedStream"></header-view>
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
-    <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles"></file-name-format-info>
-    <file-list ref="fileList" :files="getFilesInSelectedTab()" :numberOfQueuingFiles="queuingFiles.length" :selectedTab="selectedTab" :isDragging="isDragging" @onImportFiles="onImportFiles"></file-list>
+    <file-name-format-info v-if="selectedTab === 'Prepared' && preparingFiles.length > 0" :preparingFiles="preparingFiles" @onNeedResetFileList="resetFiles"></file-name-format-info>
+    <file-list ref="fileList" :files="getFilesInSelectedTab()" :numberOfQueuingFiles="queuingFiles.length" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
   </div>
 </template>
 
@@ -26,6 +26,17 @@ const fileComparator = (fileA, fileB) => {
   }
   return new Date(fileA.timestamp) - new Date(fileB.timestamp)
 }
+
+const mergeById = (oldArray, newArray) => {
+  if (oldArray.length <= 0) return newArray
+  const updatedItems = oldArray.map(item => {
+    const obj = newArray.find(o => o.id === item.id)
+    return { ...item, ...obj }
+  })
+  const newItems = newArray.filter(o1 => !oldArray.some(o2 => o1.id === o2.id))
+  return updatedItems.concat(newItems)
+}
+
 export default {
   directives: { infiniteScroll },
   data () {
@@ -35,7 +46,8 @@ export default {
       queuingFiles: [],
       completedFiles: [],
       fetchFilesInterval: null,
-      selectedStream: null
+      selectedStream: null,
+      isFetching: false
     }
   },
   props: {
@@ -73,6 +85,7 @@ export default {
     onImportFiles (files) {
       console.log('onImportFiles = filecontainer', files)
       this.$emit('onImportFiles', files)
+      // await this.resetFiles()
     },
     loadMore () {
       this.$refs.fileList.loadMore()
@@ -95,18 +108,39 @@ export default {
       return files.filter((file) => file.state.includes('error')).length > 0
     },
     async reloadFiles () {
-      this.files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: this.selectedStreamId } })
+      const currentFiles = this.files
+      const latestUpdateDate = currentFiles.map(file => new Date(file.updatedAt).valueOf()).reduce((a, b) => a <= b ? b : a, 0) || 0
+      const newFiles = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
+        where: {
+          streamId: this.selectedStreamId,
+          updatedAt: {
+            '$gte': latestUpdateDate
+          }
+        }
+      })
+      this.files = mergeById(currentFiles, newFiles)
       this.preparingFiles = this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
       this.queuingFiles = this.files.filter(file => FileState.isInQueuedGroup(file.state)).sort(fileComparator)
       this.completedFiles = this.files.filter(file => FileState.isInCompletedGroup(file.state)).sort(fileComparator)
     },
-    initFilesFetcher () {
+    async initFilesFetcher () {
       // fetch at first load
-      this.reloadFiles()
+      this.isFetching = true
+      await this.reloadFiles()
+      this.isFetching = false
       // and set timer to fetch
       this.fetchFilesInterval = setInterval(() => {
         this.reloadFiles()
       }, 2000)
+    },
+    async resetFiles () {
+      this.isFetching = true
+      this.files = []
+      this.preparingFiles = []
+      this.queuingFiles = []
+      this.completedFiles = []
+      await this.reloadFiles()
+      this.isFetching = false
     },
     async getCurrentStream () {
       this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)
@@ -117,13 +151,14 @@ export default {
       handler: async function (previousStream, newStream) {
         if (previousStream === newStream) return
         await this.getCurrentStream()
-        await this.reloadFiles()
+        await this.resetFiles()
       }
     },
-    selectedTab (previousTabName, newTabName) {
-      if (previousTabName !== newTabName) {
+    selectedTab: {
+      handler: async function (previousTabName, newTabName) {
+        if (previousTabName === newTabName) return
         this.$refs.fileList.resetLoadMore()
-        this.reloadFiles()
+        await this.reloadFiles()
       }
     }
   },

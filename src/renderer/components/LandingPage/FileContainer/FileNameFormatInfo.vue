@@ -54,7 +54,6 @@ import fileFormat from '../../../../../utils/FileFormat'
 // import DatabaseEventName from '../../../../../utils/DatabaseEventName'
 import ErrorAlert from '../../Common/ErrorAlert'
 import ipcRendererSend from '../../../services/ipc'
-import streamService from '../../../services/stream'
 
 export default {
   props: {
@@ -128,11 +127,6 @@ export default {
       const preparingCount = stream.preparingCount - files.length
       const sessionTotalCount = stream.sessionTotalCount + files.length
       await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: streamId, params: { preparingCount, sessionTotalCount } })
-
-      await streamService.updateStreamStats(streamId, [
-        { name: 'preparingCount', action: '-', diff: files.length },
-        { name: 'sessionTotalCount', action: '+', diff: files.length }
-      ])
       this.isQueuingToUpload = false
 
       // set selected tab to be queue tab
@@ -155,6 +149,7 @@ export default {
         }
       })
       await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: this.selectedStreamId, params: { preparingCount: 0 } })
+      this.$emit('onNeedResetFileList')
       this.isDeletingAllFiles = false
       // await streamService.updateStreamStats(streamId, [
       //   { name: 'preparingCount', action: '-', diff: files.length },
