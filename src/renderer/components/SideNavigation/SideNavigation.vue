@@ -221,11 +221,6 @@
         // const preparingCount = stream.preparingCount - files.length
         // const sessionTotalCount = stream.sessionTotalCount + files.length
         // await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: streamId, params: { preparingCount, sessionTotalCount } })
-
-        await streamService.updateStreamStats(streamId, [
-          { name: 'preparingCount', action: '-', diff: files.length },
-          { name: 'sessionTotalCount', action: '+', diff: files.length }
-        ])
         this.isRetryUploading = false
 
         // set selected tab to be queue tab

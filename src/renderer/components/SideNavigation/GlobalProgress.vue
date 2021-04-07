@@ -15,6 +15,7 @@
 
 <script>
 import { mapState } from 'vuex'
+import FileState from '../../../../utils/fileState'
 import ipcRendererSend from '../../services/ipc'
 export default {
   data () {
@@ -23,6 +24,7 @@ export default {
       numberOfCompleteFilesInTheSession: null,
       numberOfSuccessFilesInTheSession: null,
       numberOfFailFilesInTheSession: null,
+      numberOfProcessingFilesInTheSession: null,
       shouldShowProgress: null,
       refreshInterval: null
     }
@@ -41,16 +43,26 @@ export default {
   },
   methods: {
     async getStats () {
-      const stats = await ipcRendererSend('db.streams.stats', `db.streams.stats.${Date.now()}`)
-      this.numberOfAllFilesInTheSession = stats.sessionTotalCount
-      this.numberOfSuccessFilesInTheSession = stats.sessionSuccessCount
-      this.numberOfFailFilesInTheSession = stats.sessionFailCount
-      this.numberOfCompleteFilesInTheSession = stats.sessionSuccessCount + stats.sessionFailCount
-      this.shouldShowProgress = this.numberOfAllFilesInTheSession !== this.numberOfCompleteFilesInTheSession
+      if (!this.currentUploadingSessionId) {
+        this.resetNumber()
+        return
+      }
+      const stats = await ipcRendererSend('db.files.sessionCount', `db.files.sessionCount.${Date.now()}`, this.currentUploadingSessionId)
+      this.numberOfAllFilesInTheSession = this.calculateNumberOfFiles('all', stats)
+      this.numberOfSuccessFilesInTheSession = this.calculateNumberOfFiles('success', stats)
+      this.numberOfFailFilesInTheSession = this.calculateNumberOfFiles('error', stats)
+      this.numberOfProcessingFilesInTheSession = this.calculateNumberOfFiles('processing', stats)
+      this.numberOfCompleteFilesInTheSession = this.numberOfSuccessFilesInTheSession + this.numberOfFailFilesInTheSession
+      this.shouldShowProgress = (this.numberOfAllFilesInTheSession !== this.numberOfCompleteFilesInTheSession) || this.numberOfProcessingFilesInTheSession > 0
+      if (this.numberOfCompleteFilesInTheSession === this.numberOfAllFilesInTheSession) {
+        this.sendCompleteNotification(this.numberOfSuccessFilesInTheSession, this.numberOfFailFilesInTheSession)
+        await this.$store.dispatch('setCurrentUploadingSessionId', null)
+      }
     },
     getState () {
       const error = this.numberOfFailFilesInTheSession
-      let text = `${this.numberOfSuccessFilesInTheSession}/${this.numberOfAllFilesInTheSession} files`
+      const processing = this.numberOfProcessingFilesInTheSession
+      let text = `${processing > 0 ? `(${processing}) ` : ''}${this.numberOfSuccessFilesInTheSession}/${this.numberOfAllFilesInTheSession} files`
       text += error > 0 ? ` ${error} ${error <= 1 ? 'error' : 'errors'}` : ''
       return text
     },
@@ -64,14 +76,52 @@ export default {
     async getProgressPercent () {
       if (!this.numberOfAllFilesInTheSession || !this.numberOfCompleteFilesInTheSession) return 0
       else return ((this.numberOfCompleteFilesInTheSession / this.numberOfAllFilesInTheSession) * 100)
+    },
+    calculateNumberOfFiles (group, stats) {
+      let groupFileCount = []
+      switch (group) {
+        case 'error':
+          groupFileCount = stats.filter(group => FileState.isServerError(group.state))
+          break
+        case 'success':
+          groupFileCount = stats.filter(group => FileState.isCompleted(group.state))
+          break
+        case 'processing':
+          groupFileCount = stats.filter(group => FileState.isProcessing(group.state))
+          break
+        case 'all':
+          groupFileCount = stats
+          break
+      }
+      return groupFileCount.map(s => s.stateCount).reduce((a, b) => a + b, 0)
+    },
+    sendCompleteNotification (numberOfCompletedFiles, numberOfFailedFiles) {
+      const completedText = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'} uploaded`
+      const failText = `${numberOfFailedFiles} ${numberOfFailedFiles > 1 ? 'files' : 'file'} failed`
+      let notificationCompleted = {
+        title: 'Ingest Completed',
+        body: `${numberOfCompletedFiles > 0 ? completedText : ''} ${numberOfFailedFiles > 0 ? failText : ''}`
+      }
+      let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
+      myNotificationCompleted.onshow = () => {
+        console.log('show notification')
+      }
+    },
+    resetNumber () {
+      this.numberOfAllFilesInTheSession = 0
+      this.numberOfSuccessFilesInTheSession = 0
+      this.numberOfFailFilesInTheSession = 0
+      this.numberOfCompleteFilesInTheSession = 0
+      this.numberOfProcessingFilesInTheSession = 0
+      this.shouldShowProgress = false
     }
   },
   created () {
-    // this.refreshInterval = setInterval(() => {
-    //   if (this.isUploadingProcessEnabled) {
-    //     this.getStats()
-    //   }
-    // }, 1000)
+    this.refreshInterval = setInterval(() => {
+      if (this.isUploadingProcessEnabled) {
+        this.getStats()
+      }
+    }, 1000)
   },
   beforeDestroy () {
     if (this.refreshInterval) {

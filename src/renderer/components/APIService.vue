@@ -7,10 +7,8 @@
   // import File from '../store/models/File'
   // import Stream from '../store/models/Stream'
   // import FileHelper from '../../../utils/fileHelper'
-  import FileState from '../../../utils/fileState'
   // import DatabaseEventName from './../../../utils/DatabaseEventName'
   import ipcRendererSend from '../services/ipc'
-  import streamService from '../services/stream'
 
   const workerTimeoutMinimum = 3000
   const queueFileToUploadWorkerTimeoutMinimum = 1000
@@ -130,9 +128,6 @@
                 id: unsyncedFile.id,
                 params: { state: 'server_error', stateMessage: 'File does not exist' }
               })
-              await streamService.updateStreamStats(unsyncedFile.streamId, [
-                { name: 'sessionFailCount', action: '+', diff: 1 }
-              ])
             }
           })
       },
@@ -175,54 +170,6 @@
         // if (this.isHandlingFileNotExist) { console.log('tickCheckStatus: clearing files that are not exist'); return }
         if (!this.isUploadingProcessEnabled) { console.log('tickCheckStatus: not enable uploading process'); return }
         this.queueJobToCheckStatus()
-      },
-      async tickCheckSession () {
-        if (!this.isUploadingProcessEnabled) { console.log('tickCheckSession: not enable uploading process'); return }
-        // const allFilesInSessionGroupedByStream = File.query().where('sessionId', this.currentUploadingSessionId).get().reduce(function (acc, obj) {
-        if (!this.currentUploadingSessionId) return
-        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { sessionId: this.currentUploadingSessionId } })
-        this.processSessionStats(files)
-        // let allFilesInSessionGroupedByStream = files.reduce(function (acc, obj) {
-        //   var key = obj.streamId
-        //   if (!acc[key]) {
-        //     acc[key] = []
-        //   }
-        //   acc[key].push(obj)
-        //   return acc
-        // }, {})
-        // if (allFilesInSessionGroupedByStream && Object.keys(allFilesInSessionGroupedByStream).length <= 0) { return }
-        // for (const [streamId, filesInStream] of Object.entries(allFilesInSessionGroupedByStream)) {
-        //   const canRedo = filesInStream.some(file => file.canRedo)
-        //   const sessionSuccessCount = filesInStream.filter(file => FileState.isCompleted(file.state)).length
-        //   const sessionFailCount = filesInStream.filter(file => FileState.isServerError(file.state)).length
-        //   const sessionTotalCount = filesInStream.length
-        //   await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, {
-        //     id: streamId,
-        //     params: { sessionSuccessCount, sessionFailCount, sessionTotalCount, canRedo }
-        //   })
-        //   // await Stream.update({
-        //   //   where: streamId,
-        //   //   data: {
-        //   //     sessionSuccessCount: filesInStream.filter(file => FileState.isCompleted(file.state)).length,
-        //   //     sessionFailCount: filesInStream.filter(file => FileState.isServerError(file.state)).length,
-        //   //     sessionTotalCount: filesInStream.length,
-        //   //     canRedo
-        //   //   }
-        //   // })
-        // }
-      },
-      processSessionStats (files) {
-        if (!files || !files.length) {
-          return
-        }
-        let successful = files.filter(file => FileState.isCompleted(file.state)).length
-        let failed = files.filter(file => FileState.isServerError(file.state)).length
-        // this.isCompleted = (this.this.numberOfSuccessFilesInTheSession + this.numberOfFailFilesInTheSession) >= files.length // use >= to be safe in case of wrong calculations
-        if ((successful + failed) >= files.length) { // use >= to be safe in case of wrong calculations
-          this.sendCompleteNotification(successful, failed)
-          // this.tickCheckSession() // check status 1 last time before reset uploading id (prevent cannot redo file doesn't exist issue)
-          this.resetUploadingSessionId()
-        }
       },
       // async updateFilesDuration (files) {
       //   if (files && files.length > 0) {
@@ -288,13 +235,6 @@
           console.log('show notification')
         }
       },
-      async resetUploadingSessionId () {
-        // await Stream.dispatch('resetSession')
-        await ipcRendererSend('db.streams.bulkUpdate', `db.streams.bulkUpdate.${Date.now()}`, {
-          params: { sessionSuccessCount: 0, sessionFailCount: 0, sessionTotalCount: 0 }
-        })
-        await this.$store.dispatch('setCurrentUploadingSessionId', null)
-      },
       startCalcDurationTick () {
         if (this.checkCalcDurationInterval) { return }
         this.checkCalcDurationInterval = setInterval(this.tickCalcDuration.bind(this), queueFileToUploadWorkerTimeoutMinimum)
@@ -317,9 +257,6 @@
       this.checkStatusInterval = setInterval(() => {
         this.tickCheckStatus()
       }, workerTimeoutMinimum)
-      this.checkSessionInterval = setInterval(() => {
-        this.tickCheckSession()
-      }, 4000)
       setTimeout(() => {
         this.removeOutdatedFiles()
       }, 15000) // wait for 15 seconds to reduce pressure on db on app start

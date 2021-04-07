@@ -105,6 +105,15 @@ const collections = {
         where: {},
         truncate: true
       })
+    },
+    sessionCount: function (sessionId) {
+      return models.File.findAll({
+        where: {session_id: sessionId},
+        group: 'state',
+        attributes: ['state', [sequelize.fn('COUNT', 'state'), 'stateCount']]
+      }).then(states => {
+        return states.map(s => s.dataValues)
+      })
     }
   },
   streams: {
