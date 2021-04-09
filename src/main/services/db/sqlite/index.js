@@ -43,6 +43,7 @@ async function init (app) {
       storage,
       operatorsAliases: {
         $lt: Op.lt,
+        $gt: Op.gt,
         $gte: Op.gte
       }
     })
@@ -93,10 +94,10 @@ const collections = {
     query: function (opts = {}) {
       console.log('Database files.query is called', opts)
       const where = opts.where || null
-      const sort = opts.sort || null
+      const order = opts.order || null
       const limit = opts.limit || null
       const offset = opts.offset || null
-      return models.File.findAll({ where, sort, limit, offset })
+      return models.File.findAll({ where, order, limit, offset })
         .then((files) => files.map(f => f.toJSON()))
     },
     deleteAll: function () {
