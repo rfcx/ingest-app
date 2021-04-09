@@ -115,7 +115,7 @@ const convert = (sourceFile, tempPath, streamId) => {
       .noVideo()
       .output(destinationPath)
       .outputOptions([
-        '-ac 1',
+        '-ac 1'
       ])
 
     const timeout = setTimeout(function () {
