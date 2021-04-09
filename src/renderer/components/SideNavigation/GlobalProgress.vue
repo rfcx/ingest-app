@@ -117,6 +117,7 @@ export default {
     }
   },
   created () {
+    this.getStats()
     this.refreshInterval = setInterval(() => {
       if (this.isUploadingProcessEnabled) {
         this.getStats()
