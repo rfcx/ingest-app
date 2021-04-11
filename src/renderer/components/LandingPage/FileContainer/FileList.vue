@@ -20,7 +20,7 @@
         <file-row :selectedTab="selectedTab" v-for="file in files.slice(0, visibleRows)" :key="file.id" :file="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
     </table>
-    <empty-view v-else-if="files.length === 0" :hasFileInQueued="numberOfQueuingFiles > 0" :isDragging="isDragging" @onImportFiles="onImportFiles"></empty-view>
+    <empty-view v-else-if="files.length === 0" :hasFileInQueued="hasFileInQueued" :isDragging="isDragging" @onImportFiles="onImportFiles"></empty-view>
     <confirm-alert
       :content="deleteAlertTitle"
       confirmButtonText="Delete"
@@ -46,7 +46,7 @@ const PAGE_SIZE = 20
 export default {
   props: {
     files: Array,
-    numberOfQueuingFiles: Number,
+    hasFileInQueued: Boolean,
     selectedTab: String,
     isDragging: Boolean,
     isFetching: Boolean

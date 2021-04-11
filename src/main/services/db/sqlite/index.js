@@ -115,6 +115,15 @@ const collections = {
       }).then(states => {
         return states.map(s => s.dataValues)
       })
+    },
+    filesInStreamCount: function (streamId) {
+      return models.File.findAll({
+        where: {stream_id: streamId},
+        group: 'state',
+        attributes: ['state', [sequelize.fn('COUNT', 'state'), 'stateCount']]
+      }).then(states => {
+        return states.map(s => s.dataValues)
+      })
     }
   },
   streams: {
