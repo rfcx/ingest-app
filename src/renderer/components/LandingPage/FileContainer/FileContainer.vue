@@ -3,7 +3,7 @@
     <header-view :selectedStream="selectedStream"></header-view>
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream" @onNeedResetFileList="resetFiles"></file-name-format-info>
-    <file-list ref="fileList" :files="getFilesInSelectedTab()" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
+    <file-list ref="fileList" :files="files" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
 </div>
 </template>
 
@@ -19,23 +19,15 @@ import FileState from '../../../../../utils/fileState'
 import infiniteScroll from 'vue-infinite-scroll'
 import ipcRendererSend from '../../../services/ipc'
 
-const fileComparator = (fileA, fileB) => {
-  const stateResult = FileState.getStatePriority(fileA.state) - FileState.getStatePriority(fileB.state)
-  if (stateResult !== 0) {
-    return stateResult
-  }
-  return new Date(fileA.timestamp) - new Date(fileB.timestamp)
+const mergeById = (oldArray, newArray) => {
+  if (oldArray.length <= 0) return newArray
+  const updatedItems = oldArray.map(item => {
+    const obj = newArray.find(o => o.id === item.id)
+    return { ...item, ...obj }
+  })
+  const newItems = newArray.filter(o1 => !oldArray.some(o2 => o1.id === o2.id))
+  return updatedItems.concat(newItems)
 }
-
-// const mergeById = (oldArray, newArray) => {
-//   if (oldArray.length <= 0) return newArray
-//   const updatedItems = oldArray.map(item => {
-//     const obj = newArray.find(o => o.id === item.id)
-//     return { ...item, ...obj }
-//   })
-//   const newItems = newArray.filter(o1 => !oldArray.some(o2 => o1.id === o2.id))
-//   return updatedItems.concat(newItems)
-// }
 
 export default {
   directives: { infiniteScroll },
@@ -66,24 +58,15 @@ export default {
       return savedSelectedTab || this.getDefaultSelectedTab()
     },
     hasPreparingFiles () {
-      return this.stats.find(group => FileState.isInPreparedGroup(group.state))
+      return this.stats.find(group => FileState.isInPreparedGroup(group.state)) !== undefined
     },
     hasFileInQueued () {
-      return this.stats.find(group => FileState.isInQueuedGroup(group.state))
+      return this.stats.find(group => FileState.isInQueuedGroup(group.state)) !== undefined
     },
     numberOfReadyToUploadFiles () {
       const preparingGroup = this.stats.find(group => FileState.isPreparing(group.state))
       return preparingGroup ? preparingGroup.stateCount : 0
     }
-    // preparingFiles () {
-    //   return this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
-    // },
-    // queuingFiles () {
-    //   return this.files.filter(file => FileState.isInQueuedGroup(file.state)).sort(fileComparator)
-    // },
-    // completedFiles () {
-    //   return this.files.filter(file => FileState.isInCompletedGroup(file.state)).sort(fileComparator)
-    // }
   },
   methods: {
     getDefaultSelectedTab () {
@@ -101,11 +84,22 @@ export default {
     loadMore () {
       this.$refs.fileList.loadMore()
     },
-    getFilesInSelectedTab () {
-      switch (this.selectedTab) {
-        case 'Prepared': return this.preparingFiles
-        case 'Queued': return this.queuingFiles
-        case 'Completed': return this.completedFiles
+    getQueryBySelectedTabAndUpdatedAt (selectedTab, onlyLatestUpdated = false) {
+      let commonQuery = { streamId: this.selectedStreamId }
+      if (onlyLatestUpdated) {
+        const currentFiles = this.files
+        const latestUpdateDate = currentFiles.map(file => new Date(file.updatedAt).valueOf()).reduce((a, b) => a <= b ? b : a, 0) || 0
+        commonQuery.updatedAt = {
+          '$gte': latestUpdateDate
+        }
+      }
+      switch (selectedTab) {
+        case 'Prepared':
+          return { ...commonQuery, state: FileState.preparedGroup }
+        case 'Queued':
+          return { ...commonQuery, state: FileState.queuedGroup }
+        case 'Completed':
+          return { ...commonQuery, state: FileState.completedGroup }
       }
     },
     getNumberOfFilesAndStatusToRenderInTab (tab) {
@@ -144,42 +138,34 @@ export default {
     checkIfHasErrorFiles (files) {
       return files.filter((file) => file.state.includes('error')).length > 0
     },
-    async reloadFiles () {
-      // const currentFiles = this.files
-      // const latestUpdateDate = currentFiles.map(file => new Date(file.updatedAt).valueOf()).reduce((a, b) => a <= b ? b : a, 0) || 0
-      // const newFiles = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
-      //   where: {
-      //     streamId: this.selectedStreamId,
-      //     updatedAt: {
-      //       '$gte': latestUpdateDate
-      //     }
-      //   }
-      // })
-      // this.files = mergeById(currentFiles, newFiles)
+    async reloadFiles (query) {
+      const currentFiles = this.files
+      const newFiles = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
+        where: query
+      })
+      this.files = mergeById(currentFiles, newFiles)
       this.stats = await ipcRendererSend('db.files.filesInStreamCount', `db.files.filesInStreamCount.${Date.now()}`, this.selectedStreamId)
-      this.files = []
-      this.preparingFiles = this.files.filter(file => FileState.isInPreparedGroup(file.state)).sort(fileComparator)
-      this.queuingFiles = this.files.filter(file => FileState.isInQueuedGroup(file.state)).sort(fileComparator)
-      this.completedFiles = this.files.filter(file => FileState.isInCompletedGroup(file.state)).sort(fileComparator)
     },
     async initFilesFetcher () {
       // fetch at first load
       this.isFetching = true
-      await this.reloadFiles()
+      await this.reloadFiles(this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false))
       this.isFetching = false
       // and set timer to fetch
       this.fetchFilesInterval = setInterval(() => {
-        this.reloadFiles()
+        this.reloadFiles(this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, true))
       }, 2000)
     },
+    clearFilesFetcher () {
+      if (this.fetchFilesInterval) {
+        clearInterval(this.fetchFilesInterval)
+        this.fetchFilesInterval = null
+      }
+    },
     async resetFiles () {
-      this.isFetching = true
       this.files = []
-      this.preparingFiles = []
-      this.queuingFiles = []
-      this.completedFiles = []
-      await this.reloadFiles()
-      this.isFetching = false
+      this.clearFilesFetcher()
+      await this.initFilesFetcher()
     },
     async getCurrentStream () {
       this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)
@@ -197,7 +183,7 @@ export default {
       handler: async function (previousTabName, newTabName) {
         if (previousTabName === newTabName) return
         this.$refs.fileList.resetLoadMore()
-        await this.reloadFiles()
+        await this.resetFiles()
       }
     }
   },
@@ -206,10 +192,7 @@ export default {
     this.initFilesFetcher()
   },
   beforeDestroy () {
-    if (this.fetchFilesInterval) {
-      clearInterval(this.fetchFilesInterval)
-      this.fetchFilesInterval = null
-    }
+    this.clearFilesFetcher()
   }
 }
 </script>
