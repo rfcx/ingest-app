@@ -19,6 +19,11 @@
       <tbody>
         <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :initialFile="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
+      <tfoot v-if="selectedTab !== 'Prepared'">
+        <tr>
+          <td colspan="6" class="stats">{{statsDetail}}</td>
+        </tr>
+      </tfoot>
     </table>
     <empty-view v-else-if="files.length === 0" :hasFileInQueued="hasFileInQueued" :isDragging="isDragging" @onImportFiles="onImportFiles"></empty-view>
     <confirm-alert
@@ -44,6 +49,7 @@ import ipcRendererSend from '../../../services/ipc'
 export default {
   props: {
     files: Array,
+    stats: Array,
     hasFileInQueued: Boolean,
     selectedTab: String,
     isDragging: Boolean,
@@ -61,10 +67,28 @@ export default {
   },
   computed: {
     isPreparedTab () {
-      if (this.selectedTab === 'Prepared') return true
+      return this.selectedTab === 'Prepared'
+    },
+    isQueuedTab () {
+      return this.selectedTab === 'Queued'
     },
     isCompletedTab () {
-      if (this.selectedTab === 'Completed') return true
+      return this.selectedTab === 'Completed'
+    },
+    statsDetail () {
+      const sum = this.stats.map(s => s.stateCount).reduce((a, b) => a + b, 0)
+      const moreFiles = sum - this.files.length
+      if (moreFiles <= 0) return ''
+      if (this.isCompletedTab) {
+        return this.stats
+          .sort((a, b) => FileState.getStatePriority(a.state) - FileState.getStatePriority(b.state))
+          .map(stat => `${stat.stateCount} ${FileState.getName(stat.state)}`)
+          .join(' | ')
+      } else if (this.isQueuedTab) {
+        return `and ${moreFiles} more files in the queue`
+      } else {
+        return ''
+      }
     }
   },
   methods: {
@@ -131,6 +155,10 @@ export default {
         padding-right: 24px;
       }
     }
+  }
+  .stats {
+    text-align: center !important;
+    color: $body-text-color !important;
   }
 
   .notification {

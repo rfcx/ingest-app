@@ -21,7 +21,7 @@ const getName = function (state, message) {
     case 'ingesting': return 'processing'
     case 'local_error':
     case 'server_error':
-      if (!message) return ''
+      // if (!message) return ''
       if (message && message.toLowerCase().includes('duplicate')) return 'duplicate'
       else return 'failed'
     case 'completed': return 'completed'
