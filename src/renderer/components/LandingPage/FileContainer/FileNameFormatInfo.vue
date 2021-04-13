@@ -177,6 +177,7 @@ export default {
       this.isUpdatingFilenameFormat = true
       this.$file.updateFilesFormat(this.selectedStream, format).then(_ => {
         this.selectedStream.timestampFormat = format
+        this.$emit('onNeedResetFileList')
         this.isUpdatingFilenameFormat = false
       }).catch(error => {
         this.isUpdatingFilenameFormat = false

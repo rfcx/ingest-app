@@ -258,7 +258,7 @@ class FileProvider {
     const stream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, streamId)
 
     if (!stream) {
-      throw new Error(`Stream not fount`)
+      throw new Error(`Stream not found`)
     }
 
     /**
@@ -337,7 +337,7 @@ class FileProvider {
     })
 
     console.log(`Update file success`)
-
+    return Promise.resolve(updateFields)
     // const newFile = { ...file, ...updateFields }
     // const fileIdx = files.findIndex(f => f.id === file.id)
     // if (fileIdx > -1) {

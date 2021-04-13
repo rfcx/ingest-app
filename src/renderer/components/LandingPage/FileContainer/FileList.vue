@@ -17,7 +17,7 @@
         </tr>
       </thead>
       <tbody>
-        <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :file="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
+        <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :initialFile="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
     </table>
     <empty-view v-else-if="files.length === 0" :hasFileInQueued="hasFileInQueued" :isDragging="isDragging" @onImportFiles="onImportFiles"></empty-view>
