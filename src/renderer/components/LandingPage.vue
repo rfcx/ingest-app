@@ -80,7 +80,7 @@
         await this.handleFiles(e.dataTransfer.files)
         const t1 = performance.now()
         console.log('[Measure] handleDrop ' + (t1 - t0) + ' ms')
-        this.$refs.fileContainer.reloadFiles()
+        await this.$refs.fileContainer.resetFiles()
       },
       async handleFiles (files) {
         this.isDragging = false
