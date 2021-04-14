@@ -183,8 +183,11 @@ class FileProvider {
      * @param {*} fileObjectList list of files
      * @param {*} stream file's stream
      */
-  async updateFilesFormat (stream, fileObjectList, format = FORMAT_AUTO_DETECT) {
+  async updateFilesFormat (stream, format = FORMAT_AUTO_DETECT) {
     const t0 = performance.now()
+    const fileObjectList = (await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
+      where: { state: fileState.preparedGroup }
+    })).filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage))
     const updatedFiles = fileObjectList.map(file => {
       let timestamp
       if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
@@ -255,7 +258,7 @@ class FileProvider {
     const stream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, streamId)
 
     if (!stream) {
-      throw new Error(`Stream not fount`)
+      throw new Error(`Stream not found`)
     }
 
     /**
@@ -334,7 +337,7 @@ class FileProvider {
     })
 
     console.log(`Update file success`)
-
+    return Promise.resolve(updateFields)
     // const newFile = { ...file, ...updateFields }
     // const fileIdx = files.findIndex(f => f.id === file.id)
     // if (fileIdx > -1) {

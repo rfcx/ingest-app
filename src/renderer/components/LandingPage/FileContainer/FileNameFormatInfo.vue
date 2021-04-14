@@ -49,7 +49,6 @@
 import { mapState } from 'vuex'
 import FileNameFormatSettings from '../FileNameFormatSettings/FileNameFormatSettings.vue'
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
-import fileState from '../../../../../utils/fileState'
 import fileFormat from '../../../../../utils/FileFormat'
 // import DatabaseEventName from '../../../../../utils/DatabaseEventName'
 import ErrorAlert from '../../Common/ErrorAlert'
@@ -57,10 +56,11 @@ import ipcRendererSend from '../../../services/ipc'
 
 export default {
   props: {
-    preparingFiles: {
-      type: Array,
-      default: () => []
-    }
+    numberOfReadyToUploadFiles: {
+      type: Number,
+      default: () => 0
+    },
+    selectedStream: Object
   },
   components: { FileNameFormatSettings, ErrorAlert },
   data () {
@@ -71,7 +71,6 @@ export default {
       showFileNameFormatDropDown: false,
       isUpdatingFilenameFormat: false,
       errorMessage: null,
-      selectedStream: null,
       isCustomTimestampFormat: null
     }
   },
@@ -85,9 +84,6 @@ export default {
     // selectedTimestampFormat () {
     //   return this.selectedStream.timestampFormat
     // },
-    numberOfReadyToUploadFiles () {
-      return this.preparingFiles.filter(file => file.state === 'preparing').length
-    },
     fileNameFormatOptions () {
       return Object.values(fileFormat.fileFormat)
     }
@@ -178,19 +174,16 @@ export default {
       this.showFileNameFormatDropDown = false
       this.closeFileNameFormatSettingModal()
       console.log('onFormatSave', format)
-      const objectFiles = this.preparingFiles.filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage)) || []
       this.isUpdatingFilenameFormat = true
-      this.$file.updateFilesFormat(this.selectedStream, objectFiles, format).then(_ => {
+      this.$file.updateFilesFormat(this.selectedStream, format).then(_ => {
         this.selectedStream.timestampFormat = format
+        this.$emit('onNeedResetFileList')
         this.isUpdatingFilenameFormat = false
       }).catch(error => {
         this.isUpdatingFilenameFormat = false
         console.log(`Error update files format '${format}'`, error.message)
         this.errorMessage = error.message
       })
-    },
-    async getCurrentStream () {
-      this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)
     }
   },
   watch: {
@@ -199,15 +192,8 @@ export default {
     //   if (newValue === oldValue) return
     //   this.isUpdatingFilenameFormat = false
     // },
-    selectedStreamId: {
-      handler: function (previousStream, newStream) {
-        if (previousStream === newStream) return
-        this.getCurrentStream()
-      }
-    }
   },
   async created () {
-    await this.getCurrentStream()
     this.isCustomTimestampFormat = !this.fileNameFormatOptions.includes(this.selectedStream.timestampFormat)
   }
 }

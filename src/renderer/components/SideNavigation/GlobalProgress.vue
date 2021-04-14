@@ -73,7 +73,7 @@ export default {
     toggleUploadingProcess () {
       this.$store.dispatch('enableUploadingProcess', !this.isUploadingProcessEnabled)
     },
-    async getProgressPercent () {
+    getProgressPercent () {
       if (!this.numberOfAllFilesInTheSession || !this.numberOfCompleteFilesInTheSession) return 0
       else return ((this.numberOfCompleteFilesInTheSession / this.numberOfAllFilesInTheSession) * 100)
     },
@@ -117,6 +117,7 @@ export default {
     }
   },
   created () {
+    this.getStats()
     this.refreshInterval = setInterval(() => {
       if (this.isUploadingProcessEnabled) {
         this.getStats()

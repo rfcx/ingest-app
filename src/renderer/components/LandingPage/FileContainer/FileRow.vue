@@ -81,15 +81,18 @@ import AudioMothTag from '../../Common/AudioMothTag'
 
 export default {
   props: {
-    file: Object,
+    initialFile: Object,
     selectedTab: String
   },
-  data: () => ({
-    isEdit: false,
-    fileName: '',
-    loading: false,
-    error: null
-  }),
+  data: function () {
+    return {
+      isEdit: false,
+      fileName: '',
+      loading: false,
+      error: null,
+      file: this.initialFile
+    }
+  },
   components: {
     AudioMothTag
   },
@@ -113,7 +116,12 @@ export default {
       this.loading = true
       try {
         const newFilename = this.fileName.trim()
-        await this.$file.renameFile(this.file, newFilename)
+        const updatedFields = await this.$file.renameFile(this.file, newFilename)
+        console.log('rename success: ', updatedFields)
+        if (typeof updatedFields === 'object') {
+          this.file = {...this.file, ...updatedFields}
+          console.log('rename success: ', this.file)
+        }
         this.isEdit = false
       } catch (e) {
         let message

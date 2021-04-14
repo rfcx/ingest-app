@@ -65,8 +65,8 @@
         return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: ['uploading', 'converting'] } })
           .then((files) => files.filter((file) => !file.uploaded))
       },
-      getUnsyncedFile () {
-        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: 'waiting' }, limit: 1 })
+      getUnsyncedFile () { // only get files that already have duration to queue to upload
+        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: 'waiting', durationInSecond: { $gt: -1 } }, limit: 1 })
         // return File.query().where('state', 'waiting')
         //   .orderBy('retries', 'desc')
         //   .orderBy('timestamp', 'asc')
@@ -85,8 +85,8 @@
         //   return ['uploading', 'ingesting'].includes(file.state) && file.uploadId !== '' && file.uploaded === true
         // }).orderBy('timestamp').limit(5).get()
       },
-      getNoDurationFiles () {
-        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: ['preparing', 'waiting'], durationInSecond: -1 }, limit: parallelUploads })
+      getNoDurationFiles () { // get duration of files that is in waiting status first
+        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: ['preparing', 'waiting'], durationInSecond: -1 }, order: [['state', 'DESC']], limit: parallelUploads })
         // return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 && !file.isError }).orderBy('timestamp').get()
       },
       async uploadFile (file) {
