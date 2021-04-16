@@ -72,9 +72,6 @@
   const { remote } = window.require('electron')
 
   export default {
-    props: {
-      localStreams: Array
-    },
     data () {
       return {
         iconRedo: faRedo,
@@ -267,17 +264,11 @@
       },
       async reloadStreamListFromLocalDB () {
         this.streams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { order: [['updated_at', 'DESC']] })
-        this.$emit('reFetchStreams', this.streams)
-      }
-    },
-    watch: {
-      localStreams (newValue, oldValue) {
-        if (newValue === oldValue) return
-        if (newValue === this.streams) return
-        this.streams = this.localStreams
+        this.$emit('update:getStreamList', this.streams)
       }
     },
     async created () {
+      await this.reloadStreamListFromLocalDB()
       this.fetchUserSites()
       if (remote.getGlobal('firstLogIn')) {
         this.$electron.ipcRenderer.send('resetFirstLogIn')

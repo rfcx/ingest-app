@@ -10,15 +10,14 @@
           </div>
         </div>
       </div>
-      <side-navigation
-        :localStreams="streams" 
+      <side-navigation ref="sideNavigation"
         :class="{ 'side-menu__with-progress': shouldShowProgress}"
         @clickNewSiteButton="toggleNewSiteDropDown"
         @clickOutSideNewSiteButton="hideNewSiteDropDown"
-        @reFetchStreams="updateStreamsList"
+        :getStreamList.sync="streams"
       />
       <div class="column content is-desktop">
-        <empty-view v-if="isEmptyStream()" :isEmptyStream="isEmptyStream()"></empty-view>
+        <empty-view v-if="isEmptyStream" :isEmptyStream="isEmptyStream"></empty-view>
         <file-container ref="fileContainer" v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
       </div>
     <!-- </section> -->
@@ -42,7 +41,6 @@
   import { mapState } from 'vuex'
   import Analytics from 'electron-ga'
   import env from '../../../env.json'
-  import ipcRendererSend from '../services/ipc'
   const { remote } = window.require('electron')
   const log = require('electron-log')
   console.log = log.log
@@ -102,10 +100,6 @@
         // reset selected tab
         await this.$store.dispatch('setSelectedTab', { [this.selectedStreamId]: 'Prepared' })
         await this.$file.handleDroppedFiles(files, this.selectedStream)
-        this.streams = await this.getStreams() // reload stream list
-      },
-      isEmptyStream () {
-        return this.streams === undefined || this.streams.length === 0
       },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
@@ -133,12 +127,6 @@
         if (!selectedStreamIdInAppSettingModel && selectedStreamIdInStreamModel) {
           await this.$store.dispatch('setSelectedStreamId', selectedStreamIdInStreamModel)
         }
-      },
-      getStreams () {
-        return ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
-      },
-      updateStreamsList (remoteStreams) {
-        this.streams = remoteStreams
       }
     },
     computed: {
@@ -151,11 +139,13 @@
       },
       shouldShowProgress () {
         return this.$refs.globalProgress && this.$refs.globalProgress.shouldShowProgress
+      },
+      isEmptyStream () {
+        return this.streams === undefined || this.streams.length === 0
       }
     },
     async created () {
       await this.migrateDatabase()
-      this.streams = await this.getStreams()
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
@@ -163,7 +153,7 @@
         this.isPopupOpened = message
       })
       this.$electron.ipcRenderer.on('onClearAllData', async (event, message) => {
-        this.streams = await this.getStreams()
+        await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
       })
     }
   }
