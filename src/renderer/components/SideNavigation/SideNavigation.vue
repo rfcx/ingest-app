@@ -278,16 +278,9 @@
       }
     },
     async created () {
+      this.fetchUserSites()
       if (remote.getGlobal('firstLogIn')) {
-        this.fetchUserSites()
         this.$electron.ipcRenderer.send('resetFirstLogIn')
-      } else {
-        let getUserSitesListener = (event) => {
-          this.$electron.ipcRenderer.removeListener('onMainWindowIsActive', getUserSitesListener)
-          console.log('onMainWindowIsActive')
-          this.fetchUserSites()
-        }
-        this.$electron.ipcRenderer.on('onMainWindowIsActive', getUserSitesListener)
       }
     }
   }

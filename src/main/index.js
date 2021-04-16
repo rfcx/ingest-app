@@ -131,7 +131,6 @@ function showMainWindow () {
   console.log('showMainWindow')
   if (mainWindow === null) {
     createWindow()
-    mainWindow.webContents.send('onMainWindowIsActive')
   } else {
     mainWindow.show()
   }
