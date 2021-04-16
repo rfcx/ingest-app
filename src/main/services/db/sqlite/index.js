@@ -131,7 +131,6 @@ const collections = {
         group: ['state', 'stream_id'],
         attributes: ['state', 'streamId', [sequelize.fn('COUNT', 'state'), 'stateCount']]
       }).then(states => {
-        console.log('states. ', states)
         return states.map(s => s.dataValues)
       })
     }

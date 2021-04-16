@@ -265,14 +265,30 @@
       async reloadStreamListFromLocalDB () {
         this.streams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { order: [['updated_at', 'DESC']] })
         this.$emit('update:getStreamList', this.streams)
+      },
+      startStreamFetchingInterval () {
+        this.fetchStreamsInterval = null
+        this.fetchStreamsInterval = setInterval(async () => {
+          await this.reloadStreamListFromLocalDB()
+        }, 2000)
+      },
+      stopStreamFetchingInterval () {
+        if (this.fetchStreamsInterval) {
+          clearInterval(this.fetchStreamsInterval)
+          this.fetchStreamsInterval = null
+        }
       }
     },
     async created () {
       await this.reloadStreamListFromLocalDB()
+      this.startStreamFetchingInterval()
       this.fetchUserSites()
       if (remote.getGlobal('firstLogIn')) {
         this.$electron.ipcRenderer.send('resetFirstLogIn')
       }
+    },
+    beforeDestroy () {
+      this.stopStreamFetchingInterval()
     }
   }
 </script>

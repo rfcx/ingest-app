@@ -100,6 +100,7 @@
         // reset selected tab
         await this.$store.dispatch('setSelectedTab', { [this.selectedStreamId]: 'Prepared' })
         await this.$file.handleDroppedFiles(files, this.selectedStream)
+        await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
       },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
