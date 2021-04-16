@@ -124,6 +124,16 @@ const collections = {
       }).then(states => {
         return states.map(s => s.dataValues)
       })
+    },
+    filesInStreamsCount: function (streamIds) {
+      return models.File.findAll({
+        where: {stream_id: streamIds},
+        group: ['state', 'stream_id'],
+        attributes: ['state', 'streamId', [sequelize.fn('COUNT', 'state'), 'stateCount']]
+      }).then(states => {
+        console.log('states. ', states)
+        return states.map(s => s.dataValues)
+      })
     }
   },
   streams: {
@@ -191,24 +201,14 @@ const collections = {
       return models.Stream.findAll({ where, order })
         .then((streams) => streams.map(s => s.toJSON()))
     },
-    stats: function () {
-      return models.Stream.findAll()
-        .then((streams) => {
-          return streams
-            .map(s => s.toJSON())
-            .reduce((acc, cur) => {
-              acc.preparingCount += cur.preparingCount
-              acc.sessionTotalCount += cur.sessionTotalCount
-              acc.sessionSuccessCount += cur.sessionSuccessCount
-              acc.sessionFailCount += cur.sessionFailCount
-              return acc
-            }, {
-              preparingCount: 0,
-              sessionTotalCount: 0,
-              sessionSuccessCount: 0,
-              sessionFailCount: 0
-            })
-        })
+    getStreamWithStats: async function (opts = {}) {
+      const streams = await collections.streams.query(opts)
+      const ids = streams.map(s => s.id)
+      const stats = await collections.files.filesInStreamsCount(ids)
+      return streams.map(stream => {
+        const streamStats = stats.filter(state => state.streamId === stream.id)
+        return {...stream, stats: streamStats}
+      })
     }
   }
 }

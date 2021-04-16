@@ -266,7 +266,7 @@
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       async reloadStreamListFromLocalDB () {
-        this.streams = await ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
+        this.streams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { order: [['updated_at', 'DESC']] })
         this.$emit('reFetchStreams', this.streams)
       }
     },
