@@ -9,8 +9,8 @@ const updateStreamStats = async (id, stats) => {
   await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id, params })
 }
 
-const upsertStreams = async (streams) => {
-  await ipcRendererSend('db.streams.upsert', `db.streams.upsert.${Date.now()}`, streams)
+const upsertStreams = (streams) => {
+  return ipcRendererSend('db.streams.upsert', `db.streams.upsert.${Date.now()}`, streams)
 }
 
 const updateStreams = async (streams) => {
