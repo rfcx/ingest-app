@@ -60,6 +60,7 @@
 </template>
 
 <script>
+  import { mapState } from 'vuex'
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
   // import DatabaseEventName from '../../../../utils/DatabaseEventName'
@@ -89,16 +90,19 @@
         isRetryUploading: false,
         alertTitle: 'Are you sure you would like to continue?',
         alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.',
-        streams: []
+        streams: [],
+        fetchStreamsInterval: null
       }
     },
     components: {
       ConfirmAlert
     },
     computed: {
-      selectedStreamId () {
-        return this.$store.state.AppSetting.selectedStreamId
-      },
+      ...mapState({
+        selectedStreamId: state => state.AppSetting.selectedStreamId,
+        currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
+        isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
+      }),
       selectedStream () {
         return this.streams.find(s => s.id === this.selectedStreamId)
       },
@@ -264,24 +268,43 @@
       },
       async reloadStreamListFromLocalDB () {
         this.streams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { order: [['updated_at', 'DESC']] })
+        console.log('reloadStreamListFromLocalDB', this.streams)
         this.$emit('update:getStreamList', this.streams)
       },
       startStreamFetchingInterval () {
+        console.log('startStreamFetchingInterval')
         this.fetchStreamsInterval = null
         this.fetchStreamsInterval = setInterval(async () => {
           await this.reloadStreamListFromLocalDB()
         }, 2000)
       },
       stopStreamFetchingInterval () {
+        console.log('stopStreamFetchingInterval')
         if (this.fetchStreamsInterval) {
+          console.log('stopStreamFetchingInterval: stop')
           clearInterval(this.fetchStreamsInterval)
           this.fetchStreamsInterval = null
         }
+      },
+      manageStreamFetchingInterval (currentUploadingSessionId, isUploadingProcessEnabled) {
+        console.log('manageStreamFetchingInterval', currentUploadingSessionId, isUploadingProcessEnabled)
+        if (currentUploadingSessionId && isUploadingProcessEnabled) this.startStreamFetchingInterval()
+        else this.stopStreamFetchingInterval()
+      }
+    },
+    watch: {
+      currentUploadingSessionId (val, oldVal) {
+        if (val === oldVal) return
+        this.manageStreamFetchingInterval(val, this.isUploadingProcessEnabled)
+      },
+      isUploadingProcessEnabled (val, oldVal) {
+        if (val === oldVal) return
+        this.manageStreamFetchingInterval(this.currentUploadingSessionId, val)
       }
     },
     async created () {
       await this.reloadStreamListFromLocalDB()
-      this.startStreamFetchingInterval()
+      this.manageStreamFetchingInterval(this.currentUploadingSessionId, this.isUploadingProcessEnabled)
       this.fetchUserSites()
       if (remote.getGlobal('firstLogIn')) {
         this.$electron.ipcRenderer.send('resetFirstLogIn')

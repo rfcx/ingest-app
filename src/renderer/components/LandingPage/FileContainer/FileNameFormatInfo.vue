@@ -125,6 +125,8 @@ export default {
       tabObject[this.selectedStreamId] = 'Queued'
       await this.$store.dispatch('setSelectedTab', tabObject)
 
+      this.$emit('onNeedResetStreamList')
+
       // always enable uploading process
       await this.$store.dispatch('enableUploadingProcess', true)
     },
@@ -140,6 +142,7 @@ export default {
         }
       })
       this.$emit('onNeedResetFileList')
+      this.$emit('onNeedResetStreamList')
       this.isDeletingAllFiles = false
       // await streamService.updateStreamStats(streamId, [
       //   { name: 'preparingCount', action: '-', diff: files.length },

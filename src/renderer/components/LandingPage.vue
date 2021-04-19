@@ -18,7 +18,7 @@
       />
       <div class="column content is-desktop">
         <empty-view v-if="isEmptyStream" :isEmptyStream="isEmptyStream"></empty-view>
-        <file-container ref="fileContainer" v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
+        <file-container ref="fileContainer" v-else :isDragging="isDragging" @onImportFiles="handleFiles" @onNeedResetStreamList="resetStreamList"></file-container>
       </div>
     <!-- </section> -->
     <global-progress ref="globalProgress"></global-progress>
@@ -100,7 +100,7 @@
         // reset selected tab
         await this.$store.dispatch('setSelectedTab', { [this.selectedStreamId]: 'Prepared' })
         await this.$file.handleDroppedFiles(files, this.selectedStream)
-        await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
+        await this.resetStreamList()
       },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
@@ -128,6 +128,9 @@
         if (!selectedStreamIdInAppSettingModel && selectedStreamIdInStreamModel) {
           await this.$store.dispatch('setSelectedStreamId', selectedStreamIdInStreamModel)
         }
+      },
+      async resetStreamList () {
+        await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
       }
     },
     computed: {
