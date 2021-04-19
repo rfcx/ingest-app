@@ -74,26 +74,6 @@ export default function (sequelize) {
       allowNull: false,
       defaultValue: 'production'
     },
-    preparingCount: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0
-    },
-    sessionTotalCount: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0
-    },
-    sessionSuccessCount: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0
-    },
-    sessionFailCount: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0
-    },
     canRedo: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
