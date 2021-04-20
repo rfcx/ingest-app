@@ -78,7 +78,6 @@
         await this.handleFiles(e.dataTransfer.files)
         const t1 = performance.now()
         console.log('[Measure] handleDrop ' + (t1 - t0) + ' ms')
-        await this.$refs.fileContainer.resetFiles()
       },
       async handleFiles (files) {
         this.isDragging = false
@@ -100,6 +99,7 @@
         // reset selected tab
         await this.$store.dispatch('setSelectedTab', { [this.selectedStreamId]: 'Prepared' })
         await this.$file.handleDroppedFiles(files, this.selectedStream)
+        await this.$refs.fileContainer.resetFiles()
         await this.resetStreamList()
       },
       async sendVersionOfApp () {
@@ -139,7 +139,7 @@
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
       }),
       selectedStream () {
-        return this.streams.find(s => s.id === this.selectedStreamId)
+        return this.$refs.fileContainer && this.$refs.fileContainer.selectedStream
       },
       shouldShowProgress () {
         return this.$refs.globalProgress && this.$refs.globalProgress.shouldShowProgress
