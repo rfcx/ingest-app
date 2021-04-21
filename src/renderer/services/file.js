@@ -570,7 +570,7 @@ class FileProvider {
   }
 
   async insertFiles (files) {
-    await ipcRendererSend('db.files.bulkCreate', `db.files.bulkCreate.${Date.now()}`, files)
+    await ipcRendererSend('db.files.bulkCreate', `db.streams.bulkCreate.${Date.now()}`, files)
   }
 
   /* -- Helper -- */
