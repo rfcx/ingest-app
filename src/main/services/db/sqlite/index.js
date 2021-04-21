@@ -212,13 +212,8 @@ const collections = {
         .then((streams) => streams.map(s => s.toJSON()))
     },
     getStreamsOrderByLastModified: function (opts = {}) {
-      // ['state', [sequelize.fn('COUNT', 'state'), 'stateCount']
-      // const attributes = [[Sequelize.literal(`CASE WHEN updated_at > server_updated_at THEN updated_at ELSE server_updated_at END`), 'max_updated_at']]
-      // order: [
-      //   [sequelize.literal(CASE ${stream}.is_archived WHEN 0 THEN ${modelName}.last_updated_time ELSE -1 END), 'DESC'],
-      //   ],
       // opts['order'] = [[sequelize.literal('CASE WHEN updated_at > server_updated_at THEN updated_at ELSE server_updated_at END DESC')]]
-      opts['order'] = [['server_updated_at', 'DESC']]
+      opts['order'] = [['last_modified_at', 'DESC']]
       return collections.streams.query(opts)
     },
     getStreamWithStats: async function (opts = {}) {
