@@ -78,6 +78,16 @@ export default function (sequelize) {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: false
+    },
+    serverUpdatedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
+    },
+    serverCreatedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }
   const Stream = sequelize.define('Stream', columns)
