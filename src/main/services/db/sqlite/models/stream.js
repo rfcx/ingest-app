@@ -88,6 +88,11 @@ export default function (sequelize) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: null
+    },
+    lastModifiedAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      defaultValue: null
     }
   }
   const Stream = sequelize.define('Stream', columns)

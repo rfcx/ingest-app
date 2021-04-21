@@ -22,6 +22,15 @@ async function deleteAllRecords () {
   })
 }
 
+function addHooks () {
+  models.File.addHook('afterBulkCreate', async (files, options) => {
+    if (files.length <= 0) return
+    // updateStreamLastModifiedAt
+    const data = {id: files[0].streamId, params: {lastModifiedAt: new Date()}}
+    await collections.streams.update(data)
+  })
+}
+
 async function init (app) {
   try {
     console.log('Initializaing database...')
@@ -51,6 +60,7 @@ async function init (app) {
     console.log('Database connection has been established successfully.')
     await migrateDatabase(sequelize)
     models = initModels(sequelize)
+    addHooks()
     console.log('Database models initialized successfully: ', Object.keys(models))
   } catch (err) {
     console.error('Error occured during database initialization.', err)
@@ -164,8 +174,7 @@ const collections = {
       console.log('Database streams.update is called.', data)
       return models.Stream.findOne({ where: { id: data.id } })
         .then((stream) => {
-          ['name', 'latitude', 'longitude', 'timezone', 'timestampFormat', 'preparingCount', 'sessionTotalCount',
-            'sessionSuccessCount', 'sessionFailCount'].forEach((a) => {
+          ['name', 'latitude', 'longitude', 'timezone', 'timestampFormat', 'lastModifiedAt'].forEach((a) => {
             if (data.params[a] !== undefined) {
               stream[a] = data.params[a]
             }

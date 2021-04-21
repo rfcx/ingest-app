@@ -273,7 +273,6 @@
       async reloadStreamListFromLocalDB () {
         const limit = this.streams.length > 0 ? this.streams.length : DEFAULT_PAGE_SIZE
         this.streams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { limit: limit, offset: 0 })
-        console.log('reloadStreamListFromLocalDB', this.streams)
         this.$emit('update:getStreamList', this.streams)
       },
       async loadMore () {
