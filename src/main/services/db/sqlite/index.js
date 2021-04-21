@@ -92,7 +92,7 @@ const collections = {
         })
     },
     query: function (opts = {}) {
-      console.log('Database files.query is called', opts)
+      // console.log('Database files.query is called', opts)
       const where = opts.where || null
       const order = opts.order || null
       const limit = opts.limit || null
@@ -197,7 +197,9 @@ const collections = {
       console.log('Database streams.query is called', opts)
       const where = opts.where || null
       const order = opts.order || null
-      return models.Stream.findAll({ where, order })
+      const limit = opts.limit || null
+      const offset = opts.offset || null
+      return models.Stream.findAll({ where, order, limit, offset })
         .then((streams) => streams.map(s => s.toJSON()))
     },
     getStreamsOrderByLastModified: function (opts = {}) {

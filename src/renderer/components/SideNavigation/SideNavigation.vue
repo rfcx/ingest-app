@@ -1,5 +1,5 @@
 <template>
-  <aside class="column menu side-menu side-menu-column wrapper">
+    <aside class="column menu side-menu side-menu-column wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10" :infinite-scroll-disabled="isFetching">
     <div class="wrapper__header">
       <div class="wrapper__logo">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
@@ -68,11 +68,15 @@
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
   import { faRedo, faSync } from '@fortawesome/free-solid-svg-icons'
+  import infiniteScroll from 'vue-infinite-scroll'
   import ipcRendererSend from '../../services/ipc'
   import streamService from '../../services/stream'
   const { remote } = window.require('electron')
 
+  const DEFAULT_PAGE_SIZE = 10
+
   export default {
+    directives: { infiniteScroll },
     data () {
       return {
         iconRedo: faRedo,
@@ -249,12 +253,12 @@
             .then(async sites => {
               this.isFetching = false
               if (sites && sites.length) {
-                let userSites = streamHelper.parseUserSites(sites)
+                let userSites = streamHelper.parseUserSites(sites).sort((siteA, siteB) => siteB.serverUpdatedAt - siteA.serverUpdatedAt)
                 await streamService.upsertStreams(userSites)
                 // insert site success set selected site
                 await this.reloadStreamListFromLocalDB()
-                if (!this.selectedStreamId) {
-                  await this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
+                if (!this.selectedStreamId && userSites.length > 0) {
+                  await this.$store.dispatch('setSelectedStreamId', userSites[0].id)
                 }
               }
             }).catch(error => {
@@ -267,9 +271,25 @@
         this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       async reloadStreamListFromLocalDB () {
-        this.streams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { order: [['updated_at', 'DESC']] })
+        const limit = this.streams.length > 0 ? this.streams.length : DEFAULT_PAGE_SIZE
+        this.streams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { limit: limit, offset: 0 })
         console.log('reloadStreamListFromLocalDB', this.streams)
         this.$emit('update:getStreamList', this.streams)
+      },
+      async loadMore () {
+        console.log('load more')
+        const mergeById = (oldArray, newArray) => {
+          if (oldArray.length <= 0) return newArray
+          const updatedItems = oldArray.map(item => {
+            const obj = newArray.find(o => o.id === item.id)
+            return { ...item, ...obj }
+          })
+          const newItems = newArray.filter(o1 => !oldArray.some(o2 => o1.id === o2.id))
+          return updatedItems.concat(newItems)
+        }
+        const currentStreams = this.streams
+        const newStreams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { limit: DEFAULT_PAGE_SIZE, offset: currentStreams.length })
+        this.streams = mergeById(currentStreams, newStreams)
       },
       startStreamFetchingInterval () {
         console.log('startStreamFetchingInterval')
