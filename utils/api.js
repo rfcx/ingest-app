@@ -79,7 +79,7 @@ const createStream = (env, streamName, latitude, longitude, visibility, deviceId
       return streamId
     }).catch(error => {
       console.log('error response', error.response)
-      throw error.response.data || error.response || error
+      throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
 
@@ -96,7 +96,7 @@ const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, 
       const uploadId = response.data.uploadId
       return { url, uploadId }
     }).catch(error => {
-      throw error.response.data || error.response || error
+      throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
 
@@ -134,7 +134,7 @@ const checkStatus = (env, uploadId, idToken) => {
       return { status: status, failureMessage: failureMessage }
     }).catch(error => {
       console.log('error', error, error.response)
-      throw error.response.data || error.response || error
+      throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
 
@@ -144,7 +144,7 @@ const updateStream = (env, streamId, opts, idToken) => {
       return response.data
     }).catch(error => {
       console.log('error', error.response)
-      throw error.response.data || error.response || error
+      throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
 
@@ -154,7 +154,7 @@ const renameStream = (env, streamId, streamName, streamSite, idToken) => {
       return response.data
     }).catch(error => {
       console.log('error', error.response)
-      throw error.response.data || error.response || error
+      throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
 
@@ -164,7 +164,7 @@ const deleteStream = (env, streamId, idToken) => {
       return response.data
     }).catch(error => {
       console.log('error', error.response)
-      throw error.response.data || error.response || error
+      throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
 
@@ -174,7 +174,7 @@ const getUserSites = (env, idToken) => {
       return response.data
     }).catch(error => {
       console.log('error', error.response)
-      throw error.response.data || error.response || error
+      throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
 
@@ -185,7 +185,7 @@ const getDeploymentInfo = (deploymentId, idToken) => {
       return response.data
     }).catch(error => {
       console.log('error', error)
-      throw error.response.data || error.response || error
+      throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
 
