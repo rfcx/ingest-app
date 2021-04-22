@@ -316,7 +316,7 @@ class FileProvider {
       // FIX progress scale when we will start work with google cloud
     }).then((uploadId) => {
       console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
-      return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
+      return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now(), state: 'ingesting', stateMessage: '' } })
     }).catch((error) => {
       console.log('===> ERROR UPLOAD FILE', file.name, error.message)
       if (error.message === 'Request body larger than maxBodyLength limit') {

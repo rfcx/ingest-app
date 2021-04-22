@@ -18,7 +18,7 @@ const getName = function (state, message) {
     case 'converting': return 'compressing'
     case 'waiting': return 'waiting'
     case 'uploading': return 'uploading'
-    case 'ingesting': return 'ingesting'
+    case 'ingesting': return 'processing'
     case 'local_error':
     case 'server_error':
       if (!message) return ''
@@ -54,11 +54,11 @@ const isInPreparedGroup = function (state) {
 }
 
 const isInQueuedGroup = function (state) {
-  return ['waiting', 'uploading', 'converting', 'ingesting'].includes(state)
+  return ['waiting', 'uploading', 'converting'].includes(state)
 }
 
 const isInCompletedGroup = function (state) {
-  return state === 'completed' || state === 'server_error' || state === 'failed'
+  return ['completed', 'ingesting', 'server_error', 'failed'].includes(state)
 }
 
 const isPreparing = function (state) {

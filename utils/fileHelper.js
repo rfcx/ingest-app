@@ -114,6 +114,9 @@ const convert = (sourceFile, tempPath, streamId) => {
     const command = ffmpeg(sourceFile)
       .noVideo()
       .output(destinationPath)
+      .outputOptions([
+        '-ac 1'
+      ])
 
     const timeout = setTimeout(function () {
       command.kill()

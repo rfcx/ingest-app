@@ -35,7 +35,6 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
   const analytics = new Analytics(env.analytics.id)
   console.log(`===> upload file ${fileName}`)
   let isConverted = false
-  let uploadFileName = fileName
   let uploadFilePath = filePath
   let uploadFileExt = fileExt
   if (fileExt === 'wav') {
@@ -45,14 +44,13 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       })
       uploadFilePath = (await fileHelper.convert(filePath, remote.app.getPath('temp'), streamId)).path
       uploadFileExt = 'flac'
-      uploadFileName = fileHelper.getFileNameFromFilePath(uploadFilePath)
       isConverted = true
-      console.log('update upload path', uploadFilePath, uploadFileExt, uploadFileName)
+      console.log('update upload path', uploadFilePath, uploadFileExt, fileName)
     } catch (error) {
       console.log('error', error)
     }
   }
-  return requestUploadUrl(environment, uploadFileName, uploadFilePath, streamId, timestamp, idToken)
+  return requestUploadUrl(environment, fileName, uploadFilePath, streamId, timestamp, idToken)
     .then(async (data) => {
       const getUploadIdTime = Date.now() - now
       const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.getUploadId, 'el': fileName, 'ev': getUploadIdTime }
