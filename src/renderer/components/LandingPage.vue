@@ -10,16 +10,15 @@
           </div>
         </div>
       </div>
-      <side-navigation
-        :localStreams="streams" 
+      <side-navigation ref="sideNavigation"
         :class="{ 'side-menu__with-progress': shouldShowProgress}"
         @clickNewSiteButton="toggleNewSiteDropDown"
         @clickOutSideNewSiteButton="hideNewSiteDropDown"
-        @reFetchStreams="updateStreamsList"
+        :getStreamList.sync="streams"
       />
       <div class="column content is-desktop">
-        <empty-view v-if="isEmptyStream()" :isEmptyStream="isEmptyStream()"></empty-view>
-        <file-container ref="fileContainer" v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
+        <empty-view v-if="isEmptyStream" :isEmptyStream="isEmptyStream"></empty-view>
+        <file-container ref="fileContainer" v-else :isDragging="isDragging" @onImportFiles="handleFiles" @onNeedResetStreamList="resetStreamList"></file-container>
       </div>
     <!-- </section> -->
     <global-progress ref="globalProgress"></global-progress>
@@ -42,7 +41,6 @@
   import { mapState } from 'vuex'
   import Analytics from 'electron-ga'
   import env from '../../../env.json'
-  import ipcRendererSend from '../services/ipc'
   const { remote } = window.require('electron')
   const log = require('electron-log')
   console.log = log.log
@@ -80,7 +78,6 @@
         await this.handleFiles(e.dataTransfer.files)
         const t1 = performance.now()
         console.log('[Measure] handleDrop ' + (t1 - t0) + ' ms')
-        await this.$refs.fileContainer.resetFiles()
       },
       async handleFiles (files) {
         this.isDragging = false
@@ -102,10 +99,8 @@
         // reset selected tab
         await this.$store.dispatch('setSelectedTab', { [this.selectedStreamId]: 'Prepared' })
         await this.$file.handleDroppedFiles(files, this.selectedStream)
-        this.streams = await this.getStreams() // reload stream list
-      },
-      isEmptyStream () {
-        return this.streams === undefined || this.streams.length === 0
+        await this.$refs.fileContainer.resetFiles()
+        await this.resetStreamList()
       },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
@@ -134,11 +129,8 @@
           await this.$store.dispatch('setSelectedStreamId', selectedStreamIdInStreamModel)
         }
       },
-      getStreams () {
-        return ipcRendererSend('db.streams.query', `db.streams.query.${Date.now()}`, { order: [['updated_at', 'DESC']] })
-      },
-      updateStreamsList (remoteStreams) {
-        this.streams = remoteStreams
+      async resetStreamList () {
+        await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
       }
     },
     computed: {
@@ -147,15 +139,17 @@
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
       }),
       selectedStream () {
-        return this.streams.find(s => s.id === this.selectedStreamId)
+        return this.$refs.fileContainer && this.$refs.fileContainer.selectedStream
       },
       shouldShowProgress () {
         return this.$refs.globalProgress && this.$refs.globalProgress.shouldShowProgress
+      },
+      isEmptyStream () {
+        return this.streams === undefined || this.streams.length === 0
       }
     },
     async created () {
       await this.migrateDatabase()
-      this.streams = await this.getStreams()
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
@@ -163,7 +157,7 @@
         this.isPopupOpened = message
       })
       this.$electron.ipcRenderer.on('onClearAllData', async (event, message) => {
-        this.streams = await this.getStreams()
+        await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
       })
     }
   }

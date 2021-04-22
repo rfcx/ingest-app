@@ -114,21 +114,18 @@ export default {
       // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
       const streamId = this.selectedStreamId
       const query = { streamId, state: 'preparing' }
-      let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: query })
       await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
         where: query,
         values: { state: 'waiting', stateMessage: null, sessionId }
       })
-      const stream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, streamId)
-      const preparingCount = stream.preparingCount - files.length
-      const sessionTotalCount = stream.sessionTotalCount + files.length
-      await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: streamId, params: { preparingCount, sessionTotalCount } })
       this.isQueuingToUpload = false
 
       // set selected tab to be queue tab
       const tabObject = {}
       tabObject[this.selectedStreamId] = 'Queued'
       await this.$store.dispatch('setSelectedTab', tabObject)
+
+      this.$emit('onNeedResetStreamList')
 
       // always enable uploading process
       await this.$store.dispatch('enableUploadingProcess', true)
@@ -144,8 +141,8 @@ export default {
           state: ['preparing', 'local_error']
         }
       })
-      await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: this.selectedStreamId, params: { preparingCount: 0 } })
       this.$emit('onNeedResetFileList')
+      this.$emit('onNeedResetStreamList')
       this.isDeletingAllFiles = false
       // await streamService.updateStreamStats(streamId, [
       //   { name: 'preparingCount', action: '-', diff: files.length },

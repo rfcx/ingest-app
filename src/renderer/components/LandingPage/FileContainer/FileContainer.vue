@@ -2,7 +2,7 @@
     <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10" :infinite-scroll-disabled="!infiniteScrollEnabled">
     <header-view :selectedStream="selectedStream"></header-view>
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
-    <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream" @onNeedResetFileList="resetFiles"></file-name-format-info>
+    <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream" @onNeedResetFileList="resetFiles" @onNeedResetStreamList="resetStreams"></file-name-format-info>
     <file-list ref="fileList" :files="files" :stats="getStatsOfTab(selectedTab)" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="files.length <= 0 && isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
 </div>
 </template>
@@ -192,6 +192,9 @@ export default {
       this.files = []
       this.clearFilesFetcher()
       await this.initFilesFetcher()
+    },
+    resetStreams () {
+      this.$emit('onNeedResetStreamList')
     },
     async getCurrentStream () {
       this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)

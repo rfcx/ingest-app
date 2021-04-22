@@ -565,21 +565,12 @@ class FileProvider {
   async insertNewFiles (files, selectedStream) {
     const t0 = performance.now()
     await this.insertFiles(files)
-    await this.insertFilesToStream(files, selectedStream)
     const t1 = performance.now()
     console.log('[Measure] insertNewFiles ' + (t1 - t0) + ' ms')
   }
 
   async insertFiles (files) {
-    await ipcRendererSend('db.files.bulkCreate', `db.streams.bulkCreate.${Date.now()}`, files)
-  }
-
-  async insertFilesToStream (files, stream) {
-    const preparingCount = files.length
-    await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, {
-      id: stream.id,
-      params: { preparingCount }
-    })
+    await ipcRendererSend('db.files.bulkCreate', `db.files.bulkCreate.${Date.now()}`, files)
   }
 
   /* -- Helper -- */

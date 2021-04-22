@@ -8,6 +8,10 @@ const migrations = [
   {
     name: '20210322000002-create-files-table.js',
     file: require('./20210322000002-create-files-table').default
+  },
+  {
+    name: '20210420000001-update-streams-table.js',
+    file: require('./20210420000001-update-streams-table').default
   }
 ]
 

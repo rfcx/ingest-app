@@ -54,10 +54,6 @@ function createWindow (openedAsHidden = false) {
 
   backgroundAPIWindow = backgroundProcess.createWindow()
   dbWindow = dbProcess.createWindow()
-
-  aboutWindow = aboutProcess.createWindow(false)
-
-  preferencesPopupWindow = preferenceProcess.createWindow(false)
 }
 
 function createAutoUpdaterSub () {
@@ -135,7 +131,6 @@ function showMainWindow () {
   console.log('showMainWindow')
   if (mainWindow === null) {
     createWindow()
-    mainWindow.webContents.send('onMainWindowIsActive')
   } else {
     mainWindow.show()
   }

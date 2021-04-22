@@ -22,6 +22,15 @@ async function deleteAllRecords () {
   })
 }
 
+function addHooks () {
+  models.File.addHook('afterBulkCreate', async (files, options) => {
+    if (files.length <= 0) return
+    // updateStreamLastModifiedAt
+    const data = {id: files[0].streamId, params: {lastModifiedAt: new Date()}}
+    await collections.streams.update(data)
+  })
+}
+
 async function init (app) {
   try {
     console.log('Initializaing database...')
@@ -51,6 +60,7 @@ async function init (app) {
     console.log('Database connection has been established successfully.')
     await migrateDatabase(sequelize)
     models = initModels(sequelize)
+    addHooks()
     console.log('Database models initialized successfully: ', Object.keys(models))
   } catch (err) {
     console.error('Error occured during database initialization.', err)
@@ -92,7 +102,7 @@ const collections = {
         })
     },
     query: function (opts = {}) {
-      console.log('Database files.query is called', opts)
+      // console.log('Database files.query is called', opts)
       const where = opts.where || null
       const order = opts.order || null
       const limit = opts.limit || null
@@ -121,6 +131,15 @@ const collections = {
         where: {stream_id: streamId},
         group: 'state',
         attributes: ['state', [sequelize.fn('COUNT', 'state'), 'stateCount']]
+      }).then(states => {
+        return states.map(s => s.dataValues)
+      })
+    },
+    filesInStreamsCount: function (streamIds) {
+      return models.File.findAll({
+        where: {stream_id: streamIds},
+        group: ['state', 'stream_id'],
+        attributes: ['state', 'streamId', [sequelize.fn('COUNT', 'state'), 'stateCount']]
       }).then(states => {
         return states.map(s => s.dataValues)
       })
@@ -155,8 +174,7 @@ const collections = {
       console.log('Database streams.update is called.', data)
       return models.Stream.findOne({ where: { id: data.id } })
         .then((stream) => {
-          ['name', 'latitude', 'longitude', 'timezone', 'timestampFormat', 'preparingCount', 'sessionTotalCount',
-            'sessionSuccessCount', 'sessionFailCount'].forEach((a) => {
+          ['name', 'latitude', 'longitude', 'timezone', 'timestampFormat', 'lastModifiedAt'].forEach((a) => {
             if (data.params[a] !== undefined) {
               stream[a] = data.params[a]
             }
@@ -188,27 +206,24 @@ const collections = {
       console.log('Database streams.query is called', opts)
       const where = opts.where || null
       const order = opts.order || null
-      return models.Stream.findAll({ where, order })
+      const limit = opts.limit || null
+      const offset = opts.offset || null
+      return models.Stream.findAll({ where, order, limit, offset })
         .then((streams) => streams.map(s => s.toJSON()))
     },
-    stats: function () {
-      return models.Stream.findAll()
-        .then((streams) => {
-          return streams
-            .map(s => s.toJSON())
-            .reduce((acc, cur) => {
-              acc.preparingCount += cur.preparingCount
-              acc.sessionTotalCount += cur.sessionTotalCount
-              acc.sessionSuccessCount += cur.sessionSuccessCount
-              acc.sessionFailCount += cur.sessionFailCount
-              return acc
-            }, {
-              preparingCount: 0,
-              sessionTotalCount: 0,
-              sessionSuccessCount: 0,
-              sessionFailCount: 0
-            })
-        })
+    getStreamsOrderByLastModified: function (opts = {}) {
+      // opts['order'] = [[sequelize.literal('CASE WHEN updated_at > server_updated_at THEN updated_at ELSE server_updated_at END DESC')]]
+      opts['order'] = [['last_modified_at', 'DESC']]
+      return collections.streams.query(opts)
+    },
+    getStreamWithStats: async function (opts = {}) {
+      const streams = await collections.streams.getStreamsOrderByLastModified(opts)
+      const ids = streams.map(s => s.id)
+      const stats = await collections.files.filesInStreamsCount(ids)
+      return streams.map(stream => {
+        const streamStats = stats.filter(state => state.streamId === stream.id)
+        return {...stream, stats: streamStats}
+      })
     }
   }
 }

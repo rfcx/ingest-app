@@ -1,4 +1,5 @@
 import Stream from './../src/renderer/store/models/Stream'
+import FileState from './fileState'
 import settings from 'electron-settings'
 
 const getNameError = (streamName) => {
@@ -22,10 +23,12 @@ const checkMaxLength = (streamName) => {
 }
 
 const getState = function (stream) {
-  if (stream.isUploading) return 'uploading'
-  if (stream.sessionFailCount > 0) return 'failed'
-  if (stream.preparingCount > 0) return 'preparing'
-  if (stream.isCompleted) return 'completed'
+  const stats = stream.stats
+  if (!stats || stats.length <= 0) return ''
+  if (stats.find(stat => FileState.isInQueuedGroup(stat.state))) return 'uploading'
+  if (stats.find(stat => FileState.isError(stat.state))) return 'failed'
+  if (stats.find(stat => FileState.isInPreparedGroup(stat.state))) return 'preparing'
+  if (stats.find(stat => FileState.isInCompletedGroup(stat.state))) return 'completed'
   return ''
 }
 
@@ -50,8 +53,8 @@ const parseUserSites = (sites) => {
       latitude: site.latitude || 0,
       longitude: site.longitude || 0,
       files: [],
-      createdAt: Date.parse(site.created_at),
-      updatedAt: Date.parse(site.updated_at),
+      serverCreatedAt: new Date(site.created_at),
+      serverUpdatedAt: new Date(site.updated_at),
       env: isProductionEnv() ? 'production' : 'staging',
       visibility: site.is_public,
       timezone: ''
