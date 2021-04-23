@@ -102,8 +102,8 @@ export default {
         timestampFormat: FileFormat.fileFormat.AUTO_DETECT,
         env: settings.get('settings.production_env') ? 'production' : 'staging',
         isPublic: stream.isPublic,
-        serverCreatedAt: stream.createdAt,
-        serverUpdatedAt: stream.updatedAt,
+        serverCreatedAt: new Date(stream.createdAt),
+        serverUpdatedAt: new Date(stream.updatedAt),
         lastModifiedAt: new Date()
       }
       return ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, streamObj)
