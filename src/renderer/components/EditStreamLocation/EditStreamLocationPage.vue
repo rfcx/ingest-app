@@ -109,7 +109,7 @@ export default {
             const timezone = dateHelper.getDefaultTimezone(latitude, longitude)
             await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, {
               id: this.selectedStream.id,
-              params: { latitude, longitude, name, timezone }
+              params: { latitude, longitude, name, timezone, lastModifiedAt: new Date() }
             })
             this.updateFilesTimezone(timezone)
             this.isLoading = false

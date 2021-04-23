@@ -102,10 +102,11 @@ const getUtcTimestamp = (file) => {
   if (file.timestamp.substr(-1) === 'Z' || file.timestamp.substr(-6, 1) === '-' || file.timestamp.substr(-6, 1) === '+') {
     return moment.utc(file.timestamp).toISOString() // timezone is in the parsed timestamp
   }
-  if (!file.timezone) {
-    return file.timestamp + 'Z' // no timezone provided (assume UTC)
-  }
-  return moment.tz(file.timestamp, file.timezone).toISOString() // parse with timezone and return as UTC
+  // TODO: need fixing in CE-509
+  // if (!file.timezone) {
+  return file.timestamp + 'Z' // assume all file name to be in UTC)
+  // }
+  // return moment.tz(file.timestamp, file.timezone).toISOString() // parse with timezone and return as UTC
 }
 
 const getFileDuration = (filePath) => {
