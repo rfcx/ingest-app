@@ -26,6 +26,7 @@
 import SourceList from './SourceList'
 import HeaderView from '../Common/HeaderWithBackButton'
 import api from '../../../../utils/api'
+import dateHelper from '../../../../utils/dateHelper'
 import FileFormat from '../../../../utils/FileFormat'
 import settings from 'electron-settings'
 import ipcRendererSend from '../../services/ipc'
@@ -97,11 +98,13 @@ export default {
         name: stream.name,
         latitude: stream.latitude,
         longitude: stream.longitude,
+        timezone: dateHelper.getDefaultTimezone(stream.latitude, stream.longitude),
         timestampFormat: FileFormat.fileFormat.AUTO_DETECT,
         env: settings.get('settings.production_env') ? 'production' : 'staging',
         isPublic: stream.isPublic,
-        createdAt: stream.createdAt,
-        updatedAt: stream.updatedAt
+        serverCreatedAt: stream.createdAt,
+        serverUpdatedAt: stream.updatedAt,
+        lastModifiedAt: new Date()
       }
       return ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, streamObj)
     },

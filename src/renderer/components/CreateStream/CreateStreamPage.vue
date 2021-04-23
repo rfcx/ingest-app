@@ -139,7 +139,8 @@ export default {
               timestampFormat: fileFormat,
               env: this.isProductionEnv() ? 'production' : 'staging',
               isPublic: isPublic,
-              deviceId: this.deviceId || ''
+              deviceId: this.deviceId || '',
+              lastModifiedAt: new Date()
             }
             if (this.selectedFolderPath) {
               // stream.defaultTimezone = dateHelper.getDefaultTimezone(latitude, longitude)
@@ -151,6 +152,7 @@ export default {
             if (this.selectedFiles && this.selectedFiles.length > 0) {
               this.$file.handleDroppedFiles(this.selectedFiles, stream)
             }
+            console.log('streams', streamId, stream)
             await ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, stream)
             await this.$store.dispatch('setSelectedStreamId', stream.id)
             this.$router.push('/')
