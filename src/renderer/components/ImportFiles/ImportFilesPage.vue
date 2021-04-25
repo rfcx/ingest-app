@@ -93,6 +93,7 @@ export default {
       this.$file.handleDroppedFolder(this.selectedSource.path, stream, { deviceId: this.deviceId, deploymentId: this.deploymentInfo ? this.deploymentInfo.id : '' }) // TODO: pass deployment id
     },
     async autoCreateSiteInformation (stream) {
+      const now = new Date()
       const streamObj = {
         id: stream.id,
         name: stream.name,
@@ -102,11 +103,12 @@ export default {
         timestampFormat: FileFormat.fileFormat.AUTO_DETECT,
         env: settings.get('settings.production_env') ? 'production' : 'staging',
         isPublic: stream.isPublic,
-        serverCreatedAt: new Date(stream.createdAt),
-        serverUpdatedAt: new Date(stream.updatedAt),
-        lastModifiedAt: new Date()
+        serverCreatedAt: stream.createdAt !== undefined ? new Date(stream.createdAt) : now,
+        serverUpdatedAt: stream.updatedAt !== undefined ? new Date(stream.updatedAt) : now,
+        lastModifiedAt: now
       }
-      return ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, streamObj)
+      console.log('obj', streamObj, stream.createdAt !== undefined)
+      return ipcRendererSend('db.streams.create', `db.streams.create.${now}`, streamObj)
     },
     redirectUserToCreateSiteScreen (deploymentInfo) {
       const deploymentInfoForCreateScreen = deploymentInfo && deploymentInfo.stream ? {locationName: deploymentInfo.stream.name, coordinates: [deploymentInfo.stream.longitude, deploymentInfo.stream.latitude]} : null
