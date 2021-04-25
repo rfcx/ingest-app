@@ -68,6 +68,7 @@ function build () {
     console.error(`\n${err}\n`)
     process.exit(1)
   })
+
 }
 
 function pack (config) {

@@ -1,11 +1,11 @@
 import { Model } from '@vuex-orm/core'
 import File from './File'
-import FileState from '../../../../utils/fileState'
-import DateHelper from '../../../../utils/dateHelper'
+// import FileState from '../../../../utils/fileState'
+// import DateHelper from '../../../../utils/dateHelper'
 
 const AUTO_DETECT = 'Auto-detect'
 // eslint-disable-next-line no-unused-vars
-const UNIX_HEX = 'unix-hex'
+// const UNIX_HEX = 'unix-hex'
 
 export default class Stream extends Model {
   static entity = 'streams'
@@ -43,25 +43,25 @@ export default class Stream extends Model {
     return ''
   }
 
-  get location () {
-    return `${this.latitude.toFixed(6)}, ${this.longitude.toFixed(6)}`
-  }
+  // get location () {
+  //   return `${this.latitude.toFixed(6)}, ${this.longitude.toFixed(6)}`
+  // }
 
-  get defaultTimezone () {
-    const possibleTimezones = DateHelper.getPossibleTimezonesFromLocation(this.latitude, this.longitude)
-    if (possibleTimezones && possibleTimezones.length > 0) {
-      return possibleTimezones[0]
-    }
-    return 'utc'
-  }
+  // get defaultTimezone () {
+  //   const possibleTimezones = DateHelper.getPossibleTimezonesFromLocation(this.latitude, this.longitude)
+  //   if (possibleTimezones && possibleTimezones.length > 0) {
+  //     return possibleTimezones[0]
+  //   }
+  //   return 'utc'
+  // }
 
-  get isError () {
-    return FileState.isError(this.state)
-  }
+  // get isError () {
+  //   return FileState.isError(this.state)
+  // }
 
-  get isPreparing () {
-    return this.preparingCount > 0
-  }
+  // get isPreparing () {
+  //   return this.preparingCount > 0
+  // }
 
   get isUploading () {
     return this.sessionTotalCount > 0 && this.sessionTotalCount !== this.sessionSuccessCount + this.sessionFailCount

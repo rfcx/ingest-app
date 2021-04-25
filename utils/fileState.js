@@ -21,7 +21,7 @@ const getName = function (state, message) {
     case 'ingesting': return 'processing'
     case 'local_error':
     case 'server_error':
-      if (!message) return ''
+      // if (!message) return ''
       if (message && message.toLowerCase().includes('duplicate')) return 'duplicate'
       else return 'failed'
     case 'completed': return 'completed'
@@ -49,16 +49,20 @@ const getIconName = function (state) {
   }
 }
 
+const preparedGroup = ['preparing', 'local_error']
+const queuedGroup = ['waiting', 'uploading', 'converting']
+const completedGroup = ['completed', 'ingesting', 'server_error', 'failed']
+
 const isInPreparedGroup = function (state) {
-  return state === 'preparing' || state === 'local_error'
+  return preparedGroup.includes(state)
 }
 
 const isInQueuedGroup = function (state) {
-  return ['waiting', 'uploading', 'converting'].includes(state)
+  return queuedGroup.includes(state)
 }
 
 const isInCompletedGroup = function (state) {
-  return ['completed', 'ingesting', 'server_error', 'failed'].includes(state)
+  return completedGroup.includes(state)
 }
 
 const isPreparing = function (state) {
@@ -79,6 +83,10 @@ const isServerError = function (state) {
 
 const isError = function (state) {
   return state.includes('error') || state === 'failed'
+}
+
+const isProcessing = function (state) {
+  return state === 'ingesting'
 }
 
 const isDuplicated = function (state) {
@@ -103,6 +111,9 @@ const canChangeTimestampFormat = function (state, message) {
 }
 
 export default {
+  preparedGroup,
+  queuedGroup,
+  completedGroup,
   getStatePriority,
   getName,
   getIconName,
@@ -114,6 +125,7 @@ export default {
   isLocalError,
   isServerError,
   isError,
+  isProcessing,
   isDuplicated,
   isCompleted,
   canRedo,

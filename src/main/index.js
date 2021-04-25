@@ -1,11 +1,11 @@
 'use strict'
 
 import { app, ipcMain, BrowserWindow } from 'electron'
-import { commonProcess, mainProcess, backgroundProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess } from './processes'
+import { commonProcess, mainProcess, backgroundProcess, dbProcess, menuProcess, aboutProcess, preferenceProcess, updateProcess } from './processes'
 import settings from 'electron-settings'
 import createAuthWindow from './services/auth-process'
 import authService from './services/auth-service'
-const os = require('os')
+import sharedProcess from './processes/shared'
 const path = require('path')
 const jwtDecode = require('jwt-decode')
 const setupEvents = require('./../../setupEvents')
@@ -22,7 +22,7 @@ log.transports.file.getFile()
 if (process.env.NODE_ENV !== 'development') {
   global.__static = path.join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
-let mainWindow, backgroundAPIWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
+let mainWindow, backgroundAPIWindow, dbWindow, aboutWindow, updatePopupWindow, preferencesPopupWindow
 let idToken
 let refreshIntervalTimeout, expires
 let willQuitApp = false
@@ -53,10 +53,7 @@ function createWindow (openedAsHidden = false) {
     })
 
   backgroundAPIWindow = backgroundProcess.createWindow()
-
-  aboutWindow = aboutProcess.createWindow(false)
-
-  preferencesPopupWindow = preferenceProcess.createWindow(false)
+  dbWindow = dbProcess.createWindow()
 }
 
 function createAutoUpdaterSub () {
@@ -72,6 +69,9 @@ function createAutoUpdaterSub () {
       mainWindow = null
       if (backgroundAPIWindow) {
         backgroundAPIWindow = null
+      }
+      if (dbWindow) {
+        dbWindow = null
       }
       if (preferencesPopupWindow) {
         preferencesPopupWindow.destroy()
@@ -93,6 +93,11 @@ function createAutoUpdaterSub () {
 }
 
 function createMenu () {
+  const clearDataFunction = async () => {
+    await sharedProcess.clearAllData()
+    mainWindow.webContents.send('onClearAllData')
+  }
+
   const logoutFn = async () => {
     console.log('logOut')
     logOut()
@@ -119,14 +124,13 @@ function createMenu () {
     }
     aboutWindow.show()
   }
-  menuProcess.createMenu(logoutFn, prefFn, aboutFn, updateFn)
+  menuProcess.createMenu(clearDataFunction, logoutFn, prefFn, aboutFn, updateFn)
 }
 
 function showMainWindow () {
   console.log('showMainWindow')
   if (mainWindow === null) {
     createWindow()
-    mainWindow.webContents.send('onMainWindowIsActive')
   } else {
     mainWindow.show()
   }
@@ -139,6 +143,9 @@ function closeMainWindow (e) {
     mainWindow = null
     if (backgroundAPIWindow) {
       backgroundAPIWindow = null
+    }
+    if (dbWindow) {
+      dbWindow = null
     }
     if (preferencesPopupWindow) {
       preferencesPopupWindow.destroy()
@@ -330,14 +337,19 @@ function checkIngestServicelUrl () {
 }
 app.commandLine.appendArgument('--enable-features=Metal')
 app.on('ready', async () => {
-  if (process.env.NODE_ENV !== 'production') {
-    // Install vue dev tools
-    // TODO: the path should be configurable by the developer
-    const devToolsPath = path.join(
-      os.homedir(),
-      '/Library/Application Support/Google/Chrome/Profile 2/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/5.3.4_0'
-    )
-    await BrowserWindow.addDevToolsExtension(devToolsPath)
+  if (`${process.env.VUE_DEV_TOOLS_ENABLED}` === 'true') {
+    try {
+      const os = require('os')
+      // Install vue dev tools
+      // TODO: the path should be configurable by the developer
+      const devToolsPath = path.join(
+        os.homedir(),
+        '/Library/Application Support/Google/Chrome/Profile 2/Extensions/nhdogjmejiglipccpnnnanhbledajbpd/5.3.4_0'
+      )
+      await BrowserWindow.addDevToolsExtension(devToolsPath)
+    } catch (e) {
+      console.error('Can not init vue dev tools', e)
+    }
   }
 
   if (setupEvents.handleSquirrelEvent(app)) return
@@ -409,11 +421,26 @@ ipcMain.on('resetFirstLogIn', () => {
   resetFirstLogInCondition()
 })
 
-ipcMain.on('getFileDurationRequest', async function (event, files) {
-  console.log('getFileDurationRequest')
-  event.sender.send('getFileDurationTrigger')
-  backgroundAPIWindow.webContents.send('getFileDurationTrigger', files)
+ipcMain.on('client.message', function (event, data) {
+  let client
+  switch (data.client) {
+    case 'api':
+      client = backgroundAPIWindow
+      break
+    case 'preferences':
+      client = preferencesPopupWindow
+      break
+    // add more if needed
+  }
+  if (client) {
+    client.webContents.send(data.topic, data.content)
+  }
 })
+// ipcMain.on('getFileDurationRequest', async function (event, files) {
+//   console.log('getFileDurationRequest')
+//   event.sender.send('getFileDurationTrigger')
+//   backgroundAPIWindow.webContents.send('getFileDurationTrigger', files)
+// })
 
 export default {
   createWindow

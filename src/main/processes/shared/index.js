@@ -1,5 +1,6 @@
 import { app } from 'electron'
 import store from '../../../renderer/store'
+import dbService from '../../services/db/sqlite'
 
 export default {
   setLoginItem (openAtLogin) {
@@ -12,6 +13,7 @@ export default {
     })
   },
   async clearAllData () {
+    await dbService.deleteAllRecords()
     await store.dispatch('entities/deleteAll')
     await store.dispatch('reset', {})
   }

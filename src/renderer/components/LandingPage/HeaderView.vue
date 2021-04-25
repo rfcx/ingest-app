@@ -1,5 +1,5 @@
 <template>
-  <div class="stream-info">
+  <div class="stream-info" v-if="selectedStream">
     <div>
       <div class="stream-info__title-wrapper" v-if="selectedStream">
         <router-link title="Edit site location" to="/edit-stream-location">
@@ -13,7 +13,7 @@
     <div class="stream-info__subtitle">
       <router-link title="Edit site location" to="/edit-stream-location">
         <img src="~@/assets/ic-pin.svg">
-        <span v-if="selectedStream" class="stream-info__coordinates">{{ selectedStream.siteGuid || selectedStream.location }}</span></router-link>
+        <span v-if="selectedStream" class="stream-info__coordinates">{{ getStreamLocation() }}</span></router-link>
     </div>
     <a title="Redirect to Arbimon" class="button is-rounded rounded-button" @click="redirectToArbimon()">
       <fa-icon class="faExternal" :icon="faExternalLinkAlt"></fa-icon>
@@ -27,7 +27,6 @@
 </template>
 
 <script>
-import Stream from '../../store/models/Stream'
 import api from '../../../../utils/api'
 import { faPencilAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
@@ -40,15 +39,15 @@ export default {
       hasClosedNavigateMessage: false
     }
   },
+  props: {
+    selectedStream: Object
+  },
   computed: {
     ...mapState({
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
     }),
     selectedStreamId () {
       return this.$store.state.AppSetting.selectedStreamId
-    },
-    selectedStream () {
-      return Stream.find(this.selectedStreamId)
     },
     showNavigateMessage () {
       return this.selectedStream && this.selectedStream.isCompleted
@@ -61,6 +60,12 @@ export default {
     redirectToArbimon () {
       const isProd = this.selectedStream.env && this.selectedStream.env === 'production'
       this.$electron.shell.openExternal(api.arbimonWebUrl(isProd, this.selectedStreamId))
+    },
+    getStreamLocation () {
+      if (!this.selectedStream) {
+        return ''
+      }
+      return this.selectedStream.siteGuid || `${this.selectedStream.latitude.toFixed(6)}, ${this.selectedStream.longitude.toFixed(6)}`
     }
   }
 }

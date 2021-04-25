@@ -4,13 +4,13 @@
       <ul>
         <li
           v-for="tab in tabGroups"
-          :key="tab"
-          :class="{ 'is-active': selectedTab ? tab === selectedTab : tab === 'Prepared' }"
-          @click="setActive(tab)"
+          :key="tab.id"
+          :class="{ 'is-active': selectedTab ? tab.id === selectedTab : tab.id === 'Prepared' }"
+          @click="setActive(tab.id)"
         >
           <a>
-            <img class="file-tab__fail-icon" :src="require(`../../../assets/ic-state-failed.svg`)" v-if="hasFailedFiles(tab)" />
-            <span>{{tab}} ({{getNumberOfFiles(tab)}})</span>
+            <img class="file-tab__fail-icon" :src="require(`../../../assets/ic-state-failed.svg`)" v-if="hasFailedFiles(tab.id)" />
+            <span>{{tab.name}} ({{getNumberOfFiles(tab.id)}})</span>
           </a>
         </li>
       </ul>
@@ -24,7 +24,11 @@ import { mapState } from 'vuex'
 export default {
   data () {
     return {
-      tabGroups: ['Prepared', 'Queued', 'Completed']
+      tabGroups: [
+        {id: 'Prepared', name: 'Preparing'},
+        {id: 'Queued', name: 'Queued'},
+        {id: 'Completed', name: 'Uploaded'}
+      ]
     }
   },
   props: {

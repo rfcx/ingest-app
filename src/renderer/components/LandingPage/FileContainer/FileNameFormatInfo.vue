@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper">
+  <div class="wrapper" v-if="selectedStream">
     <div>
       <span class="wrapper__title">Filename Format</span>
       <div class="dropdown" :class="{'is-active': showFileNameFormatDropDown}">
@@ -14,8 +14,8 @@
         <div class="dropdown-menu" id="dropdown-menu" role="menu">
           <div class="dropdown-content">
             <a href="#" class="dropdown-item"
-              v-for="format in fileNameFormatOptions" 
-              :key="format" 
+              v-for="format in fileNameFormatOptions"
+              :key="format"
               :class="{'is-active': format === selectedStream.timestampFormat}"
               @click="onFormatSave(format)">
               {{ format }}
@@ -47,20 +47,20 @@
 <script>
 
 import { mapState } from 'vuex'
-import Stream from '../../../store/models/Stream'
 import FileNameFormatSettings from '../FileNameFormatSettings/FileNameFormatSettings.vue'
 import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
-import fileState from '../../../../../utils/fileState'
 import fileFormat from '../../../../../utils/FileFormat'
-import DatabaseEventName from '../../../../../utils/DatabaseEventName'
+// import DatabaseEventName from '../../../../../utils/DatabaseEventName'
 import ErrorAlert from '../../Common/ErrorAlert'
+import ipcRendererSend from '../../../services/ipc'
 
 export default {
   props: {
-    preparingFiles: {
-      type: Array,
-      default: () => []
-    }
+    numberOfReadyToUploadFiles: {
+      type: Number,
+      default: () => 0
+    },
+    selectedStream: Object
   },
   components: { FileNameFormatSettings, ErrorAlert },
   data () {
@@ -70,7 +70,8 @@ export default {
       isQueuingToUpload: false,
       showFileNameFormatDropDown: false,
       isUpdatingFilenameFormat: false,
-      errorMessage: null
+      errorMessage: null,
+      isCustomTimestampFormat: null
     }
   },
   computed: {
@@ -80,21 +81,15 @@ export default {
     ...mapState({
       selectedStreamId: state => state.AppSetting.selectedStreamId
     }),
-    selectedStream () {
-      return Stream.find(this.selectedStreamId)
-    },
-    selectedTimestampFormat () {
-      return this.selectedStream.timestampFormat
-    },
-    numberOfReadyToUploadFiles () {
-      return this.preparingFiles.filter(file => file.isPreparing).length
-    },
+    // selectedTimestampFormat () {
+    //   return this.selectedStream.timestampFormat
+    // },
     fileNameFormatOptions () {
       return Object.values(fileFormat.fileFormat)
-    },
-    isCustomTimestampFormat () {
-      return !this.fileNameFormatOptions.includes(this.selectedStream.timestampFormat)
     }
+    // isCustomTimestampFormat () {
+    //   return !this.fileNameFormatOptions.includes(this.selectedStream.timestampFormat)
+    // }
   },
   methods: {
     async queueToUpload () {
@@ -105,23 +100,32 @@ export default {
       await this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
 
       // completion listener
-      const t0 = performance.now()
-      let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
-        this.isQueuingToUpload = false
-        const t1 = performance.now()
-        console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
-      }
+      // const t0 = performance.now()
+      // let listen = (event, arg) => {
+      //   this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
+      //   this.isQueuingToUpload = false
+      //   const t1 = performance.now()
+      //   console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
+      // }
 
       // emit to main process to put file in uploading queue
-      const data = {streamId: this.selectedStreamId, sessionId: sessionId}
-      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.putFilesIntoUploadingQueueRequest, data)
-      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
+      // const data = {streamId: this.selectedStreamId, sessionId: sessionId}
+      // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.putFilesIntoUploadingQueueRequest, data)
+      // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
+      const streamId = this.selectedStreamId
+      const query = { streamId, state: 'preparing' }
+      await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
+        where: query,
+        values: { state: 'waiting', stateMessage: null, sessionId }
+      })
+      this.isQueuingToUpload = false
 
       // set selected tab to be queue tab
       const tabObject = {}
       tabObject[this.selectedStreamId] = 'Queued'
       await this.$store.dispatch('setSelectedTab', tabObject)
+
+      this.$emit('onNeedResetStreamList')
 
       // always enable uploading process
       await this.$store.dispatch('enableUploadingProcess', true)
@@ -131,15 +135,28 @@ export default {
     },
     async clearAllFiles () {
       this.isDeletingAllFiles = true
-      const t0 = performance.now()
-      let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
-        this.isDeletingAllFiles = false
-        const t1 = performance.now()
-        console.log('[Measure] delete prepare files ' + (t1 - t0) + ' ms')
-      }
-      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deletePreparingFilesRequest, this.selectedStreamId)
-      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
+      await ipcRendererSend('db.files.delete', `db.files.delete.${Date.now()}`, {
+        where: {
+          streamId: this.selectedStreamId,
+          state: ['preparing', 'local_error']
+        }
+      })
+      this.$emit('onNeedResetFileList')
+      this.$emit('onNeedResetStreamList')
+      this.isDeletingAllFiles = false
+      // await streamService.updateStreamStats(streamId, [
+      //   { name: 'preparingCount', action: '-', diff: files.length },
+      //   { name: 'sessionTotalCount', action: '+', diff: files.length }
+      // ])
+      // const t0 = performance.now()
+      // let listen = (event, arg) => {
+      //   this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
+      //   this.isDeletingAllFiles = false
+      //   const t1 = performance.now()
+      //   console.log('[Measure] delete prepare files ' + (t1 - t0) + ' ms')
+      // }
+      // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deletePreparingFilesRequest, this.selectedStreamId)
+      // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
     },
     hide () {
       this.showFileNameFormatDropDown = false
@@ -154,9 +171,10 @@ export default {
       this.showFileNameFormatDropDown = false
       this.closeFileNameFormatSettingModal()
       console.log('onFormatSave', format)
-      const objectFiles = this.preparingFiles.filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage)) || []
       this.isUpdatingFilenameFormat = true
-      this.$file.updateFilesFormat(this.selectedStream, objectFiles, format).then(_ => {
+      this.$file.updateFilesFormat(this.selectedStream, format).then(_ => {
+        this.selectedStream.timestampFormat = format
+        this.$emit('onNeedResetFileList')
         this.isUpdatingFilenameFormat = false
       }).catch(error => {
         this.isUpdatingFilenameFormat = false
@@ -167,10 +185,13 @@ export default {
   },
   watch: {
     // TODO: check if we really need this
-    selectedTimestampFormat (newValue, oldValue) {
-      if (newValue === oldValue) return
-      this.isUpdatingFilenameFormat = false
-    }
+    // selectedTimestampFormat (newValue, oldValue) {
+    //   if (newValue === oldValue) return
+    //   this.isUpdatingFilenameFormat = false
+    // },
+  },
+  async created () {
+    this.isCustomTimestampFormat = !this.fileNameFormatOptions.includes(this.selectedStream.timestampFormat)
   }
 }
 </script>

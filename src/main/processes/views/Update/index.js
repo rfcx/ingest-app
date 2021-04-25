@@ -41,27 +41,31 @@ export default {
   },
   createAutoUpdaterSub (updateNotAvaliableHandler, startUpdateAppHandler) {
     let platform = os.platform() + '_' + os.arch()
-    let version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
-    // let updaterFeedURL = 'https://localhost:3030/update/' + platform + '/' + version
-    let updaterFeedURL = ((process.env.NODE_ENV === 'development') ? 'https://localhost:3030/update/' : (settings.get('settings.production_env') ? 'https://ingest.rfcx.org/update/' : 'https://staging-ingest.rfcx.org/update/')) + platform + '/' + version
-    autoUpdater.setFeedURL(updaterFeedURL)
-    autoUpdater.on('error', message => {
-      console.error('There was a problem updating the application', message)
-    })
-    autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
-    autoUpdater.on('update-available', () => { console.log('update-available') })
-    autoUpdater.on('update-not-available', () => {
-      console.log('update-not-available')
-      updateNotAvaliableHandler()
-    })
-    autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-      console.log('update-downloaded', releaseName, releaseNotes)
-      if (releaseName) global.newVersion = releaseName
-      if (releaseNotes) global.notes = releaseNotes
-      const currentURL = remote.getCurrentWindow().webContents.getURL()
-      if (currentURL && currentURL === this.updateURL) { return }
-      this.createWindow(true, startUpdateAppHandler)
-    })
+    const isDevelopment = process.env.NODE_ENV === 'development'
+    let version = isDevelopment ? `${process.env.npm_package_version}` : app.getVersion()
+    let updaterFeedURL = (isDevelopment ? 'https://localhost:3030/update/' : (settings.get('settings.production_env') ? 'https://ingest.rfcx.org/update/' : 'https://staging-ingest.rfcx.org/update/')) + platform + '/' + version
+    try {
+      autoUpdater.setFeedURL(updaterFeedURL)
+      autoUpdater.on('error', message => {
+        console.error('There was a problem updating the application', message)
+      })
+      autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
+      autoUpdater.on('update-available', () => { console.log('update-available') })
+      autoUpdater.on('update-not-available', () => {
+        console.log('update-not-available')
+        updateNotAvaliableHandler()
+      })
+      autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+        console.log('update-downloaded', releaseName, releaseNotes)
+        if (releaseName) global.newVersion = releaseName
+        if (releaseNotes) global.notes = releaseNotes
+        const currentURL = remote.getCurrentWindow().webContents.getURL()
+        if (currentURL && currentURL === this.updateURL) { return }
+        this.createWindow(true, startUpdateAppHandler)
+      })
+    } catch (e) {
+      console.error('Can not set feed url', e)
+    }
   },
   checkForUpdates () {
     console.log('auto update process: checkForUpdates')

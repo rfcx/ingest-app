@@ -1,4 +1,5 @@
 import Stream from './../src/renderer/store/models/Stream'
+import FileState from './fileState'
 import settings from 'electron-settings'
 
 const getNameError = (streamName) => {
@@ -19,6 +20,16 @@ const checkMinLength = (streamName) => {
 
 const checkMaxLength = (streamName) => {
   return streamName.trim().length && streamName.trim().length <= 40
+}
+
+const getState = function (stream) {
+  const stats = stream.stats
+  if (!stats || stats.length <= 0) return ''
+  if (stats.find(stat => FileState.isInQueuedGroup(stat.state))) return 'uploading'
+  if (stats.find(stat => FileState.isError(stat.state))) return 'failed'
+  if (stats.find(stat => FileState.isInPreparedGroup(stat.state))) return 'preparing'
+  if (stats.find(stat => FileState.isInCompletedGroup(stat.state))) return 'completed'
+  return ''
 }
 
 const insertSites = async function (sites) {
@@ -42,10 +53,11 @@ const parseUserSites = (sites) => {
       latitude: site.latitude || 0,
       longitude: site.longitude || 0,
       files: [],
-      createdAt: Date.parse(site.created_at),
-      updatedAt: Date.parse(site.updated_at),
+      serverCreatedAt: new Date(site.created_at),
+      serverUpdatedAt: new Date(site.updated_at),
       env: isProductionEnv() ? 'production' : 'staging',
-      visibility: site.is_public
+      visibility: site.is_public,
+      timezone: ''
     }
   })
 }
@@ -58,5 +70,6 @@ export default {
   isValidName,
   getNameError,
   insertSites,
-  parseUserSites
+  parseUserSites,
+  getState
 }
