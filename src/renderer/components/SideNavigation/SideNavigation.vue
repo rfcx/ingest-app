@@ -171,10 +171,6 @@
       hideDropDownMenu () {
         this.$emit('clickOutSideNewSiteButton')
       },
-      getUploadingProcessIcon (enabled) {
-        const state = enabled ? 'pause' : 'play'
-        return require(`../../assets/ic-uploading-${state}-green.svg`)
-      },
       getStateImgUrl (state) {
         if (state === '') return ''
         const iconName = fileState.getIconName(state)

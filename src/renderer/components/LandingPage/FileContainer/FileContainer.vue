@@ -45,9 +45,6 @@ export default {
     return {
       files: [],
       stats: [],
-      preparingFiles: [],
-      queuingFiles: [],
-      completedFiles: [],
       fetchFilesInterval: null,
       selectedStream: null,
       isFetching: false
@@ -61,7 +58,9 @@ export default {
   },
   computed: {
     ...mapState({
-      selectedStreamId: state => state.AppSetting.selectedStreamId
+      selectedStreamId: state => state.AppSetting.selectedStreamId,
+      currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
+      isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
     }),
     selectedTab () {
       const savedSelectedTab = this.$store.getters.getSelectedTabByStreamId(this.selectedStreamId)
@@ -78,7 +77,10 @@ export default {
       return preparingGroup ? preparingGroup.stateCount : 0
     },
     infiniteScrollEnabled () {
-      return !this.isFetching && this.selectedTab === 'Prepared'
+      return !this.isFetching && !this.isUploading
+    },
+    isUploading () {
+      return this.currentUploadingSessionId && this.isUploadingProcessEnabled
     }
   },
   methods: {
@@ -94,7 +96,7 @@ export default {
       this.$emit('onImportFiles', files)
     },
     async loadMore () {
-      if (this.selectedTab !== 'Prepared') { return } // only support pagination in prepare tab
+      if (this.isUploading) { return } // only support pagination when not in uploading mode
       this.isFetching = true
       const offset = this.files.length
       const query = this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false)
@@ -164,6 +166,7 @@ export default {
         console.log(`reload files ${currentFiles.length} + ${newFiles.length} = ${this.files.length}`)
       } else {
         this.files = newFiles.sort(fileComparator)
+        console.log(`update last ${DEFAULT_LIMIT} : ${this.files.length}`)
       }
     },
     async reloadStats () {
@@ -175,10 +178,18 @@ export default {
       await this.reloadStats()
       await this.reloadFiles(this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false), 0)
       this.isFetching = false
+      this.startFilesFetcher()
+    },
+    startFilesFetcher () {
+      this.clearFilesFetcher() // make sure it's null before setting a new one
+      if (this.files.length <= 0 || !this.isUploading) return // not initial a fetcher when there is no files or when the uploading process is not running
       this.fetchFilesInterval = setInterval(async () => {
+        console.log('=> FETCHING INTERVAL: START')
         await this.reloadStats()
+        console.log('=> FETCHING INTERVAL: RELOAD STATS')
         if (this.selectedTab === 'Prepared') { return }
         // not reloading files in prepare tab
+        console.log('=> FETCHING INTERVAL: RELOAD FILES')
         await this.reloadFiles(this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false), 0)
       }, 2000)
     },
@@ -186,9 +197,11 @@ export default {
       if (this.fetchFilesInterval) {
         clearInterval(this.fetchFilesInterval)
         this.fetchFilesInterval = null
+        console.log('FETCHING INTERVAL: STOP <=')
       }
     },
     async resetFiles () {
+      this.stats = []
       this.files = []
       this.clearFilesFetcher()
       await this.initFilesFetcher()
@@ -202,16 +215,31 @@ export default {
   },
   watch: {
     selectedStreamId: {
-      handler: async function (previousStream, newStream) {
+      handler: async function (newStream, previousStream) {
         if (previousStream === newStream) return
         await this.getCurrentStream()
         await this.resetFiles()
       }
     },
     selectedTab: {
-      handler: async function (previousTabName, newTabName) {
+      handler: async function (newTabName, previousTabName) {
         if (previousTabName === newTabName) return
         await this.resetFiles()
+      }
+    },
+    isUploading: {
+      handler: async function (newValue, previousValue) {
+        console.log('isuploading: wtch', newValue)
+        console.log('currentUploadingSessionId:', this.currentUploadingSessionId)
+        console.log('isUploadingProcessEnabled:', this.isUploadingProcessEnabled)
+        if (previousValue === newValue) return
+        if (newValue === true) { this.startFilesFetcher() }
+        if (newValue === false) { this.clearFilesFetcher() }
+      }
+    },
+    isFetching: {
+      handler: async function (newValue, previousValue) {
+        console.log('isFeching: wtch', newValue)
       }
     }
   },
