@@ -10,14 +10,15 @@
           </div>
         </div>
       </div>
-      <side-navigation 
-        :class="{ 'side-menu__with-progress': shouldShowProgress}" 
-        @clickNewSiteButton="toggleNewSiteDropDown" 
+      <side-navigation ref="sideNavigation"
+        :class="{ 'side-menu__with-progress': shouldShowProgress}"
+        @clickNewSiteButton="toggleNewSiteDropDown"
         @clickOutSideNewSiteButton="hideNewSiteDropDown"
+        :getStreamList.sync="streams"
       />
       <div class="column content is-desktop">
-        <empty-view v-if="isEmptyStream()" :isEmptyStream="isEmptyStream()"></empty-view>
-        <file-container ref="fileContainer" v-else :isDragging="isDragging" @onImportFiles="handleFiles"></file-container>
+        <empty-view v-if="isEmptyStream" :isEmptyStream="isEmptyStream"></empty-view>
+        <file-container ref="fileContainer" v-else :isDragging="isDragging" @onImportFiles="handleFiles" @onNeedResetStreamList="resetStreamList"></file-container>
       </div>
     <!-- </section> -->
     <global-progress ref="globalProgress"></global-progress>
@@ -38,7 +39,6 @@
   import FileContainer from './LandingPage/FileContainer/FileContainer'
   import ConfirmAlert from './Common/ConfirmAlert'
   import { mapState } from 'vuex'
-  import Stream from '../store/models/Stream'
   import Analytics from 'electron-ga'
   import env from '../../../env.json'
   const { remote } = window.require('electron')
@@ -55,7 +55,8 @@
         executed: false,
         isDragging: false,
         isPopupOpened: false,
-        shouldShowNewSiteDropDown: false
+        shouldShowNewSiteDropDown: false,
+        streams: []
       }
     },
     methods: {
@@ -77,7 +78,6 @@
         await this.handleFiles(e.dataTransfer.files)
         const t1 = performance.now()
         console.log('[Measure] handleDrop ' + (t1 - t0) + ' ms')
-        this.$refs.fileContainer.reloadFiles()
       },
       async handleFiles (files) {
         this.isDragging = false
@@ -99,9 +99,8 @@
         // reset selected tab
         await this.$store.dispatch('setSelectedTab', { [this.selectedStreamId]: 'Prepared' })
         await this.$file.handleDroppedFiles(files, this.selectedStream)
-      },
-      isEmptyStream () {
-        return this.streams === undefined || this.streams.length === 0
+        await this.$refs.fileContainer.resetFiles()
+        await this.resetStreamList()
       },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
@@ -129,6 +128,9 @@
         if (!selectedStreamIdInAppSettingModel && selectedStreamIdInStreamModel) {
           await this.$store.dispatch('setSelectedStreamId', selectedStreamIdInStreamModel)
         }
+      },
+      async resetStreamList () {
+        await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
       }
     },
     computed: {
@@ -136,14 +138,14 @@
         selectedStreamId: state => state.AppSetting.selectedStreamId,
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
       }),
-      streams () {
-        return Stream.all()
-      },
       selectedStream () {
-        return Stream.find(this.selectedStreamId)
+        return this.$refs.fileContainer && this.$refs.fileContainer.selectedStream
       },
       shouldShowProgress () {
         return this.$refs.globalProgress && this.$refs.globalProgress.shouldShowProgress
+      },
+      isEmptyStream () {
+        return this.streams === undefined || this.streams.length === 0
       }
     },
     async created () {
@@ -153,6 +155,9 @@
       this.sendVersionOfApp()
       this.$electron.ipcRenderer.on('showUpToDatePopup', (event, message) => {
         this.isPopupOpened = message
+      })
+      this.$electron.ipcRenderer.on('onClearAllData', async (event, message) => {
+        await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
       })
     }
   }

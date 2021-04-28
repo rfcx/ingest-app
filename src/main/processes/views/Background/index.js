@@ -1,6 +1,4 @@
-import { BrowserWindow, powerMonitor, powerSaveBlocker, ipcMain } from 'electron'
-import database from '../../shared/database'
-import DatabaseEventName from '../../../../../utils/DatabaseEventName'
+import { BrowserWindow, powerMonitor, powerSaveBlocker } from 'electron'
 
 var suspendPowerSaveBlockerId
 var lockScreenPowerSaveBlockerId
@@ -46,10 +44,14 @@ export default {
       })
     })
 
-    ipcMain.on(DatabaseEventName.eventsName.updateFilesDoNotExistRequest, async function (event, files) {
-      await database.updateFilesDoNotExist(files)
-      event.sender.send(DatabaseEventName.eventsName.updateFilesDoNotExistResponse)
-    })
+    // ipcMain.on(DatabaseEventName.eventsName.updateFilesDoNotExistRequest, async function (event, files) {
+    //   try {
+    //     await database.updateFilesDoNotExist(files)
+    //     event.sender.send(DatabaseEventName.eventsName.updateFilesDoNotExistResponse)
+    //   } catch (e) {
+    //     console.error('Can not call database method', e)
+    //   }
+    // })
 
     return backgroundAPIWindow
   }

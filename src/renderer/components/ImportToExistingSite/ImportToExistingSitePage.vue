@@ -8,22 +8,17 @@
 </template>
 
 <script>
-import Stream from '../../store/models/Stream'
 import HeaderView from '../Common/HeaderWithBackButton'
+import ipcRendererSend from '../../services/ipc'
 export default {
   components: { HeaderView },
   data: () => ({
     selectedFolderPath: null,
     existingStreamId: null,
     deviceId: null,
-    deploymentInfo: null
-
+    deploymentInfo: null,
+    existingStream: null
   }),
-  computed: {
-    existingStream () {
-      return Stream.find(this.existingStreamId)
-    }
-  },
   created () {
     console.log(this.$route.query)
     if (!this.$route.query) return
@@ -31,6 +26,7 @@ export default {
     if (this.$route.query.folderPath) this.selectedFolderPath = this.$route.query.folderPath
     if (this.$route.query.deviceId) this.deviceId = this.$route.query.deviceId
     if (this.$route.query.deploymentInfo) this.deploymentInfo = this.$route.query.deploymentInfo
+    this.getExistingStream()
   },
   methods: {
     importFiles () {
@@ -41,6 +37,9 @@ export default {
     },
     redirectToCreateStream () {
       this.$router.push({path: '/add', query: { folderPath: this.selectedFolderPath, deviceId: this.deviceId, deploymentInfo: this.deploymentInfo }})
+    },
+    async getExistingStream () {
+      this.existingStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.existingStreamId)
     }
   }
 }

@@ -1,8 +1,9 @@
 <template>
-  <aside class="column menu side-menu side-menu-column wrapper">
+    <aside class="column menu side-menu side-menu-column wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10" :infinite-scroll-disabled="isFetching">
     <div class="wrapper__header">
       <div class="wrapper__logo">
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
+        <span class="is-size-7">{{ !isProductionEnv() ? 'staging' : '' }}</span>
       </div>
       <div lass="wrapper__user-pic" v-click-outside="hide" @click="toggleUserMenu()">
         <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)">
@@ -23,7 +24,7 @@
       <span>
         Sites
         <div class="wrapper__loader">
-          <fa-icon class="iconRefresh" :icon="iconRefresh" @click.prevent="getUserSites()" v-if="!isFetching"></fa-icon>
+          <fa-icon class="iconRefresh" :icon="iconRefresh" @click.prevent="fetchUserSites()" v-if="!isFetching"></fa-icon>
           <div class="loader" v-if="isFetching"></div>
         </div>
       </span>
@@ -39,10 +40,10 @@
     <ul>
       <li v-for="stream in streams" :key="stream.id">
         <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'wrapper__stream-row_active': isActive(stream)}">
-          <div class="menu-container" :class="{ 'menu-container-failed': stream.isError }">
+          <div class="menu-container" :class="{ 'menu-container-failed': stream.state === 'failed' || stream.state && stream.state.includes('error') }">
             <div class="wrapper__stream-name">{{ stream.name }}</div>
             <fa-icon class="iconRedo" v-if="stream.canRedo" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
-            <img :src="getStateImgUrl(stream.state)">
+            <img :src="getStateImgUrl(getState(stream))">
           </div>
         </div>
       </li>
@@ -59,17 +60,22 @@
 </template>
 
 <script>
-  import Stream from '../../store/models/Stream'
+  import { mapState } from 'vuex'
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
-  import DatabaseEventName from '../../../../utils/DatabaseEventName'
   import api from '../../../../utils/api'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
   import { faRedo, faSync } from '@fortawesome/free-solid-svg-icons'
+  import infiniteScroll from 'vue-infinite-scroll'
+  import ipcRendererSend from '../../services/ipc'
+  import streamService from '../../services/stream'
   const { remote } = window.require('electron')
 
+  const DEFAULT_PAGE_SIZE = 10
+
   export default {
+    directives: { infiniteScroll },
     data () {
       return {
         iconRedo: faRedo,
@@ -86,21 +92,22 @@
         isFetching: false,
         isRetryUploading: false,
         alertTitle: 'Are you sure you would like to continue?',
-        alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.'
+        alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.',
+        streams: [],
+        fetchStreamsInterval: null
       }
     },
     components: {
       ConfirmAlert
     },
     computed: {
-      selectedStreamId () {
-        return this.$store.state.AppSetting.selectedStreamId
-      },
+      ...mapState({
+        selectedStreamId: state => state.AppSetting.selectedStreamId,
+        currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
+        isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
+      }),
       selectedStream () {
-        return Stream.find(this.selectedStreamId)
-      },
-      streams () {
-        return Stream.query().orderBy('updatedAt', 'desc').get()
+        return this.streams.find(s => s.id === this.selectedStreamId)
       },
       isRequiredSymbols () {
         return this.searchStr && this.searchStr.length > 0 && this.searchStr.length < 3
@@ -176,8 +183,11 @@
         await this.$store.dispatch('setSelectedStreamId', stream.id)
       },
       isActive (stream) {
-        if (this.selectedStream === null) return false
+        if (!stream || !this.selectedStream) return false
         return stream.id === this.selectedStream.id
+      },
+      getState (stream) {
+        return streamHelper.getState(stream)
       },
       async repeatUploading (streamId) {
         if (this.isRetryUploading) return // prevent double click
@@ -187,19 +197,35 @@
         await this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
 
         // completion listener
-        const t0 = performance.now()
-        let listen = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
-          const t1 = performance.now()
-          this.isRetryUploading = false
-          console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
+        // let listen = (event, arg) => {
+        //   this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
+        //   const t1 = performance.now()
+        //   this.isRetryUploading = false
+        //   console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
+        // }
+
+        // // emit to main process to put file in uploading queue
+        // this.isRetryUploading = true
+        // const data = {streamId: streamId, sessionId: sessionId}
+        // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reuploadFailedFilesRequest, data)
+        // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
+        this.isRetryUploading = true
+        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: streamId, state: ['failed', 'server_error'] } })
+        files = files.filter((f) => {
+          return fileState.canRedo(f.state, f.stateMessage)
+        })
+        for (let file of files) {
+          await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
+            id: file.id,
+            params: { state: 'waiting', stateMessage: null, sessionId }
+          })
         }
 
-        // emit to main process to put file in uploading queue
-        this.isRetryUploading = true
-        const data = {streamId: streamId, sessionId: sessionId}
-        this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reuploadFailedFilesRequest, data)
-        this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
+        // const stream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, streamId)
+        // const preparingCount = stream.preparingCount - files.length
+        // const sessionTotalCount = stream.sessionTotalCount + files.length
+        // await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: streamId, params: { preparingCount, sessionTotalCount } })
+        this.isRetryUploading = false
 
         // set selected tab to be queue tab
         const tabObject = {}
@@ -218,7 +244,7 @@
       isProductionEnv () {
         return settings.get('settings.production_env')
       },
-      getUserSites () {
+      fetchUserSites () {
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           console.log('getUserSites')
@@ -226,11 +252,12 @@
             .then(async sites => {
               this.isFetching = false
               if (sites && sites.length) {
-                let userSites = streamHelper.parseUserSites(sites)
-                await streamHelper.insertSites(userSites)
+                let userSites = streamHelper.parseUserSites(sites).sort((siteA, siteB) => siteB.serverUpdatedAt - siteA.serverUpdatedAt)
+                await streamService.upsertStreams(userSites)
                 // insert site success set selected site
-                if (!this.selectedStreamId) {
-                  await this.$store.dispatch('setSelectedStreamId', userSites.sort((siteA, siteB) => siteB.updatedAt - siteA.updatedAt)[0].id)
+                await this.reloadStreamListFromLocalDB()
+                if (!this.selectedStreamId && userSites.length > 0) {
+                  await this.$store.dispatch('setSelectedStreamId', userSites[0].id)
                 }
               }
             }).catch(error => {
@@ -241,20 +268,69 @@
         this.isFetching = true
         this.$electron.ipcRenderer.send('getIdToken')
         this.$electron.ipcRenderer.on('sendIdToken', listener)
+      },
+      async reloadStreamListFromLocalDB () {
+        const limit = (this.streams.length > 0 && this.streams.length > DEFAULT_PAGE_SIZE) ? this.streams.length : DEFAULT_PAGE_SIZE
+        this.streams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { limit: limit, offset: 0 })
+        this.$emit('update:getStreamList', this.streams)
+      },
+      async loadMore () {
+        console.log('load more')
+        const mergeById = (oldArray, newArray) => {
+          if (oldArray.length <= 0) return newArray
+          const updatedItems = oldArray.map(item => {
+            const obj = newArray.find(o => o.id === item.id)
+            return { ...item, ...obj }
+          })
+          const newItems = newArray.filter(o1 => !oldArray.some(o2 => o1.id === o2.id))
+          return updatedItems.concat(newItems)
+        }
+        const currentStreams = this.streams
+        const newStreams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { limit: DEFAULT_PAGE_SIZE, offset: currentStreams.length })
+        this.streams = mergeById(currentStreams, newStreams)
+      },
+      startStreamFetchingInterval () {
+        console.log('startStreamFetchingInterval')
+        this.fetchStreamsInterval = setInterval(async () => {
+          await this.reloadStreamListFromLocalDB()
+        }, 2000)
+      },
+      stopStreamFetchingInterval () {
+        console.log('stopStreamFetchingInterval')
+        if (this.fetchStreamsInterval) {
+          setTimeout(() => { // fetch 1 last time to get the complete state
+            console.log('stopStreamFetchingInterval: stop')
+            clearInterval(this.fetchStreamsInterval)
+            this.fetchStreamsInterval = null
+          }, 2000)
+        }
+      },
+      manageStreamFetchingInterval (currentUploadingSessionId, isUploadingProcessEnabled) {
+        console.log('manageStreamFetchingInterval', currentUploadingSessionId, isUploadingProcessEnabled)
+        if (currentUploadingSessionId && isUploadingProcessEnabled) this.startStreamFetchingInterval()
+        else this.stopStreamFetchingInterval()
       }
     },
-    created () {
-      if (remote.getGlobal('firstLogIn')) {
-        this.getUserSites()
-        this.$electron.ipcRenderer.send('resetFirstLogIn')
-      } else {
-        let getUserSitesListener = (event) => {
-          this.$electron.ipcRenderer.removeListener('onMainWindowIsActive', getUserSitesListener)
-          console.log('onMainWindowIsActive')
-          this.getUserSites()
-        }
-        this.$electron.ipcRenderer.on('onMainWindowIsActive', getUserSitesListener)
+    watch: {
+      currentUploadingSessionId (val, oldVal) {
+        if (val === oldVal) return
+        this.manageStreamFetchingInterval(val, this.isUploadingProcessEnabled)
+      },
+      isUploadingProcessEnabled (val, oldVal) {
+        if (val === oldVal) return
+        this.manageStreamFetchingInterval(this.currentUploadingSessionId, val)
       }
+    },
+    async created () {
+      await this.reloadStreamListFromLocalDB()
+      this.manageStreamFetchingInterval(this.currentUploadingSessionId, this.isUploadingProcessEnabled)
+      this.fetchUserSites()
+      if (remote.getGlobal('firstLogIn')) {
+        this.$electron.ipcRenderer.send('resetFirstLogIn')
+      }
+    },
+    beforeDestroy () {
+      this.stopStreamFetchingInterval()
     }
   }
 </script>

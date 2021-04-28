@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <h1>Edit site</h1>
-    <fieldset>
+    <fieldset v-if="selectedStream">
       <div class="notification default-notice" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
         {{ error }}
@@ -47,13 +47,12 @@
 </template>
 
 <script>
-import Stream from '../../store/models/Stream'
 import streamHelper from '../../../../utils/streamHelper'
 import dateHelper from '../../../../utils/dateHelper'
-import DatabaseEventName from '../../../../utils/DatabaseEventName'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
 import Map from '../CreateStream/Map'
+import ipcRendererSend from '../../services/ipc'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
 
@@ -67,7 +66,8 @@ export default {
       isDeleting: false,
       error: '',
       iconTrash: faTrash,
-      shouldShowConfirmToDeleteModal: false
+      shouldShowConfirmToDeleteModal: false,
+      selectedStream: null
     }
   },
   components: { Map },
@@ -76,9 +76,6 @@ export default {
       selectedStreamId: state => state.AppSetting.selectedStreamId,
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId
     }),
-    selectedStream () {
-      return Stream.find(this.selectedStreamId)
-    },
     hasEditedData () {
       return this.name !== this.selectedStream.name || this.selectedLatitude !== this.selectedStream.latitude || this.selectedLongitude !== this.selectedStream.longitude
     }
@@ -108,11 +105,12 @@ export default {
           .updateStream(this.isProductionEnv(), this.selectedStreamId, opts, idToken)
           .then(async data => {
             console.log('stream coordinates is updated')
-            Stream.update({
-              where: this.selectedStream.id,
-              data: { latitude: latitude, longitude: longitude, name: name }
+            const timezone = dateHelper.getDefaultTimezone(latitude, longitude)
+            await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, {
+              id: this.selectedStream.id,
+              params: { latitude, longitude, name, timezone, lastModifiedAt: new Date() }
             })
-            this.updateFilesTimezone(dateHelper.getDefaultTimezone(latitude, longitude))
+            this.updateFilesTimezone(timezone)
             this.isLoading = false
             this.redirectToMainScreen()
           })
@@ -133,13 +131,10 @@ export default {
       return this.selectedStream.longitude ? [this.selectedStream.longitude, this.selectedStream.latitude] : null
     },
     async updateFilesTimezone (timezone) {
-      let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFilesTimezoneResponse, listen)
-        console.log('updateFilesTimezone completed')
-      }
-      const params = { streamId: this.selectedStreamId, timezone: timezone }
-      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFilesTimezoneRequest, params)
-      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFilesTimezoneResponse, listen)
+      await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
+        where: { streamId: this.selectedStreamId },
+        values: { timezone }
+      })
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true
@@ -154,33 +149,20 @@ export default {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         let idToken = null
         idToken = arg
-        api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken).then(async (data) => {
-          console.log('stream is deleted')
-          await this.removeStreamFromVuex(this.selectedStream.id)
-          this.modalHandler()
-        }).catch(error => {
-          console.log('error while deleting site', error)
-          this.errorHandler(error, true)
-        })
+        api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken)
+          .then(async (data) => {
+            console.log('stream is deleted')
+            await ipcRendererSend('db.streams.delete', `db.streams.delete.${Date.now()}`, this.selectedStream.id)
+            this.modalHandler()
+          }).catch(error => {
+            console.log('error while deleting site', error)
+            this.errorHandler(error, true)
+          })
       }
       this.$electron.ipcRenderer.send('getIdToken')
       this.$electron.ipcRenderer.on('sendIdToken', listener)
     },
-    async removeStreamFromVuex (selectedStreamId) {
-      let listen = (event, arg) => {
-        this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
-        console.log('files deleted')
-      }
-      this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteAllFilesRequest, this.selectedStreamId)
-      this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deleteAllFilesResponse, listen)
-    },
     modalHandler () {
-      const stream = Stream.query().where((stream) => {
-        return stream.id !== this.selectedStreamId
-      }).first()
-      if (stream) {
-        this.$store.dispatch('setSelectedStreamId', stream.id)
-      }
       this.isDeleting = false
       this.redirectToMainScreen()
     },
@@ -203,8 +185,9 @@ export default {
       this.error = null
     }
   },
-  mounted () {
-    this.name = this.selectedStream.name || ''
+  async created () {
+    this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)
+    this.name = this.selectedStream ? this.selectedStream.name : ''
   },
   watch: {
     name (val, oldVal) {

@@ -2,6 +2,7 @@ import getAudioDurationInSeconds from './fileDurationHelper'
 const fs = require('fs')
 const path = require('path')
 const cryptoJS = require('crypto-js')
+const moment = require('moment-timezone')
 
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path.replace('app.asar', 'app.asar.unpacked')
 const ffmpeg = require('fluent-ffmpeg')
@@ -74,6 +75,38 @@ const getFileName = (fileName) => {
 const getFileSize = (filePath) => {
   const stats = fs.statSync(filePath)
   return stats.size
+}
+
+const getDisplayFileDuration = (file) => {
+  if (file.durationInSecond < 0) {
+    return '-'
+  }
+  let date = new Date(0)
+  date.setSeconds(file.durationInSecond)
+  return date.toISOString().substr(11, 8)
+}
+
+const getDisplayTimestamp = (file) => {
+  return moment.parseZone(file.timestamp).format('YYYY-MM-DD HH:mm:ss Z')
+}
+
+const getDisplayFileSize = (file) => {
+  const bytes = file.sizeInByte
+  var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+  if (bytes === 0) return '0 Byte'
+  var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)))
+  return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i]
+}
+
+const getUtcTimestamp = (file) => {
+  if (file.timestamp.substr(-1) === 'Z' || file.timestamp.substr(-6, 1) === '-' || file.timestamp.substr(-6, 1) === '+') {
+    return moment.utc(file.timestamp).toISOString() // timezone is in the parsed timestamp
+  }
+  // TODO: need fixing in CE-509
+  // if (!file.timezone) {
+  return file.timestamp + 'Z' // assume all file name to be in UTC)
+  // }
+  // return moment.tz(file.timestamp, file.timezone).toISOString() // parse with timezone and return as UTC
 }
 
 const getFileDuration = (filePath) => {
@@ -164,6 +197,10 @@ export default {
   getFileName,
   getExtension,
   getFileSize,
+  getDisplayFileDuration,
+  getDisplayTimestamp,
+  getDisplayFileSize,
+  getUtcTimestamp,
   getFileDuration,
   isSupportedFileExtension,
   isFolder,

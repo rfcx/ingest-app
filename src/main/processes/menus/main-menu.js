@@ -3,17 +3,14 @@ import settings from 'electron-settings'
 import sharedProcess from '../shared/index'
 import sharedMenu from './shared'
 
-function createMenu (logoutFunction, preferenceFunction, aboutFunction, updateFunction) {
+function createMenu (clearDataFunction, logoutFunction, preferenceFunction, aboutFunction, updateFunction) {
   /* MENU */
   const template = [
     {
       label: 'File',
       submenu: [
         { label: 'Clear data',
-          click: async () => {
-            console.log('clear data')
-            await sharedProcess.clearAllData()
-          }
+          click: clearDataFunction
         },
         { label: 'Auto start',
           type: 'checkbox',
