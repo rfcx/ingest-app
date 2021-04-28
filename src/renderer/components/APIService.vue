@@ -4,10 +4,6 @@
 
 <script>
   import { mapState } from 'vuex'
-  // import File from '../store/models/File'
-  // import Stream from '../store/models/Stream'
-  // import FileHelper from '../../../utils/fileHelper'
-  // import DatabaseEventName from './../../../utils/DatabaseEventName'
   import ipcRendererSend from '../services/ipc'
 
   const workerTimeoutMinimum = 3000

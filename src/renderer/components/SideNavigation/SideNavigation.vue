@@ -63,7 +63,6 @@
   import { mapState } from 'vuex'
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
-  // import DatabaseEventName from '../../../../utils/DatabaseEventName'
   import api from '../../../../utils/api'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
