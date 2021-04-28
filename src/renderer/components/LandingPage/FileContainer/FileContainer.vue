@@ -216,9 +216,6 @@ export default {
     },
     isUploading: {
       handler: async function (newValue, previousValue) {
-        console.log('isuploading: wtch', newValue)
-        console.log('currentUploadingSessionId:', this.currentUploadingSessionId)
-        console.log('isUploadingProcessEnabled:', this.isUploadingProcessEnabled)
         if (previousValue === newValue) return
         if (newValue === true) { this.startFilesFetcher() }
         if (newValue === false || newValue === null) {
