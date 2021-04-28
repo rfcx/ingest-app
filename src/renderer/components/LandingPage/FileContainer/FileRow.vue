@@ -197,6 +197,12 @@ export default {
     }
   },
   watch: {
+    initialFile: {
+      handler: async function (newValue, previousValue) {
+        if (newValue === previousValue) return
+        this.file = newValue
+      }
+    },
     file: {
       handler: function () {
         this.formatAttributes()
