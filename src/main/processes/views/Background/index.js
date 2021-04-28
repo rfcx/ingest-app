@@ -1,7 +1,4 @@
-// import { BrowserWindow, powerMonitor, powerSaveBlocker, ipcMain } from 'electron'
 import { BrowserWindow, powerMonitor, powerSaveBlocker } from 'electron'
-// import database from '../../shared/database'
-// import DatabaseEventName from '../../../../../utils/DatabaseEventName'
 
 var suspendPowerSaveBlockerId
 var lockScreenPowerSaveBlockerId
