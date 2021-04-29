@@ -1,14 +1,23 @@
 <template>
   <div class="wrapper" v-if="selectedStream">
-    <options-dropdown 
-      title="Filename Format" 
-      :options="fileNameFormatOptions"
-      specialOptionTitle="Custom..."
-      :isLoading="isUpdatingFilenameFormat"
-      :selectedOptionText="(isCustomTimestampFormat ? 'custom ・ ' : '') + selectedStream.timestampFormat"
-      @onSelectOption="onFormatSave"
-      @onSelectSpecialOption="openFileNameFormatSettingModal">
-    </options-dropdown>
+    <div class="config-wrapper">
+      <options-dropdown 
+        title="Filename Format" 
+        :options="fileNameFormatOptions"
+        specialOptionTitle="Custom..."
+        :isLoading="isUpdatingFilenameFormat"
+        :selectedOptionText="(isCustomTimestampFormat ? 'custom ・ ' : '') + selectedStream.timestampFormat"
+        @onSelectOption="onFormatSave"
+        @onSelectSpecialOption="openFileNameFormatSettingModal">
+      </options-dropdown>
+      <options-dropdown 
+        title="Filename Timezone" 
+        :options="fileNameTimezoneOptions"
+        :isLoading="isUpdatingFilenameFormat"
+        :selectedOptionText="selectedTimezone"
+        @onSelectOption="onTimezoneSave">
+      </options-dropdown>
+    </div>
     <div>
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
       <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="numberOfReadyToUploadFiles < 1 || isDeletingAllFiles">Start upload ({{numberOfReadyToUploadFiles}})</button>
@@ -30,6 +39,7 @@
 import { mapState } from 'vuex'
 import FileNameFormatSettings from '../FileNameFormatSettings/FileNameFormatSettings.vue'
 import fileFormat from '../../../../../utils/FileFormat'
+import FileTimeZoneHelper from '../../../../../utils/FileTimezoneHelper'
 import OptionsDropdown from '../../Common/OptionsDropdown'
 import ErrorAlert from '../../Common/ErrorAlert'
 import ipcRendererSend from '../../../services/ipc'
@@ -49,21 +59,22 @@ export default {
       isDeletingAllFiles: false,
       isQueuingToUpload: false,
       isUpdatingFilenameFormat: false,
-      errorMessage: null
+      errorMessage: null,
+      selectedTimezone: ''
     }
   },
   computed: {
     ...mapState({
       selectedStreamId: state => state.AppSetting.selectedStreamId
     }),
-    // selectedTimestampFormat () {
-    //   return this.selectedStream.timestampFormat
-    // },
     fileNameFormatOptions () {
       return Object.values(fileFormat.fileFormat)
     },
     isCustomTimestampFormat () {
       return !this.fileNameFormatOptions.includes(this.selectedStream.timestampFormat)
+    },
+    fileNameTimezoneOptions () {
+      return FileTimeZoneHelper.getTimezoneOptions(this.selectedStream.timezone)
     }
   },
   methods: {
@@ -152,14 +163,11 @@ export default {
         console.log(`Error update files format '${format}'`, error.message)
         this.errorMessage = error.message
       })
+    },
+    async onTimezoneSave (timezone) {
+      console.log('onTimezoneSave', timezone)
+      // TODO: update file format with timezone
     }
-  },
-  watch: {
-    // TODO: check if we really need this
-    // selectedTimestampFormat (newValue, oldValue) {
-    //   if (newValue === oldValue) return
-    //   this.isUpdatingFilenameFormat = false
-    // },
   }
 }
 </script>
@@ -180,6 +188,12 @@ export default {
     &__description {
       color: $secondary-text-color;
       display: inline-block;
+    }
+  }
+  .config-wrapper {
+    display: inline-flex;
+    .dropdown-wrapper {
+      padding-right: $default-padding;
     }
   }
   .flex-row {

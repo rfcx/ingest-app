@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="dropdown-wrapper">
     <span class="wrapper__title">{{title}}</span>
     <div class="dropdown" :class="{'is-active': show}">
       <div class="dropdown-trigger">
@@ -19,8 +19,8 @@
             @click="onSelectOption(option)">
             {{ option }}
           </a>
-          <hr class="dropdown-divider">
-          <a href="#" class="dropdown-item" @click="onSelectSpecialOption">
+          <hr class="dropdown-divider" v-if="specialOptionTitle">
+          <a href="#" class="dropdown-item" @click="onSelectSpecialOption" v-if="specialOptionTitle">
             {{specialOptionTitle}}
           </a>
         </div>
