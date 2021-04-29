@@ -1,4 +1,5 @@
 import Stream from './../src/renderer/store/models/Stream'
+import dateHelper from './dateHelper'
 import FileState from './fileState'
 import settings from 'electron-settings'
 
@@ -47,18 +48,20 @@ const insertSites = async function (sites) {
 
 const parseUserSites = (sites) => {
   return sites.map((site) => {
+    const latitude = site.latitude || 0
+    const longitude = site.longitude || 0
     return {
       id: site.id,
       name: site.name,
       timestampFormat: 'Auto-detect',
-      latitude: site.latitude || 0,
-      longitude: site.longitude || 0,
+      latitude: latitude,
+      longitude: longitude,
       files: [],
       serverCreatedAt: new Date(site.created_at),
       serverUpdatedAt: new Date(site.updated_at),
       env: isProductionEnv() ? 'production' : 'staging',
       visibility: site.is_public,
-      timezone: ''
+      timezone: dateHelper.getDefaultTimezone(latitude, longitude)
     }
   })
 }
