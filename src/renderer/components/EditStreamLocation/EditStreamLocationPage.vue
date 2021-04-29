@@ -152,7 +152,7 @@ export default {
         api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken)
           .then(async (data) => {
             console.log('stream is deleted')
-            await ipcRendererSend('db.streams.delete', `db.streams.delete.${Date.now()}`, this.selectedStream.id)
+            await ipcRendererSend('db.streams.deleteById', `db.streams.deleteById.${Date.now()}`, this.selectedStream.id)
             this.modalHandler()
           }).catch(error => {
             console.log('error while deleting site', error)
