@@ -3,6 +3,7 @@
     <header-view :selectedStream="selectedStream"></header-view>
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream" @onNeedResetFileList="resetFiles" @onNeedResetStreamList="resetStreams"></file-name-format-info>
+    <summary-view :stats="getStatsOfTab(selectedTab)" v-if="selectedTab === 'Completed' && hasCompletedFiles"></summary-view>
     <file-list ref="fileList" :files="files" :stats="getStatsOfTab(selectedTab)" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="files.length <= 0 && isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
 </div>
 </template>
@@ -13,6 +14,7 @@ import HeaderView from '../HeaderView'
 import Tab from './Tab'
 import FileNameFormatInfo from './FileNameFormatInfo'
 import FileList from './FileList'
+import SummaryView from './Summary'
 import FileState from '../../../../../utils/fileState'
 // import File from '../../../store/models/File'
 // import Stream from '../../../store/models/Stream'
@@ -54,7 +56,7 @@ export default {
     isDragging: Boolean
   },
   components: {
-    HeaderView, Tab, FileNameFormatInfo, FileList
+    HeaderView, Tab, FileNameFormatInfo, FileList, SummaryView
   },
   computed: {
     ...mapState({
@@ -71,6 +73,9 @@ export default {
     },
     hasFileInQueued () {
       return this.stats.find(group => FileState.isInQueuedGroup(group.state)) !== undefined
+    },
+    hasCompletedFiles () {
+      return this.stats.find(group => FileState.isInCompletedGroup(group.state)) !== undefined
     },
     numberOfReadyToUploadFiles () {
       const preparingGroup = this.stats.find(group => FileState.isPreparing(group.state))

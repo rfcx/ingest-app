@@ -19,7 +19,7 @@
       <tbody>
         <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :initialFile="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
-      <tfoot v-if="selectedTab !== 'Prepared'">
+      <tfoot v-if="selectedTab === 'Queued'">
         <tr>
           <td colspan="6" class="stats">{{statsDetail}}</td>
         </tr>
@@ -79,12 +79,7 @@ export default {
       const sum = this.stats.map(s => s.stateCount).reduce((a, b) => a + b, 0)
       const moreFiles = sum - this.files.length
       if (moreFiles <= 0) return ''
-      if (this.isCompletedTab) {
-        return this.stats
-          .sort((a, b) => FileState.getStatePriority(a.state) - FileState.getStatePriority(b.state))
-          .map(stat => `${stat.stateCount} ${FileState.getName(stat.state)}`)
-          .join(' | ')
-      } else if (this.isQueuedTab) {
+      if (this.isQueuedTab) {
         return `and ${moreFiles} more files in the queue`
       } else {
         return ''
