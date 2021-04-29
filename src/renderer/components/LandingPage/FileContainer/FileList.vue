@@ -1,9 +1,5 @@
 <template>
   <div>
-    <div class="notification default-notice" v-if="isCompletedTab && !(hasClosedNotice)">
-      <button class="delete" @click="onCloseNotice()"></button>
-      Completed uploads are shown for up to 30 days. To see all uploads, open in Arbimon.
-    </div>
     <loader :show="isFetching" v-if="isFetching"></loader>
     <table class="table file-list-table is-hoverable" v-else-if="files.length > 0">
       <thead>
@@ -59,8 +55,7 @@ export default {
     isDeleting: false,
     deleteAlertTitle: 'Are you sure you want to remove this file?',
     shouldShowConfirmToDeleteAlert: false,
-    fileToBeDeleted: null,
-    hasClosedNotice: false
+    fileToBeDeleted: null
   }),
   components: {
     EmptyView, FileRow, ConfirmAlert, Loader
@@ -71,9 +66,6 @@ export default {
     },
     isQueuedTab () {
       return this.selectedTab === 'Queued'
-    },
-    isCompletedTab () {
-      return this.selectedTab === 'Completed'
     },
     statsDetail () {
       const sum = this.stats.map(s => s.stateCount).reduce((a, b) => a + b, 0)
@@ -109,9 +101,6 @@ export default {
     },
     onImportFiles (files) {
       this.$emit('onImportFiles', files)
-    },
-    onCloseNotice () {
-      this.hasClosedNotice = true
     }
   }
 }
