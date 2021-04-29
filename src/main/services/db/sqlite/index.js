@@ -53,7 +53,8 @@ async function init (app) {
       operatorsAliases: {
         $lt: Op.lt,
         $gt: Op.gt,
-        $gte: Op.gte
+        $gte: Op.gte,
+        $nin: Op.notIn
       }
     })
     await sequelize.authenticate()
@@ -188,9 +189,13 @@ const collections = {
       const values = opts.values || {}
       return models.Stream.update(values, { where })
     },
-    delete: function (id) {
-      console.log('Database streams.update is called.', id)
-      return models.Stream.destroy({ where: { id } })
+    deleteById: function (id) {
+      console.log('Database streams.deleById is called.', id)
+      return collections.streams.delete({ where: { id } })
+    },
+    delete: function (opts) {
+      console.log('Database streams.delete is called.', opts)
+      return models.Stream.destroy({ where: opts.where })
         .then(() => {
           return sequelize.query('VACUUM;', { type: sequelize.QueryTypes.RAW })
         })
