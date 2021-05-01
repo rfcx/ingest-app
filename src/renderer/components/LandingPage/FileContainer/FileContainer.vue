@@ -4,7 +4,7 @@
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream" @onNeedResetFileList="resetFiles" @onNeedResetStreamList="resetStreams"></file-name-format-info>
     <summary-view :stats="getStatsOfTab(selectedTab)" v-if="selectedTab === 'Completed' && hasCompletedFiles"></summary-view>
-    <file-list ref="fileList" :files="files" :stats="getStatsOfTab(selectedTab)" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="files.length <= 0 && isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
+    <file-list ref="fileList" :files="files" :stats="getStatsOfTab(selectedTab)" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="files.length <= 0 && isFetching" :isLoadingMore="isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
 </div>
 </template>
 

@@ -15,9 +15,15 @@
       <tbody>
         <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :initialFile="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
-      <tfoot v-if="selectedTab === 'Queued'">
-        <tr>
-          <td colspan="6" class="stats">{{statsDetail}}</td>
+      <tfoot v-if="!isPreparedTab" class="footer-text">
+        <tr v-if="isUploading">
+          <td colspan="6" class="footer-text__title is-size-7" v-if="isQueuedTab">{{statsDetail}}</td>
+          <td colspan="6" class="footer-text__info is-size-7" v-else>we only show 20 recent files while uploading process is running, pause or wait until the upload finish to see all files</td>
+        </tr>
+        <tr v-else-if="isLoadingMore">
+          <td colspan="6" class="footer-text__title is-size-6">
+            <fa-icon :icon="icons.loading" aria-hidden="true" spin></fa-icon>
+          </td>
         </tr>
       </tfoot>
     </table>
@@ -33,8 +39,8 @@
 </template>
 
 <script>
-// import File from '../../../store/models/File'
-// import Stream from '../../../store/models/Stream'
+import { mapState } from 'vuex'
+import { faCircleNotch } from '@fortawesome/free-solid-svg-icons'
 import ConfirmAlert from '../../Common/ConfirmAlert'
 import Loader from '../../Common/Loader'
 import EmptyView from '../EmptyView'
@@ -49,7 +55,8 @@ export default {
     hasFileInQueued: Boolean,
     selectedTab: String,
     isDragging: Boolean,
-    isFetching: Boolean
+    isFetching: Boolean,
+    isLoadingMore: Boolean
   },
   data: () => ({
     isDeleting: false,
@@ -61,6 +68,14 @@ export default {
     EmptyView, FileRow, ConfirmAlert, Loader
   },
   computed: {
+    ...mapState({
+      selectedStreamId: state => state.AppSetting.selectedStreamId,
+      currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
+      isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
+    }),
+    icons: () => ({
+      loading: faCircleNotch
+    }),
     isPreparedTab () {
       return this.selectedTab === 'Prepared'
     },
@@ -76,6 +91,9 @@ export default {
       } else {
         return ''
       }
+    },
+    isUploading () {
+      return this.currentUploadingSessionId && this.isUploadingProcessEnabled
     }
   },
   methods: {
@@ -140,9 +158,16 @@ export default {
       }
     }
   }
-  .stats {
-    text-align: center !important;
-    color: $body-text-color !important;
+  .footer-text {
+    td {
+      text-align: center !important;
+    }
+    &__title {
+      color: $body-text-color !important;
+    }
+    &__info {
+      color: $secondary-text-color !important;
+    }
   }
 
   .notification {
