@@ -18,7 +18,7 @@
       <tfoot v-if="!isPreparedTab" class="footer-text">
         <tr v-if="isUploading">
           <td colspan="6" class="footer-text__title is-size-7" v-if="isQueuedTab">{{statsDetail}}</td>
-          <td colspan="6" class="footer-text__info is-size-7" v-else>we only show 20 recent files while uploading process is running, pause or wait until the upload finish to see all files</td>
+          <td colspan="6" class="footer-text__info is-size-7" v-else>we only show {{this.$getConst('DEFAULT_LIMIT')}} recent files while uploading process is running, pause or wait until the upload finish to see all files</td>
         </tr>
         <tr v-else-if="isLoadingMore">
           <td colspan="6" class="footer-text__title is-size-6">

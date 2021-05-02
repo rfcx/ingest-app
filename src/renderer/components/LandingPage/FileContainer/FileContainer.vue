@@ -39,8 +39,6 @@ const mergeById = (oldArray, newArray) => {
   return updatedItems.concat(newItems)
 }
 
-const DEFAULT_LIMIT = 20
-
 export default {
   directives: { infiniteScroll },
   data () {
@@ -163,7 +161,7 @@ export default {
     },
     async reloadFiles (query, offset = null, merged = false) {
       let queryOpts = { where: query, order: [['updatedAt', 'DESC']] }
-      if (typeof offset === 'number') { queryOpts = {...queryOpts, offset, limit: DEFAULT_LIMIT} }
+      if (typeof offset === 'number') { queryOpts = {...queryOpts, offset, limit: this.$getConst('DEFAULT_LIMIT')} }
       const newFiles = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, queryOpts)
       if (merged) {
         const currentFiles = this.files
@@ -171,7 +169,7 @@ export default {
         console.log(`reload files ${currentFiles.length} + ${newFiles.length} = ${this.files.length}`)
       } else {
         this.files = newFiles.sort(fileComparator)
-        console.log(`update last ${DEFAULT_LIMIT} : ${this.files.length}`)
+        console.log(`update last ${this.$getConst('DEFAULT_LIMIT')} : ${this.files.length}`)
       }
     },
     async reloadStats () {

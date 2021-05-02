@@ -6,6 +6,7 @@ import App from './App'
 import router from './router'
 import store from './store'
 import file from './services/file'
+import constPlugin from './services/Constants'
 import firebase from 'firebase/app'
 import 'firebase/performance'
 
@@ -62,7 +63,7 @@ Vue.directive('click-outside', {
 })
 
 Vue.$file = file
-
+Vue.use(constPlugin)
 Object.defineProperty(Vue.prototype, '$file', {
   get () {
     return file
