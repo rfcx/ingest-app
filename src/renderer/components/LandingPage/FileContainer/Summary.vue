@@ -69,6 +69,7 @@ export default {
   .item {
     a {
       height: 40px;
+      cursor: default;
     }
     img {
       padding-right: 4px;
