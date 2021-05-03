@@ -9,18 +9,8 @@ const updateStreamStats = async (id, stats) => {
   await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id, params })
 }
 
-const upsertStreams = async (streams) => {
-  const insertOrUpdateStreams = ipcRendererSend('db.streams.upsert', `db.streams.upsert.${Date.now()}`, streams)
-
-  // remove stream that got removed from server
-  const deleteNonExistingStreams = ipcRendererSend('db.streams.delete', `db.streams.delete.${Date.now()}`, {
-    where: {
-      id: {
-        '$nin': streams.map(s => s.id)
-      }
-    }
-  })
-  return Promise.all([insertOrUpdateStreams, deleteNonExistingStreams])
+const upsertStreams = (streams) => {
+  return ipcRendererSend('db.streams.upsert', `db.streams.upsert.${Date.now()}`, streams)
 }
 
 const updateStreams = async (streams) => {
