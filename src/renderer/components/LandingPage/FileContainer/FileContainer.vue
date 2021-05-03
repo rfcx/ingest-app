@@ -213,6 +213,17 @@ export default {
         if (previousTabName === newTabName) return
         await this.resetFiles()
       }
+    },
+    isUploading: {
+      handler: async function (newValue, previousValue) {
+        if (previousValue === newValue) return
+        if (newValue === true) { this.startFilesFetcher() }
+        if (newValue === false || newValue === null) {
+          setTimeout(() => {
+            this.clearFilesFetcher()
+          }, 2000)
+        }
+      }
     }
   },
   async created () {

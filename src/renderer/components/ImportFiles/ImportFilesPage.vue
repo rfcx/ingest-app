@@ -58,7 +58,8 @@ export default {
               const id = response.id
               const deploymentType = response.deploymentType
               const deployedAt = response.deployedAt
-              resolve({stream, id, deploymentType, deployedAt})
+              if (!(stream && id)) resolve(null) // response doesn't have all required field
+              else resolve({stream, id, deploymentType, deployedAt})
             }).catch(error => {
               console.log('getDeploymentInfo error', error)
               this.isLoading = false

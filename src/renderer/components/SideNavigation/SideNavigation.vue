@@ -63,7 +63,6 @@
   import { mapState } from 'vuex'
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
-  // import DatabaseEventName from '../../../../utils/DatabaseEventName'
   import api from '../../../../utils/api'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
@@ -292,7 +291,6 @@
       },
       startStreamFetchingInterval () {
         console.log('startStreamFetchingInterval')
-        this.fetchStreamsInterval = null
         this.fetchStreamsInterval = setInterval(async () => {
           await this.reloadStreamListFromLocalDB()
         }, 2000)
@@ -300,9 +298,11 @@
       stopStreamFetchingInterval () {
         console.log('stopStreamFetchingInterval')
         if (this.fetchStreamsInterval) {
-          console.log('stopStreamFetchingInterval: stop')
-          clearInterval(this.fetchStreamsInterval)
-          this.fetchStreamsInterval = null
+          setTimeout(() => { // fetch 1 last time to get the complete state
+            console.log('stopStreamFetchingInterval: stop')
+            clearInterval(this.fetchStreamsInterval)
+            this.fetchStreamsInterval = null
+          }, 2000)
         }
       },
       manageStreamFetchingInterval (currentUploadingSessionId, isUploadingProcessEnabled) {
