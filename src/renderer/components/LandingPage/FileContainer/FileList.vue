@@ -1,9 +1,5 @@
 <template>
   <div>
-    <div class="notification default-notice" v-if="isCompletedTab && !(hasClosedNotice)">
-      <button class="delete" @click="onCloseNotice()"></button>
-      Completed uploads are shown for up to 30 days. To see all uploads, open in Arbimon.
-    </div>
     <loader :show="isFetching" v-if="isFetching"></loader>
     <table class="table file-list-table is-hoverable" v-else-if="files.length > 0">
       <thead>
@@ -19,9 +15,15 @@
       <tbody>
         <file-row :selectedTab="selectedTab" v-for="file in files" :key="file.id" :initialFile="file" @onTrashPressed="showConfirmToDeleteFileDialog(file)"></file-row>
       </tbody>
-      <tfoot v-if="selectedTab !== 'Prepared'">
-        <tr>
-          <td colspan="6" class="stats">{{statsDetail}}</td>
+      <tfoot v-if="!isPreparedTab" class="footer-text">
+        <tr v-if="isUploading">
+          <td colspan="6" class="footer-text__title is-size-7" v-if="isQueuedTab">{{statsDetail}}</td>
+          <td colspan="6" class="footer-text__info is-size-7" v-else>Only the latest {{this.$getConst('DEFAULT_LIMIT')}} files are shown while uploading. Pause or wait for the upload to complete to see all files.</td>
+        </tr>
+        <tr v-else-if="isLoadingMore">
+          <td colspan="6" class="footer-text__title is-size-6">
+            <fa-icon :icon="icons.loading" aria-hidden="true" spin></fa-icon>
+          </td>
         </tr>
       </tfoot>
     </table>
@@ -37,8 +39,8 @@
 </template>
 
 <script>
-// import File from '../../../store/models/File'
-// import Stream from '../../../store/models/Stream'
+import { mapState } from 'vuex'
+import { faCircleNotch } from '@fortawesome/free-solid-svg-icons'
 import ConfirmAlert from '../../Common/ConfirmAlert'
 import Loader from '../../Common/Loader'
 import EmptyView from '../EmptyView'
@@ -53,42 +55,45 @@ export default {
     hasFileInQueued: Boolean,
     selectedTab: String,
     isDragging: Boolean,
-    isFetching: Boolean
+    isFetching: Boolean,
+    isLoadingMore: Boolean
   },
   data: () => ({
     isDeleting: false,
     deleteAlertTitle: 'Are you sure you want to remove this file?',
     shouldShowConfirmToDeleteAlert: false,
-    fileToBeDeleted: null,
-    hasClosedNotice: false
+    fileToBeDeleted: null
   }),
   components: {
     EmptyView, FileRow, ConfirmAlert, Loader
   },
   computed: {
+    ...mapState({
+      selectedStreamId: state => state.AppSetting.selectedStreamId,
+      currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
+      isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
+    }),
+    icons: () => ({
+      loading: faCircleNotch
+    }),
     isPreparedTab () {
       return this.selectedTab === 'Prepared'
     },
     isQueuedTab () {
       return this.selectedTab === 'Queued'
     },
-    isCompletedTab () {
-      return this.selectedTab === 'Completed'
-    },
     statsDetail () {
       const sum = this.stats.map(s => s.stateCount).reduce((a, b) => a + b, 0)
       const moreFiles = sum - this.files.length
       if (moreFiles <= 0) return ''
-      if (this.isCompletedTab) {
-        return this.stats
-          .sort((a, b) => FileState.getStatePriority(a.state) - FileState.getStatePriority(b.state))
-          .map(stat => `${stat.stateCount} ${FileState.getName(stat.state)}`)
-          .join(' | ')
-      } else if (this.isQueuedTab) {
+      if (this.isQueuedTab) {
         return `and ${moreFiles} more files in the queue`
       } else {
         return ''
       }
+    },
+    isUploading () {
+      return this.currentUploadingSessionId && this.isUploadingProcessEnabled
     }
   },
   methods: {
@@ -114,9 +119,6 @@ export default {
     },
     onImportFiles (files) {
       this.$emit('onImportFiles', files)
-    },
-    onCloseNotice () {
-      this.hasClosedNotice = true
     }
   }
 }
@@ -156,9 +158,16 @@ export default {
       }
     }
   }
-  .stats {
-    text-align: center !important;
-    color: $body-text-color !important;
+  .footer-text {
+    td {
+      text-align: center !important;
+    }
+    &__title {
+      color: $body-text-color !important;
+    }
+    &__info {
+      color: $secondary-text-color !important;
+    }
   }
 
   .notification {

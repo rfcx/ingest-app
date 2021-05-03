@@ -3,7 +3,8 @@
     <header-view :selectedStream="selectedStream"></header-view>
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream" @onNeedResetFileList="resetFiles" @onNeedResetStreamList="resetStreams"></file-name-format-info>
-    <file-list ref="fileList" :files="files" :stats="getStatsOfTab(selectedTab)" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="files.length <= 0 && isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
+    <summary-view :stats="getStatsOfTab(selectedTab)" v-if="selectedTab === 'Completed' && hasCompletedFiles"></summary-view>
+    <file-list ref="fileList" :files="files" :stats="getStatsOfTab(selectedTab)" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="files.length <= 0 && isFetching" :isLoadingMore="isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
 </div>
 </template>
 
@@ -13,6 +14,7 @@ import HeaderView from '../HeaderView'
 import Tab from './Tab'
 import FileNameFormatInfo from './FileNameFormatInfo'
 import FileList from './FileList'
+import SummaryView from './Summary'
 import FileState from '../../../../../utils/fileState'
 // import File from '../../../store/models/File'
 // import Stream from '../../../store/models/Stream'
@@ -37,17 +39,12 @@ const mergeById = (oldArray, newArray) => {
   return updatedItems.concat(newItems)
 }
 
-const DEFAULT_LIMIT = 20
-
 export default {
   directives: { infiniteScroll },
   data () {
     return {
       files: [],
       stats: [],
-      preparingFiles: [],
-      queuingFiles: [],
-      completedFiles: [],
       fetchFilesInterval: null,
       selectedStream: null,
       isFetching: false
@@ -57,11 +54,13 @@ export default {
     isDragging: Boolean
   },
   components: {
-    HeaderView, Tab, FileNameFormatInfo, FileList
+    HeaderView, Tab, FileNameFormatInfo, FileList, SummaryView
   },
   computed: {
     ...mapState({
-      selectedStreamId: state => state.AppSetting.selectedStreamId
+      selectedStreamId: state => state.AppSetting.selectedStreamId,
+      currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
+      isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
     }),
     selectedTab () {
       const savedSelectedTab = this.$store.getters.getSelectedTabByStreamId(this.selectedStreamId)
@@ -73,12 +72,18 @@ export default {
     hasFileInQueued () {
       return this.stats.find(group => FileState.isInQueuedGroup(group.state)) !== undefined
     },
+    hasCompletedFiles () {
+      return this.stats.find(group => FileState.isInCompletedGroup(group.state)) !== undefined
+    },
     numberOfReadyToUploadFiles () {
       const preparingGroup = this.stats.find(group => FileState.isPreparing(group.state))
       return preparingGroup ? preparingGroup.stateCount : 0
     },
     infiniteScrollEnabled () {
-      return !this.isFetching && this.selectedTab === 'Prepared'
+      return !this.isFetching && !this.isUploading
+    },
+    isUploading () {
+      return this.currentUploadingSessionId && this.isUploadingProcessEnabled
     }
   },
   methods: {
@@ -94,7 +99,7 @@ export default {
       this.$emit('onImportFiles', files)
     },
     async loadMore () {
-      if (this.selectedTab !== 'Prepared') { return } // only support pagination in prepare tab
+      if (this.isUploading) { return } // only support pagination when not in uploading mode
       this.isFetching = true
       const offset = this.files.length
       const query = this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false)
@@ -156,7 +161,7 @@ export default {
     },
     async reloadFiles (query, offset = null, merged = false) {
       let queryOpts = { where: query, order: [['updatedAt', 'DESC']] }
-      if (typeof offset === 'number') { queryOpts = {...queryOpts, offset, limit: DEFAULT_LIMIT} }
+      if (typeof offset === 'number') { queryOpts = {...queryOpts, offset, limit: this.$getConst('DEFAULT_LIMIT')} }
       const newFiles = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, queryOpts)
       if (merged) {
         const currentFiles = this.files
@@ -164,6 +169,7 @@ export default {
         console.log(`reload files ${currentFiles.length} + ${newFiles.length} = ${this.files.length}`)
       } else {
         this.files = newFiles.sort(fileComparator)
+        console.log(`update last ${this.$getConst('DEFAULT_LIMIT')} : ${this.files.length}`)
       }
     },
     async reloadStats () {
@@ -175,10 +181,18 @@ export default {
       await this.reloadStats()
       await this.reloadFiles(this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false), 0)
       this.isFetching = false
+      this.startFilesFetcher()
+    },
+    startFilesFetcher () {
+      this.clearFilesFetcher() // make sure it's null before setting a new one
+      if (this.files.length <= 0 || !this.isUploading) return // not initial a fetcher when there is no files or when the uploading process is not running
       this.fetchFilesInterval = setInterval(async () => {
+        console.log('=> FETCHING INTERVAL: START')
         await this.reloadStats()
+        console.log('=> FETCHING INTERVAL: RELOAD STATS')
         if (this.selectedTab === 'Prepared') { return }
         // not reloading files in prepare tab
+        console.log('=> FETCHING INTERVAL: RELOAD FILES')
         await this.reloadFiles(this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false), 0)
       }, 2000)
     },
@@ -186,9 +200,11 @@ export default {
       if (this.fetchFilesInterval) {
         clearInterval(this.fetchFilesInterval)
         this.fetchFilesInterval = null
+        console.log('FETCHING INTERVAL: STOP <=')
       }
     },
     async resetFiles () {
+      this.stats = []
       this.files = []
       this.clearFilesFetcher()
       await this.initFilesFetcher()
@@ -202,14 +218,14 @@ export default {
   },
   watch: {
     selectedStreamId: {
-      handler: async function (previousStream, newStream) {
+      handler: async function (newStream, previousStream) {
         if (previousStream === newStream) return
         await this.getCurrentStream()
         await this.resetFiles()
       }
     },
     selectedTab: {
-      handler: async function (previousTabName, newTabName) {
+      handler: async function (newTabName, previousTabName) {
         if (previousTabName === newTabName) return
         await this.resetFiles()
       }
