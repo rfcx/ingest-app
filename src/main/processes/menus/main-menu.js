@@ -1,7 +1,10 @@
-import { app, Menu } from 'electron'
+import { app, Menu, shell, dialog, BrowserWindow } from 'electron'
 import settings from 'electron-settings'
 import sharedProcess from '../shared/index'
 import sharedMenu from './shared'
+import log from 'electron-log'
+import fileHelper from '../../../../utils/fileHelper'
+import env from '../../../../env.json'
 
 function createMenu (clearDataFunction, logoutFunction, preferenceFunction, aboutFunction, updateFunction) {
   /* MENU */
@@ -44,7 +47,39 @@ function createMenu (clearDataFunction, logoutFunction, preferenceFunction, abou
         }
       ]
     },
-    sharedMenu.getEditMenuTemplate()
+    sharedMenu.getEditMenuTemplate(),
+    {
+      label: 'Help',
+      submenu: [
+        { label: 'Export Logs',
+          click: () => {
+            const currentWin = BrowserWindow.getFocusedWindow()
+            dialog.showSaveDialog(currentWin, {
+              title: 'Export Logs'
+            }).then(result => {
+              const desPath = result.filePath
+              if (desPath) {
+                try {
+                  const file = log.transports.file.getFile()
+                  const directory = fileHelper.getDirectoryFromFilePath(file.path)
+                  fileHelper.archiverDirectory(directory, desPath)
+                } catch (err) {
+                  dialog.showErrorBox('Error', err.message)
+                }
+              }
+            }).catch(err => {
+              console.log(err)
+              dialog.showErrorBox('Error', err.message)
+            })
+          }
+        },
+        { label: 'RFCx Uploader Support',
+          click: () => {
+            shell.openExternal(env.supportSiteUrl)
+          }
+        }
+      ]
+    }
   ]
   let menu = Menu.buildFromTemplate(template)
   Menu.setApplicationMenu(menu)
