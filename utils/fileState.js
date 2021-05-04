@@ -3,11 +3,11 @@ const getStatePriority = function (state) {
     case 'preparing': return 0
     case 'converting':
     case 'uploading': return 1
-    case 'ingesting': return 2
-    case 'waiting': return 3
     case 'local_error':
-    case 'server_error': return 5
-    case 'duplicated': return 6
+    case 'server_error': return 2
+    case 'duplicated': return 2
+    case 'waiting': return 3
+    case 'ingesting': return 4
     case 'completed': return 7
   }
 }
