@@ -8,17 +8,23 @@ function getTimezoneOptions (localTimezone) {
   options['LOCAL_TIME'] = `${fileTimezone.LOCAL_TIME} (${localTimezone})`
   return Object.values(options)
 }
+function getSelectedTimezoneValue (text) {
+  if (text.includes(fileTimezone.LOCAL_TIME)) return text.replace(`${fileTimezone.LOCAL_TIME} (`, '').replace(')', '')
+  else return ''
+}
 
 function getTimezoneOfTheList (files) {
-  // if all files is audiomoth files then timezone = UTC
+  // TODO: if all files is audiomoth files then timezone = UTC
   // default = Local time
 }
 
 function canEditTimezoneOfTheList (files) {
-  // if all files is audiomoth files then can edit = false
+  // TODO: if all files is audiomoth files then can edit = false
 }
 
 export default {
+  fileTimezone,
+  getSelectedTimezoneValue,
   getTimezoneOptions,
   getTimezoneOfTheList,
   canEditTimezoneOfTheList

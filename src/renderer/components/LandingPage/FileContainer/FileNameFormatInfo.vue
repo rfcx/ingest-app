@@ -14,7 +14,7 @@
         title="Filename Timezone" 
         :options="fileNameTimezoneOptions"
         :isLoading="isUpdatingFilenameFormat"
-        :selectedOptionText="selectedTimezone"
+        :selectedOptionText="selectedTimezone !== '' ? selectedTimezone : defaultTimezone"
         @onSelectOption="onTimezoneSave">
       </options-dropdown>
     </div>
@@ -75,6 +75,9 @@ export default {
     },
     fileNameTimezoneOptions () {
       return FileTimeZoneHelper.getTimezoneOptions(this.selectedStream.timezone)
+    },
+    defaultTimezone () {
+      return FileTimeZoneHelper.fileTimezone.UTC
     }
   },
   methods: {
@@ -102,7 +105,7 @@ export default {
       const query = { streamId, state: 'preparing' }
       await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
         where: query,
-        values: { state: 'waiting', stateMessage: null, sessionId }
+        values: { state: 'waiting', stateMessage: null, sessionId, timezone: FileTimeZoneHelper.getSelectedTimezoneValue(this.selectedTimezone) }
       })
       this.isQueuingToUpload = false
 
@@ -166,7 +169,8 @@ export default {
     },
     async onTimezoneSave (timezone) {
       console.log('onTimezoneSave', timezone)
-      // TODO: update file format with timezone
+      this.selectedTimezone = timezone
+      // TODO: maybe saving in site level?
     }
   }
 }
