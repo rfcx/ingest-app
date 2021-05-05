@@ -4,7 +4,7 @@ const fileTimezone = {
 }
 
 function getTimezoneOptions (localTimezone) {
-  const options = fileTimezone
+  const options = {...fileTimezone}
   options['LOCAL_TIME'] = `${fileTimezone.LOCAL_TIME} (${localTimezone})`
   return Object.values(options)
 }

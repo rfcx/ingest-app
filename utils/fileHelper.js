@@ -87,7 +87,7 @@ const getDisplayFileDuration = (file) => {
 }
 
 const getDisplayTimestamp = (file) => {
-  return moment.parseZone(file.timestamp).format('YYYY-MM-DD HH:mm:ss Z')
+  return moment.parseZone(file.timestamp).format('YYYY-MM-DD HH:mm:ss')
 }
 
 const getDisplayFileSize = (file) => {
