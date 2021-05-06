@@ -1,6 +1,6 @@
 {
   "name": "rfcx-ingest",
-  "version": "1.4.1",
+  "version": "1.4.2-alpha.1",
   "author": "RFCx",
   "private": true,
   "description": "Desktop application for ingesting audio to RFCx platform",
