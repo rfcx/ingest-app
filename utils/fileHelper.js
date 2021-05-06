@@ -4,6 +4,7 @@ const fs = require('fs')
 const path = require('path')
 const cryptoJS = require('crypto-js')
 const moment = require('moment-timezone')
+const archiver = require('archiver')
 
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path.replace('app.asar', 'app.asar.unpacked')
 const ffmpeg = require('fluent-ffmpeg')
@@ -186,6 +187,30 @@ const remove = (path) => {
   })
 }
 
+const archiverDirectory = (sourceDirectory, targetFileName) => {
+  var output = fs.createWriteStream(`${targetFileName}.zip`)
+  var archive = archiver('zip')
+
+  output.on('close', function () {
+    console.log(archive.pointer() + ' total bytes')
+    console.log('archiver has been finalized and the output file descriptor has closed.')
+  })
+
+  archive.on('error', function (err) {
+    throw err
+  })
+
+  archive.pipe(output)
+
+  // append files from a sub-directory, putting its contents at the root of archive
+  archive.directory(sourceDirectory, false)
+
+  // append files from a sub-directory and naming it `new-subdir` within the archive
+  archive.directory('subdir/', 'new-subdir')
+
+  archive.finalize()
+}
+
 export default {
   getFilesFromDirectoryPath,
   readFile,
@@ -208,5 +233,6 @@ export default {
   isOutdatedFile,
   rename,
   convert,
-  remove
+  remove,
+  archiverDirectory
 }
