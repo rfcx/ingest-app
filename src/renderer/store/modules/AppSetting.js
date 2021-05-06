@@ -18,8 +18,8 @@ const mutations = {
   ENABLE_UPLOADING_PROCESS (state, enabled) {
     state.isUploadingProcessEnabled = enabled
   },
-  RESET (state, object) {
-    state.selectedTabs = object
+  RESET (state) {
+    state.selectedTabs = {}
     state.currentUploadingSessionId = null
     state.isUploadingProcessEnabled = true
     state.selectedStreamId = null
@@ -39,8 +39,8 @@ const actions = {
   enableUploadingProcess ({ commit }, enabled) {
     commit('ENABLE_UPLOADING_PROCESS', enabled)
   },
-  reset ({ commit }, object) {
-    commit('RESET', object)
+  reset ({ commit }) {
+    commit('RESET')
   }
 }
 
