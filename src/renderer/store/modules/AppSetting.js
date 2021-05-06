@@ -1,5 +1,6 @@
 const state = {
   selectedTabs: {},
+  selectedTimezones: {},
   selectedStreamId: '',
   currentUploadingSessionId: null,
   isUploadingProcessEnabled: true
@@ -8,6 +9,9 @@ const state = {
 const mutations = {
   SET_SELECTED_TAB (state, tabObject) {
     state.selectedTabs = Object.assign({}, state.selectedTabs, tabObject)
+  },
+  SET_SELECTED_TIMEZONE (state, timezoneObject) {
+    state.selectedTimezones = Object.assign({}, state.selectedTimezones, timezoneObject)
   },
   SET_SELECTED_STREAM_ID (state, streamId) {
     state.selectedStreamId = streamId
@@ -23,12 +27,16 @@ const mutations = {
     state.currentUploadingSessionId = null
     state.isUploadingProcessEnabled = true
     state.selectedStreamId = null
+    state.selectedTimezones = {}
   }
 }
 
 const actions = {
   setSelectedTab ({ commit }, tabObject) {
     commit('SET_SELECTED_TAB', tabObject)
+  },
+  setSelectedTimezone ({ commit }, timezoneObject) {
+    commit('SET_SELECTED_TIMEZONE', timezoneObject)
   },
   setSelectedStreamId ({ commit }, streamId) {
     commit('SET_SELECTED_STREAM_ID', streamId)
@@ -45,7 +53,8 @@ const actions = {
 }
 
 const getters = {
-  getSelectedTabByStreamId: state => streamId => state.selectedTabs[streamId]
+  getSelectedTabByStreamId: state => streamId => state.selectedTabs[streamId],
+  getSelectedTimezoneByStreamId: state => streamId => state.selectedTimezones[streamId]
 }
 
 export default {

@@ -14,7 +14,7 @@
         title="Filename Timezone" 
         :options="fileNameTimezoneOptions"
         :isLoading="isUpdatingFilenameFormat"
-        :selectedOptionText="selectedTimezone !== '' ? selectedTimezone : defaultTimezone"
+        :selectedOptionText="getTimezoneOptionText(selectedTimezone)"
         @onSelectOption="onTimezoneSave">
       </options-dropdown>
     </div>
@@ -77,8 +77,12 @@ export default {
       return FileTimeZoneHelper.getTimezoneOptions(this.selectedStream.timezone)
     },
     defaultTimezone () {
-      return FileTimeZoneHelper.fileTimezone.UTC
+      const savedSelectedTimezone = this.$store.getters.getSelectedTimezoneByStreamId(this.selectedStreamId)
+      return this.getTimezoneOptionText(savedSelectedTimezone || FileTimeZoneHelper.fileTimezone.UTC)
     }
+  },
+  created () {
+    this.selectedTimezone = this.defaultTimezone
   },
   methods: {
     async queueToUpload () {
@@ -105,7 +109,7 @@ export default {
       const query = { streamId, state: 'preparing' }
       await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
         where: query,
-        values: { state: 'waiting', stateMessage: null, sessionId, timezone: FileTimeZoneHelper.getSelectedTimezoneValue(this.selectedTimezone) }
+        values: { state: 'waiting', stateMessage: null, sessionId, timezone: this.getSelectedTimezoneValue() }
       })
       this.isQueuingToUpload = false
 
@@ -168,9 +172,18 @@ export default {
       })
     },
     async onTimezoneSave (timezone) {
-      console.log('onTimezoneSave', timezone)
-      this.selectedTimezone = timezone
-      // TODO: maybe saving in site level?
+      this.selectedTimezone = FileTimeZoneHelper.getSelectedTimezoneOption(timezone)
+      const timezoneObject = {}
+      timezoneObject[this.selectedStreamId] = this.selectedTimezone
+      this.$store.dispatch('setSelectedTimezone', timezoneObject)
+    },
+    getSelectedTimezoneValue () {
+      if (this.selectedTimezone.includes(FileTimeZoneHelper.fileTimezone.LOCAL_TIME)) return this.selectedStream.timezone
+      else return ''
+    },
+    getTimezoneOptionText (optionTitle) {
+      if (optionTitle === FileTimeZoneHelper.fileTimezone.LOCAL_TIME) return `${optionTitle} (${this.selectedStream.timezone})`
+      else return optionTitle
     }
   }
 }
