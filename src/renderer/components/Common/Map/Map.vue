@@ -31,7 +31,7 @@
 <script>
 import Mapbox from 'mapbox-gl'
 import { MglMap, MglMarker, MglNavigationControl } from 'vue-mapbox'
-import GeocoderControl from './GeocoderControl'
+import GeocoderControl from '../Map/GeocoderControl'
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
 
 export default {

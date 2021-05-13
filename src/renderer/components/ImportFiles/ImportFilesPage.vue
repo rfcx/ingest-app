@@ -73,22 +73,23 @@ export default {
     },
     async importFiles () {
       const deploymentInfo = await this.getDeploymentInfo(this.deploymentId)
-      if (!deploymentInfo) {
-        this.redirectUserToCreateSiteScreen(deploymentInfo)
-        return
-      }
-      const attachedStream = deploymentInfo.stream
-      if (attachedStream.id) { // has stream infomation attached to deployment info
-        var existStreamInDB = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, attachedStream.id)
-        if (!existStreamInDB) { // no stream in local db
-          existStreamInDB = await this.autoCreateSiteInformation(deploymentInfo.stream)
-        }
-        // then add files to that stream in local db
-        await this.addFilesToExistingStream(existStreamInDB)
-        await this.redirectUserToTheStreamInMainPage(existStreamInDB.id)
-      } else { // no stream info in deployment
-        this.redirectUserToCreateSiteScreen(deploymentInfo)
-      }
+      this.redirectUserToSelectSiteScreen(deploymentInfo)
+      // if (!deploymentInfo) {
+      //   this.redirectUserToCreateSiteScreen(deploymentInfo)
+      //   return
+      // }
+      // const attachedStream = deploymentInfo.stream
+      // if (attachedStream.id) { // has stream infomation attached to deployment info
+      //   var existStreamInDB = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, attachedStream.id)
+      //   if (!existStreamInDB) { // no stream in local db
+      //     existStreamInDB = await this.autoCreateSiteInformation(deploymentInfo.stream)
+      //   }
+      //   // then add files to that stream in local db
+      //   await this.addFilesToExistingStream(existStreamInDB)
+      //   await this.redirectUserToTheStreamInMainPage(existStreamInDB.id)
+      // } else { // no stream info in deployment
+      //   this.redirectUserToCreateSiteScreen(deploymentInfo)
+      // }
     },
     async addFilesToExistingStream (stream) {
       this.$file.handleDroppedFolder(this.selectedSource.path, stream, { deviceId: this.deviceId, deploymentId: this.deploymentInfo ? this.deploymentInfo.id : '' }) // TODO: pass deployment id
@@ -118,6 +119,9 @@ export default {
     async redirectUserToTheStreamInMainPage (streamId) {
       await this.$store.dispatch('setSelectedStreamId', streamId)
       this.$router.push('/')
+    },
+    redirectUserToSelectSiteScreen (deploymentInfo) {
+      this.$router.push({path: '/select-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentInfo: JSON.stringify(deploymentInfo) }})
     }
   }
 }
