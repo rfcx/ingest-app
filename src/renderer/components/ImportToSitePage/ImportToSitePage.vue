@@ -11,9 +11,16 @@
           Site name
           <span class="help is-warning" v-if="shouldShowNameHelperMessage">You must enter a site name</span>
         </label>
-        <div class="control">
+        <DropDownWithSearchInput 
+          placeholder="Search..."
+          @onClearSearchInput="onClearSiteNameSearchInput"
+          @onOptionSelected="onSelectSiteName"
+          specialOption="Create New Site"
+          @onSpecialOptionSelected="onSelectToCreateSite"
+        />
+        <!-- <div class="control">
           <input v-model="form.name" class="input" :class="{'is-warning': shouldShowNameHelperMessage}" type="text" placeholder="Jaguar 1" />
-        </div>
+        </div> -->
       </div>
       <div class="field">
         <label for="location" class="label">Location</label>
@@ -53,6 +60,8 @@
 <script>
 import Map from '../Common/Map/Map'
 import HeaderView from '../Common/HeaderWithBackButton'
+import DropDownWithSearchInput from '../Common/Dropdown/DropdownWithSearchInput'
+
 export default {
   data () {
     return {
@@ -71,7 +80,7 @@ export default {
       errorMessage: ''
     }
   },
-  components: { Map, HeaderView },
+  components: { Map, HeaderView, DropDownWithSearchInput },
   created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
@@ -103,6 +112,18 @@ export default {
     onSelectLocation (coordinates) {
       this.form.selectedLongitude = coordinates[0]
       this.form.selectedLatitude = coordinates[1]
+    },
+    onSelectSiteName (site) {
+      console.log('onSelectSiteName:', site.name)
+      this.form.selectedSiteName = site.name
+    },
+    onSelectToCreateSite () {
+      console.log('onSelectToCreateSite')
+    },
+    onClearSiteNameSearchInput () {
+      console.log('onClearSiteNameSearchInput')
+      this.form.selectedSiteName = ''
+      // TODO: show dropdown again
     }
   }
 }
