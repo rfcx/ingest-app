@@ -1,6 +1,7 @@
 <template>
   <div class="wrapper">
     <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath != null"/>
+    <p class="subtitle">select from existing or create a new site to import files in</p>
     <fieldset>
       <div class="notification default-notice" v-show="errorMessage">
         <button class="delete" @click="onCloseAlert()"></button>
@@ -11,16 +12,14 @@
           Site name
           <span class="help is-warning" v-if="shouldShowNameHelperMessage">You must enter a site name</span>
         </label>
-        <DropDownWithSearchInput 
-          placeholder="Search..."
+        <DropDownWithSearchInput
+          placeholder="Search for an existing site"
           @onClearSearchInput="onClearSiteNameSearchInput"
-          @onOptionSelected="onSelectSiteName"
+          @onOptionSelected="onSelectExistingSiteName"
           specialOption="Create New Site"
           @onSpecialOptionSelected="onSelectToCreateSite"
+          :tagTitle="tagTitle"
         />
-        <!-- <div class="control">
-          <input v-model="form.name" class="input" :class="{'is-warning': shouldShowNameHelperMessage}" type="text" placeholder="Jaguar 1" />
-        </div> -->
       </div>
       <div class="field">
         <label for="location" class="label">Location</label>
@@ -50,7 +49,7 @@
             :class="{ 'is-loading': isLoading }"
             :disabled="!hasPassedValidation"
             @click.prevent="importFiles"
-          >Import</button>
+          >{{ actionButtonTitle }}</button>
         </p>
       </div>
     </fieldset>
@@ -77,6 +76,7 @@ export default {
         selectedFiles: null
       },
       isLoading: false,
+      isCreatingNewSite: false,
       errorMessage: ''
     }
   },
@@ -96,13 +96,19 @@ export default {
   },
   computed: {
     shouldShowNameHelperMessage () {
-      return this.form.selectedCoordinates && this.form.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '')
+      return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '')
     },
     hasPassedValidation () {
       return this.form.name && this.form.selectedLatitude && this.form.selectedLongitude
     },
     selectedCoordinates () {
       return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : null
+    },
+    actionButtonTitle () {
+      return this.isCreatingNewSite ? 'Create' : 'Import'
+    },
+    tagTitle () {
+      return this.form.selectedSiteName ? (this.isCreatingNewSite ? 'New' : 'Existing') : null
     }
   },
   methods: {
@@ -110,15 +116,18 @@ export default {
       console.log('import files')
     },
     onSelectLocation (coordinates) {
+      console.log('onSelectLocation')
       this.form.selectedLongitude = coordinates[0]
       this.form.selectedLatitude = coordinates[1]
     },
-    onSelectSiteName (site) {
+    onSelectExistingSiteName (site) {
       console.log('onSelectSiteName:', site.name)
       this.form.selectedSiteName = site.name
+      this.isCreatingNewSite = false
     },
     onSelectToCreateSite () {
       console.log('onSelectToCreateSite')
+      this.isCreatingNewSite = true
     },
     onClearSiteNameSearchInput () {
       console.log('onClearSiteNameSearchInput')
@@ -140,6 +149,10 @@ export default {
   }
   .controls-group {
     margin-top: $default-padding-margin;
+  }
+  .is-link {
+    cursor: pointer;
+    color: $body-text-color !important;
   }
 </style>
 

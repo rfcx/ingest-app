@@ -1,15 +1,28 @@
 <template>
   <div class="dropdown" :class="{'is-active': isActive}">
     <div class="dropdown-trigger">
-      <div class="field field-stream-name">
-        <p class="control is-expanded has-icons-right">
-          <input v-model="searchText" class="input" type="search" :placeholder="placeholder" :class="{'is-warning': isWarning}" @focus="onSearchInputFocus" :disabled="isDisabled"/>
-          <span class="icon is-small is-right"><fa-icon :icon="icons.arrowDown" aria-hidden="true" /></span>
-        </p>
+      <div class="field">
+        <!-- <p class="control is-expanded has-icons-right"> -->
+          <div class="clearable-input control is-expanded has-icons-right">
+            <input type="text" ref="searchInput" v-model="searchText" class="input" :placeholder="placeholder" :class="{'is-warning': isWarning}" @focus="onSearchInputFocus" :disabled="isDisabled" />
+            <span data-clear-input @click="onClearSearchInputFocus" v-if="searchText.length > 0">&times;</span>
+            <span class="tag is-small is-right" v-if="tagTitle"> {{ tagTitle }} </span>
+            <span class="icon is-small is-right">
+              <fa-icon :icon="icons.arrowDown" aria-hidden="true" />
+            </span>
+          </div>
+          <!-- <input v-model="searchText" class="input" type="search" :placeholder="placeholder" :class="{'is-warning': isWarning}" @focus="onSearchInputFocus" :disabled="isDisabled"/>
+          <span class="icon is-small is-right">
+            <span class="tag is-small is-right" v-if="tagTitle"> {{ tagTitle }} </span>
+            <span class="icon is-small is-right">
+              <fa-icon :icon="icons.arrowDown" aria-hidden="true" />
+            </span>
+          </span> -->
+        <!-- </p> -->
         <p class="help" v-if="helpText !== ''">{{ helpText }}</p>
       </div>
     </div>
-    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+    <div class="dropdown-menu" id="dropdown-menu" role="menu" v-if="showShouldDropDownOptions">
       <div class="dropdown-content">
         <a href="#" class="dropdown-item" v-for="option in dropdownOptions" :key="option.id" :class="{'is-active': option === selectedOption}" @click="onOptionSelected(option)"> {{ option.name }} </a>
         <hr class="dropdown-divider" v-if="specialOption">
@@ -21,12 +34,13 @@
   </div>
 </template>
 <script>
-import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
+import { faAngleDown, faCross } from '@fortawesome/free-solid-svg-icons'
 export default {
   data () {
     return {
       searchText: '',
       isActive: false,
+      showShouldDropDownOptions: true,
       selectedOption: ''
     }
   },
@@ -61,16 +75,27 @@ export default {
     specialOption: {
       type: String,
       default: ''
+    },
+    tagTitle: {
+      type: String,
+      default: ''
     }
   },
   computed: {
     icons: () => ({
-      arrowDown: faAngleDown
+      arrowDown: faAngleDown,
+      delete: faCross
     })
   },
   methods: {
     onSearchInputFocus () {
       this.$emit('onSearchInputFocus')
+      this.toggleDropdown(true)
+    },
+    onClearSearchInputFocus () {
+      console.log('onClearSearchInputFocus')
+      this.$emit('onClearSearchInputFocus')
+      this.searchText = ''
       this.toggleDropdown(true)
     },
     onOptionSelected (option) {
@@ -81,10 +106,17 @@ export default {
     },
     onSpecialOptionSelected (option) {
       this.$emit('onSpecialOptionSelected', option)
-      this.toggleDropdown(false)
+      this.focusDropdownTrigger()
     },
     toggleDropdown (show) {
       this.isActive = show
+      this.showShouldDropDownOptions = show
+    },
+    focusDropdownTrigger () {
+      console.log('focusDropdownTrigger')
+      this.$refs.searchInput.focus()
+      this.isActive = true
+      this.showShouldDropDownOptions = false
     }
   },
   watch: {
@@ -107,5 +139,33 @@ export default {
   }
   .dropdown-trigger {
     height: 40px;
+    .control {
+      .tag {
+        position: absolute;
+        top: 5px;
+        right: 48px;
+        font-size: 10px;
+      }
+    }
   }
+  .clearable-input {
+    position: relative;
+  }
+  .clearable-input > input {
+    padding-right: 1.4em;
+  }
+  .clearable-input > [data-clear-input] {
+    position: absolute;
+    top: 6px;
+    right: 24px;
+    font-weight: bold;
+    font-size: 1.4em;
+    padding: 0 0.2em;
+    line-height: 1em;
+    cursor: pointer;
+  }
+  .clearable-input > input::-ms-clear {
+    display: none;
+  }
+  
 </style>
