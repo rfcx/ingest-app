@@ -8,21 +8,13 @@
             <span data-clear-input @click="onClearSearchInputFocus" v-if="searchText.length > 0">&times;</span>
             <span class="tag is-small is-right" v-if="tagTitle"> {{ tagTitle }} </span>
             <span class="icon is-small is-right">
-              <fa-icon :icon="icons.arrowDown" aria-hidden="true" />
+              <fa-icon :icon="icons.arrowDown" aria-hidden="true" @click="focusDropdownTrigger()" />
             </span>
           </div>
-          <!-- <input v-model="searchText" class="input" type="search" :placeholder="placeholder" :class="{'is-warning': isWarning}" @focus="onSearchInputFocus" :disabled="isDisabled"/>
-          <span class="icon is-small is-right">
-            <span class="tag is-small is-right" v-if="tagTitle"> {{ tagTitle }} </span>
-            <span class="icon is-small is-right">
-              <fa-icon :icon="icons.arrowDown" aria-hidden="true" />
-            </span>
-          </span> -->
-        <!-- </p> -->
         <p class="help" v-if="helpText !== ''">{{ helpText }}</p>
       </div>
     </div>
-    <div class="dropdown-menu" id="dropdown-menu" role="menu" v-if="showShouldDropDownOptions">
+    <div class="dropdown-menu" id="dropdown-menu" role="menu" v-if="shouldShowDropDownOptions">
       <div class="dropdown-content">
         <a href="#" class="dropdown-item" v-for="option in dropdownOptions" :key="option.id" :class="{'is-active': option === selectedOption}" @click="onOptionSelected(option)"> {{ option.name }} </a>
         <hr class="dropdown-divider" v-if="specialOption">
@@ -40,7 +32,7 @@ export default {
     return {
       searchText: '',
       isActive: false,
-      showShouldDropDownOptions: true,
+      shouldShowDropDownOptions: true,
       selectedOption: ''
     }
   },
@@ -93,7 +85,6 @@ export default {
       this.toggleDropdown(true)
     },
     onClearSearchInputFocus () {
-      console.log('onClearSearchInputFocus')
       this.$emit('onClearSearchInputFocus')
       this.searchText = ''
       this.toggleDropdown(true)
@@ -106,17 +97,17 @@ export default {
     },
     onSpecialOptionSelected (option) {
       this.$emit('onSpecialOptionSelected', option)
-      this.focusDropdownTrigger()
+      this.focusDropdownTrigger() // TODO: this might need to be in subclass
     },
     toggleDropdown (show) {
       this.isActive = show
-      this.showShouldDropDownOptions = show
+      this.shouldShowDropDownOptions = show
     },
     focusDropdownTrigger () {
       console.log('focusDropdownTrigger')
       this.$refs.searchInput.focus()
       this.isActive = true
-      this.showShouldDropDownOptions = false
+      this.shouldShowDropDownOptions = false
     }
   },
   watch: {

@@ -12,20 +12,15 @@
           Site name
           <span class="help is-warning" v-if="shouldShowNameHelperMessage">You must enter a site name</span>
         </label>
-        <DropDownWithSearchInput
-          placeholder="Search for an existing site"
-          @onClearSearchInput="onClearSiteNameSearchInput"
-          @onOptionSelected="onSelectExistingSiteName"
-          specialOption="Create New Site"
-          @onSpecialOptionSelected="onSelectToCreateSite"
-          :tagTitle="tagTitle"
-        />
+        <SelectSiteDropdownInput
+        :updateIsCreatingNewSite.sync="isCreatingNewSite"
+        @onSelectedSiteNameChanged="onSelectedSiteName"/>
       </div>
       <div class="field">
         <label for="location" class="label">Location</label>
         <Map class="map-wrapper" @locationSelected="onSelectLocation" :lngLat="selectedCoordinates" ref="map"></Map>
       </div>
-      <div class="folder-path-input__wrapper" v-if="props.selectedFolderPath != null">
+      <!-- <div class="folder-path-input__wrapper" v-if="props.selectedFolderPath != null">
         <label for="path" class="label">Folder path</label>
         <div class="field has-addons" >
           <div class="control is-expanded">
@@ -35,7 +30,7 @@
             <a class="button" @click="$router.push('/import')">Change</a>
           </div>
         </div>
-      </div>
+      </div> -->
       <div class="field is-grouped controls-group">
         <p class="control control-btn">
           <router-link class="control-btn" to="/">
@@ -59,8 +54,7 @@
 <script>
 import Map from '../Common/Map/Map'
 import HeaderView from '../Common/HeaderWithBackButton'
-import DropDownWithSearchInput from '../Common/Dropdown/DropdownWithSearchInput'
-
+import SelectSiteDropdownInput from './SelectSiteDropDownInput'
 export default {
   data () {
     return {
@@ -80,7 +74,7 @@ export default {
       errorMessage: ''
     }
   },
-  components: { Map, HeaderView, DropDownWithSearchInput },
+  components: { Map, HeaderView, SelectSiteDropdownInput },
   created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
@@ -106,9 +100,6 @@ export default {
     },
     actionButtonTitle () {
       return this.isCreatingNewSite ? 'Create' : 'Import'
-    },
-    tagTitle () {
-      return this.form.selectedSiteName ? (this.isCreatingNewSite ? 'New' : 'Existing') : null
     }
   },
   methods: {
@@ -120,19 +111,8 @@ export default {
       this.form.selectedLongitude = coordinates[0]
       this.form.selectedLatitude = coordinates[1]
     },
-    onSelectExistingSiteName (site) {
-      console.log('onSelectSiteName:', site.name)
-      this.form.selectedSiteName = site.name
-      this.isCreatingNewSite = false
-    },
-    onSelectToCreateSite () {
-      console.log('onSelectToCreateSite')
-      this.isCreatingNewSite = true
-    },
-    onClearSiteNameSearchInput () {
-      console.log('onClearSiteNameSearchInput')
-      this.form.selectedSiteName = ''
-      // TODO: show dropdown again
+    onSelectedSiteName (siteName) {
+      this.form.selectedSiteName = siteName
     }
   }
 }
