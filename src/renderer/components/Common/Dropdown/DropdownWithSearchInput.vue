@@ -2,13 +2,12 @@
   <div class="dropdown" :class="{'is-active': isActive}">
     <div class="dropdown-trigger">
       <div class="field">
-        <!-- <p class="control is-expanded has-icons-right"> -->
           <div class="clearable-input control is-expanded has-icons-right">
-            <input type="text" ref="searchInput" v-model="searchText" class="input" :placeholder="placeholder" :class="{'is-warning': isWarning}" @focus="onSearchInputFocus" :disabled="isDisabled" />
-            <span data-clear-input @click="onClearSearchInputFocus" v-if="searchText.length > 0">&times;</span>
+            <input type="text" ref="searchInput" v-model="searchText" class="input" :placeholder="placeholder" :class="{'is-warning': isWarning}" @focus="onSearchInputFocus" @blur="onSearchInputBlur" :disabled="isDisabled" />
+            <span data-clear-input @click="onClearSearchInputFocus" v-if="searchText !== ''">&times;</span>
             <span class="tag is-small is-right" v-if="tagTitle"> {{ tagTitle }} </span>
-            <span class="icon is-small is-right">
-              <fa-icon :icon="icons.arrowDown" aria-hidden="true" @click="focusDropdownTrigger()" />
+            <span class="icon is-small is-right" v-if="searchText === ''">
+              <fa-icon :icon="icons.arrowDown" aria-hidden="true" @click="hideOnlyDropdownOptions()" />
             </span>
           </div>
         <p class="help" v-if="helpText !== ''">{{ helpText }}</p>
@@ -84,6 +83,12 @@ export default {
       this.$emit('onSearchInputFocus')
       this.toggleDropdown(true)
     },
+    onSearchInputBlur (e) {
+      this.$emit('onSearchInputBlur')
+      if (e.relatedTarget === null) {
+        this.toggleDropdown(false)
+      }
+    },
     onClearSearchInputFocus () {
       this.$emit('onClearSearchInputFocus')
       this.searchText = ''
@@ -97,26 +102,22 @@ export default {
     },
     onSpecialOptionSelected (option) {
       this.$emit('onSpecialOptionSelected', option)
-      this.focusDropdownTrigger() // TODO: this might need to be in subclass
+      this.hideOnlyDropdownOptions() // TODO: this might need to be in subclass
     },
     toggleDropdown (show) {
       this.isActive = show
       this.shouldShowDropDownOptions = show
     },
-    focusDropdownTrigger () {
-      console.log('focusDropdownTrigger')
+    hideOnlyDropdownOptions () {
       this.$refs.searchInput.focus()
       this.isActive = true
       this.shouldShowDropDownOptions = false
     }
   },
   watch: {
-    searchText: function (value) {
-      console.log(value)
-      if (value === '') {
-        this.$emit('onClearSearchInput')
-        this.toggleDropdown(true)
-      }
+    searchText: function (value, prev) {
+      if (value === prev) return
+      this.$emit('onSeachInputTextChanged', value)
     }
   }
 }
@@ -134,7 +135,7 @@ export default {
       .tag {
         position: absolute;
         top: 5px;
-        right: 48px;
+        right: 24px;
         font-size: 10px;
       }
     }
@@ -148,7 +149,7 @@ export default {
   .clearable-input > [data-clear-input] {
     position: absolute;
     top: 6px;
-    right: 24px;
+    right: 5px;
     font-weight: bold;
     font-size: 1.4em;
     padding: 0 0.2em;
