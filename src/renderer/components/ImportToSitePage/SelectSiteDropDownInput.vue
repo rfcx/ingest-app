@@ -8,6 +8,7 @@
     :specialOption="specialOptionTitle"
     @onSpecialOptionSelected="onSelectToCreateSite"
     :tagTitle="tagTitle"
+    :isWarning="isWarning"
   />
 </template>
 
@@ -22,10 +23,16 @@ export default {
       siteOptions: null
     }
   },
+  props: {
+    isWarning: {
+      type: Boolean,
+      default: false
+    }
+  },
   components: { DropDownWithSearchInput },
   computed: {
     tagTitle () {
-      return this.selectedSiteName ? (this.isCreatingNewSite ? 'New' : 'Existing') : null
+      return this.selectedSiteName && this.isCreatingNewSite ? 'New' : null
     },
     specialOptionTitle () {
       return this.selectedSiteName && !this.selectedSiteNameHasExactMatchsWithOptions ? `Create New Site: ${this.selectedSiteName}` : null

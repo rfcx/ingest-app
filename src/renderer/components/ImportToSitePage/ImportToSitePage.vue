@@ -1,9 +1,8 @@
 <template>
   <div class="wrapper">
     <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath != null"/>
-    <p class="subtitle">select from existing or create a new site to import files in</p>
     <fieldset>
-      <div class="notification default-notice" v-show="errorMessage">
+      <div class="notification default-notice" v-if="errorMessage">
         <button class="delete" @click="onCloseAlert()"></button>
         {{ errorMessage }}
       </div>
@@ -14,23 +13,13 @@
         </label>
         <SelectSiteDropdownInput
         :updateIsCreatingNewSite.sync="isCreatingNewSite"
+        :isWarning="shouldShowNameHelperMessage"
         @onSelectedSiteNameChanged="onSelectedSite"/>
       </div>
       <div class="field">
         <label for="location" class="label">Location</label>
         <Map class="map-wrapper" @locationSelected="onUpdateLocation" :lngLat="selectedCoordinates" :isReadOnly="!isCreatingNewSite" ref="map"></Map>
       </div>
-      <!-- <div class="folder-path-input__wrapper" v-if="props.selectedFolderPath != null">
-        <label for="path" class="label">Folder path</label>
-        <div class="field has-addons" >
-          <div class="control is-expanded">
-            <input class="input" type="path" :value="props.selectedFolderPath" readonly>
-          </div>
-          <div class="control">
-            <a class="button" @click="$router.push('/import')">Change</a>
-          </div>
-        </div>
-      </div> -->
       <div class="field is-grouped controls-group">
         <p class="control control-btn">
           <router-link class="control-btn" to="/">

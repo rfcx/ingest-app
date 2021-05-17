@@ -11,7 +11,6 @@
             :placeholder="placeholder" 
             :class="{'is-warning': isWarning}" 
             @focus="onSearchInputFocus" 
-            @blur="onSearchInputBlur" 
             @keydown="toggleDropdown(true)" 
             @keyup.enter="toggleDropdown(false)"
             :disabled="isDisabled" />
@@ -27,7 +26,7 @@
     <div class="dropdown-menu" id="dropdown-menu" role="menu" v-if="shouldShowDropDownOptions">
       <div class="dropdown-content">
         <a href="#" class="dropdown-item" v-for="option in dropdownOptions" :key="option.id" :class="{'is-active': option === selectedOption}" @click="onOptionSelected(option)"> {{ option.name }} </a>
-        <hr class="dropdown-divider" v-if="specialOption">
+        <hr class="dropdown-divider" v-if="specialOption && dropdownOptions.length > 0">
         <a href="#" class="dropdown-item" v-if="specialOption" @click="onSpecialOptionSelected()">
           {{ specialOption }}
         </a>
@@ -69,8 +68,8 @@ export default {
       type: Array,
       default: () => {
         return [
-          {id: 'aaa', name: 'Aaa'},
-          {id: 'bbb', name: 'Bbb'}
+          {id: '1', name: 'Option 1'},
+          {id: '2', name: 'Option 2'}
         ]
       }
     },
@@ -141,13 +140,15 @@ export default {
     width: 100%;
   }
   .dropdown-trigger {
-    height: 40px;
+    height: 32px;
     .control {
       .tag {
         position: absolute;
-        top: 5px;
-        right: 24px;
+        top: 6px;
+        right: 28px;
         font-size: 10px;
+        font-weight: bold;
+        text-transform: uppercase;
       }
     }
   }
