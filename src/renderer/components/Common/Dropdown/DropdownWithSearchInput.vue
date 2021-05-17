@@ -3,7 +3,18 @@
     <div class="dropdown-trigger">
       <div class="field">
           <div class="clearable-input control is-expanded has-icons-right">
-            <input type="text" ref="searchInput" v-model="searchText" class="input" :placeholder="placeholder" :class="{'is-warning': isWarning}" @focus="onSearchInputFocus" @blur="onSearchInputBlur" :disabled="isDisabled" />
+            <input 
+            type="text" 
+            ref="searchInput" 
+            v-model="searchText" 
+            class="input" 
+            :placeholder="placeholder" 
+            :class="{'is-warning': isWarning}" 
+            @focus="onSearchInputFocus" 
+            @blur="onSearchInputBlur" 
+            @keydown="toggleDropdown(true)" 
+            @keyup.enter="toggleDropdown(false)"
+            :disabled="isDisabled" />
             <span data-clear-input @click="onClearSearchInputFocus" v-if="searchText !== ''">&times;</span>
             <span class="tag is-small is-right" v-if="tagTitle"> {{ tagTitle }} </span>
             <span class="icon is-small is-right" v-if="searchText === ''">

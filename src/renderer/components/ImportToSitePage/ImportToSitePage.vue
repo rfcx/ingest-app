@@ -14,11 +14,11 @@
         </label>
         <SelectSiteDropdownInput
         :updateIsCreatingNewSite.sync="isCreatingNewSite"
-        @onSelectedSiteNameChanged="onSelectedSiteName"/>
+        @onSelectedSiteNameChanged="onSelectedSite"/>
       </div>
       <div class="field">
         <label for="location" class="label">Location</label>
-        <Map class="map-wrapper" @locationSelected="onSelectLocation" :lngLat="selectedCoordinates" ref="map"></Map>
+        <Map class="map-wrapper" @locationSelected="onUpdateLocation" :lngLat="selectedCoordinates" :isReadOnly="!isCreatingNewSite" ref="map"></Map>
       </div>
       <!-- <div class="folder-path-input__wrapper" v-if="props.selectedFolderPath != null">
         <label for="path" class="label">Folder path</label>
@@ -69,6 +69,7 @@ export default {
         selectedFolderPath: null,
         selectedFiles: null
       },
+      selectedExistingSite: null,
       isLoading: false,
       isCreatingNewSite: false,
       errorMessage: ''
@@ -93,10 +94,10 @@ export default {
       return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '')
     },
     hasPassedValidation () {
-      return this.form.name && this.form.selectedLatitude && this.form.selectedLongitude
+      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude
     },
     selectedCoordinates () {
-      return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : null
+      return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : []
     },
     actionButtonTitle () {
       return this.isCreatingNewSite ? 'Create' : 'Import'
@@ -106,13 +107,24 @@ export default {
     importFiles () {
       console.log('import files')
     },
-    onSelectLocation (coordinates) {
-      console.log('onSelectLocation')
+    onUpdateLocation (coordinates) {
+      console.log('onUpdateLocation')
       this.form.selectedLongitude = coordinates[0]
       this.form.selectedLatitude = coordinates[1]
     },
-    onSelectedSiteName (siteName) {
-      this.form.selectedSiteName = siteName
+    onSelectedSite (site) {
+      // update site name in the form
+      this.form.selectedSiteName = site.name
+
+      // update location in the form, if needed (select existing site or on the first attempt to create new)
+      const hasBeenChoosingExistingSiteBefore = this.isCreatingNewSite && this.selectedExistingSite // create new site, after been choosing existing one
+      if (!this.isCreatingNewSite || hasBeenChoosingExistingSiteBefore) {
+        this.onUpdateLocation([site.longitude, site.latitude])
+      }
+
+      // update selecting existing site, if any
+      this.selectedExistingSite = !this.isCreatingNewSite ? site : null
+      console.log('form after selected site', JSON.stringify(this.form))
     }
   }
 }

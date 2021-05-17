@@ -52,8 +52,8 @@ export default {
     },
     async onSeachInputTextChanged (text) {
       console.log('onSeachInputTextChanged', text)
-      this.selectedSiteName = text
       await this.getSiteOptions(text)
+      this.selectedSiteName = text
       if (this.selectedSiteNameHasExactMatchsWithOptions) {
         this.updateIsCreatingNewSite(false) // use exact matchs
       } else {
@@ -82,7 +82,8 @@ export default {
     selectedSiteName: {
       handler: async function (value, prevValue) {
         if (value === prevValue) return
-        this.$emit('onSelectedSiteNameChanged', value)
+        let selectedSite = this.siteOptions.find(s => s.name === value) || { name: value }
+        this.$emit('onSelectedSiteNameChanged', selectedSite)
       }
     }
   }
