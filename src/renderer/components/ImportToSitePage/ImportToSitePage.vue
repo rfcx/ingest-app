@@ -49,6 +49,7 @@ import ipcRendererSend from '../../services/ipc'
 import FileFormat from '../../../../utils/FileFormat'
 import dateHelper from '../../../../utils/dateHelper'
 import settings from 'electron-settings'
+import streamHelper from '../../../../utils/streamHelper'
 export default {
   data () {
     return {
@@ -99,7 +100,6 @@ export default {
   },
   methods: {
     async importFiles () {
-      this.isLoading = true
       if (this.isCreatingNewSite) {
         await this.createSite()
       }
@@ -115,6 +115,10 @@ export default {
       this.$router.push('/')
     },
     async createSite () {
+      if (this.isCreatingNewSite && !streamHelper.isValidName(this.form.selectedSiteName)) {
+        this.errorMessage = streamHelper.getNameError(this.form.selectedSiteName)
+        return
+      }
       const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
       const name = this.form.selectedSiteName
       const latitude = this.form.selectedLatitude
@@ -123,6 +127,7 @@ export default {
       const fileFormat = FileFormat.fileFormat.AUTO_DETECT
       const env = settings.get('settings.production_env')
       try {
+        this.isLoading = true
         const siteId = await api.createStream(env, name, latitude, longitude, isPublic, null, idToken)
         const site = {
           id: siteId,
