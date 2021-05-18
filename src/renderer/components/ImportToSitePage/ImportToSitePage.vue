@@ -44,6 +44,11 @@
 import Map from '../Common/Map/Map'
 import HeaderView from '../Common/HeaderWithBackButton'
 import SelectSiteDropdownInput from './SelectSiteDropDownInput'
+import api from '../../../../utils/api'
+import ipcRendererSend from '../../services/ipc'
+import FileFormat from '../../../../utils/FileFormat'
+import dateHelper from '../../../../utils/dateHelper'
+import settings from 'electron-settings'
 export default {
   data () {
     return {
@@ -60,7 +65,7 @@ export default {
       },
       selectedExistingSite: null,
       isLoading: false,
-      isCreatingNewSite: false,
+      isCreatingNewSite: true,
       errorMessage: ''
     }
   },
@@ -93,8 +98,49 @@ export default {
     }
   },
   methods: {
-    importFiles () {
-      console.log('import files')
+    async importFiles () {
+      this.isLoading = true
+      if (this.isCreatingNewSite) {
+        await this.createSite()
+      }
+      // if site created successfully, it will be assigned to the selected existing site
+      // then add file to site
+      if (!this.selectedExistingSite) return
+      if (this.props.selectedFolderPath) {
+        this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, {
+          deploymentId: this.props.deploymentInfo ? this.props.deploymentInfo.id : ''
+        })
+      }
+      await this.$store.dispatch('setSelectedStreamId', this.selectedExistingSite.id)
+      this.$router.push('/')
+    },
+    async createSite () {
+      const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
+      const name = this.form.selectedSiteName
+      const latitude = this.form.selectedLatitude
+      const longitude = this.form.selectedLongitude
+      const isPublic = false
+      const fileFormat = FileFormat.fileFormat.AUTO_DETECT
+      const env = settings.get('settings.production_env')
+      try {
+        const siteId = await api.createStream(env, name, latitude, longitude, isPublic, null, idToken)
+        const site = {
+          id: siteId,
+          name: this.form.selectedSiteName,
+          latitude: latitude,
+          longitude: longitude,
+          timezone: dateHelper.getDefaultTimezone(latitude, longitude),
+          timestampFormat: fileFormat,
+          env: env ? 'production' : 'staging',
+          isPublic: isPublic,
+          lastModifiedAt: new Date()
+        }
+        await ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, site)
+        this.selectedExistingSite = site
+      } catch (error) {
+        this.isLoading = false
+        this.errorMessage = error === 'Unauthorized' ? 'You are not authorized.' : error
+      }
     },
     onUpdateLocation (coordinates) {
       console.log('onUpdateLocation')
