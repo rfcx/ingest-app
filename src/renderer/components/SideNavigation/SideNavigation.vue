@@ -16,8 +16,8 @@
       </div>
     </div>
     <div class="menu-container wrapper__controls">
-      <button type="button" class="button is-rounded rounded-button" @click="showDropDownMenu" v-click-outside="hideDropDownMenu">
-        <span>+</span>Upload Audio
+      <button type="button" class="button is-rounded rounded-button" @click="goToImportFiles">
+        <span>+</span>Import Files
       </button>
     </div>
     <div class="wrapper__title">
@@ -164,11 +164,8 @@
           }
         }, 500)
       },
-      showDropDownMenu () {
-        this.$emit('clickNewSiteButton')
-      },
-      hideDropDownMenu () {
-        this.$emit('clickOutSideNewSiteButton')
+      goToImportFiles () {
+        this.$router.push({path: '/import'})
       },
       getStateImgUrl (state) {
         if (state === '') return ''
