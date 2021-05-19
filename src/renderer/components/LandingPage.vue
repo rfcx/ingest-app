@@ -121,14 +121,6 @@
       hideNewSiteDropDown () {
         this.shouldShowNewSiteDropDown = false
       },
-      async migrateDatabase () {
-        // vuex migration
-        const selectedStreamIdInAppSettingModel = this.$store.state.AppSetting.selectedStreamId
-        const selectedStreamIdInStreamModel = this.$store.state.Stream.selectedStreamId
-        if (!selectedStreamIdInAppSettingModel && selectedStreamIdInStreamModel) {
-          await this.$store.dispatch('setSelectedStreamId', selectedStreamIdInStreamModel)
-        }
-      },
       async resetStreamList () {
         await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
       }
@@ -149,7 +141,6 @@
       }
     },
     async created () {
-      await this.migrateDatabase()
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()

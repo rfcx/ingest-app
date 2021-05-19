@@ -15,6 +15,6 @@ export default {
   async clearAllData () {
     await dbService.deleteAllRecords()
     await store.dispatch('entities/deleteAll')
-    await store.dispatch('reset', {})
+    await store.dispatch('reset')
   }
 }
