@@ -53,7 +53,8 @@ async function init (app) {
       operatorsAliases: {
         $lt: Op.lt,
         $gt: Op.gt,
-        $gte: Op.gte
+        $gte: Op.gte,
+        $like: Op.like
       }
     })
     await sequelize.authenticate()

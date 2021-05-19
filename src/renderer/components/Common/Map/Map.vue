@@ -18,9 +18,11 @@
       position="bottom-right"
       types="country,region,postcode,district,place,locality,neighborhood"
       @result="onSelected"
+      v-if="!isReadOnly"
     />
+    <ReadOnlyGeoCoderControl :coordinates="selectedCoordinates" v-else/>
     <MglNavigationControl position="top-right" :showZoom="true" :showCompass="false" />
-    <MglMarker v-if="selectedCoordinates && selectedCoordinates.length" :coordinates="selectedCoordinates" :draggable="true" @dragend="getPlacePositionByDrop">
+    <MglMarker v-if="selectedCoordinates && selectedCoordinates.length" :coordinates="selectedCoordinates" :draggable="!isReadOnly" @dragend="getPlacePositionByDrop">
       <div slot="marker" class="map-marker" :title="getMarkerTitle()">
         <img src="@/assets/ic-map-marker.png" alt class="map-marker__icon" />
       </div>
@@ -31,7 +33,8 @@
 <script>
 import Mapbox from 'mapbox-gl'
 import { MglMap, MglMarker, MglNavigationControl } from 'vue-mapbox'
-import GeocoderControl from './GeocoderControl'
+import GeocoderControl from '../Map/GeocoderControl'
+import ReadOnlyGeoCoderControl from '../Map/ReadOnlyGeocoderControl'
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
 
 export default {
@@ -48,8 +51,8 @@ export default {
       isDraggable: false
     }
   },
-  components: { MglMap, GeocoderControl, MglMarker, MglNavigationControl },
-  props: ['title', 'lngLat'],
+  components: { MglMap, GeocoderControl, MglMarker, MglNavigationControl, ReadOnlyGeoCoderControl },
+  props: ['title', 'lngLat', 'isReadOnly'],
   methods: {
     getMarkerTitle () {
       return this.title ? this.title : 'marker'
@@ -58,6 +61,7 @@ export default {
       this.selectedCoordinates = event.result.center
     },
     getPlacePositionByDrop (event) {
+      if (this.isReadOnly) return
       this.isDraggable = true
       var lngLat = event.marker.getLngLat()
       const lng = lngLat.lng
@@ -67,7 +71,7 @@ export default {
       setTimeout(() => { this.isDraggable = false }, 100)
     },
     getPlacePositionByClick (event) {
-      if (this.isDraggable) return
+      if (this.isDraggable || this.isReadOnly) return
       if (event.mapboxEvent.lngLat) {
         const lng = event.mapboxEvent.lngLat.lng
         const lat = event.mapboxEvent.lngLat.lat
@@ -119,6 +123,11 @@ export default {
       this.updateTextInput(coordinates[0], coordinates[1])
       this.center = coordinates
       this.zoom = this.closeMapZoom
+    },
+    resetCoordinates () {
+      this.selectedCoordinates = []
+      this.updateMapCoordinatesForMarker()
+      this.defaultInput = ''
     }
   },
   watch: {
@@ -126,6 +135,11 @@ export default {
       if (val === oldVal || val.length !== 2) return
       this.updateMapCoordinatesForMarker(val[0], val[1])
       this.$emit('locationSelected', val)
+    },
+    lngLat (val, oldVal) {
+      if (val === oldVal) return
+      if (val === null || val.length < 2) this.resetCoordinates()
+      else this.updateCoordinates(val)
     }
   },
   created () {

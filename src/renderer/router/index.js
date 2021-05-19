@@ -22,6 +22,11 @@ export default new Router({
       component: require('@/components/ImportFiles/ImportFilesPage').default
     },
     {
+      path: '/select-site',
+      name: 'select-site',
+      component: require('@/components/ImportToSitePage/ImportToSitePage').default
+    },
+    {
       path: '/import-to-existing-site',
       name: 'import-to-existing-site',
       component: require('@/components/ImportToExistingSite/ImportToExistingSitePage').default,

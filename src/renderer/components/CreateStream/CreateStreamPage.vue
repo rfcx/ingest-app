@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <header-view title="Create Site" :shouldShowBackButton="selectedFolderPath != null"/>
+    <header-view title="Select Site" :shouldShowBackButton="selectedFolderPath != null"/>
     <fieldset>
       <div class="notification default-notice" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
@@ -56,7 +56,7 @@ import streamHelper from '../../../../utils/streamHelper'
 import dateHelper from '../../../../utils/dateHelper'
 import FileFormat from '../../../../utils/FileFormat'
 import settings from 'electron-settings'
-import Map from './Map'
+import Map from '../Common/Map/Map'
 import HeaderView from '../Common/HeaderWithBackButton'
 import ipcRendererSend from '../../services/ipc'
 
@@ -82,7 +82,7 @@ export default {
       return this.name && this.selectedLatitude && this.selectedLongitude
     },
     selectedCoordinates () {
-      return this.sselectedLatitude ? [this.selectedLongitude, this.selectedLatitude] : null
+      return this.selectedLatitude ? [this.selectedLongitude, this.selectedLatitude] : null
     }
   },
   created () {
