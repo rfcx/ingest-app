@@ -98,7 +98,6 @@ export default {
   methods: {
     onSearchInputFocus () {
       this.$emit('onSearchInputFocus')
-      if (this.isReadOnly) return
       this.toggleDropdown(true)
     },
     onSearchInputBlur (e) {
@@ -123,6 +122,7 @@ export default {
       this.hideOnlyDropdownOptions() // TODO: this might need to be in subclass
     },
     toggleDropdown (show) {
+      if (this.isReadOnly) return
       this.isActive = show
       this.shouldShowDropDownOptions = show
     },

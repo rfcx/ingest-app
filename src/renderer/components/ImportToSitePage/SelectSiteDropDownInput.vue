@@ -45,7 +45,9 @@ export default {
   components: { DropDownWithSearchInput },
   computed: {
     tagTitle () {
-      return this.selectedSiteName && this.isCreatingNewSite ? 'New' : null
+      const isCreatingNewAndAlreadyInputSomeText = this.selectedSiteName && this.isCreatingNewSite
+      const hasDefaultSiteSelectedAndInReadOnlyMode = this.initialSite !== null
+      return isCreatingNewAndAlreadyInputSomeText && !hasDefaultSiteSelectedAndInReadOnlyMode ? 'New' : null
     },
     specialOptionTitle () {
       return this.selectedSiteName && !this.selectedSiteNameHasExactMatchsWithOptions ? `Create New Site: ${this.selectedSiteName}` : null
