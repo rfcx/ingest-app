@@ -390,19 +390,5 @@ const TIME_FORMAT = {
         new TimeFormat('05', '%S', type, ex, group)
       ]
     }
-  })(),
-  /** --------- Timezone format ---------- */
-  timezone: (() => {
-    const group = 'Timezone'
-    const type = 'timezone'
-    const ex = 'tz'
-    return {
-      label: group,
-      type,
-      options: [
-        new TimeFormat('+1000', '%z', type, ex, group),
-        new TimeFormat('PDT', '%Z', type, ex, group)
-      ]
-    }
   })()
 }
