@@ -2,18 +2,8 @@
   <div id="wrapper-landing-page" :class="{ 'drag-active': isDragging }" @dragenter="handleDrag" @dragover="handleDrag" @drop.prevent="handleDrop"
      @dragover.prevent @dragleave="outDrag">
     <!-- <section class="main-content columns is-mobile"> -->
-      <div class="dropdown dropdown__wrapper" :class="{ 'is-active': shouldShowNewSiteDropDown }">
-        <div class="dropdown-menu dropdown__menu" id="dropdown-menu-for-new-site" role="menu">
-          <div class="dropdown-content dropdown__content">
-            <router-link title="Create new site" to="/add"><a href="#" class="dropdown-item">Create new site</a></router-link>
-            <router-link title="Import files" to="/import"><a href="#" class="dropdown-item">Import files</a></router-link>
-          </div>
-        </div>
-      </div>
       <side-navigation ref="sideNavigation"
         :class="{ 'side-menu__with-progress': shouldShowProgress}"
-        @clickNewSiteButton="toggleNewSiteDropDown"
-        @clickOutSideNewSiteButton="hideNewSiteDropDown"
         :getStreamList.sync="streams"
       />
       <div class="column content is-desktop">
@@ -55,7 +45,6 @@
         executed: false,
         isDragging: false,
         isPopupOpened: false,
-        shouldShowNewSiteDropDown: false,
         streams: []
       }
     },
@@ -115,20 +104,6 @@
       getContent () {
         return `You are on the latest version ${remote.getGlobal('version')}`
       },
-      toggleNewSiteDropDown () {
-        this.shouldShowNewSiteDropDown = !this.shouldShowNewSiteDropDown
-      },
-      hideNewSiteDropDown () {
-        this.shouldShowNewSiteDropDown = false
-      },
-      async migrateDatabase () {
-        // vuex migration
-        const selectedStreamIdInAppSettingModel = this.$store.state.AppSetting.selectedStreamId
-        const selectedStreamIdInStreamModel = this.$store.state.Stream.selectedStreamId
-        if (!selectedStreamIdInAppSettingModel && selectedStreamIdInStreamModel) {
-          await this.$store.dispatch('setSelectedStreamId', selectedStreamIdInStreamModel)
-        }
-      },
       async resetStreamList () {
         await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
       }
@@ -149,7 +124,6 @@
       }
     },
     async created () {
-      await this.migrateDatabase()
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()

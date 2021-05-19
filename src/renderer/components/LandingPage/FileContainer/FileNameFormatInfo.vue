@@ -1,32 +1,22 @@
 <template>
   <div class="wrapper" v-if="selectedStream">
-    <div>
-      <span class="wrapper__title">Filename Format</span>
-      <div class="dropdown" :class="{'is-active': showFileNameFormatDropDown}">
-        <div class="dropdown-trigger">
-          <button class="button" :class="{'is-loading': isUpdatingFilenameFormat}" aria-haspopup="true" aria-controls="dropdown-menu" @click="showFileNameFormatDropDown = !showFileNameFormatDropDown" v-click-outside="hide">
-            <span>{{ (isCustomTimestampFormat ? 'custom ・ ' : '') + selectedStream.timestampFormat }}</span>
-            <span class="icon is-small">
-              <fa-icon :icon="icons.arrowDown" aria-hidden="true" />
-            </span>
-          </button>
-        </div>
-        <div class="dropdown-menu" id="dropdown-menu" role="menu">
-          <div class="dropdown-content">
-            <a href="#" class="dropdown-item"
-              v-for="format in fileNameFormatOptions"
-              :key="format"
-              :class="{'is-active': format === selectedStream.timestampFormat}"
-              @click="onFormatSave(format)">
-              {{ format }}
-            </a>
-            <hr class="dropdown-divider">
-            <a href="#" class="dropdown-item" @click="openFileNameFormatSettingModal">
-              Custom...
-            </a>
-          </div>
-        </div>
-      </div>
+    <div class="config-wrapper">
+      <options-dropdown 
+        title="Filename Format" 
+        :options="fileNameFormatOptions"
+        specialOptionTitle="Custom..."
+        :isLoading="isUpdatingFilenameFormat"
+        :selectedOptionText="(isCustomTimestampFormat ? 'custom ・ ' : '') + selectedStream.timestampFormat"
+        @onSelectOption="onFormatSave"
+        @onSelectSpecialOption="openFileNameFormatSettingModal">
+      </options-dropdown>
+      <options-dropdown 
+        title="Filename Timezone" 
+        :options="fileNameTimezoneOptions"
+        :isLoading="isUpdatingFilenameFormat"
+        :selectedOptionText="getTimezoneOptionText(selectedTimezone)"
+        @onSelectOption="onTimezoneSave">
+      </options-dropdown>
     </div>
     <div>
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
@@ -48,8 +38,9 @@
 
 import { mapState } from 'vuex'
 import FileNameFormatSettings from '../FileNameFormatSettings/FileNameFormatSettings.vue'
-import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
 import fileFormat from '../../../../../utils/FileFormat'
+import FileTimeZoneHelper from '../../../../../utils/FileTimezoneHelper'
+import OptionsDropdown from '../../Common/OptionsDropdown'
 import ErrorAlert from '../../Common/ErrorAlert'
 import ipcRendererSend from '../../../services/ipc'
 
@@ -61,34 +52,37 @@ export default {
     },
     selectedStream: Object
   },
-  components: { FileNameFormatSettings, ErrorAlert },
+  components: { FileNameFormatSettings, ErrorAlert, OptionsDropdown },
   data () {
     return {
       showSettingModal: false,
       isDeletingAllFiles: false,
       isQueuingToUpload: false,
-      showFileNameFormatDropDown: false,
       isUpdatingFilenameFormat: false,
       errorMessage: null,
-      isCustomTimestampFormat: null
+      selectedTimezone: ''
     }
   },
   computed: {
-    icons: () => ({
-      arrowDown: faAngleDown
-    }),
     ...mapState({
       selectedStreamId: state => state.AppSetting.selectedStreamId
     }),
-    // selectedTimestampFormat () {
-    //   return this.selectedStream.timestampFormat
-    // },
     fileNameFormatOptions () {
       return Object.values(fileFormat.fileFormat)
+    },
+    isCustomTimestampFormat () {
+      return !this.fileNameFormatOptions.includes(this.selectedStream.timestampFormat)
+    },
+    fileNameTimezoneOptions () {
+      return FileTimeZoneHelper.getTimezoneOptions(this.selectedStream.timezone)
+    },
+    defaultTimezone () {
+      const savedSelectedTimezone = this.$store.getters.getSelectedTimezoneByStreamId(this.selectedStreamId)
+      return this.getTimezoneOptionText(savedSelectedTimezone || FileTimeZoneHelper.fileTimezone.UTC)
     }
-    // isCustomTimestampFormat () {
-    //   return !this.fileNameFormatOptions.includes(this.selectedStream.timestampFormat)
-    // }
+  },
+  created () {
+    this.selectedTimezone = this.defaultTimezone
   },
   methods: {
     async queueToUpload () {
@@ -115,7 +109,7 @@ export default {
       const query = { streamId, state: 'preparing' }
       await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
         where: query,
-        values: { state: 'waiting', stateMessage: null, sessionId }
+        values: { state: 'waiting', stateMessage: null, sessionId, timezone: this.getSelectedTimezoneValue() }
       })
       this.isQueuingToUpload = false
 
@@ -157,9 +151,6 @@ export default {
       // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deletePreparingFilesRequest, this.selectedStreamId)
       // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
     },
-    hide () {
-      this.showFileNameFormatDropDown = false
-    },
     openFileNameFormatSettingModal () {
       this.showSettingModal = true
     },
@@ -167,7 +158,6 @@ export default {
       this.showSettingModal = false
     },
     async onFormatSave (format = '') {
-      this.showFileNameFormatDropDown = false
       this.closeFileNameFormatSettingModal()
       console.log('onFormatSave', format)
       this.isUpdatingFilenameFormat = true
@@ -180,17 +170,21 @@ export default {
         console.log(`Error update files format '${format}'`, error.message)
         this.errorMessage = error.message
       })
+    },
+    async onTimezoneSave (timezone) {
+      this.selectedTimezone = FileTimeZoneHelper.getSelectedTimezoneOption(timezone)
+      const timezoneObject = {}
+      timezoneObject[this.selectedStreamId] = this.selectedTimezone
+      this.$store.dispatch('setSelectedTimezone', timezoneObject)
+    },
+    getSelectedTimezoneValue () {
+      if (this.selectedTimezone.includes(FileTimeZoneHelper.fileTimezone.LOCAL_TIME)) return this.selectedStream.timezone
+      else return ''
+    },
+    getTimezoneOptionText (optionTitle) {
+      if (optionTitle === FileTimeZoneHelper.fileTimezone.LOCAL_TIME) return `${optionTitle} (${this.selectedStream.timezone})`
+      else return optionTitle
     }
-  },
-  watch: {
-    // TODO: check if we really need this
-    // selectedTimestampFormat (newValue, oldValue) {
-    //   if (newValue === oldValue) return
-    //   this.isUpdatingFilenameFormat = false
-    // },
-  },
-  async created () {
-    this.isCustomTimestampFormat = !this.fileNameFormatOptions.includes(this.selectedStream.timestampFormat)
   }
 }
 </script>
@@ -213,13 +207,16 @@ export default {
       display: inline-block;
     }
   }
+  .config-wrapper {
+    display: inline-flex;
+    .dropdown-wrapper {
+      padding-right: $default-padding;
+    }
+  }
   .flex-row {
     flex-direction: row;
   }
   .align-center {
     align-items: center;
-  }
-  .dropdown {
-    margin-top: 4px;
   }
 </style>

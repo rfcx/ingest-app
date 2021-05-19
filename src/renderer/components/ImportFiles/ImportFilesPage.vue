@@ -1,6 +1,6 @@
 <template>
   <div class="import-stream__wrapper">
-    <header-view title="Import audio files from AudioMoth" />
+    <header-view title="Import audio files from folder" />
     <p class="subtitle">Insert SD Card or choose the folder to import.</p>
     <source-list @sourceSelected="onSourceSelected"></source-list>
     <div class="field is-grouped">

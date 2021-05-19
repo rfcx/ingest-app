@@ -110,7 +110,6 @@ export default {
               id: this.selectedStream.id,
               params: { latitude, longitude, name, timezone, lastModifiedAt: new Date() }
             })
-            this.updateFilesTimezone(timezone)
             this.isLoading = false
             this.redirectToMainScreen()
           })
@@ -129,12 +128,6 @@ export default {
     },
     getStreamCoordinates () {
       return this.selectedStream.longitude ? [this.selectedStream.longitude, this.selectedStream.latitude] : null
-    },
-    async updateFilesTimezone (timezone) {
-      await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
-        where: { streamId: this.selectedStreamId },
-        values: { timezone }
-      })
     },
     showConfirmToDeleteStreamModal () {
       this.shouldShowConfirmToDeleteModal = true
