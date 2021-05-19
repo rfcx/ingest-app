@@ -2,7 +2,6 @@
 
 - [x] Resolves [CE-XXX](https://jira.rfcx.org/browse/CE-XXX)
 - [ ] Release notes updated (_or_ n/a)
-- [ ] Deployment notes updated (_or_ n/a)
 
 _(use n/a when API docs (Release notes, etc) do not need to be updated)_
 
