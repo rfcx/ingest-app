@@ -4,11 +4,14 @@
     @onSeachInputTextChanged="onSeachInputTextChanged"
     @onClearSearchInput="onClearSiteNameSearchInput"
     @onOptionSelected="onSelectExistingSiteName"
+    :initialInput="initialSite ? initialSite.name : null"
+    :isReadOnly="initialSite ? initialSite.name !== null : null"
     :dropdownOptions="siteOptions"
     :specialOption="specialOptionTitle"
     @onSpecialOptionSelected="onSelectToCreateSite"
     :tagTitle="tagTitle"
     :isWarning="isWarning"
+    :helpText="helpText"
   />
 </template>
 
@@ -27,6 +30,16 @@ export default {
     isWarning: {
       type: Boolean,
       default: false
+    },
+    initialSite: {
+      type: Object,
+      default: () => {
+        return {}
+      }
+    },
+    helpText: {
+      type: String,
+      default: ''
     }
   },
   components: { DropDownWithSearchInput },

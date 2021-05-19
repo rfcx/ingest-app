@@ -6,7 +6,7 @@
         <button class="delete" @click="onCloseAlert()"></button>
         {{ errorMessage }}
       </div>
-      <div class="field field-stream-name">
+      <div class="field field-dropdown" :class="{'field-dropdown-with-help': siteDropdownHelpText !== null}">
         <label for="name" class="label">
           Site name
           <span class="help is-warning" v-if="shouldShowNameHelperMessage">You must enter a site name</span>
@@ -14,6 +14,8 @@
         <SelectSiteDropdownInput
         :updateIsCreatingNewSite.sync="isCreatingNewSite"
         :isWarning="shouldShowNameHelperMessage"
+        :initialSite="detectedSiteFromDeployment"
+        :helpText="siteDropdownHelpText"
         @onSelectedSiteNameChanged="onSelectedSite"/>
       </div>
       <div class="field">
@@ -71,7 +73,7 @@ export default {
     }
   },
   components: { Map, HeaderView, SelectSiteDropdownInput },
-  created () {
+  async created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
     if (this.$route.query.folderPath) {
@@ -79,12 +81,30 @@ export default {
     }
     if (this.$route.query.deploymentInfo) {
       this.props.deploymentInfo = JSON.parse(this.$route.query.deploymentInfo)
+      // TODO: check if there is any site detected
+      // if any site detected, then check if that site is already in db
+      // if not, then create one
+      if (this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
+        console.log('detected site from deployment')
+        var existStreamInDB = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.detectedSiteFromDeployment.id)
+        if (!existStreamInDB) { // no stream in local db, then auto create one
+          existStreamInDB = await this.saveSiteInLocalDB(this.detectedSiteFromDeployment, settings.get('settings.production_env'))
+        }
+        // and set the selected site to be the detected site from deployment
+        this.updateSelectedExistingSite(existStreamInDB)
+      }
     }
     if (this.$route.query.selectedFiles) {
       this.props.selectedFiles = JSON.parse(this.$route.query.selectedFiles)
     }
   },
   computed: {
+    detectedSiteFromDeployment () {
+      return this.props.deploymentInfo ? this.props.deploymentInfo.stream : null
+    },
+    siteDropdownHelpText () {
+      return this.detectedSiteFromDeployment ? 'Detected deployment from RFCx Companion' : null
+    },
     shouldShowNameHelperMessage () {
       return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '')
     },
@@ -128,23 +148,41 @@ export default {
       const env = settings.get('settings.production_env')
       try {
         this.isLoading = true
-        const siteId = await api.createStream(env, name, latitude, longitude, isPublic, null, idToken)
-        const site = {
-          id: siteId,
-          name: this.form.selectedSiteName,
-          latitude: latitude,
-          longitude: longitude,
-          timezone: dateHelper.getDefaultTimezone(latitude, longitude),
+        const id = await api.createStream(env, name, latitude, longitude, isPublic, null, idToken)
+        this.selectedExistingSite = await this.saveSiteInLocalDB({
+          id,
+          name,
+          latitude,
+          longitude,
           timestampFormat: fileFormat,
-          env: env ? 'production' : 'staging',
-          isPublic: isPublic,
-          lastModifiedAt: new Date()
-        }
-        await ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, site)
-        this.selectedExistingSite = site
+          isPublic: isPublic
+        }, env)
       } catch (error) {
         this.isLoading = false
         this.errorMessage = error === 'Unauthorized' ? 'You are not authorized.' : error
+      }
+    },
+    async saveSiteInLocalDB (site, env) {
+      const now = new Date()
+      const obj = {
+        ...site,
+        timezone: dateHelper.getDefaultTimezone(site.latitude, site.longitude),
+        env: env ? 'production' : 'staging',
+        serverCreatedAt: site.createdAt !== undefined ? new Date(site.createdAt) : now,
+        serverUpdatedAt: site.updatedAt !== undefined ? new Date(site.updatedAt) : now,
+        lastModifiedAt: now
+      }
+      console.log('obj', obj, obj.createdAt !== undefined)
+      return ipcRendererSend('db.streams.create', `db.streams.create.${now}`, obj)
+    },
+    updateSelectedExistingSite (site) {
+      this.selectedExistingSite = site
+      if (site) {
+        this.isCreatingNewSite = false
+        this.form.selectedProjectName = this.selectedExistingSite.project
+        this.form.selectedSiteName = this.selectedExistingSite.name
+        this.form.selectedLatitude = this.selectedExistingSite.latitude
+        this.form.selectedLongitude = this.selectedExistingSite.longitude
       }
     },
     onUpdateLocation (coordinates) {
@@ -178,6 +216,9 @@ export default {
   }
   span.help {
     display: inline;
+  }
+  .field-dropdown-with-help {
+    margin-bottom: 2rem !important;
   }
   .controls-group {
     margin-top: $default-padding-margin;

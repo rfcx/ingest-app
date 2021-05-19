@@ -13,8 +13,8 @@
             @focus="onSearchInputFocus" 
             @keydown="toggleDropdown(true)" 
             @keyup.enter="toggleDropdown(false)"
-            :disabled="isDisabled" />
-            <span data-clear-input @click="onClearSearchInputFocus" v-if="searchText !== ''">&times;</span>
+            :readonly="isReadOnly" />
+            <span data-clear-input @click="onClearSearchInputFocus" v-if="canEdit">&times;</span>
             <span class="tag is-small is-right" v-if="tagTitle"> {{ tagTitle }} </span>
             <span class="icon is-small is-right" v-if="searchText === ''">
               <fa-icon :icon="icons.arrowDown" aria-hidden="true" @click="hideOnlyDropdownOptions()" />
@@ -51,7 +51,11 @@ export default {
       type: String,
       default: 'Search'
     },
-    isDisabled: {
+    initialInput: {
+      type: String,
+      default: ''
+    },
+    isReadOnly: {
       type: Boolean,
       default: false
     },
@@ -86,11 +90,15 @@ export default {
     icons: () => ({
       arrowDown: faAngleDown,
       delete: faCross
-    })
+    }),
+    canEdit () {
+      return this.searchText !== '' && !this.isReadOnly
+    }
   },
   methods: {
     onSearchInputFocus () {
       this.$emit('onSearchInputFocus')
+      if (this.isReadOnly) return
       this.toggleDropdown(true)
     },
     onSearchInputBlur (e) {
@@ -128,6 +136,11 @@ export default {
     searchText: function (value, prev) {
       if (value === prev) return
       this.$emit('onSeachInputTextChanged', value)
+    }
+  },
+  created () {
+    if (this.initialInput) {
+      this.searchText = this.initialInput
     }
   }
 }
@@ -171,5 +184,7 @@ export default {
   .clearable-input > input::-ms-clear {
     display: none;
   }
-  
+  .help {
+    color: $secondary-text-color;
+  }
 </style>
