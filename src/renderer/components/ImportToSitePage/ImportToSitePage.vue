@@ -6,11 +6,13 @@
         <button class="delete" @click="onCloseAlert()"></button>
         {{ errorMessage }}
       </div>
-      <div class="field field-dropdown">
+      <div class="field field-dropdown" v-if="shouldShowProjectSelector">
         <label for="project" class="label">
           Project name
         </label>
         <SelectProjectDropDownInput
+        :helpText="siteDropdownHelpText"
+        :initialProject="detectedProjectFromDeployment"
         @onSelectedProjectChanged="onSelectedProject"/>
       </div>
       <div class="field field-dropdown" :class="{'field-dropdown-with-help': siteDropdownHelpText !== null}">
@@ -74,6 +76,7 @@ export default {
         selectedFolderPath: null,
         selectedFiles: null
       },
+      selectedProject: null,
       selectedExistingSite: null,
       isLoading: false,
       isCreatingNewSite: true,
@@ -110,8 +113,14 @@ export default {
     detectedSiteFromDeployment () {
       return this.props.deploymentInfo ? this.props.deploymentInfo.stream : null
     },
+    detectedProjectFromDeployment () {
+      return this.props.deploymentInfo ? this.props.deploymentInfo.stream.project : null
+    },
     siteDropdownHelpText () {
       return this.detectedSiteFromDeployment ? 'Detected deployment from RFCx Companion' : null
+    },
+    shouldShowProjectSelector () {
+      return !this.detectedSiteFromDeployment || (this.detectedSiteFromDeployment && this.detectedProjectFromDeployment)
     },
     shouldShowNameHelperMessage () {
       return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '')
@@ -214,6 +223,20 @@ export default {
     },
     onSelectedProject (project) {
       console.log('on select project', project)
+      this.selectedProject = project
+      this.form.selectedProjectName = project.name
+    }
+  },
+  watch: {
+    selectedProject: {
+      handler (val, previousVal) {
+        if (val === previousVal) return
+        if (!this.isCreatingNewSite && this.selectedExistingSite.project.name !== val.name) {
+          // TODO: clear selected site and location
+        }
+        // check if selected existing site is in this project
+        // -- if false => clear selected site and location
+      }
     }
   }
 }

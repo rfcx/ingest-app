@@ -1,10 +1,12 @@
 <template>
   <DropDownWithSearchInput
-    placeholder="Search for project"
+    placeholder="Choose project"
     @onSeachInputTextChanged="onSeachInputTextChanged"
     @onClearSearchInput="onClearSiteNameSearchInput"
     @onOptionSelected="onSelectProject"
     :dropdownOptions="projectOptions"
+    :initialInput="initialProject ? initialProject.name : null"
+    :isReadOnly="initialProject ? initialProject.name !== null : null"
     :isFetching="isLoading"
   />
 </template>
@@ -40,6 +42,7 @@ export default {
   },
   methods: {
     async getProjectOptions (keyword = null) {
+      if (this.initialProject) return // no need to call api to search, as it's readonly when there is initial project provided
       if (keyword) {
         let selectedProject = this.projectOptions.find(s => s.name === keyword)
         if (selectedProject) return
