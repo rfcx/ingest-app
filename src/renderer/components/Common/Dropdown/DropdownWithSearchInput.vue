@@ -17,7 +17,7 @@
             @blur="onSearchInputBlur"
             @keydown="toggleDropdown(true)" 
             @keyup.enter="toggleDropdown(false)"
-            :readonly="isReadOnly" />
+            :disabled="isReadOnly" />
             <span data-clear-input @click="onClearSearchInputFocus" v-if="canEdit">&times;</span>
             <span class="tag is-small is-right" v-if="tagTitle"> {{ tagTitle }} </span>
             <span class="icon is-small is-right" v-if="searchText === ''">
