@@ -3,7 +3,7 @@
     <div class="mapboxgl-control-container">
       <div class="mapboxgl-ctrl-bottom-right">
         <div class="mapboxgl-ctrl-geocoder mapboxgl-ctrl">
-        <input class="mapboxgl-ctrl-geocoder--input" type="text" :v-model="coordinateTitle" :placeholder="coordinateTitle" readonly>
+        <input class="mapboxgl-ctrl-geocoder--input" type="text" :v-model="coordinateTitle" :placeholder="coordinateTitle" disabled>
       </div>
       </div>
     </div>
