@@ -201,6 +201,17 @@ const getDeploymentInfo = (deploymentId, idToken) => {
     })
 }
 
+const getUserProjects = (idToken, keyword = null) => {
+  const isProd = settings.get('settings.production_env')
+  return httpClient.get(apiUrl(isProd) + `/projects`, { headers: { 'Authorization': 'Bearer ' + idToken }, params: { keyword } })
+    .then(function (response) {
+      return response.data
+    }).catch(error => {
+      console.log('error', error.response)
+      throw error.response ? (error.response.data ? error.response.data : error.response) : error
+    })
+}
+
 export default {
   explorerWebUrl,
   arbimonWebUrl,
@@ -211,5 +222,6 @@ export default {
   renameStream,
   deleteStream,
   getUserSites,
-  getDeploymentInfo
+  getDeploymentInfo,
+  getUserProjects
 }

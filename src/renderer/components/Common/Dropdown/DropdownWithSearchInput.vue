@@ -2,7 +2,10 @@
   <div class="dropdown" :class="{'is-active': isActive}">
     <div class="dropdown-trigger">
       <div class="field">
-          <div class="clearable-input control is-expanded has-icons-right">
+          <div class="clearable-input control is-expanded has-icons-right" :class="{'has-icons-left': shouldShowLoadingIndicator}">
+            <span class="icon is-small is-left" v-if="shouldShowLoadingIndicator">
+              <fa-icon :icon="icons.loading" aria-hidden="true" spin></fa-icon>
+            </span>
             <input 
             type="text" 
             ref="searchInput" 
@@ -11,6 +14,7 @@
             :placeholder="placeholder" 
             :class="{'is-warning': isWarning}" 
             @focus="onSearchInputFocus" 
+            @blur="onSearchInputBlur"
             @keydown="toggleDropdown(true)" 
             @keyup.enter="toggleDropdown(false)"
             :readonly="isReadOnly" />
@@ -35,7 +39,7 @@
   </div>
 </template>
 <script>
-import { faAngleDown, faCross } from '@fortawesome/free-solid-svg-icons'
+import { faAngleDown, faCircleNotch } from '@fortawesome/free-solid-svg-icons'
 export default {
   data () {
     return {
@@ -84,15 +88,22 @@ export default {
     tagTitle: {
       type: String,
       default: ''
+    },
+    isFetching: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
     icons: () => ({
       arrowDown: faAngleDown,
-      delete: faCross
+      loading: faCircleNotch
     }),
     canEdit () {
       return this.searchText !== '' && !this.isReadOnly
+    },
+    shouldShowLoadingIndicator () {
+      return this.isFetching && this.searchText !== ''
     }
   },
   methods: {

@@ -6,6 +6,13 @@
         <button class="delete" @click="onCloseAlert()"></button>
         {{ errorMessage }}
       </div>
+      <div class="field field-dropdown">
+        <label for="project" class="label">
+          Project name
+        </label>
+        <SelectProjectDropDownInput
+        @onSelectedProjectChanged="onSelectedProject"/>
+      </div>
       <div class="field field-dropdown" :class="{'field-dropdown-with-help': siteDropdownHelpText !== null}">
         <label for="name" class="label">
           Site name
@@ -45,6 +52,7 @@
 <script>
 import Map from '../Common/Map/Map'
 import HeaderView from '../Common/HeaderWithBackButton'
+import SelectProjectDropDownInput from './SelectProjectDropDownInput'
 import SelectSiteDropdownInput from './SelectSiteDropDownInput'
 import api from '../../../../utils/api'
 import ipcRendererSend from '../../services/ipc'
@@ -72,7 +80,7 @@ export default {
       errorMessage: ''
     }
   },
-  components: { Map, HeaderView, SelectSiteDropdownInput },
+  components: { Map, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
   async created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
@@ -203,6 +211,9 @@ export default {
       // update selecting existing site, if any
       this.selectedExistingSite = !this.isCreatingNewSite ? site : null
       console.log('form after selected site', JSON.stringify(this.form))
+    },
+    onSelectedProject (project) {
+      console.log('on select project', project)
     }
   }
 }
