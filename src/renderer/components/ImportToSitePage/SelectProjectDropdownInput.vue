@@ -8,6 +8,7 @@
     :initialInput="initialProject ? initialProject.name : null"
     :isReadOnly="initialProject ? initialProject.name !== null : null"
     :isFetching="isLoading"
+    :searchEnabled="false"
   />
 </template>
 
@@ -70,11 +71,11 @@ export default {
       }, 1000) // wait 1 sec for user to type, then call api to get data
     },
     onSelectProject (project) {
-      console.log('onSelectSiteName:', project.name)
+      console.log('onSelectProjectName:', project.name)
       this.selectedProjectName = project.name
     },
     onClearSiteNameSearchInput () {
-      console.log('onClearSiteNameSearchInput')
+      console.log('onClearProjectNameSearchInput')
       this.selectedProjectName = ''
     }
   },
@@ -85,9 +86,6 @@ export default {
         let selectedProject = this.projectOptions.find(s => s.name === value)
         this.$emit('onSelectedProjectNameChanged', selectedProject)
       }
-    },
-    projectOptions (val) {
-      console.log('watch: projectOptions', val)
     }
   }
 }
