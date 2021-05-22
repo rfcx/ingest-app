@@ -4,7 +4,7 @@
     @onSeachInputTextChanged="onSeachInputTextChanged"
     @onClearSearchInput="onClearSiteNameSearchInput"
     @onOptionSelected="onSelectExistingSiteName"
-    :initialInput="initialSite ? initialSite.name : null"
+    :text="selectedSiteName"
     :isReadOnly="initialSite ? initialSite.name !== null : null"
     :dropdownOptions="siteOptions"
     :specialOption="specialOptionTitle"
@@ -12,6 +12,7 @@
     :tagTitle="tagTitle"
     :isWarning="isWarning"
     :helpText="helpText"
+    :isDisabled="isDisabled"
   />
 </template>
 
@@ -40,6 +41,12 @@ export default {
     helpText: {
       type: String,
       default: ''
+    },
+    project: {
+      type: Object,
+      default: () => {
+        return {}
+      }
     }
   },
   components: { DropDownWithSearchInput },
@@ -54,22 +61,27 @@ export default {
     },
     selectedSiteNameHasExactMatchsWithOptions () {
       return this.siteOptions.map(s => s.name).includes(this.selectedSiteName)
+    },
+    isDisabled () {
+      // no project and no default site selected
+      const noProjectSelected = !this.project || (this.project && Object.keys(this.project).length === 0)
+      return noProjectSelected && !this.initialSite
     }
   },
   async created () {
+    if (this.initialSite && this.initialSite.name) this.selectedSiteName = this.initialSite.name
     await this.getSiteOptions()
   },
   methods: {
-    async getSiteOptions (searchText = null) {
-      let queryOpts = { limit: 10, offset: 0 }
-      if (searchText) {
-        queryOpts.where = {
-          name: {
-            $like: `%${searchText}%`
-          }
-        }
+    async getSiteOptions (keyword = null) {
+      let queryOpts = { limit: 10, offset: 0, where: {} }
+      if (keyword) {
+        queryOpts.where.name = { $like: `%${keyword}%` }
       }
-      console.log('getSiteOptions', queryOpts)
+      if (this.project && this.project.name) {
+        queryOpts.where['project_name'] = this.project.name
+      }
+      console.log('getSiteOptions', queryOpts, this.project)
       this.siteOptions = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, queryOpts)
     },
     async onSeachInputTextChanged (text) {
@@ -98,6 +110,10 @@ export default {
     updateIsCreatingNewSite (isCreating) {
       this.isCreatingNewSite = isCreating
       this.$emit('update:updateIsCreatingNewSite', this.isCreatingNewSite)
+    },
+    resetSelectedSite () {
+      console.log('resetSelectedSite')
+      this.selectedSiteName = ''
     }
   },
   watch: {
@@ -106,6 +122,12 @@ export default {
         if (value === prevValue) return
         let selectedSite = this.siteOptions.find(s => s.name === value) || { name: value }
         this.$emit('onSelectedSiteNameChanged', selectedSite)
+      }
+    },
+    project: {
+      handler: async function (value, prevValue) {
+        if (value === prevValue) return
+        await this.getSiteOptions()
       }
     }
   }

@@ -21,6 +21,7 @@
           <span class="help is-warning" v-if="shouldShowNameHelperMessage">You must enter a site name</span>
         </label>
         <SelectSiteDropdownInput
+        ref="siteSelector"
         :project="selectedProject"
         :updateIsCreatingNewSite.sync="isCreatingNewSite"
         :isWarning="shouldShowNameHelperMessage"
@@ -127,7 +128,8 @@ export default {
       return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '')
     },
     hasPassedValidation () {
-      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude && (this.shouldShowProjectSelector && this.selectedProject)
+      const hasPassProjectValidation = !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject)
+      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude && hasPassProjectValidation
     },
     selectedCoordinates () {
       return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : null
@@ -204,6 +206,14 @@ export default {
         this.form.selectedSiteName = this.selectedExistingSite.name
         this.form.selectedLatitude = this.selectedExistingSite.latitude
         this.form.selectedLongitude = this.selectedExistingSite.longitude
+      } else {
+        this.isCreatingNewSite = true
+        this.form.selectedProjectName = ''
+        this.form.selectedSiteName = ''
+        this.form.selectedLatitude = null
+        this.form.selectedLongitude = null
+        this.$refs.siteSelector.resetSelectedSite()
+        console.log('resetSelectedSite')
       }
     },
     onUpdateLocation (coordinates) {
@@ -235,8 +245,10 @@ export default {
     selectedProject: {
       handler (val, previousVal) {
         if (val === previousVal) return
-        if (!this.isCreatingNewSite && this.selectedExistingSite.project.name !== val.name) {
+        if (!this.isCreatingNewSite && (this.selectedExistingSite.projectName !== val.name || val === undefined)) {
+          console.log('clear old site selected')
           // TODO: clear selected site and location
+          this.updateSelectedExistingSite(null)
         }
         // check if selected existing site is in this project
         // -- if false => clear selected site and location

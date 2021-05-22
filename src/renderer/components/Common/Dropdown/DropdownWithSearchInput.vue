@@ -17,7 +17,7 @@
             @blur="onSearchInputBlur"
             @keydown="toggleDropdown(true)" 
             @keyup.enter="toggleDropdown(false)"
-            :disabled="isReadOnly" 
+            :disabled="isReadOnly || isDisabled" 
             :readonly="!searchEnabled" />
             <span data-clear-input @click="onClearSearchInputFocus" v-if="canEdit">&times;</span>
             <span class="tag is-small is-right" v-if="tagTitle"> {{ tagTitle }} </span>
@@ -44,7 +44,7 @@ import { faAngleDown, faCircleNotch } from '@fortawesome/free-solid-svg-icons'
 export default {
   data () {
     return {
-      searchText: '',
+      searchText: this.text,
       isActive: false,
       shouldShowDropDownOptions: true,
       selectedOption: ''
@@ -52,15 +52,16 @@ export default {
   },
   props: {
     // Input
+    text: String,
     placeholder: {
       type: String,
       default: 'Search'
     },
-    initialInput: {
-      type: String,
-      default: ''
-    },
     isReadOnly: {
+      type: Boolean,
+      default: false
+    },
+    isDisabled: {
       type: Boolean,
       default: false
     },
@@ -105,7 +106,7 @@ export default {
       loading: faCircleNotch
     }),
     canEdit () {
-      return this.searchText !== '' && !this.isReadOnly
+      return this.searchText !== '' && !this.isReadOnly && !this.isDisabled
     },
     shouldShowLoadingIndicator () {
       return this.isFetching && this.searchText !== ''
@@ -117,6 +118,7 @@ export default {
       this.toggleDropdown(true)
     },
     onSearchInputBlur (e) {
+      console.log('onSearchInputBlur', e)
       this.$emit('onSearchInputBlur')
       if (e.relatedTarget === null) {
         this.toggleDropdown(false)
@@ -125,7 +127,9 @@ export default {
     onClearSearchInputFocus () {
       this.$emit('onClearSearchInputFocus')
       this.searchText = ''
-      this.toggleDropdown(true)
+      if (this.searchEnabled) {
+        this.toggleDropdown(true)
+      }
     },
     onOptionSelected (option) {
       this.$emit('onOptionSelected', option)
@@ -138,7 +142,7 @@ export default {
       this.hideOnlyDropdownOptions() // TODO: this might need to be in subclass
     },
     toggleDropdown (show) {
-      if (this.isReadOnly) return
+      if (this.isReadOnly || this.isDisabled) return
       this.isActive = show
       this.shouldShowDropDownOptions = show
     },
@@ -152,11 +156,10 @@ export default {
     searchText: function (value, prev) {
       if (value === prev) return
       this.$emit('onSeachInputTextChanged', value)
-    }
-  },
-  created () {
-    if (this.initialInput) {
-      this.searchText = this.initialInput
+    },
+    text: function (value, prev) {
+      if (value === prev) return
+      this.searchText = value
     }
   }
 }
