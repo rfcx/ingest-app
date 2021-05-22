@@ -11,9 +11,12 @@
       </div>
     </div>
     <div class="stream-info__subtitle">
-      <router-link title="Edit site location" to="/edit-stream-location">
+      <div v-if="selectedStream.projectName" style="display:inline">
+        <fa-icon class="faProject" :icon="faProject"></fa-icon>
+        <span class="stream-info__project">{{selectedStream.projectName}}</span>
+      </div>
         <img src="~@/assets/ic-pin.svg">
-        <span v-if="selectedStream" class="stream-info__coordinates">{{ getStreamLocation() }}</span></router-link>
+        <span v-if="selectedStream" class="stream-info__coordinates">{{ getStreamLocation() }}</span>
     </div>
     <a title="Redirect to Arbimon" class="button is-rounded rounded-button" @click="redirectToArbimon()">
       <fa-icon class="faExternal" :icon="faExternalLinkAlt"></fa-icon>
@@ -28,7 +31,7 @@
 
 <script>
 import api from '../../../../utils/api'
-import { faPencilAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faExternalLinkAlt, faLandmark } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
 
 export default {
@@ -36,6 +39,7 @@ export default {
     return {
       iconPencil: faPencilAlt,
       faExternalLinkAlt: faExternalLinkAlt,
+      faProject: faLandmark,
       hasClosedNavigateMessage: false
     }
   },
