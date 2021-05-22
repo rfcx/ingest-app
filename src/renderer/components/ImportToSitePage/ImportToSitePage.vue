@@ -245,13 +245,11 @@ export default {
     selectedProject: {
       handler (val, previousVal) {
         if (val === previousVal) return
-        if (!this.isCreatingNewSite && (this.selectedExistingSite.projectName !== val.name || val === undefined)) {
-          console.log('clear old site selected')
-          // TODO: clear selected site and location
+        if (val === null) { // has reset project data
+          this.updateSelectedExistingSite(null)
+        } else if (!this.isCreatingNewSite && this.selectedExistingSite.projectName !== val.name) { // existing site that been selected is in different project
           this.updateSelectedExistingSite(null)
         }
-        // check if selected existing site is in this project
-        // -- if false => clear selected site and location
       }
     }
   }
