@@ -128,7 +128,7 @@ export default {
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         let idToken = arg
-        api.createStream(this.isProductionEnv(), this.name, latitude, longitude, isPublic, this.deviceId, idToken)
+        api.createStream(this.isProductionEnv(), this.name, latitude, longitude, isPublic, null, idToken)
           .then(async (streamId) => {
             const stream = {
               id: streamId,

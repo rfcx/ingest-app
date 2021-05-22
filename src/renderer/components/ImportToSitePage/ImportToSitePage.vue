@@ -13,7 +13,7 @@
         <SelectProjectDropDownInput
         :helpText="siteDropdownHelpText"
         :initialProject="detectedProjectFromDeployment"
-        @onSelectedProjectChanged="onSelectedProject"/>
+        @onSelectedProjectNameChanged="onSelectedProject"/>
       </div>
       <div class="field field-dropdown" :class="{'field-dropdown-with-help': siteDropdownHelpText !== null}">
         <label for="name" class="label">
@@ -21,6 +21,7 @@
           <span class="help is-warning" v-if="shouldShowNameHelperMessage">You must enter a site name</span>
         </label>
         <SelectSiteDropdownInput
+        :project="selectedProject"
         :updateIsCreatingNewSite.sync="isCreatingNewSite"
         :isWarning="shouldShowNameHelperMessage"
         :initialSite="detectedSiteFromDeployment"
@@ -95,7 +96,7 @@ export default {
       // TODO: check if there is any site detected
       // if any site detected, then check if that site is already in db
       // if not, then create one
-      if (this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
+      if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
         console.log('detected site from deployment')
         var existStreamInDB = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.detectedSiteFromDeployment.id)
         if (!existStreamInDB) { // no stream in local db, then auto create one
@@ -126,10 +127,10 @@ export default {
       return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '')
     },
     hasPassedValidation () {
-      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude
+      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude && (this.shouldShowProjectSelector && this.selectedProject)
     },
     selectedCoordinates () {
-      return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : []
+      return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : null
     },
     actionButtonTitle () {
       return this.isCreatingNewSite ? 'Create' : 'Import'
@@ -160,19 +161,22 @@ export default {
       const name = this.form.selectedSiteName
       const latitude = this.form.selectedLatitude
       const longitude = this.form.selectedLongitude
+      const projectId = this.selectedProject.id
       const isPublic = false
       const fileFormat = FileFormat.fileFormat.AUTO_DETECT
       const env = settings.get('settings.production_env')
       try {
         this.isLoading = true
-        const id = await api.createStream(env, name, latitude, longitude, isPublic, null, idToken)
+        const id = await api.createStream(env, name, latitude, longitude, isPublic, projectId, idToken)
         this.selectedExistingSite = await this.saveSiteInLocalDB({
           id,
           name,
           latitude,
           longitude,
           timestampFormat: fileFormat,
-          isPublic: isPublic
+          isPublic: isPublic,
+          projectId,
+          projectName: this.selectedProject.name
         }, env)
       } catch (error) {
         this.isLoading = false
