@@ -87,7 +87,6 @@ export default {
       try {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
         this.siteOptions = await api.getUserSites(idToken, keyword, this.project ? this.project.id : null, 10, 0)
-        console.log('getSiteOptions', keyword, this.project.id, this.siteOptions.length)
         this.isLoading = false
       } catch (error) {
         console.log('getSiteOptions error', error)
@@ -129,7 +128,6 @@ export default {
       this.$emit('update:updateIsCreatingNewSite', this.isCreatingNewSite)
     },
     resetSelectedSite () {
-      console.log('resetSelectedSite')
       this.selectedSiteName = ''
     }
   },

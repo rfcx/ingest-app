@@ -1,11 +1,10 @@
 <template>
   <DropDownWithSearchInput
     placeholder="Choose project"
-    @onSeachInputTextChanged="onSeachInputTextChanged"
-    @onClearSearchInput="onClearSiteNameSearchInput"
+    @onClearSearchInput="onClearProjectNameSearchInput"
     @onOptionSelected="onSelectProject"
     :dropdownOptions="projectOptions"
-    :initialInput="initialProject ? initialProject.name : null"
+    :text="selectedProjectName"
     :isReadOnly="initialProject ? initialProject.name !== null : null"
     :isFetching="isLoading"
     :searchEnabled="false"
@@ -21,8 +20,7 @@ export default {
     return {
       isLoading: false,
       selectedProjectName: '',
-      projectOptions: null,
-      searchTimer: null
+      projectOptions: null
     }
   },
   props: {
@@ -52,29 +50,18 @@ export default {
       try {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
         this.projectOptions = await api.getUserProjects(idToken, keyword)
-        console.log('getProjectOptions', keyword, this.projectOptions)
+        // TODO: handle when there is no project
         this.isLoading = false
       } catch (error) {
-        console.log('getProjectOptions error', error)
         this.isLoading = false
+        // TODO: handle error
       }
-    },
-    async onSeachInputTextChanged (text) {
-      console.log('onSeachInputTextChanged', text)
-      this.selectedProjectName = text
-      if (this.searchTimer) {
-        clearTimeout(this.searchTimer)
-        this.searchTimer = null
-      }
-      this.searchTimer = setTimeout(() => {
-        this.getProjectOptions(this.selectedProjectName)
-      }, 1000) // wait 1 sec for user to type, then call api to get data
     },
     onSelectProject (project) {
       console.log('onSelectProjectName:', project.name)
-      this.selectedProjectName = project.name
+      this.selectedProjectName = project && project.name ? project.name : ''
     },
-    onClearSiteNameSearchInput () {
+    onClearProjectNameSearchInput () {
       console.log('onClearProjectNameSearchInput')
       this.selectedProjectName = ''
     }

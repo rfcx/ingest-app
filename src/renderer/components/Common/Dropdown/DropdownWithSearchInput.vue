@@ -128,7 +128,7 @@ export default {
       }
     },
     onClearSearchInputFocus () {
-      this.$emit('onClearSearchInputFocus')
+      this.$emit('onClearSearchInput')
       this.searchText = ''
       if (this.searchEnabled) {
         this.toggleDropdown(true)

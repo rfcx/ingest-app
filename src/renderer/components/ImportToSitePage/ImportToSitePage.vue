@@ -213,7 +213,6 @@ export default {
         this.form.selectedLatitude = null
         this.form.selectedLongitude = null
         this.$refs.siteSelector.resetSelectedSite()
-        console.log('resetSelectedSite')
       }
     },
     onUpdateLocation (coordinates) {
@@ -233,19 +232,17 @@ export default {
 
       // update selecting existing site, if any
       this.selectedExistingSite = !this.isCreatingNewSite ? site : null
-      console.log('form after selected site', JSON.stringify(this.form))
     },
     onSelectedProject (project) {
-      console.log('on select project', project)
       this.selectedProject = project
-      this.form.selectedProjectName = project.name
+      this.form.selectedProjectName = project && project.name ? project.name : ''
     }
   },
   watch: {
     selectedProject: {
       handler (val, previousVal) {
         if (val === previousVal) return
-        if (val === null) { // has reset project data
+        if (val === null || val === undefined) { // has reset project data
           this.updateSelectedExistingSite(null)
         } else if (!this.isCreatingNewSite && this.selectedExistingSite.projectName !== val.name) { // existing site that been selected is in different project
           this.updateSelectedExistingSite(null)
