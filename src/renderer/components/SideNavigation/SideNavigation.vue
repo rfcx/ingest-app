@@ -241,7 +241,7 @@
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           console.log('getUserSites')
-          api.getUserSites(this.isProductionEnv(), arg)
+          api.getUserSites(arg)
             .then(async sites => {
               this.isFetching = false
               if (sites && sites.length) {

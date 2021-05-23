@@ -12,19 +12,23 @@
     :tagTitle="tagTitle"
     :isWarning="isWarning"
     :helpText="helpText"
+    :isFetching="isLoading"
     :isDisabled="isDisabled"
   />
 </template>
 
 <script>
 import DropDownWithSearchInput from '../Common/Dropdown/DropdownWithSearchInput'
+import api from '../../../../utils/api'
 import ipcRendererSend from '../../services/ipc'
 export default {
   data () {
     return {
       selectedSiteName: '',
       isCreatingNewSite: false,
-      siteOptions: null
+      siteOptions: null,
+      isLoading: false,
+      searchTimer: null
     }
   },
   props: {
@@ -74,20 +78,33 @@ export default {
   },
   methods: {
     async getSiteOptions (keyword = null) {
-      let queryOpts = { limit: 10, offset: 0, where: {} }
+      if (this.initialSite) return // no need to call api to search, as it's readonly when there is initial project provided
       if (keyword) {
-        queryOpts.where.name = { $like: `%${keyword}%` }
+        let selectedSite = this.siteOptions.find(s => s.name === keyword)
+        if (selectedSite) return
       }
-      if (this.project && this.project.name) {
-        queryOpts.where['project_name'] = this.project.name
+      this.isLoading = true
+      try {
+        const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
+        this.siteOptions = await api.getUserSites(idToken, keyword, this.project ? this.project.id : null, 10, 0)
+        console.log('getSiteOptions', keyword, this.project.id, this.siteOptions.length)
+        this.isLoading = false
+      } catch (error) {
+        console.log('getSiteOptions error', error)
+        this.isLoading = false
       }
-      console.log('getSiteOptions', queryOpts, this.project)
-      this.siteOptions = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, queryOpts)
     },
     async onSeachInputTextChanged (text) {
       console.log('onSeachInputTextChanged', text)
-      await this.getSiteOptions(text)
       this.selectedSiteName = text
+      if (this.searchTimer) {
+        clearTimeout(this.searchTimer)
+        this.searchTimer = null
+      }
+      this.searchTimer = setTimeout(async () => {
+        await this.getSiteOptions(this.selectedSiteName)
+      }, 800) // wait 800 mil sec for user to type, then call api to get data
+
       if (this.selectedSiteNameHasExactMatchsWithOptions) {
         this.updateIsCreatingNewSite(false) // use exact matchs
       } else {
@@ -126,6 +143,7 @@ export default {
     },
     project: {
       handler: async function (value, prevValue) {
+        console.log('watch: project', value)
         if (value === prevValue) return
         await this.getSiteOptions()
       }

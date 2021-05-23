@@ -180,8 +180,12 @@ const deleteStream = (env, streamId, idToken) => {
     })
 }
 
-const getUserSites = (env, idToken) => {
-  return httpClient.get(apiUrl(env) + `/streams`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+const getUserSites = (idToken, keyword = null, projectId, limit, offset) => {
+  const env = settings.get('settings.production_env')
+  let params = { keyword, projects: projectId }
+  if (!isNaN(limit)) { params.limit = limit }
+  if (!isNaN(offset)) { params.offset = offset }
+  return httpClient.get(apiUrl(env) + `/streams`, { headers: { 'Authorization': 'Bearer ' + idToken }, params })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -191,8 +195,8 @@ const getUserSites = (env, idToken) => {
 }
 
 const getDeploymentInfo = (deploymentId, idToken) => {
-  const isProd = settings.get('settings.production_env')
-  return httpClient.get(apiUrl(isProd) + `/deployments/${deploymentId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  const env = settings.get('settings.production_env')
+  return httpClient.get(apiUrl(env) + `/deployments/${deploymentId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(response => {
       return response.data
     }).catch(error => {
@@ -202,8 +206,8 @@ const getDeploymentInfo = (deploymentId, idToken) => {
 }
 
 const getUserProjects = (idToken, keyword = null) => {
-  const isProd = settings.get('settings.production_env')
-  return httpClient.get(apiUrl(isProd) + `/projects`, { headers: { 'Authorization': 'Bearer ' + idToken }, params: { keyword } })
+  const env = settings.get('settings.production_env')
+  return httpClient.get(apiUrl(env) + `/projects`, { headers: { 'Authorization': 'Bearer ' + idToken }, params: { keyword } })
     .then(function (response) {
       return response.data
     }).catch(error => {
