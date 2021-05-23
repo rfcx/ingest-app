@@ -103,7 +103,7 @@ export default {
       }
       this.searchTimer = setTimeout(async () => {
         await this.getSiteOptions(this.selectedSiteName)
-      }, 800) // wait 800 mil sec for user to type, then call api to get data
+      }, 300) // debounce, wait 300 mil sec for user to type, then call api to get data
 
       if (this.selectedSiteNameHasExactMatchsWithOptions) {
         this.updateIsCreatingNewSite(false) // use exact matchs

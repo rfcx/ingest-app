@@ -2,10 +2,7 @@
   <div class="dropdown" :class="{'is-active': isActive}">
     <div class="dropdown-trigger">
       <div class="field">
-          <div class="clearable-input control is-expanded has-icons-right" :class="{'has-icons-left': shouldShowLoadingIndicator}">
-            <span class="icon is-small is-left" v-if="shouldShowLoadingIndicator">
-              <fa-icon :icon="icons.loading" aria-hidden="true" spin></fa-icon>
-            </span>
+          <div class="clearable-input control is-expanded has-icons-right">
             <input 
             type="text" 
             ref="searchInput" 
@@ -29,7 +26,12 @@
       </div>
     </div>
     <div class="dropdown-menu" id="dropdown-menu" role="menu" v-if="shouldShowDropDownOptions">
-      <div class="dropdown-content">
+      <div class="dropdown-content" v-if="isFetching">
+        <div class="dropdown-item">
+          <fa-icon :icon="icons.loading" aria-hidden="true" spin></fa-icon>
+        </div>
+      </div>
+      <div class="dropdown-content" v-else>
         <a href="#" class="dropdown-item" v-for="option in dropdownOptions" :key="option.id" :class="{'is-active': option === selectedOption}" @click="onOptionSelected(option)"> {{ option.name }} </a>
         <hr class="dropdown-divider" v-if="specialOption && dropdownOptions.length > 0">
         <a href="#" class="dropdown-item" v-if="specialOption" @click="onSpecialOptionSelected()">
@@ -120,7 +122,8 @@ export default {
     onSearchInputBlur (e) {
       console.log('onSearchInputBlur', e)
       this.$emit('onSearchInputBlur')
-      if (e.relatedTarget === null) {
+      // hide dropdown when click outside
+      if (e.relatedTarget === null || (e.relatedTarget && e.relatedTarget.className !== 'dropdown-item')) {
         this.toggleDropdown(false)
       }
     },
