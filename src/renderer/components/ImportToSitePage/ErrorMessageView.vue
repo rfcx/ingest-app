@@ -11,7 +11,6 @@
     display: flex;
     justify-content: space-between;
     align-self: center;
-    white-space: nowrap;
     text-overflow: ellipsis;
   }
   &__link {
