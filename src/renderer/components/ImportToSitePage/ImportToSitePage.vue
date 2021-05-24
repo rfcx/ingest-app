@@ -194,7 +194,7 @@ export default {
       }
     },
     async saveSiteInLocalDB (site, env) {
-      const now = new Date()
+      const now = Date.now()
       const fileFormat = FileFormat.fileFormat.AUTO_DETECT
       const obj = {
         ...site,
