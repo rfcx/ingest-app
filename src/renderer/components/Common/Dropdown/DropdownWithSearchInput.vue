@@ -39,7 +39,7 @@
       <div class="dropdown-content" v-else>
         <a href="#" class="dropdown-item" v-for="option in dropdownOptions" :key="option.id" :class="{'is-active': option === selectedOption}" @click="onOptionSelected(option)"> {{ option.name }} </a>
         <hr class="dropdown-divider" v-if="specialOption && dropdownOptions.length > 0">
-        <a href="#" class="dropdown-item" v-if="specialOption" @click="onSpecialOptionSelected()">
+        <a href="#" class="dropdown-item special-option" v-if="specialOption" @click="onSpecialOptionSelected()">
           {{ specialOption }}
         </a>
       </div>
@@ -193,6 +193,9 @@ export default {
         text-transform: uppercase;
       }
     }
+  }
+  .dropdown-item.special-option {
+    font-weight: $title-font-weight;
   }
   .clearable-input {
     position: relative;
