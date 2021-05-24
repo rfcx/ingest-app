@@ -3,6 +3,7 @@
     placeholder="Search for an existing site"
     @onSeachInputTextChanged="onSeachInputTextChanged"
     @onClearSearchInput="onClearSiteNameSearchInput"
+    @onSearchInputBlur="onBlurSiteNameSearchInput"
     @onOptionSelected="onSelectExistingSiteName"
     :text="selectedSiteName"
     :isReadOnly="initialSite ? initialSite.name !== null : null"
@@ -42,7 +43,8 @@ export default {
       isLoading: false,
       searchTimer: null,
       iconRefresh: faSync,
-      errorMessage: ''
+      errorMessage: '',
+      tagTitle: ''
     }
   },
   props: {
@@ -69,11 +71,6 @@ export default {
   },
   components: { DropDownWithSearchInput, ErrorMessageView },
   computed: {
-    tagTitle () {
-      const isCreatingNewAndAlreadyInputSomeText = this.selectedSiteName && this.isCreatingNewSite
-      const hasDefaultSiteSelectedAndInReadOnlyMode = this.initialSite !== null
-      return isCreatingNewAndAlreadyInputSomeText && !hasDefaultSiteSelectedAndInReadOnlyMode ? 'New' : null
-    },
     specialOptionTitle () {
       return this.selectedSiteName && !this.selectedSiteNameHasExactMatchsWithOptions ? `Create New Site: ${this.selectedSiteName}` : null
     },
@@ -134,14 +131,20 @@ export default {
       console.log('onSelectSiteName:', site.name)
       this.selectedSiteName = site.name
       this.updateIsCreatingNewSite(false)
+      this.updateTagTitle()
     },
     onSelectToCreateSite () {
       console.log('onSelectToCreateSite')
       this.updateIsCreatingNewSite(true)
+      this.updateTagTitle()
     },
     onClearSiteNameSearchInput () {
       console.log('onClearSiteNameSearchInput')
       this.selectedSiteName = ''
+      this.updateTagTitle()
+    },
+    onBlurSiteNameSearchInput () {
+      this.updateTagTitle()
     },
     updateIsCreatingNewSite (isCreating) {
       this.isCreatingNewSite = isCreating
@@ -149,6 +152,11 @@ export default {
     },
     resetSelectedSite () {
       this.selectedSiteName = ''
+    },
+    updateTagTitle () {
+      const isCreatingNewAndAlreadyInputSomeText = this.selectedSiteName && this.isCreatingNewSite
+      const hasDefaultSiteSelectedAndInReadOnlyMode = this.initialSite !== null
+      this.tagTitle = isCreatingNewAndAlreadyInputSomeText && !hasDefaultSiteSelectedAndInReadOnlyMode ? 'New' : null
     }
   },
   watch: {
