@@ -2,12 +2,7 @@
   <div class="stream-info" v-if="selectedStream">
     <div>
       <div class="stream-info__title-wrapper" v-if="selectedStream">
-        <router-link title="Edit site location" to="/edit-stream-location">
-          <span class="stream-info__title">{{ selectedStream.name }}</span>
-          <span class="stream-info__edit-icon" title="Edit the site">
-            <fa-icon :icon="iconPencil"></fa-icon>
-          </span>
-        </router-link>
+        <span class="stream-info__title">{{ selectedStream.name }}</span>
       </div>
     </div>
     <div class="stream-info__subtitle">
