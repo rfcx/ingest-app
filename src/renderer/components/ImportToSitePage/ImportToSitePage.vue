@@ -128,11 +128,13 @@ export default {
       return !this.detectedSiteFromDeployment || (this.detectedSiteFromDeployment && this.detectedProjectFromDeployment)
     },
     shouldShowNameHelperMessage () {
-      return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '')
+      return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '') && this.hasPassProjectValidation
+    },
+    hasPassProjectValidation () {
+      return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject)
     },
     hasPassedValidation () {
-      const hasPassProjectValidation = !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject)
-      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude && hasPassProjectValidation
+      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude && this.hasPassProjectValidation
     },
     selectedCoordinates () {
       return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : null
