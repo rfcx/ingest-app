@@ -163,7 +163,7 @@ export default {
       }
     },
     async saveSiteInLocalDB (site, env) {
-      const now = new Date()
+      const now = Date.now()
       const obj = {
         ...site,
         timezone: dateHelper.getDefaultTimezone(site.latitude, site.longitude),
