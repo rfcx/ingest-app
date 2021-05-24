@@ -31,6 +31,11 @@
           <fa-icon :icon="icons.loading" aria-hidden="true" spin></fa-icon>
         </div>
       </div>
+      <div class="dropdown-content" v-else-if="shouldShowEmptyContent">
+        <div class="dropdown-item">
+          <slot name="emptyStateView"></slot>
+        </div>
+      </div>
       <div class="dropdown-content" v-else>
         <a href="#" class="dropdown-item" v-for="option in dropdownOptions" :key="option.id" :class="{'is-active': option === selectedOption}" @click="onOptionSelected(option)"> {{ option.name }} </a>
         <hr class="dropdown-divider" v-if="specialOption && dropdownOptions.length > 0">
@@ -100,6 +105,10 @@ export default {
     searchEnabled: {
       type: Boolean,
       default: true
+    },
+    shouldShowEmptyContent: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
@@ -109,9 +118,6 @@ export default {
     }),
     canEdit () {
       return this.searchText !== '' && !this.isReadOnly && !this.isDisabled
-    },
-    shouldShowLoadingIndicator () {
-      return this.isFetching && this.searchText !== ''
     }
   },
   methods: {
@@ -123,7 +129,8 @@ export default {
       console.log('onSearchInputBlur', e)
       this.$emit('onSearchInputBlur')
       // hide dropdown when click outside
-      if (e.relatedTarget === null || (e.relatedTarget && e.relatedTarget.className !== 'dropdown-item')) {
+      const classesInsideDropdown = ['dropdown-item', 'dropdown-sub-content', 'dropdown-sub-content__link']
+      if (e.relatedTarget === null || (e.relatedTarget && !classesInsideDropdown.includes(e.relatedTarget.className))) {
         this.toggleDropdown(false)
       }
     },

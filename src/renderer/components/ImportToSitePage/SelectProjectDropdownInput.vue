@@ -8,19 +8,31 @@
     :isReadOnly="initialProject ? initialProject.name !== null : null"
     :isFetching="isLoading"
     :searchEnabled="false"
-  />
+    :shouldShowEmptyContent="shouldShowEmptyStateView"
+  >
+    <div class="dropdown-sub-content__wrapper" slot="emptyStateView">
+      <span> 
+        No project found.
+        <a href="#" class="dropdown-sub-content__link" @click="redirectToArbimon()">Create project in Arbimon</a>
+      </span>
+      <fa-icon class="iconRefresh dropdown-sub-content__link" :icon="iconRefresh" @click.prevent="getProjectOptions()" v-if="!isLoading"></fa-icon>
+    </div>
+  </DropDownWithSearchInput>
 </template>
 
 <script>
 import DropDownWithSearchInput from '../Common/Dropdown/DropdownWithSearchInput'
 import api from '../../../../utils/api'
+import { faSync } from '@fortawesome/free-solid-svg-icons'
+import settings from 'electron-settings'
 import ipcRendererSend from '../../services/ipc'
 export default {
   data () {
     return {
+      iconRefresh: faSync,
       isLoading: false,
       selectedProjectName: '',
-      projectOptions: null
+      projectOptions: []
     }
   },
   props: {
@@ -36,6 +48,11 @@ export default {
     }
   },
   components: { DropDownWithSearchInput },
+  computed: {
+    shouldShowEmptyStateView () {
+      return this.projectOptions.length === 0
+    }
+  },
   async mounted () {
     if (this.initialProject && this.initialProject.name) this.selectedProjectName = this.initialProject.name
     await this.getProjectOptions()
@@ -47,6 +64,7 @@ export default {
         let selectedProject = this.projectOptions.find(s => s.name === keyword)
         if (selectedProject) return
       }
+      console.log('getProjectOptions: start')
       this.isLoading = true
       try {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
@@ -55,6 +73,7 @@ export default {
         this.isLoading = false
       } catch (error) {
         this.isLoading = false
+        console.log('getProjectOptions error', error, this.projectOptions)
         // TODO: handle error
       }
     },
@@ -65,6 +84,10 @@ export default {
     onClearProjectNameSearchInput () {
       console.log('onClearProjectNameSearchInput')
       this.selectedProjectName = ''
+    },
+    redirectToArbimon () {
+      const isProd = settings.get('settings.production_env')
+      this.$electron.shell.openExternal(api.arbimonWebUrl(isProd))
     }
   },
   watch: {
@@ -78,3 +101,23 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.dropdown-sub-content {
+  &__wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-self: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  &__link {
+    color: $body-text-color;
+    font-weight: $title-font-weight;
+    cursor: pointer;
+  }
+  &__link:hover {
+    color: $body-text-color;
+  }
+}
+</style>
