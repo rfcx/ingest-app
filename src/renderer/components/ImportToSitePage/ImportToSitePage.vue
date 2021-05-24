@@ -24,7 +24,7 @@
         ref="siteSelector"
         :project="selectedProject"
         :updateIsCreatingNewSite.sync="isCreatingNewSite"
-        :isWarning="shouldShowNameHelperMessage"
+        :isWarning="shouldShowNameHelperMessage === true"
         :initialSite="detectedSiteFromDeployment"
         :helpText="siteDropdownHelpText"
         @onSelectedSiteNameChanged="onSelectedSite"/>

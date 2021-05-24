@@ -36,10 +36,6 @@ export default {
     }
   },
   props: {
-    isWarning: {
-      type: Boolean,
-      default: false
-    },
     initialProject: {
       type: Object,
       default: () => {
