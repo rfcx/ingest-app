@@ -14,11 +14,23 @@
     :helpText="helpText"
     :isFetching="isLoading"
     :isDisabled="isDisabled"
-  />
+    :shouldShowEmptyContent="shouldShowErrorView"
+  >
+  <ErrorMessageView slot="emptyStateView" v-if="!isLoading">
+      <span slot="message">
+        {{ errorMessage }}
+      </span>
+      <a href="#" slot="refreshButton" class="dropdown-sub-content__link" @click.prevent="getSiteOptions()">
+        <fa-icon class="iconRefresh" :icon="iconRefresh"></fa-icon>
+      </a>
+    </ErrorMessageView>
+  </DropDownWithSearchInput>
 </template>
 
 <script>
 import DropDownWithSearchInput from '../Common/Dropdown/DropdownWithSearchInput'
+import ErrorMessageView from './ErrorMessageView'
+import { faSync } from '@fortawesome/free-solid-svg-icons'
 import api from '../../../../utils/api'
 import ipcRendererSend from '../../services/ipc'
 export default {
@@ -28,7 +40,9 @@ export default {
       isCreatingNewSite: false,
       siteOptions: [],
       isLoading: false,
-      searchTimer: null
+      searchTimer: null,
+      iconRefresh: faSync,
+      errorMessage: ''
     }
   },
   props: {
@@ -53,7 +67,7 @@ export default {
       }
     }
   },
-  components: { DropDownWithSearchInput },
+  components: { DropDownWithSearchInput, ErrorMessageView },
   computed: {
     tagTitle () {
       const isCreatingNewAndAlreadyInputSomeText = this.selectedSiteName && this.isCreatingNewSite
@@ -71,6 +85,9 @@ export default {
       // no project and no default site selected
       const noProjectSelected = !this.project || (this.project && Object.keys(this.project).length === 0)
       return noProjectSelected && !this.initialSite
+    },
+    shouldShowErrorView () {
+      return this.errorMessage !== ''
     }
   },
   async created () {
@@ -88,10 +105,12 @@ export default {
       try {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
         this.siteOptions = await api.getUserSites(idToken, keyword, this.project ? this.project.id : null, 10, 0)
+        this.errorMessage = ''
         this.isLoading = false
       } catch (error) {
         console.log('getSiteOptions error', error)
         this.isLoading = false
+        this.errorMessage = error
       }
     },
     async onSeachInputTextChanged (text) {

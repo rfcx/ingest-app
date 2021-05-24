@@ -8,22 +8,28 @@
     :isReadOnly="initialProject ? initialProject.name !== null : null"
     :isFetching="isLoading"
     :searchEnabled="false"
-    :shouldShowEmptyContent="shouldShowEmptyStateView"
+    :shouldShowEmptyContent="shouldShowErrorView"
   >
-    <div class="dropdown-sub-content__wrapper" slot="emptyStateView">
-      <span> 
+    <ErrorMessageView slot="emptyStateView" v-if="!isLoading">
+      <span slot="message" v-if="projectOptions.length !== 0"> 
         No project found.
         <a href="#" class="dropdown-sub-content__link" @click="redirectToArbimon()">Create project in Arbimon</a>
       </span>
-      <fa-icon class="iconRefresh dropdown-sub-content__link" :icon="iconRefresh" @click.prevent="getProjectOptions()" v-if="!isLoading"></fa-icon>
-    </div>
+      <span slot="message" v-else>
+        {{ errorMessage }}
+      </span>
+      <a href="#" slot="refreshButton" class="dropdown-sub-content__link" @click.prevent="getProjectOptions()">
+        <fa-icon class="iconRefresh" :icon="iconRefresh"></fa-icon>
+      </a>
+    </ErrorMessageView>
   </DropDownWithSearchInput>
 </template>
 
 <script>
 import DropDownWithSearchInput from '../Common/Dropdown/DropdownWithSearchInput'
-import api from '../../../../utils/api'
+import ErrorMessageView from './ErrorMessageView'
 import { faSync } from '@fortawesome/free-solid-svg-icons'
+import api from '../../../../utils/api'
 import settings from 'electron-settings'
 import ipcRendererSend from '../../services/ipc'
 export default {
@@ -32,7 +38,8 @@ export default {
       iconRefresh: faSync,
       isLoading: false,
       selectedProjectName: '',
-      projectOptions: []
+      projectOptions: [],
+      errorMessage: ''
     }
   },
   props: {
@@ -43,10 +50,10 @@ export default {
       }
     }
   },
-  components: { DropDownWithSearchInput },
+  components: { DropDownWithSearchInput, ErrorMessageView },
   computed: {
-    shouldShowEmptyStateView () {
-      return this.projectOptions.length === 0
+    shouldShowErrorView () {
+      return this.projectOptions.length === 0 || this.errorMessage !== ''
     }
   },
   async mounted () {
@@ -65,12 +72,11 @@ export default {
       try {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
         this.projectOptions = await api.getUserProjects(idToken, keyword)
-        // TODO: handle when there is no project
         this.isLoading = false
+        this.errorMessage = ''
       } catch (error) {
         this.isLoading = false
-        console.log('getProjectOptions error', error, this.projectOptions)
-        // TODO: handle error
+        this.errorMessage = error
       }
     },
     onSelectProject (project) {
@@ -97,23 +103,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-.dropdown-sub-content {
-  &__wrapper {
-    display: flex;
-    justify-content: space-between;
-    align-self: center;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  &__link {
-    color: $body-text-color;
-    font-weight: $title-font-weight;
-    cursor: pointer;
-  }
-  &__link:hover {
-    color: $body-text-color;
-  }
-}
-</style>
