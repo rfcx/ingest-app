@@ -37,6 +37,7 @@ export default {
   },
   components: { DropDownWithSearchInput },
   async mounted () {
+    if (this.initialProject && this.initialProject.name) this.selectedProjectName = this.initialProject.name
     await this.getProjectOptions()
   },
   methods: {

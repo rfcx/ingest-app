@@ -26,7 +26,7 @@ export default {
     return {
       selectedSiteName: '',
       isCreatingNewSite: false,
-      siteOptions: null,
+      siteOptions: [],
       isLoading: false,
       searchTimer: null
     }
@@ -64,6 +64,7 @@ export default {
       return this.selectedSiteName && !this.selectedSiteNameHasExactMatchsWithOptions ? `Create New Site: ${this.selectedSiteName}` : null
     },
     selectedSiteNameHasExactMatchsWithOptions () {
+      if (!this.siteOptions || this.siteOptions.length === 0) return false
       return this.siteOptions.map(s => s.name).includes(this.selectedSiteName)
     },
     isDisabled () {

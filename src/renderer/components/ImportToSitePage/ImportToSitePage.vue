@@ -106,6 +106,9 @@ export default {
         // and set the selected site to be the detected site from deployment
         this.updateSelectedExistingSite(existStreamInDB)
       }
+      if (this.detectedProjectFromDeployment) {
+        this.selectedProject = this.detectedProjectFromDeployment
+      }
     }
     if (this.$route.query.selectedFiles) {
       this.props.selectedFiles = JSON.parse(this.$route.query.selectedFiles)
@@ -146,6 +149,11 @@ export default {
       // if site created successfully, it will be assigned to the selected existing site
       // then add file to site
       if (!this.selectedExistingSite) return
+      let localSite = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedExistingSite.id)
+      if (!localSite) { // double check if the selected site already saved to local db
+        localSite = await this.saveSiteInLocalDB(this.selectedExistingSite)
+      }
+      this.selectedExistingSite = localSite
       if (this.props.selectedFolderPath) {
         this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, {
           deploymentId: this.props.deploymentInfo ? this.props.deploymentInfo.id : ''
@@ -165,7 +173,6 @@ export default {
       const longitude = this.form.selectedLongitude
       const projectId = this.selectedProject.id
       const isPublic = false
-      const fileFormat = FileFormat.fileFormat.AUTO_DETECT
       const env = settings.get('settings.production_env')
       try {
         this.isLoading = true
@@ -175,7 +182,6 @@ export default {
           name,
           latitude,
           longitude,
-          timestampFormat: fileFormat,
           isPublic: isPublic,
           projectId,
           projectName: this.selectedProject.name
@@ -187,8 +193,10 @@ export default {
     },
     async saveSiteInLocalDB (site, env) {
       const now = new Date()
+      const fileFormat = FileFormat.fileFormat.AUTO_DETECT
       const obj = {
         ...site,
+        timestampFormat: fileFormat,
         timezone: dateHelper.getDefaultTimezone(site.latitude, site.longitude),
         env: env ? 'production' : 'staging',
         serverCreatedAt: site.createdAt !== undefined ? new Date(site.createdAt) : now,
