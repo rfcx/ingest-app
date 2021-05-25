@@ -26,7 +26,7 @@
 
 <script>
 import api from '../../../../utils/api'
-import { faPencilAlt, faExternalLinkAlt, faLandmark } from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faExternalLinkAlt, faFolder } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
 
 export default {
@@ -34,7 +34,7 @@ export default {
     return {
       iconPencil: faPencilAlt,
       faExternalLinkAlt: faExternalLinkAlt,
-      faProject: faLandmark,
+      faProject: faFolder,
       hasClosedNavigateMessage: false
     }
   },
