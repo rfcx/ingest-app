@@ -11,7 +11,7 @@
     :shouldShowEmptyContent="shouldShowErrorView"
   >
     <ErrorMessageView slot="emptyStateView" v-if="!isLoading">
-      <span slot="message" v-if="projectOptions.length !== 0"> 
+      <span slot="message" v-if="hasNoProject"> 
         No project found.
         <a href="#" class="dropdown-sub-content__link" @click="redirectToArbimon()">Create project in Arbimon</a>
       </span>
@@ -53,7 +53,10 @@ export default {
   components: { DropDownWithSearchInput, ErrorMessageView },
   computed: {
     shouldShowErrorView () {
-      return this.projectOptions.length === 0 || this.errorMessage !== ''
+      return this.hasNoProject || this.errorMessage !== ''
+    },
+    hasNoProject () {
+      return this.projectOptions.length === 0
     }
   },
   async mounted () {
