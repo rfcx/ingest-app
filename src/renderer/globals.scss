@@ -77,12 +77,16 @@ $button-disabled-background-color: $button-background-color;
 $button-hover-color: $title-text-color;
 $button-hover-border-color: #3b3e53;
 
+// Modal
+$alert-content-size: 16px;
+$modal-card-head-background-color: $box-color;
+$modal-card-body-background-color: $box-color;
+$modal-card-title-color: $body-text-color;
+$modal-card-head-padding: $default-padding;
+
 // -- Wrapper
 $wrapper-width: 500px;
 $wrapper-margin: 32px auto;
-
-// -- Alert
-$alert-content-size: 16px;
 
 @import "~bulma/";
 
@@ -163,4 +167,14 @@ a.is-button {
 .default-notice {
   background: #3b3e53;
   color: white;
+}
+
+.modal.is-active {
+  z-index: 200;
+}
+.modal-background {
+  z-index: 150;
+}
+.modal-card {
+  z-index: 200;
 }

@@ -25,6 +25,7 @@
     <confirm-alert
       :title="alertTitle"
       :content="alertContent"
+      cancelButtonText="OK"
       :image="'rfcx-logo.png'"
       :isProcessing="false"
       v-if="isPopupOpened"
@@ -268,7 +269,6 @@
   .alert .modal-card-body {
     border-top-left-radius: 6px;
     border-top-right-radius: 6px;
-    font-size: $alert-content-size;
   }
 
   .dropdown {
@@ -307,14 +307,6 @@
     }
   }
 
-  .modal-card-head,
-  .modal-card-body,
-  .modal-card-foot {
-    background-color: #292a3b !important;
-  }
-  .modal-card-title {
-    color: white !important;
-  }
   .active {
     border: 4px solid #131525 !important;
     background-color: #131525 !important;
@@ -330,15 +322,6 @@
   }
   .state-progress span {
     color: $body-text-color;
-  }
-  .modal.is-active {
-    z-index: 200;
-  }
-  .modal-background {
-    z-index: 150;
-  }
-  .modal-card {
-    z-index: 200;
   }
   ::-webkit-scrollbar-thumb {
     background-color: gray;

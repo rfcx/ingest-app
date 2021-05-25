@@ -69,4 +69,4 @@
   </div>
 </template>
 <script src="./FileNameFormatSettings.js"></script>
-<style src="./FileNameFormatSettings.scss"></style>
+<style src="./FileNameFormatSettings.scss" scoped></style>
