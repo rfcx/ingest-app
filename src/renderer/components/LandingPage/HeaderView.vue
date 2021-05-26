@@ -7,7 +7,7 @@
     </div>
     <div class="stream-info__subtitle">
       <div v-if="selectedStream.projectName" style="display:inline">
-        <fa-icon class="faProject" :icon="faProject"></fa-icon>
+        <img src="~@/assets/ic-folder-empty.svg">
         <span class="stream-info__project">{{selectedStream.projectName}}</span>
       </div>
         <img src="~@/assets/ic-pin.svg">
@@ -99,6 +99,9 @@ export default {
         width: 1em;
         height: 1em;
         padding-right: 0.25em;
+      }
+      span {
+        margin-right: 0.25em;
       }
     }
     &__coordinates {
