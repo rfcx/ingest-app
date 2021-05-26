@@ -19,8 +19,7 @@ export default {
   computed: {
     coordinateTitle () {
       if (!this.coordinates || this.coordinates.length < 2) return ''
-      const lat = this.coordinates[1]
-      const lng = this.coordinates[0]
+      const [lng, lat] = this.coordinates
       return `${lat.toFixed(4)}, ${lng.toFixed(4)}`
     }
   }
