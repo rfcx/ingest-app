@@ -96,7 +96,6 @@ export default {
       letter-spacing: normal;
       color: $secondary-text-color;
       img {
-        width: 1em;
         height: 1em;
         padding-right: 0.25em;
       }
