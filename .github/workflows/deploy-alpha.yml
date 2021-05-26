@@ -3,7 +3,7 @@ name: Test build/release
 on:
   push:
     branches:
-      - feature/CE-359-GitHub-actions-for-new-db-build
+      - alpha
 
 jobs:
   release:
