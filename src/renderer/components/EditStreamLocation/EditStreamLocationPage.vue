@@ -14,7 +14,7 @@
       </div>
       <div class="field wrapper__location">
         <label for="location" class="label">Location</label>
-        <Map class="map-wrapper" @locationSelected="onSelectLocation" :lngLat="getStreamCoordinates()"></Map>
+        <Map class="map-wrapper" @locationSelected="onSelectLocation" :initialCoordinates="getStreamCoordinates()"></Map>
       </div>
       <div class="wrapper__controls">
         <div class="field is-grouped">
@@ -51,7 +51,7 @@ import streamHelper from '../../../../utils/streamHelper'
 import dateHelper from '../../../../utils/dateHelper'
 import api from '../../../../utils/api'
 import settings from 'electron-settings'
-import Map from '../CreateStream/Map'
+import Map from '../Common/Map/Map'
 import ipcRendererSend from '../../services/ipc'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
