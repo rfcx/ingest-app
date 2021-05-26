@@ -162,7 +162,7 @@ export default {
   watch: {
     selectedSiteName: {
       handler: async function (value, prevValue) {
-        if (value === prevValue) return
+        if (value === prevValue || this.initialSite) return // ignore to send event when in readonly mode
         let selectedSite = this.siteOptions.find(s => s.name === value) || { name: value }
         this.$emit('onSelectedSiteNameChanged', selectedSite)
       }

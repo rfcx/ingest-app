@@ -98,7 +98,7 @@ export default {
   watch: {
     selectedProjectName: {
       handler: async function (value, prevValue) {
-        if (value === prevValue) return
+        if (value === prevValue || this.initialProject) return // ignore to send event when in readonly mode
         let selectedProject = this.projectOptions.find(s => s.name === value)
         this.$emit('onSelectedProjectNameChanged', selectedProject)
       }
