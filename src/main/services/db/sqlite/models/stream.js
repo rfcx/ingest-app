@@ -93,6 +93,14 @@ export default function (sequelize) {
       type: DataTypes.DATE,
       allowNull: true,
       defaultValue: null
+    },
+    projectId: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
+    projectName: {
+      type: DataTypes.STRING,
+      allowNull: true
     }
   }
   const Stream = sequelize.define('Stream', columns)

@@ -61,7 +61,9 @@ const parseUserSites = (sites) => {
       serverUpdatedAt: new Date(site.updated_at),
       env: isProductionEnv() ? 'production' : 'staging',
       visibility: site.is_public,
-      timezone: dateHelper.getDefaultTimezone(latitude, longitude)
+      timezone: dateHelper.getDefaultTimezone(latitude, longitude),
+      projectId: site.project ? site.project.id : null,
+      projectName: site.project ? site.project.name : null
     }
   })
 }
