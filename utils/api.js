@@ -83,9 +83,9 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
 }
 
 // Part 0: Create stream
-const createStream = (env, streamName, latitude, longitude, isPublic, deviceId, idToken) => {
+const createStream = (env, streamName, latitude, longitude, isPublic, projectId, idToken) => {
   console.log('creating stream api:', streamName)
-  return httpClient.post(apiUrl(env) + '/streams', { name: streamName, latitude: latitude, longitude: longitude, is_public: isPublic, device_id: deviceId }, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  return httpClient.post(apiUrl(env) + '/streams', { name: streamName, latitude: latitude, longitude: longitude, is_public: isPublic, project_id: projectId }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const streamId = response.data.id
       return streamId
@@ -180,8 +180,12 @@ const deleteStream = (env, streamId, idToken) => {
     })
 }
 
-const getUserSites = (env, idToken) => {
-  return httpClient.get(apiUrl(env) + `/streams`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+const getUserSites = (idToken, keyword = null, projectId, limit, offset) => {
+  const env = settings.get('settings.production_env')
+  let params = { keyword, projects: projectId }
+  if (!isNaN(limit)) { params.limit = limit }
+  if (!isNaN(offset)) { params.offset = offset }
+  return httpClient.get(apiUrl(env) + `/streams`, { headers: { 'Authorization': 'Bearer ' + idToken }, params })
     .then(function (response) {
       return response.data
     }).catch(error => {
@@ -191,12 +195,23 @@ const getUserSites = (env, idToken) => {
 }
 
 const getDeploymentInfo = (deploymentId, idToken) => {
-  const isProd = settings.get('settings.production_env')
-  return httpClient.get(apiUrl(isProd) + `/deployments/${deploymentId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+  const env = settings.get('settings.production_env')
+  return httpClient.get(apiUrl(env) + `/deployments/${deploymentId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(response => {
       return response.data
     }).catch(error => {
       console.log('error', error)
+      throw error.response ? (error.response.data ? error.response.data : error.response) : error
+    })
+}
+
+const getUserProjects = (idToken, keyword = null) => {
+  const env = settings.get('settings.production_env')
+  return httpClient.get(apiUrl(env) + `/projects`, { headers: { 'Authorization': 'Bearer ' + idToken }, params: { keyword } })
+    .then(function (response) {
+      return response.data
+    }).catch(error => {
+      console.log('error', error.response)
       throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
@@ -211,5 +226,6 @@ export default {
   renameStream,
   deleteStream,
   getUserSites,
-  getDeploymentInfo
+  getDeploymentInfo,
+  getUserProjects
 }

@@ -72,7 +72,7 @@
   import streamService from '../../services/stream'
   const { remote } = window.require('electron')
 
-  const DEFAULT_PAGE_SIZE = 10
+  const DEFAULT_PAGE_SIZE = 50
 
   export default {
     directives: { infiniteScroll },
@@ -241,7 +241,7 @@
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           console.log('getUserSites')
-          api.getUserSites(this.isProductionEnv(), arg)
+          api.getUserSites(arg)
             .then(async sites => {
               this.isFetching = false
               if (sites && sites.length) {

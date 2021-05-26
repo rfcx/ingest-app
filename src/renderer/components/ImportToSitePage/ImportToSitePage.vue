@@ -6,14 +6,25 @@
         <button class="delete" @click="onCloseAlert()"></button>
         {{ errorMessage }}
       </div>
+      <div class="field field-dropdown" v-if="shouldShowProjectSelector">
+        <label for="project" class="label">
+          Project name
+        </label>
+        <SelectProjectDropDownInput
+        :helpText="siteDropdownHelpText"
+        :initialProject="detectedProjectFromDeployment"
+        @onSelectedProjectNameChanged="onSelectedProject"/>
+      </div>
       <div class="field field-dropdown" :class="{'field-dropdown-with-help': siteDropdownHelpText !== null}">
         <label for="name" class="label">
           Site name
           <span class="help is-warning" v-if="shouldShowNameHelperMessage">You must enter a site name</span>
         </label>
         <SelectSiteDropdownInput
+        ref="siteSelector"
+        :project="selectedProject"
         :updateIsCreatingNewSite.sync="isCreatingNewSite"
-        :isWarning="shouldShowNameHelperMessage"
+        :isWarning="shouldShowNameHelperMessage === true"
         :initialSite="detectedSiteFromDeployment"
         :helpText="siteDropdownHelpText"
         @onSelectedSiteNameChanged="onSelectedSite"/>
@@ -45,6 +56,7 @@
 <script>
 import Map from '../Common/Map/Map'
 import HeaderView from '../Common/HeaderWithBackButton'
+import SelectProjectDropDownInput from './SelectProjectDropDownInput'
 import SelectSiteDropdownInput from './SelectSiteDropDownInput'
 import api from '../../../../utils/api'
 import ipcRendererSend from '../../services/ipc'
@@ -66,13 +78,14 @@ export default {
         selectedFolderPath: null,
         selectedFiles: null
       },
+      selectedProject: null,
       selectedExistingSite: null,
       isLoading: false,
       isCreatingNewSite: true,
       errorMessage: ''
     }
   },
-  components: { Map, HeaderView, SelectSiteDropdownInput },
+  components: { Map, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
   async created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
@@ -84,7 +97,7 @@ export default {
       // TODO: check if there is any site detected
       // if any site detected, then check if that site is already in db
       // if not, then create one
-      if (this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
+      if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
         console.log('detected site from deployment')
         var existStreamInDB = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.detectedSiteFromDeployment.id)
         if (!existStreamInDB) { // no stream in local db, then auto create one
@@ -92,6 +105,9 @@ export default {
         }
         // and set the selected site to be the detected site from deployment
         this.updateSelectedExistingSite(existStreamInDB)
+      }
+      if (this.detectedProjectFromDeployment) {
+        this.selectedProject = this.detectedProjectFromDeployment
       }
     }
     if (this.$route.query.selectedFiles) {
@@ -102,17 +118,26 @@ export default {
     detectedSiteFromDeployment () {
       return this.props.deploymentInfo ? this.props.deploymentInfo.stream : null
     },
+    detectedProjectFromDeployment () {
+      return this.props.deploymentInfo ? this.props.deploymentInfo.stream.project : null
+    },
     siteDropdownHelpText () {
       return this.detectedSiteFromDeployment ? 'Detected deployment from RFCx Companion' : null
     },
+    shouldShowProjectSelector () {
+      return !this.detectedSiteFromDeployment || (this.detectedSiteFromDeployment && this.detectedProjectFromDeployment)
+    },
     shouldShowNameHelperMessage () {
-      return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '')
+      return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '') && this.hasPassProjectValidation
+    },
+    hasPassProjectValidation () {
+      return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject)
     },
     hasPassedValidation () {
-      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude
+      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude && this.hasPassProjectValidation
     },
     selectedCoordinates () {
-      return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : []
+      return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : null
     },
     actionButtonTitle () {
       return this.isCreatingNewSite ? 'Create' : 'Import'
@@ -126,6 +151,11 @@ export default {
       // if site created successfully, it will be assigned to the selected existing site
       // then add file to site
       if (!this.selectedExistingSite) return
+      let localSite = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedExistingSite.id)
+      if (!localSite) { // double check if the selected site already saved to local db
+        localSite = await this.saveSiteInLocalDB(this.selectedExistingSite)
+      }
+      this.selectedExistingSite = localSite
       if (this.props.selectedFolderPath) {
         this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, {
           deploymentId: this.props.deploymentInfo ? this.props.deploymentInfo.id : ''
@@ -143,19 +173,20 @@ export default {
       const name = this.form.selectedSiteName
       const latitude = this.form.selectedLatitude
       const longitude = this.form.selectedLongitude
+      const projectId = this.selectedProject.id
       const isPublic = false
-      const fileFormat = FileFormat.fileFormat.AUTO_DETECT
       const env = settings.get('settings.production_env')
       try {
         this.isLoading = true
-        const id = await api.createStream(env, name, latitude, longitude, isPublic, null, idToken)
+        const id = await api.createStream(env, name, latitude, longitude, isPublic, projectId, idToken)
         this.selectedExistingSite = await this.saveSiteInLocalDB({
           id,
           name,
           latitude,
           longitude,
-          timestampFormat: fileFormat,
-          isPublic: isPublic
+          isPublic: isPublic,
+          projectId,
+          projectName: this.selectedProject.name
         }, env)
       } catch (error) {
         this.isLoading = false
@@ -164,8 +195,10 @@ export default {
     },
     async saveSiteInLocalDB (site, env) {
       const now = Date.now()
+      const fileFormat = FileFormat.fileFormat.AUTO_DETECT
       const obj = {
         ...site,
+        timestampFormat: fileFormat,
         timezone: dateHelper.getDefaultTimezone(site.latitude, site.longitude),
         env: env ? 'production' : 'staging',
         serverCreatedAt: site.createdAt !== undefined ? new Date(site.createdAt) : now,
@@ -183,6 +216,13 @@ export default {
         this.form.selectedSiteName = this.selectedExistingSite.name
         this.form.selectedLatitude = this.selectedExistingSite.latitude
         this.form.selectedLongitude = this.selectedExistingSite.longitude
+      } else {
+        this.isCreatingNewSite = true
+        this.form.selectedProjectName = ''
+        this.form.selectedSiteName = ''
+        this.form.selectedLatitude = null
+        this.form.selectedLongitude = null
+        this.$refs.siteSelector.resetSelectedSite()
       }
     },
     onUpdateLocation (coordinates) {
@@ -202,7 +242,22 @@ export default {
 
       // update selecting existing site, if any
       this.selectedExistingSite = !this.isCreatingNewSite ? site : null
-      console.log('form after selected site', JSON.stringify(this.form))
+    },
+    onSelectedProject (project) {
+      this.selectedProject = project
+      this.form.selectedProjectName = project && project.name ? project.name : ''
+    }
+  },
+  watch: {
+    selectedProject: {
+      handler (val, previousVal) {
+        if (val === previousVal) return
+        if (val === null || val === undefined) { // has reset project data
+          this.updateSelectedExistingSite(null)
+        } else if (!this.isCreatingNewSite && this.selectedExistingSite.projectName !== val.name) { // existing site that been selected is in different project
+          this.updateSelectedExistingSite(null)
+        }
+      }
     }
   }
 }

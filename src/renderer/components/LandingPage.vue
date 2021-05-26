@@ -72,7 +72,8 @@
       async handleFiles (files) {
         this.isDragging = false
         if (!files) { return }
-        if (!(this.streams && this.streams.length > 0)) { // create new streams with files
+        // TODO: fix this logic in CE-799
+        /* if (!(this.streams && this.streams.length > 0)) { // create new streams with files
           const fileObjects = [...files].map(file => {
             return {
               'lastModified': file.lastModified,
@@ -85,7 +86,7 @@
           })
           this.$router.push({path: '/add', query: { selectedFiles: JSON.stringify(fileObjects) }})
           return
-        }
+        } */
         // reset selected tab
         await this.$store.dispatch('setSelectedTab', { [this.selectedStreamId]: 'Prepared' })
         await this.$file.handleDroppedFiles(files, this.selectedStream)

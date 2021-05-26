@@ -2,18 +2,16 @@
   <div class="stream-info" v-if="selectedStream">
     <div>
       <div class="stream-info__title-wrapper" v-if="selectedStream">
-        <router-link title="Edit site location" to="/edit-stream-location">
-          <span class="stream-info__title">{{ selectedStream.name }}</span>
-          <span class="stream-info__edit-icon" title="Edit the site">
-            <fa-icon :icon="iconPencil"></fa-icon>
-          </span>
-        </router-link>
+        <span class="stream-info__title">{{ selectedStream.name }}</span>
       </div>
     </div>
     <div class="stream-info__subtitle">
-      <router-link title="Edit site location" to="/edit-stream-location">
+      <div v-if="selectedStream.projectName" style="display:inline">
+        <img src="~@/assets/ic-folder-empty.svg">
+        <span class="stream-info__project">{{selectedStream.projectName}}</span>
+      </div>
         <img src="~@/assets/ic-pin.svg">
-        <span v-if="selectedStream" class="stream-info__coordinates">{{ getStreamLocation() }}</span></router-link>
+        <span v-if="selectedStream" class="stream-info__coordinates">{{ getStreamLocation() }}</span>
     </div>
     <a title="Redirect to Arbimon" class="button is-rounded rounded-button" @click="redirectToArbimon()">
       <fa-icon class="faExternal" :icon="faExternalLinkAlt"></fa-icon>
@@ -28,7 +26,7 @@
 
 <script>
 import api from '../../../../utils/api'
-import { faPencilAlt, faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faExternalLinkAlt, faFolder } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
 
 export default {
@@ -36,6 +34,7 @@ export default {
     return {
       iconPencil: faPencilAlt,
       faExternalLinkAlt: faExternalLinkAlt,
+      faProject: faFolder,
       hasClosedNavigateMessage: false
     }
   },
@@ -97,9 +96,11 @@ export default {
       letter-spacing: normal;
       color: $secondary-text-color;
       img {
-        width: 1em;
         height: 1em;
         padding-right: 0.25em;
+      }
+      span {
+        margin-right: 0.25em;
       }
     }
     &__coordinates {

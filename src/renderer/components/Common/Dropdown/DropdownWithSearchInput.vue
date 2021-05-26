@@ -11,9 +11,11 @@
             :placeholder="placeholder" 
             :class="{'is-warning': isWarning}" 
             @focus="onSearchInputFocus" 
+            @blur="onSearchInputBlur"
             @keydown="toggleDropdown(true)" 
             @keyup.enter="toggleDropdown(false)"
-            :disabled="isReadOnly" />
+            :disabled="isReadOnly || isDisabled" 
+            :readonly="!searchEnabled" />
             <span data-clear-input @click="onClearSearchInputFocus" v-if="canEdit">&times;</span>
             <span class="tag is-small is-right" v-if="tagTitle"> {{ tagTitle }} </span>
             <span class="icon is-small is-right" v-if="searchText === ''">
@@ -24,10 +26,20 @@
       </div>
     </div>
     <div class="dropdown-menu" id="dropdown-menu" role="menu" v-if="shouldShowDropDownOptions">
-      <div class="dropdown-content">
+      <div class="dropdown-content" v-if="isFetching">
+        <div class="dropdown-item">
+          <fa-icon :icon="icons.loading" aria-hidden="true" spin></fa-icon>
+        </div>
+      </div>
+      <div class="dropdown-content" v-else-if="shouldShowEmptyContent">
+        <div class="dropdown-item">
+          <slot name="emptyStateView"></slot>
+        </div>
+      </div>
+      <div class="dropdown-content" v-else>
         <a href="#" class="dropdown-item" v-for="option in dropdownOptions" :key="option.id" :class="{'is-active': option === selectedOption}" @click="onOptionSelected(option)"> {{ option.name }} </a>
         <hr class="dropdown-divider" v-if="specialOption && dropdownOptions.length > 0">
-        <a href="#" class="dropdown-item" v-if="specialOption" @click="onSpecialOptionSelected()">
+        <a href="#" class="dropdown-item special-option" v-if="specialOption" @click="onSpecialOptionSelected()">
           {{ specialOption }}
         </a>
       </div>
@@ -35,11 +47,11 @@
   </div>
 </template>
 <script>
-import { faAngleDown, faCross } from '@fortawesome/free-solid-svg-icons'
+import { faAngleDown, faCircleNotch } from '@fortawesome/free-solid-svg-icons'
 export default {
   data () {
     return {
-      searchText: '',
+      searchText: this.text,
       isActive: false,
       shouldShowDropDownOptions: true,
       selectedOption: ''
@@ -47,15 +59,16 @@ export default {
   },
   props: {
     // Input
+    text: String,
     placeholder: {
       type: String,
       default: 'Search'
     },
-    initialInput: {
-      type: String,
-      default: ''
-    },
     isReadOnly: {
+      type: Boolean,
+      default: false
+    },
+    isDisabled: {
       type: Boolean,
       default: false
     },
@@ -84,15 +97,27 @@ export default {
     tagTitle: {
       type: String,
       default: ''
+    },
+    isFetching: {
+      type: Boolean,
+      default: false
+    },
+    searchEnabled: {
+      type: Boolean,
+      default: true
+    },
+    shouldShowEmptyContent: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {
     icons: () => ({
       arrowDown: faAngleDown,
-      delete: faCross
+      loading: faCircleNotch
     }),
     canEdit () {
-      return this.searchText !== '' && !this.isReadOnly
+      return this.searchText !== '' && !this.isReadOnly && !this.isDisabled
     }
   },
   methods: {
@@ -101,15 +126,20 @@ export default {
       this.toggleDropdown(true)
     },
     onSearchInputBlur (e) {
+      console.log('onSearchInputBlur', e)
       this.$emit('onSearchInputBlur')
-      if (e.relatedTarget === null) {
+      // hide dropdown when click outside
+      const classesInsideDropdown = ['dropdown-item', 'dropdown-sub-content', 'dropdown-sub-content__link']
+      if (e.relatedTarget === null || (e.relatedTarget && !classesInsideDropdown.includes(e.relatedTarget.className))) {
         this.toggleDropdown(false)
       }
     },
     onClearSearchInputFocus () {
-      this.$emit('onClearSearchInputFocus')
+      this.$emit('onClearSearchInput')
       this.searchText = ''
-      this.toggleDropdown(true)
+      if (this.searchEnabled) {
+        this.toggleDropdown(true)
+      }
     },
     onOptionSelected (option) {
       this.$emit('onOptionSelected', option)
@@ -122,7 +152,7 @@ export default {
       this.hideOnlyDropdownOptions() // TODO: this might need to be in subclass
     },
     toggleDropdown (show) {
-      if (this.isReadOnly) return
+      if (this.isReadOnly || this.isDisabled) return
       this.isActive = show
       this.shouldShowDropDownOptions = show
     },
@@ -136,11 +166,10 @@ export default {
     searchText: function (value, prev) {
       if (value === prev) return
       this.$emit('onSeachInputTextChanged', value)
-    }
-  },
-  created () {
-    if (this.initialInput) {
-      this.searchText = this.initialInput
+    },
+    text: function (value, prev) {
+      if (value === prev) return
+      this.searchText = value
     }
   }
 }
@@ -164,6 +193,9 @@ export default {
         text-transform: uppercase;
       }
     }
+  }
+  .dropdown-item.special-option {
+    font-weight: $title-font-weight;
   }
   .clearable-input {
     position: relative;
