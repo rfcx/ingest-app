@@ -17,7 +17,7 @@
       </div>
       <div class="field">
         <label for="location" class="label">Location</label>
-        <Map class="map-wrapper" @locationSelected="onSelectLocation" :lngLat="selectedCoordinates" ref="map"></Map>
+        <Map class="map-wrapper" @locationSelected="onSelectLocation" :initialCoordinates="selectedCoordinates" ref="map"></Map>
       </div>
       <div class="folder-path-input__wrapper" v-if="selectedFolderPath != null">
         <label for="path" class="label">Folder path</label>

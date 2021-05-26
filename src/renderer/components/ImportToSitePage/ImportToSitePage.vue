@@ -31,7 +31,7 @@
       </div>
       <div class="field">
         <label for="location" class="label">Location</label>
-        <Map class="map-wrapper" @locationSelected="onUpdateLocation" :lngLat="selectedCoordinates" :isReadOnly="!isCreatingNewSite" ref="map"></Map>
+        <Map class="map-wrapper" @locationSelected="onUpdateLocation" :initialCoordinates="selectedCoordinates" :isReadOnly="!isCreatingNewSite" ref="map"></Map>
       </div>
       <div class="field is-grouped controls-group">
         <p class="control control-btn">

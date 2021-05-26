@@ -14,7 +14,7 @@
       </div>
       <div class="field wrapper__location">
         <label for="location" class="label">Location</label>
-        <Map class="map-wrapper" @locationSelected="onSelectLocation" :lngLat="getStreamCoordinates()"></Map>
+        <Map class="map-wrapper" @locationSelected="onSelectLocation" :initialCoordinates="getStreamCoordinates()"></Map>
       </div>
       <div class="wrapper__controls">
         <div class="field is-grouped">

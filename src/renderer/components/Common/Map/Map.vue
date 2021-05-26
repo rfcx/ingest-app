@@ -52,7 +52,7 @@ export default {
     }
   },
   components: { MglMap, GeocoderControl, MglMarker, MglNavigationControl, ReadOnlyGeoCoderControl },
-  props: ['title', 'lngLat', 'isReadOnly'],
+  props: ['title', 'initialCoordinates', 'isReadOnly'],
   methods: {
     getMarkerTitle () {
       return this.title ? this.title : 'marker'
@@ -136,7 +136,7 @@ export default {
       this.updateMapCoordinatesForMarker(val[0], val[1])
       this.$emit('locationSelected', val)
     },
-    lngLat (val, oldVal) {
+    initialCoordinates (val, oldVal) {
       if (val === oldVal) return
       if (val === null || val.length < 2) this.resetCoordinates()
       else this.updateCoordinates(val)
@@ -144,8 +144,8 @@ export default {
   },
   created () {
     this.mapbox = Mapbox
-    if (this.lngLat) {
-      this.updateCoordinates(this.lngLat)
+    if (this.initialCoordinates) {
+      this.updateCoordinates(this.initialCoordinates)
     }
   }
 }
