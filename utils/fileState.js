@@ -18,7 +18,7 @@ const getName = function (state, message) {
     case 'converting': return 'compressing'
     case 'waiting': return 'waiting'
     case 'uploading': return 'uploading'
-    case 'ingesting': return 'processing'
+    case 'ingesting': return 'verified'
     case 'local_error':
     case 'server_error':
       // if (!message) return ''
