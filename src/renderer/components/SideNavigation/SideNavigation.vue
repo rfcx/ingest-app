@@ -72,7 +72,7 @@
   import streamService from '../../services/stream'
   const { remote } = window.require('electron')
 
-  const DEFAULT_PAGE_SIZE = 10
+  const DEFAULT_PAGE_SIZE = 50
 
   export default {
     directives: { infiniteScroll },
