@@ -36,7 +36,7 @@ export default {
       return uniquedGroupNameInCompletedTab.map(state => {
         const stat = this.stats.find(s => s.state === state.id)
         return { ...state, number: stat ? stat.stateCount : 0 }
-      }).sort((a, b) => FileState.getStatePriority(a.id) - FileState.getStatePriority(b.id))
+      }).sort((a, b) => FileState.getSummaryStatePriority(a.id) - FileState.getSummaryStatePriority(b.id))
     }
   },
   methods: {

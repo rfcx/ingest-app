@@ -12,6 +12,16 @@ const getStatePriority = function (state) {
   }
 }
 
+const getSummaryStatePriority = function (state) {
+  switch (state) {
+    case 'ingesting': return 0
+    case 'completed': return 10
+    case 'local_error':
+    case 'server_error': return 20
+    default: return 30
+  }
+}
+
 const getName = function (state, message) {
   switch (state) {
     case 'preparing': return ''
@@ -115,6 +125,7 @@ export default {
   queuedGroup,
   completedGroup,
   getStatePriority,
+  getSummaryStatePriority,
   getName,
   getIconName,
   isInPreparedGroup,
