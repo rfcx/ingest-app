@@ -16,8 +16,8 @@
       </div>
     </div>
     <div class="menu-container wrapper__controls">
-      <button type="button" class="button is-rounded rounded-button" @click="showDropDownMenu" v-click-outside="hideDropDownMenu">
-        <span>+</span>Upload Audio
+      <button type="button" class="button is-rounded rounded-button" @click="goToImportFiles">
+        <span>+</span>Import Files
       </button>
     </div>
     <div class="wrapper__title">
@@ -72,7 +72,7 @@
   import streamService from '../../services/stream'
   const { remote } = window.require('electron')
 
-  const DEFAULT_PAGE_SIZE = 10
+  const DEFAULT_PAGE_SIZE = 50
 
   export default {
     directives: { infiniteScroll },
@@ -164,11 +164,8 @@
           }
         }, 500)
       },
-      showDropDownMenu () {
-        this.$emit('clickNewSiteButton')
-      },
-      hideDropDownMenu () {
-        this.$emit('clickOutSideNewSiteButton')
+      goToImportFiles () {
+        this.$router.push({path: '/import'})
       },
       getStateImgUrl (state) {
         if (state === '') return ''
@@ -244,7 +241,7 @@
         let listener = (event, arg) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
           console.log('getUserSites')
-          api.getUserSites(this.isProductionEnv(), arg)
+          api.getUserSites(arg)
             .then(async sites => {
               this.isFetching = false
               if (sites && sites.length) {

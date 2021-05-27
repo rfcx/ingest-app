@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <header-view title="Create Site" :shouldShowBackButton="selectedFolderPath != null"/>
+    <header-view title="Select Site" :shouldShowBackButton="selectedFolderPath != null"/>
     <fieldset>
       <div class="notification default-notice" v-show="error">
         <button class="delete" @click="onCloseAlert()"></button>
@@ -17,7 +17,7 @@
       </div>
       <div class="field">
         <label for="location" class="label">Location</label>
-        <Map class="map-wrapper" @locationSelected="onSelectLocation" :lngLat="selectedCoordinates" ref="map"></Map>
+        <Map class="map-wrapper" @locationSelected="onSelectLocation" :initialCoordinates="selectedCoordinates" ref="map"></Map>
       </div>
       <div class="folder-path-input__wrapper" v-if="selectedFolderPath != null">
         <label for="path" class="label">Folder path</label>
@@ -56,7 +56,7 @@ import streamHelper from '../../../../utils/streamHelper'
 import dateHelper from '../../../../utils/dateHelper'
 import FileFormat from '../../../../utils/FileFormat'
 import settings from 'electron-settings'
-import Map from './Map'
+import Map from '../Common/Map/Map'
 import HeaderView from '../Common/HeaderWithBackButton'
 import ipcRendererSend from '../../services/ipc'
 
@@ -82,7 +82,7 @@ export default {
       return this.name && this.selectedLatitude && this.selectedLongitude
     },
     selectedCoordinates () {
-      return this.sselectedLatitude ? [this.selectedLongitude, this.selectedLatitude] : null
+      return this.selectedLatitude ? [this.selectedLongitude, this.selectedLatitude] : null
     }
   },
   created () {
@@ -128,7 +128,7 @@ export default {
       let listener = (event, arg) => {
         this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
         let idToken = arg
-        api.createStream(this.isProductionEnv(), this.name, latitude, longitude, isPublic, this.deviceId, idToken)
+        api.createStream(this.isProductionEnv(), this.name, latitude, longitude, isPublic, null, idToken)
           .then(async (streamId) => {
             const stream = {
               id: streamId,

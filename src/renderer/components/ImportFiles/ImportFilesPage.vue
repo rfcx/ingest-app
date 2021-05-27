@@ -1,6 +1,6 @@
 <template>
   <div class="import-stream__wrapper">
-    <header-view title="Import audio files from AudioMoth" />
+    <header-view title="Import audio files from folder" />
     <p class="subtitle">Insert SD Card or choose the folder to import.</p>
     <source-list @sourceSelected="onSourceSelected"></source-list>
     <div class="field is-grouped">
@@ -26,10 +26,6 @@
 import SourceList from './SourceList'
 import HeaderView from '../Common/HeaderWithBackButton'
 import api from '../../../../utils/api'
-import dateHelper from '../../../../utils/dateHelper'
-import FileFormat from '../../../../utils/FileFormat'
-import settings from 'electron-settings'
-import ipcRendererSend from '../../services/ipc'
 
 export default {
   data: () => ({
@@ -73,51 +69,10 @@ export default {
     },
     async importFiles () {
       const deploymentInfo = await this.getDeploymentInfo(this.deploymentId)
-      if (!deploymentInfo) {
-        this.redirectUserToCreateSiteScreen(deploymentInfo)
-        return
-      }
-      const attachedStream = deploymentInfo.stream
-      if (attachedStream.id) { // has stream infomation attached to deployment info
-        var existStreamInDB = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, attachedStream.id)
-        if (!existStreamInDB) { // no stream in local db
-          existStreamInDB = await this.autoCreateSiteInformation(deploymentInfo.stream)
-        }
-        // then add files to that stream in local db
-        await this.addFilesToExistingStream(existStreamInDB)
-        await this.redirectUserToTheStreamInMainPage(existStreamInDB.id)
-      } else { // no stream info in deployment
-        this.redirectUserToCreateSiteScreen(deploymentInfo)
-      }
+      this.redirectUserToSelectSiteScreen(deploymentInfo)
     },
-    async addFilesToExistingStream (stream) {
-      this.$file.handleDroppedFolder(this.selectedSource.path, stream, { deviceId: this.deviceId, deploymentId: this.deploymentInfo ? this.deploymentInfo.id : '' }) // TODO: pass deployment id
-    },
-    async autoCreateSiteInformation (stream) {
-      const now = new Date()
-      const streamObj = {
-        id: stream.id,
-        name: stream.name,
-        latitude: stream.latitude,
-        longitude: stream.longitude,
-        timezone: dateHelper.getDefaultTimezone(stream.latitude, stream.longitude),
-        timestampFormat: FileFormat.fileFormat.AUTO_DETECT,
-        env: settings.get('settings.production_env') ? 'production' : 'staging',
-        isPublic: stream.isPublic,
-        serverCreatedAt: stream.createdAt !== undefined ? new Date(stream.createdAt) : now,
-        serverUpdatedAt: stream.updatedAt !== undefined ? new Date(stream.updatedAt) : now,
-        lastModifiedAt: now
-      }
-      console.log('obj', streamObj, stream.createdAt !== undefined)
-      return ipcRendererSend('db.streams.create', `db.streams.create.${now}`, streamObj)
-    },
-    redirectUserToCreateSiteScreen (deploymentInfo) {
-      const deploymentInfoForCreateScreen = deploymentInfo && deploymentInfo.stream ? {locationName: deploymentInfo.stream.name, coordinates: [deploymentInfo.stream.longitude, deploymentInfo.stream.latitude]} : null
-      this.$router.push({path: '/add', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentInfo: JSON.stringify(deploymentInfoForCreateScreen) }})
-    },
-    async redirectUserToTheStreamInMainPage (streamId) {
-      await this.$store.dispatch('setSelectedStreamId', streamId)
-      this.$router.push('/')
+    redirectUserToSelectSiteScreen (deploymentInfo) {
+      this.$router.push({path: '/select-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentInfo: JSON.stringify(deploymentInfo) }})
     }
   }
 }
