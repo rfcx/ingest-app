@@ -4,9 +4,8 @@
     <div class="modal-card">
       <header class="modal-card-head" v-if="title">
         <p class="modal-card-title">{{ title }}</p>
-        <button class="delete" aria-label="close" @click="cancelButtonPressed()"></button>
       </header>
-      <section class="modal-card-body" v-if="content">
+      <section class="modal-card-body" :class="{'modal-card-body-with-title': title}" v-if="content">
         <img v-if="image" class="logo" :src="require(`../../assets/${image}`)">
         {{ content }}
       </section>
@@ -42,7 +41,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 
   .logo {
     vertical-align: middle;
@@ -52,6 +51,11 @@ export default {
     -khtml-user-drag: none;
     -moz-user-drag: none;
     -o-user-drag: none;
+  }
+
+  .modal-card-body-with-title {
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
   }
 
 </style>
