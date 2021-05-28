@@ -1,6 +1,9 @@
 <template>
   <div class="wrapper__content-wrapper" v-if="shouldShowProgress" :class="shouldShowProgress ? '' : 'hidden'">
-    <progress class="progress is-success wrapper__progress-bar" :value="getProgressPercent()" max="100"></progress>
+    <div class="progress">
+      <div class="progress-bar completed" :style="{ width: completedFilesPercentage+'%' }"></div>
+      <div class="progress-bar processing"  :style="{ width: processingFilesPercentage+'%' }"></div>
+    </div>
     <div class="wrapper__content">
       <div class="wrapper__text-wrapper">
         <div class="wrapper__progress-title">Uploading</div>
@@ -33,7 +36,14 @@ export default {
     ...mapState({
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
       isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
-    })
+    }),
+    completedFilesPercentage () {
+      if (!this.numberOfAllFilesInTheSession || !this.numberOfCompleteFilesInTheSession) return 0
+      else return ((this.numberOfCompleteFilesInTheSession / this.numberOfAllFilesInTheSession) * 100)
+    },
+    processingFilesPercentage () {
+      return this.numberOfProcessingFilesInTheSession / this.numberOfAllFilesInTheSession * 100
+    }
   },
   watch: {
     isUploadingEnabled (val, oldVal) {
@@ -62,7 +72,7 @@ export default {
     getState () {
       const error = this.numberOfFailFilesInTheSession
       const processing = this.numberOfProcessingFilesInTheSession
-      let text = `${processing > 0 ? `(${processing}) ` : ''}${this.numberOfSuccessFilesInTheSession}/${this.numberOfAllFilesInTheSession} files`
+      let text = `${processing + this.numberOfSuccessFilesInTheSession}/${this.numberOfAllFilesInTheSession} files`
       text += error > 0 ? ` ${error} ${error <= 1 ? 'error' : 'errors'}` : ''
       return text
     },
@@ -162,6 +172,21 @@ export default {
       display: block;
       margin-top: 0 !important;
     }
+  }
+  .progress {
+    background-color: $progress-bar-background-color;
+    width: 100%;
+    height: 10px;
+  }
+  .progress-bar { float: left; }
+  .progress-bar.completed {
+    background-color: $brand-primary;
+    height: 100%;
+  }
+  .progress-bar.processing {
+    background-color: $brand-primary;
+    opacity: 0.6;
+    height: 100%;
   }
   .hidden {
     display: none;
