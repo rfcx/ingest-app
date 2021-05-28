@@ -13,6 +13,11 @@
         href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img :src="getUploadingProcessIcon(isUploadingProcessEnabled)">
       </a>
     </div>
+    <div class="wrapper__content-detail is-size-7">
+      <state-group state="ingesting" :number="numberOfProcessingFilesInTheSession"/>
+      <state-group state="completed" :number="numberOfSuccessFilesInTheSession"/>
+      <state-group state="failed" :number="numberOfFailFilesInTheSession"/>
+    </div>
   </div>
 </template>
 
@@ -20,6 +25,7 @@
 import { mapState } from 'vuex'
 import FileState from '../../../../utils/fileState'
 import ipcRendererSend from '../../services/ipc'
+import StateGroup from './StateGroup'
 export default {
   data () {
     return {
@@ -32,6 +38,7 @@ export default {
       refreshInterval: null
     }
   },
+  components: { StateGroup },
   computed: {
     ...mapState({
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
@@ -70,10 +77,8 @@ export default {
       }
     },
     getState () {
-      const error = this.numberOfFailFilesInTheSession
       const processing = this.numberOfProcessingFilesInTheSession
-      let text = `${processing + this.numberOfSuccessFilesInTheSession}/${this.numberOfAllFilesInTheSession} files`
-      text += error > 0 ? ` ${error} ${error <= 1 ? 'error' : 'errors'}` : ''
+      let text = `${(processing + this.numberOfSuccessFilesInTheSession).toLocaleString()}/${(this.numberOfAllFilesInTheSession).toLocaleString()} files`
       return text
     },
     getUploadingProcessIcon (enabled) {
@@ -124,6 +129,9 @@ export default {
       this.numberOfCompleteFilesInTheSession = 0
       this.numberOfProcessingFilesInTheSession = 0
       this.shouldShowProgress = false
+    },
+    toggleDetail () {
+      this.shouldShowDetail = !this.shouldShowDetail
     }
   },
   created () {
@@ -153,19 +161,23 @@ export default {
       height: $global-progress-height;
       background: $side-menu-background;
     }
+    &__content-detail {
+      padding: 2px 16px 0;
+    }
     &__content {
       display: flex;
-      padding: 9px 16px 0;
+      padding: 6px 16px 0;
       justify-content: space-between;
       align-items: center;
     }
     &__progress-title {
       font-weight: $title-font-weight;
+      font-size: $default-font-size;
     }
     &__button {
-      margin: auto 0;
+      margin: 0;
       img {
-        width: 17px;
+        width: 24px;
       }
     }
     &__progress-bar {

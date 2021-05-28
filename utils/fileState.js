@@ -1,3 +1,15 @@
+const state = {
+  PREPARING: 'preparing', // in prepare tab
+  WAITING: 'waiting', // in queue waiting to upload
+  CONVERTING: 'converting', // converting to flac
+  UPLOADING: 'uploading', // uploading to server
+  PROCESSING: 'ingesting', // uploaded, but in process of a.k.a. verifing / ingesting
+  COMPLETED: 'completed', // uploaded and ingested
+  ERROR_LOCAL: 'local_error', // e.g. file not found, file not support
+  ERROR_SERVER: 'server_error', // e.g. duplicated, network error
+  DUPLICATED: 'duplicated' // specified case for server error
+} // TODO: change all the string in the code to use these keys
+
 const getStatePriority = function (state) {
   switch (state) {
     case 'preparing': return 0
@@ -121,6 +133,7 @@ const canChangeTimestampFormat = function (state, message) {
 }
 
 export default {
+  state,
   preparedGroup,
   queuedGroup,
   completedGroup,
