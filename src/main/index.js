@@ -203,6 +203,9 @@ function initialSettings () {
   if (settings.get('settings.onLine') === undefined) {
     settings.set('settings.onLine', true)
   }
+  if (settings.get('settings.auto_start') === undefined) {
+    settings.set('settings.auto_start', false)
+  }
   commonProcess.setLoginItem(settings.get('settings.auto_start'))
 }
 
