@@ -1,4 +1,4 @@
-import { app, remote, ipcMain, BrowserWindow, autoUpdater } from 'electron'
+import { app, ipcMain, BrowserWindow, autoUpdater } from 'electron'
 import settings from 'electron-settings'
 const os = require('os')
 
@@ -59,7 +59,8 @@ export default {
         console.log('update-downloaded', releaseName, releaseNotes)
         if (releaseName) global.newVersion = releaseName
         if (releaseNotes) global.notes = releaseNotes
-        const currentURL = remote.getCurrentWindow().webContents.getURL()
+        const currentWin = BrowserWindow.getFocusedWindow()
+        const currentURL = currentWin ? currentWin.webContents.getURL() : null
         if (currentURL && currentURL === this.updateURL) { return }
         this.createWindow(true, startUpdateAppHandler)
       })

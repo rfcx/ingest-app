@@ -254,7 +254,6 @@ export default {
       border-radius: 8px;
       .error-message {
         color: white;
-        font-size: 16px;
       }
 
       .close-modal-btn {
