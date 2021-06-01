@@ -49,6 +49,7 @@ export default {
       else return ((this.numberOfCompleteFilesInTheSession / this.numberOfAllFilesInTheSession) * 100)
     },
     processingFilesPercentage () {
+      if (!this.numberOfAllFilesInTheSession || !this.numberOfCompleteFilesInTheSession) return 0
       return this.numberOfProcessingFilesInTheSession / this.numberOfAllFilesInTheSession * 100
     }
   },
