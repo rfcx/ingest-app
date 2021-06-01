@@ -12,6 +12,7 @@
             <div>
               <p class="item__number is-size-6">{{stat.number}}</p>
               <p class="item__status is-size-7">{{stat.name}}</p>
+              <fa-icon v-if="isFailed(stat.id)" class="icon-redo" :icon="icons.redo" @click="repeatUploading(file)" />
             </div>
           </a>
         </li>
@@ -23,12 +24,18 @@
 </template>
 
 <script>
+import { faRedo } from '@fortawesome/free-solid-svg-icons'
 import FileState from '../../../../../utils/fileState'
 export default {
   props: {
     stats: Array
   },
   computed: {
+    icons () {
+      return {
+        redo: faRedo
+      }
+    },
     statsToRender () {
       const uniquedGroupNameInCompletedTab = FileState.completedGroup
         .map(state => { return { id: state, name: FileState.getName(state) } })
@@ -44,6 +51,9 @@ export default {
       if (FileState.isPreparing(state)) return ''
       const iconName = FileState.getIconName(state)
       return require(`../../../assets/${iconName}`)
+    },
+    isFailed (state) {
+      return FileState.isError(state)
     }
   }
 }
@@ -85,4 +95,10 @@ export default {
   .info-text {
     color: $secondary-text-color;
   }
+
+  .icon-redo {
+    cursor: pointer;
+    font-size: 10px;
+  }
+
 </style>
