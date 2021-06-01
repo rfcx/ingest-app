@@ -153,9 +153,13 @@ export default {
       const iconName = fileState.getIconName(state)
       return require(`../../../assets/${iconName}`)
     },
-    repeatUploading (file) {
+    async repeatUploading (file) {
       if (!file.canRedo) return
-      this.$file.putFilesIntoUploadingQueue([file])
+      console.log('repeat', file)
+      if (file.durationInSecond === -2) { // get duration error
+        await this.$file.updateFilesDuration([file])
+      }
+      await this.$file.putFilesIntoUploadingQueue([file])
     },
     remove (file) {
       this.$emit('onTrashPressed', file)
@@ -322,6 +326,10 @@ export default {
       background: #232436;
       border-color: #232436;
     }
+  }
+
+  .icon-redo {
+    cursor: pointer;
   }
 
   .filename-content {

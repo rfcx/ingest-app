@@ -154,7 +154,7 @@ class FileProvider {
         console.error('Failed updating file duration', error)
         await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
           id: file.id,
-          params: { durationInSecond: -2, state: 'local_error', stateMessage: error.message || 'No duration found' }
+          params: { durationInSecond: -2, state: 'server_error', stateMessage: error.message || 'No duration found' }
         })
       }
     }

@@ -42,10 +42,15 @@ function getFFprobeWrappedExecution (input) {
  * seconds.
  */
 async function getAudioDurationInSeconds (input) {
-  const { stdout } = await getFFprobeWrappedExecution(input)
-  const matched = stdout.match(/duration="?(\d*\.\d*)"?/)
-  if (matched && matched[1]) return parseFloat(matched[1])
-  throw new Error('No duration found!')
+  try {
+    const { stdout } = await getFFprobeWrappedExecution(input)
+    const matched = stdout.match(/duration="?(\d*\.\d*)"?/)
+    if (matched && matched[1]) return parseFloat(matched[1])
+    throw new Error('No duration found!')
+  } catch (error) {
+    console.error('error: getAudioDurationInSeconds', error)
+    throw new Error('Something went wrong. Please try again in a little later.')
+  }
 }
 
 export default getAudioDurationInSeconds
