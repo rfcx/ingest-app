@@ -82,7 +82,7 @@
         // }).orderBy('timestamp').limit(5).get()
       },
       getNoDurationFiles () { // get duration of files that is in waiting status
-        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: ['preparing', 'waiting', 'server_error'], durationInSecond: [-1, -2] }, order: [['state', 'DESC'], ['createdAt', 'ASC']], limit: parallelUploads })
+        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: ['preparing', 'waiting'], durationInSecond: [-1] }, order: [['state', 'DESC'], ['createdAt', 'ASC']], limit: parallelUploads })
         // return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 && !file.isError }).orderBy('timestamp').get()
       },
       async uploadFile (file) {
