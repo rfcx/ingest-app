@@ -59,13 +59,11 @@
   import { mapState } from 'vuex'
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
-  import api from '../../../../utils/api'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
   import { faRedo, faSync } from '@fortawesome/free-solid-svg-icons'
   import infiniteScroll from 'vue-infinite-scroll'
   import ipcRendererSend from '../../services/ipc'
-  import streamService from '../../services/stream'
   const { remote } = window.require('electron')
 
   const DEFAULT_PAGE_SIZE = 50
