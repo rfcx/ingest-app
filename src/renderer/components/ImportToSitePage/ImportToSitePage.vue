@@ -132,10 +132,13 @@ export default {
       return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject)
     },
     hasPassedValidation () {
-      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude && this.hasPassProjectValidation
+      return this.form.selectedSiteName && this.selectedCoordinates && this.selectedCoordinates.length > 1 && this.hasPassProjectValidation
     },
     selectedCoordinates () {
-      return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : null
+      if (typeof this.form.selectedLatitude !== 'number' || typeof this.form.selectedLongitude !== 'number') {
+        return null
+      }
+      return [this.form.selectedLongitude, this.form.selectedLatitude]
     },
     actionButtonTitle () {
       return this.isCreatingNewSite ? 'Create' : 'Import'
@@ -183,8 +186,7 @@ export default {
           latitude,
           longitude,
           isPublic: isPublic,
-          projectId,
-          projectName: this.selectedProject.name
+          project: this.selectedProject
         })
       } catch (error) {
         this.isLoading = false
@@ -213,7 +215,7 @@ export default {
       }
     },
     onUpdateLocation (coordinates) {
-      console.log('onUpdateLocation')
+      console.log('onUpdateLocation', coordinates)
       this.form.selectedLongitude = coordinates[0]
       this.form.selectedLatitude = coordinates[1]
     },

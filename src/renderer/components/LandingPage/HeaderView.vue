@@ -64,7 +64,7 @@ export default {
       if (!this.selectedStream) {
         return ''
       }
-      return this.selectedStream.siteGuid || `${this.selectedStream.latitude.toFixed(6)}, ${this.selectedStream.longitude.toFixed(6)}`
+      return this.selectedStream.siteGuid || `${this.selectedStream.latitude.toFixed(4)}, ${this.selectedStream.longitude.toFixed(4)}`
     }
   }
 }
