@@ -48,24 +48,28 @@ const insertSites = async function (sites) {
 
 const parseUserSites = (sites) => {
   return sites.map((site) => {
-    const latitude = site.latitude || 0
-    const longitude = site.longitude || 0
-    return {
-      id: site.id,
-      name: site.name,
-      timestampFormat: 'Auto-detect',
-      latitude: latitude,
-      longitude: longitude,
-      files: [],
-      serverCreatedAt: new Date(site.created_at),
-      serverUpdatedAt: new Date(site.updated_at),
-      env: isProductionEnv() ? 'production' : 'staging',
-      visibility: site.is_public,
-      timezone: dateHelper.getDefaultTimezone(latitude, longitude),
-      projectId: site.project ? site.project.id : null,
-      projectName: site.project ? site.project.name : null
-    }
+    return parseSite(site)
   })
+}
+
+const parseSite = (site) => {
+  const latitude = site.latitude || 0
+  const longitude = site.longitude || 0
+  return {
+    id: site.id,
+    name: site.name,
+    timestampFormat: 'Auto-detect',
+    latitude: latitude,
+    longitude: longitude,
+    files: [],
+    serverCreatedAt: new Date(site.created_at),
+    serverUpdatedAt: new Date(site.updated_at),
+    env: isProductionEnv() ? 'production' : 'staging',
+    visibility: site.is_public,
+    timezone: dateHelper.getDefaultTimezone(latitude, longitude),
+    projectId: site.project ? site.project.id : null,
+    projectName: site.project ? site.project.name : null
+  }
 }
 
 const isProductionEnv = () => {
@@ -77,5 +81,6 @@ export default {
   getNameError,
   insertSites,
   parseUserSites,
+  parseSite,
   getState
 }
