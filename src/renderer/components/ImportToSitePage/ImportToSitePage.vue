@@ -60,8 +60,6 @@ import SelectProjectDropDownInput from './SelectProjectDropDownInput'
 import SelectSiteDropdownInput from './SelectSiteDropDownInput'
 import api from '../../../../utils/api'
 import ipcRendererSend from '../../services/ipc'
-import FileFormat from '../../../../utils/FileFormat'
-import dateHelper from '../../../../utils/dateHelper'
 import settings from 'electron-settings'
 import streamHelper from '../../../../utils/streamHelper'
 export default {
@@ -94,17 +92,10 @@ export default {
     }
     if (this.$route.query.deploymentInfo) {
       this.props.deploymentInfo = JSON.parse(this.$route.query.deploymentInfo)
-      // TODO: check if there is any site detected
-      // if any site detected, then check if that site is already in db
-      // if not, then create one
+      // check if there is any site detected
       if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
-        console.log('detected site from deployment')
-        var existStreamInDB = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.detectedSiteFromDeployment.id)
-        if (!existStreamInDB) { // no stream in local db, then auto create one
-          existStreamInDB = await this.saveSiteInLocalDB(this.detectedSiteFromDeployment, settings.get('settings.production_env'))
-        }
         // and set the selected site to be the detected site from deployment
-        this.updateSelectedExistingSite(existStreamInDB)
+        this.updateSelectedExistingSite(this.detectedSiteFromDeployment)
       }
       if (this.detectedProjectFromDeployment) {
         this.selectedProject = this.detectedProjectFromDeployment
@@ -116,10 +107,17 @@ export default {
   },
   computed: {
     detectedSiteFromDeployment () {
-      return this.props.deploymentInfo ? this.props.deploymentInfo.stream : null
+      if (this.props.deploymentInfo && this.props.deploymentInfo.stream) {
+        return streamHelper.parseSite(this.props.deploymentInfo.stream)
+      } else {
+        return null
+      }
     },
     detectedProjectFromDeployment () {
-      return this.props.deploymentInfo ? this.props.deploymentInfo.stream.project : null
+      if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.projectName && this.detectedSiteFromDeployment.projectId) {
+        return { id: this.detectedSiteFromDeployment.projectId, name: this.detectedSiteFromDeployment.projectName }
+      }
+      return null
     },
     siteDropdownHelpText () {
       return this.detectedSiteFromDeployment ? 'Detected deployment from RFCx Companion' : null
@@ -187,26 +185,15 @@ export default {
           isPublic: isPublic,
           projectId,
           projectName: this.selectedProject.name
-        }, env)
+        })
       } catch (error) {
         this.isLoading = false
         this.errorMessage = error === 'Unauthorized' ? 'You are not authorized.' : error
       }
     },
-    async saveSiteInLocalDB (site, env) {
-      const now = Date.now()
-      const fileFormat = FileFormat.fileFormat.AUTO_DETECT
-      const obj = {
-        ...site,
-        timestampFormat: fileFormat,
-        timezone: dateHelper.getDefaultTimezone(site.latitude, site.longitude),
-        env: env ? 'production' : 'staging',
-        serverCreatedAt: site.createdAt !== undefined ? new Date(site.createdAt) : now,
-        serverUpdatedAt: site.updatedAt !== undefined ? new Date(site.updatedAt) : now,
-        lastModifiedAt: now
-      }
-      console.log('obj', obj, obj.createdAt !== undefined)
-      return ipcRendererSend('db.streams.create', `db.streams.create.${now}`, obj)
+    async saveSiteInLocalDB (site) {
+      const obj = streamHelper.parseSite(site)
+      return ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, obj)
     },
     updateSelectedExistingSite (site) {
       this.selectedExistingSite = site
@@ -251,6 +238,7 @@ export default {
   watch: {
     selectedProject: {
       handler (val, previousVal) {
+        console.log('watch: selected project', val.name, this.selectedExistingSite)
         if (val === previousVal) return
         if (val === null || val === undefined) { // has reset project data
           this.updateSelectedExistingSite(null)
