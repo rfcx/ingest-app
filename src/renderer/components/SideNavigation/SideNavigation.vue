@@ -23,10 +23,6 @@
     <div class="wrapper__title">
       <span>
         Sites
-        <div class="wrapper__loader">
-          <fa-icon class="iconRefresh" :icon="iconRefresh" @click.prevent="fetchUserSites()" v-if="!isFetching"></fa-icon>
-          <div class="loader" v-if="isFetching"></div>
-        </div>
       </span>
     </div>
     <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">
@@ -237,31 +233,6 @@
       isProductionEnv () {
         return settings.get('settings.production_env')
       },
-      fetchUserSites () {
-        let listener = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-          console.log('getUserSites')
-          api.getUserSites(arg)
-            .then(async sites => {
-              this.isFetching = false
-              if (sites && sites.length) {
-                let userSites = streamHelper.parseUserSites(sites).sort((siteA, siteB) => siteB.serverUpdatedAt - siteA.serverUpdatedAt)
-                await streamService.upsertStreams(userSites)
-                // insert site success set selected site
-                await this.reloadStreamListFromLocalDB()
-                if (!this.selectedStreamId && userSites.length > 0) {
-                  await this.$store.dispatch('setSelectedStreamId', userSites[0].id)
-                }
-              }
-            }).catch(error => {
-              this.isFetching = false
-              console.log(`error while getting user's sites`, error)
-            })
-        }
-        this.isFetching = true
-        this.$electron.ipcRenderer.send('getIdToken')
-        this.$electron.ipcRenderer.on('sendIdToken', listener)
-      },
       async reloadStreamListFromLocalDB () {
         const limit = (this.streams.length > 0 && this.streams.length > DEFAULT_PAGE_SIZE) ? this.streams.length : DEFAULT_PAGE_SIZE
         this.streams = await ipcRendererSend('db.streams.getStreamWithStats', `db.streams.getStreamWithStats.${Date.now()}`, { limit: limit, offset: 0 })
@@ -317,7 +288,6 @@
     async created () {
       await this.reloadStreamListFromLocalDB()
       this.manageStreamFetchingInterval(this.currentUploadingSessionId, this.isUploadingProcessEnabled)
-      this.fetchUserSites()
       if (remote.getGlobal('firstLogIn')) {
         this.$electron.ipcRenderer.send('resetFirstLogIn')
       }
@@ -505,14 +475,6 @@
     font-size: 13px;
     cursor: pointer;
     margin: 6px 6px 6px 0;
-  }
-  .iconRefresh {
-    color: grey;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .iconRefresh:hover {
-    color: white;
   }
   input[type="text"]::-webkit-input-placeholder {
     color: $input-placeholder !important;
