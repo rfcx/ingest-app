@@ -161,6 +161,9 @@ export default {
           deploymentId: this.props.deploymentInfo ? this.props.deploymentInfo.id : ''
         })
       }
+      if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
+        this.$file.handleDroppedFiles(this.props.selectedFiles, this.selectedExistingSite)
+      }
       await this.$store.dispatch('setSelectedStreamId', this.selectedExistingSite.id)
       this.$router.push('/')
     },
