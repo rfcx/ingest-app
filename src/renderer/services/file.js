@@ -572,6 +572,29 @@ class FileProvider {
     await ipcRendererSend('db.files.bulkCreate', `db.files.bulkCreate.${Date.now()}`, files)
   }
 
+  /* -- Import -- */
+
+  getDeviceInfoFromFolder (path) {
+    const stuffInDirectory = fileHelper
+      .getFilesFromDirectoryPath(path)
+      .map((name) => {
+        return { name: name, path: path + '/' + name }
+      })
+    // read file header info
+    const firstWavFile = stuffInDirectory.find(file => {
+      return fileHelper.getExtension(file.path) === 'wav' // read only wav file header info
+    })
+    return this.getDeviceInfo(firstWavFile)
+  }
+
+  getDeviceInfo (file) {
+    if (!file) return undefined
+    const fileInfo = new FileInfo(file.path)
+    const deviceId = fileInfo.deviceId
+    const deploymentId = fileInfo.deployment
+    return {deviceId, deploymentId}
+  }
+
   /* -- Helper -- */
 
   createFileObject (filePath, stream, deploymentInfo = null) {

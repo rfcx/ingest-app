@@ -1,6 +1,9 @@
 <template>
   <div class="wrapper">
-    <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath != null"/>
+    <div class="header__wrapper" style="display:inline-block">
+      <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath != null"/>
+      <span v-if="isFetchingDeploymentInfo">loading...</span>
+    </div>
     <fieldset>
       <div class="notification default-notice" v-if="errorMessage">
         <button class="delete" @click="onCloseAlert()"></button>
@@ -72,13 +75,16 @@ export default {
         selectedLongitude: null
       },
       props: {
-        deploymentInfo: null,
+        deploymentId: null,
+        deviceId: null,
         selectedFolderPath: null,
         selectedFiles: null
       },
       selectedProject: null,
       selectedExistingSite: null,
+      deploymentInfo: null,
       isLoading: false,
+      isFetchingDeploymentInfo: false,
       isCreatingNewSite: true,
       errorMessage: ''
     }
@@ -87,28 +93,44 @@ export default {
   async created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
+
+    // handle selected folder / files
     if (this.$route.query.folderPath) {
       this.props.selectedFolderPath = this.$route.query.folderPath
-    }
-    if (this.$route.query.deploymentInfo) {
-      this.props.deploymentInfo = JSON.parse(this.$route.query.deploymentInfo)
-      // check if there is any site detected
-      if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
-        // and set the selected site to be the detected site from deployment
-        this.updateSelectedExistingSite(this.detectedSiteFromDeployment)
-      }
-      if (this.detectedProjectFromDeployment) {
-        this.selectedProject = this.detectedProjectFromDeployment
-      }
-    }
-    if (this.$route.query.selectedFiles) {
+    } else if (this.$route.query.selectedFiles) {
       this.props.selectedFiles = JSON.parse(this.$route.query.selectedFiles)
+    }
+
+    this.props.deploymentId = this.$route.query.deploymentId
+    this.props.deviceId = this.$route.query.deploymentId
+
+    if (!this.props.deploymentId) {
+      // TODO: get deployment from file / folder
+    }
+
+    // get deployment info
+    try {
+      this.isFetchingDeploymentInfo = true
+      this.deploymentInfo = await this.getDeploymentInfo(this.props.deploymentId)
+      this.isFetchingDeploymentInfo = false
+    } catch (error) {
+      this.isFetchingDeploymentInfo = false
+      this.errorMessage = error
+    }
+
+    // check if site detected
+    if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
+      // and set the selected site to be the detected site from deployment
+      this.updateSelectedExistingSite(this.detectedSiteFromDeployment)
+    }
+    if (this.detectedProjectFromDeployment) {
+      this.selectedProject = this.detectedProjectFromDeployment
     }
   },
   computed: {
     detectedSiteFromDeployment () {
-      if (this.props.deploymentInfo && this.props.deploymentInfo.stream) {
-        return streamHelper.parseSite(this.props.deploymentInfo.stream)
+      if (this.deploymentInfo && this.deploymentInfo.stream) {
+        return streamHelper.parseSite(this.deploymentInfo.stream)
       } else {
         return null
       }
@@ -123,13 +145,13 @@ export default {
       return this.detectedSiteFromDeployment ? 'Detected deployment from RFCx Companion' : null
     },
     shouldShowProjectSelector () {
-      return !this.detectedSiteFromDeployment || (this.detectedSiteFromDeployment && this.detectedProjectFromDeployment)
+      return !this.detectedSiteFromDeployment || (this.detectedSiteFromDeployment !== null && this.detectedProjectFromDeployment !== null)
     },
     shouldShowNameHelperMessage () {
       return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '') && this.hasPassProjectValidation
     },
     hasPassProjectValidation () {
-      return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject)
+      return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject !== null)
     },
     hasPassedValidation () {
       return this.form.selectedSiteName && this.selectedCoordinates && this.selectedCoordinates.length > 1 && this.hasPassProjectValidation
@@ -145,6 +167,25 @@ export default {
     }
   },
   methods: {
+    async getDeploymentInfo (deploymentId) {
+      if (!deploymentId) return Promise.resolve(null)
+      return new Promise(async (resolve, reject) => {
+        const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
+        api.getDeploymentInfo(deploymentId, idToken).then(response => {
+          console.log('getDeploymentInfo', response)
+          const stream = response.stream
+          const id = response.id
+          const deploymentType = response.deploymentType
+          const deployedAt = response.deployedAt
+          if (!(stream && id)) resolve(null) // response doesn't have all required field
+          else resolve({stream, id, deploymentType, deployedAt})
+        }).catch(error => {
+          console.log('getDeploymentInfo error', error)
+          // TODO: handle error
+          reject(error)
+        })
+      })
+    },
     async importFiles () {
       if (this.isCreatingNewSite) {
         await this.createSite()
@@ -159,7 +200,7 @@ export default {
       this.selectedExistingSite = localSite
       if (this.props.selectedFolderPath) {
         this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, {
-          deploymentId: this.props.deploymentInfo ? this.props.deploymentInfo.id : ''
+          deploymentId: this.deploymentInfo ? this.deploymentInfo.id : ''
         })
       }
       if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
@@ -243,7 +284,6 @@ export default {
   watch: {
     selectedProject: {
       handler (val, previousVal) {
-        console.log('watch: selected project', val.name, this.selectedExistingSite)
         if (val === previousVal) return
         if (val === null || val === undefined) { // has reset project data
           this.updateSelectedExistingSite(null)
@@ -279,11 +319,11 @@ export default {
 
 <style lang="scss">
   .map-wrapper {
-    height: 300px;
+    height: 250px;
     width: $wrapper-width;
     margin-bottom: $default-padding-margin;
     .mapboxgl-canvas {
-      height: 300px !important;
+      height: 250px !important;
     }
   }
 </style>

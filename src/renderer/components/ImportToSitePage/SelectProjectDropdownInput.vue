@@ -1,6 +1,7 @@
 <template>
   <DropDownWithSearchInput
     placeholder="Choose project"
+    @onSearchInputFocus="onSearchInputFocus"
     @onClearSearchInput="onClearProjectNameSearchInput"
     @onOptionSelected="onSelectProject"
     :dropdownOptions="projectOptions"
@@ -59,10 +60,6 @@ export default {
       return this.projectOptions.length === 0
     }
   },
-  async mounted () {
-    if (this.initialProject && this.initialProject.name) this.selectedProjectName = this.initialProject.name
-    await this.getProjectOptions()
-  },
   methods: {
     async getProjectOptions (keyword = null) {
       if (this.initialProject) return // no need to call api to search, as it's readonly when there is initial project provided
@@ -82,6 +79,9 @@ export default {
         this.errorMessage = error
       }
     },
+    async onSearchInputFocus () {
+      await this.getProjectOptions()
+    },
     onSelectProject (project) {
       console.log('onSelectProjectName:', project.name)
       this.selectedProjectName = project && project.name ? project.name : ''
@@ -96,6 +96,9 @@ export default {
     }
   },
   watch: {
+    initialProject () {
+      if (this.initialProject && this.initialProject.name) this.selectedProjectName = this.initialProject.name
+    },
     selectedProjectName: {
       handler: async function (value, prevValue) {
         if (value === prevValue || this.initialProject) return // ignore to send event when in readonly mode

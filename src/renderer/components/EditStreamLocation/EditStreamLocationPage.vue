@@ -209,14 +209,3 @@ export default {
     margin-right: 4px;
   }
 </style>
-
-<style lang="scss">
-  .map-wrapper {
-    height: 300px;
-    width: $wrapper-width;
-    margin-bottom: $default-padding-margin;
-    .mapboxgl-canvas {
-      height: 300px !important;
-    }
-  }
-</style>

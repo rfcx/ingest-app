@@ -1,6 +1,7 @@
 <template>
   <DropDownWithSearchInput
     placeholder="Search for an existing site"
+    @onSearchInputFocus="onSearchInputFocus"
     @onSeachInputTextChanged="onSeachInputTextChanged"
     @onClearSearchInput="onClearSiteNameSearchInput"
     @onSearchInputBlur="onBlurSiteNameSearchInput"
@@ -75,6 +76,8 @@ export default {
       return this.selectedSiteName && !this.selectedSiteNameHasExactMatchsWithOptions ? `Create New Site: ${this.selectedSiteName}` : null
     },
     selectedSiteNameHasExactMatchsWithOptions () {
+      console.log('selectedSiteNameHasExactMatchsWithOptions', this.siteOptions)
+      if (this.initialSite) return true
       if (!this.siteOptions || this.siteOptions.length === 0) return false
       return this.siteOptions.map(s => s.name).includes(this.selectedSiteName)
     },
@@ -86,10 +89,6 @@ export default {
     shouldShowErrorView () {
       return this.errorMessage !== ''
     }
-  },
-  async created () {
-    if (this.initialSite && this.initialSite.name) this.selectedSiteName = this.initialSite.name
-    await this.getSiteOptions()
   },
   methods: {
     async getSiteOptions (keyword = null) {
@@ -110,9 +109,13 @@ export default {
         this.errorMessage = error
       }
     },
+    async onSearchInputFocus () {
+      await this.getSiteOptions()
+    },
     async onSeachInputTextChanged (text) {
       console.log('onSeachInputTextChanged', text)
       this.selectedSiteName = text
+
       if (this.searchTimer) {
         clearTimeout(this.searchTimer)
         this.searchTimer = null
@@ -121,6 +124,7 @@ export default {
         await this.getSiteOptions(this.selectedSiteName)
       }, 300) // debounce, wait 300 mil sec for user to type, then call api to get data
 
+      console.log('onSeachInputTextChanged prepare to update is create', this.selectedSiteNameHasExactMatchsWithOptions)
       if (this.selectedSiteNameHasExactMatchsWithOptions) {
         this.updateIsCreatingNewSite(false) // use exact matchs
       } else {
@@ -147,6 +151,7 @@ export default {
       this.updateTagTitle()
     },
     updateIsCreatingNewSite (isCreating) {
+      console.log('updateIsCreatingNewSite', isCreating)
       this.isCreatingNewSite = isCreating
       this.$emit('update:updateIsCreatingNewSite', this.isCreatingNewSite)
     },
@@ -160,6 +165,9 @@ export default {
     }
   },
   watch: {
+    initialSite () {
+      if (this.initialSite && this.initialSite.name) this.selectedSiteName = this.initialSite.name
+    },
     selectedSiteName: {
       handler: async function (value, prevValue) {
         if (value === prevValue || this.initialSite) return // ignore to send event when in readonly mode
