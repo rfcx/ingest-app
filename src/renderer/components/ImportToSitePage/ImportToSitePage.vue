@@ -1,8 +1,8 @@
 <template>
   <div class="wrapper">
-    <div class="header__wrapper" style="display:inline-flex">
+    <div class="header__wrapper">
       <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath != null"/>
-      <div class="tag__wrapper" style="display:flex">
+      <div class="tag__wrapper">
         <AudioMothTag :show="this.props.deviceId" :isSelected="true"/>
         <deployment-tag 
           v-if="isFetchingDeploymentInfo || this.props.deploymentId"
@@ -14,7 +14,7 @@
     </div>
     <fieldset>
       <div class="notification default-notice" v-if="errorMessage">
-        <button class="delete" @click="onCloseAlert()"></button>
+        <button class="delete" @click="errorMessage = ''"></button>
         {{ errorMessage }}
       </div>
       <div class="field field-dropdown" v-if="shouldShowProjectSelector">

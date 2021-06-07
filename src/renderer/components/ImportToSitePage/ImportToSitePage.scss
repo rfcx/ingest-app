@@ -3,6 +3,12 @@
   padding: $default-padding-margin;
   max-width: $wrapper-width;
 }
+.header__wrapper {
+  display:inline-flex;
+}
+.tag__wrapper {
+  display:flex;
+}
 span.help {
   display: inline;
 }
