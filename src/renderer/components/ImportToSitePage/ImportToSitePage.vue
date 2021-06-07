@@ -71,6 +71,7 @@ import HeaderView from '../Common/HeaderWithBackButton'
 import SelectProjectDropDownInput from './SelectProjectDropDownInput'
 import SelectSiteDropdownInput from './SelectSiteDropDownInput'
 import api from '../../../../utils/api'
+import fileHelper from '../../../../utils/fileHelper'
 import ipcRendererSend from '../../services/ipc'
 import settings from 'electron-settings'
 import streamHelper from '../../../../utils/streamHelper'
@@ -113,8 +114,27 @@ export default {
     this.props.deploymentId = this.$route.query.deploymentId
     this.props.deviceId = this.$route.query.deviceId
 
-    if (!this.props.deploymentId) {
-      // TODO: get deployment from file / folder
+    // TODO: refactor this if
+    if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
+      let deviceInfo
+
+      // try to get device info from the first wav file
+      const firstWavFile = this.props.selectedFiles.find(file => {
+        return fileHelper.getExtension(file.path) === 'wav' // read only wav file header info
+      })
+      deviceInfo = this.$file.getDeviceInfo(firstWavFile)
+
+      // try to get device info from the first directory
+      if (!deviceInfo) {
+        const firstFolder = this.props.selectedFiles.find(file => {
+          return fileHelper.isFolder(file.path)
+        })
+        deviceInfo = this.$file.getDeviceInfoFromFolder(firstFolder.path)
+      }
+
+      // set device id & deployment id if any
+      this.props.deviceId = deviceInfo.deviceId
+      this.props.deploymentInfo = deviceInfo.deploymentId
     }
 
     console.log('create', this.props.deviceId, this.props.deploymentId, this.props.deviceId && !this.props.deploymentId)
