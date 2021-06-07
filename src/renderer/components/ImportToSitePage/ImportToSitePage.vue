@@ -1,8 +1,15 @@
 <template>
   <div class="wrapper">
-    <div class="header__wrapper" style="display:inline-block">
+    <div class="header__wrapper" style="display:inline-flex">
       <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath != null"/>
-      <span v-if="isFetchingDeploymentInfo">loading...</span>
+      <div class="tag__wrapper" style="display:flex">
+        <AudioMothTag :show="this.props.deviceId" :isSelected="true"/>
+        <tag-with-icon v-if="isFetchingDeploymentInfo || this.props.deploymentId">
+          <span slot="text" v-if="isFetchingDeploymentInfo">getting deployment information...</span>
+          <span slot="text" v-else-if="this.props.deploymentId && this.deploymentInfo">Deployment detected</span>
+          <span slot="text" v-else>Deployment not detected</span>
+        </tag-with-icon>
+      </div>
     </div>
     <fieldset>
       <div class="notification default-notice" v-if="errorMessage">
@@ -58,6 +65,8 @@
 
 <script>
 import Map from '../Common/Map/Map'
+import AudioMothTag from '../Common/AudioMothTag'
+import TagWithIcon from '../Common/Tag/TagWithIcon'
 import HeaderView from '../Common/HeaderWithBackButton'
 import SelectProjectDropDownInput from './SelectProjectDropDownInput'
 import SelectSiteDropdownInput from './SelectSiteDropDownInput'
@@ -89,7 +98,7 @@ export default {
       errorMessage: ''
     }
   },
-  components: { Map, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
+  components: { Map, AudioMothTag, TagWithIcon, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
   async created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
@@ -102,22 +111,37 @@ export default {
     }
 
     this.props.deploymentId = this.$route.query.deploymentId
-    this.props.deviceId = this.$route.query.deploymentId
+    this.props.deviceId = this.$route.query.deviceId
 
     if (!this.props.deploymentId) {
       // TODO: get deployment from file / folder
     }
 
-    // get deployment info
-    try {
-      this.isFetchingDeploymentInfo = true
-      this.deploymentInfo = await this.getDeploymentInfo(this.props.deploymentId)
-      this.isFetchingDeploymentInfo = false
-    } catch (error) {
-      this.isFetchingDeploymentInfo = false
-      this.errorMessage = error
+    console.log('create', this.props.deviceId, this.props.deploymentId, this.props.deviceId && !this.props.deploymentId)
+    if (this.props.deviceId && !this.props.deploymentId) { // show protip
+      this.errorMessage = 'Pro tip: use RFCx Companion to deploy your AudioMoth next time to get the location prefilled'
     }
 
+    if (this.props.deploymentId) {
+    // get deployment info
+      try {
+        this.isFetchingDeploymentInfo = true
+        this.deploymentInfo = await this.getDeploymentInfo(this.props.deploymentId)
+        this.isFetchingDeploymentInfo = false
+      } catch (error) {
+        this.isFetchingDeploymentInfo = false
+        switch (error.name) {
+          case 'EmptyResultError':
+            this.errorMessage = 'Site attached with deployment not found. You might have to manually create a new site here'
+            return
+          case 'UnauthorizedError':
+            this.errorMessage = `You don't have permission to the site attached with deployment.`
+            return
+          default:
+            this.errorMessage = error.message
+        }
+      }
+    }
     // check if site detected
     if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
       // and set the selected site to be the detected site from deployment
@@ -180,7 +204,7 @@ export default {
           if (!(stream && id)) resolve(null) // response doesn't have all required field
           else resolve({stream, id, deploymentType, deployedAt})
         }).catch(error => {
-          console.log('getDeploymentInfo error', error)
+          console.log('getDeploymentInfo error', error.name)
           // TODO: handle error
           reject(error)
         })
@@ -296,34 +320,4 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-  .wrapper {
-    margin: $wrapper-margin;
-    padding: $default-padding-margin;
-    max-width: $wrapper-width;
-  }
-  span.help {
-    display: inline;
-  }
-  .field-dropdown-with-help {
-    margin-bottom: 2rem !important;
-  }
-  .controls-group {
-    margin-top: $default-padding-margin;
-  }
-  .is-link {
-    cursor: pointer;
-    color: $body-text-color !important;
-  }
-</style>
-
-<style lang="scss">
-  .map-wrapper {
-    height: 250px;
-    width: $wrapper-width;
-    margin-bottom: $default-padding-margin;
-    .mapboxgl-canvas {
-      height: 250px !important;
-    }
-  }
-</style>
+<style src="./ImportToSitePage.scss" scoped></style>

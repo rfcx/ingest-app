@@ -1,13 +1,15 @@
 <template>
-  <div class="tag is-dark" v-if="show">
-    <img class="tag__icon" src="@/assets/ic-audiomoth-white.png" v-if="isSelected"/>
-    <img class="tag__icon" src="@/assets/ic-audiomoth-gray.png" v-else>
-    <span class="tag__text is-size-7" :class="{'selected': isSelected}">AudioMoth</span>
-  </div>
+  <tag-with-icon v-if="show">
+    <img class="tag__icon" slot="icon" src="@/assets/ic-audiomoth-white.png" v-if="isSelected"/>
+    <img class="tag__icon" slot="icon" src="@/assets/ic-audiomoth-gray.png" v-else>
+    <span class="tag__text is-size-7" slot="text" :class="{'selected': isSelected}">AudioMoth</span>
+  </tag-with-icon>
 </template>
 
 <script>
+import TagWithIcon from './Tag/TagWithIcon.vue'
 export default {
+  components: { TagWithIcon },
   props: {
     show: true,
     isSelected: false
@@ -17,13 +19,6 @@ export default {
 
 <style lang="scss" scoped>
   .tag {
-    margin-left: 4px;
-    &__icon {
-      width: 10px;
-      height: 10px;
-      margin-right: 4px;
-      vertical-align: top;
-    }
     &__text {
       color: $secondary-text-color;
     }
