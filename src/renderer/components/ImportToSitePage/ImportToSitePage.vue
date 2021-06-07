@@ -4,11 +4,12 @@
       <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath != null"/>
       <div class="tag__wrapper" style="display:flex">
         <AudioMothTag :show="this.props.deviceId" :isSelected="true"/>
-        <tag-with-icon v-if="isFetchingDeploymentInfo || this.props.deploymentId">
-          <span slot="text" v-if="isFetchingDeploymentInfo">getting deployment information...</span>
-          <span slot="text" v-else-if="this.props.deploymentId && this.deploymentInfo">Deployment detected</span>
-          <span slot="text" v-else>Deployment not detected</span>
-        </tag-with-icon>
+        <deployment-tag 
+          v-if="isFetchingDeploymentInfo || this.props.deploymentId"
+          :isChecking="isFetchingDeploymentInfo"
+          :isDetected="this.props.deploymentId && this.deployment.info"
+          :error="this.deployment.error"
+        />
       </div>
     </div>
     <fieldset>
@@ -66,7 +67,7 @@
 <script>
 import Map from '../Common/Map/Map'
 import AudioMothTag from '../Common/AudioMothTag'
-import TagWithIcon from '../Common/Tag/TagWithIcon'
+import DeploymentTag from '../Common/Tag/DeploymentTag'
 import HeaderView from '../Common/HeaderWithBackButton'
 import SelectProjectDropDownInput from './SelectProjectDropDownInput'
 import SelectSiteDropdownInput from './SelectSiteDropDownInput'
@@ -75,6 +76,7 @@ import fileHelper from '../../../../utils/fileHelper'
 import ipcRendererSend from '../../services/ipc'
 import settings from 'electron-settings'
 import streamHelper from '../../../../utils/streamHelper'
+
 export default {
   data () {
     return {
@@ -90,6 +92,10 @@ export default {
         selectedFolderPath: null,
         selectedFiles: null
       },
+      deployment: {
+        info: null,
+        error: null
+      },
       selectedProject: null,
       selectedExistingSite: null,
       deploymentInfo: null,
@@ -99,7 +105,7 @@ export default {
       errorMessage: ''
     }
   },
-  components: { Map, AudioMothTag, TagWithIcon, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
+  components: { Map, AudioMothTag, DeploymentTag, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
   async created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
@@ -133,8 +139,10 @@ export default {
       }
 
       // set device id & deployment id if any
-      this.props.deviceId = deviceInfo.deviceId
-      this.props.deploymentInfo = deviceInfo.deploymentId
+      if (deviceInfo) {
+        this.props.deviceId = deviceInfo.deviceId
+        this.props.deploymentId = deviceInfo.deploymentId
+      }
     }
 
     console.log('create', this.props.deviceId, this.props.deploymentId, this.props.deviceId && !this.props.deploymentId)
@@ -146,15 +154,15 @@ export default {
     // get deployment info
       try {
         this.isFetchingDeploymentInfo = true
-        this.deploymentInfo = await this.getDeploymentInfo(this.props.deploymentId)
+        this.deployment.info = await this.getDeploymentInfo(this.props.deploymentId)
         this.isFetchingDeploymentInfo = false
       } catch (error) {
         this.isFetchingDeploymentInfo = false
         switch (error.name) {
           case 'EmptyResultError':
-            this.errorMessage = 'Site attached with deployment not found. You might have to manually create a new site here'
+            this.errorMessage = 'Site attached with deployment not found. You might have to manually select site.'
             return
-          case 'UnauthorizedError':
+          case 'ForbiddenError':
             this.errorMessage = `You don't have permission to the site attached with deployment.`
             return
           default:
@@ -173,8 +181,8 @@ export default {
   },
   computed: {
     detectedSiteFromDeployment () {
-      if (this.deploymentInfo && this.deploymentInfo.stream) {
-        return streamHelper.parseSite(this.deploymentInfo.stream)
+      if (this.deployment.info && this.deployment.info.stream) {
+        return streamHelper.parseSite(this.deployment.info.stream)
       } else {
         return null
       }
@@ -244,7 +252,7 @@ export default {
       this.selectedExistingSite = localSite
       if (this.props.selectedFolderPath) {
         this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, {
-          deploymentId: this.deploymentInfo ? this.deploymentInfo.id : ''
+          deploymentId: this.deployment.info ? this.deployment.info.id : ''
         })
       }
       if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {

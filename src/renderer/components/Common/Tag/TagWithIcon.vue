@@ -13,6 +13,7 @@ export default {
 
 <style lang="scss" scoped>
   .tag {
+    cursor: default;
     margin-left: 4px;
     &__icon {
       width: 10px;
