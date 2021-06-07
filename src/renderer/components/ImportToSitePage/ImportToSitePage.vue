@@ -1,14 +1,14 @@
 <template>
   <div class="wrapper">
-    <div class="header__wrapper">
-      <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath != null"/>
+    <div class="header">
+      <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath !== null"/>
       <div class="tag__wrapper">
-        <AudioMothTag :show="this.props.deviceId" :isSelected="true"/>
+        <AudioMothTag :show="props.deviceId" :isSelected="true"/>
         <deployment-tag 
-          v-if="isFetchingDeploymentInfo || this.props.deploymentId"
+          v-if="isFetchingDeploymentInfo || props.deploymentId"
           :isChecking="isFetchingDeploymentInfo"
-          :isDetected="this.props.deploymentId && this.deployment.info"
-          :error="this.deployment.error"
+          :isDetected="props.deploymentId !== null && deployment.info !== null"
+          :error="deployment.error"
         />
       </div>
     </div>
@@ -66,7 +66,7 @@
 
 <script>
 import Map from '../Common/Map/Map'
-import AudioMothTag from '../Common/AudioMothTag'
+import AudioMothTag from '../Common/Tag/AudioMothTag'
 import DeploymentTag from '../Common/Tag/DeploymentTag'
 import HeaderView from '../Common/HeaderWithBackButton'
 import SelectProjectDropDownInput from './SelectProjectDropDownInput'

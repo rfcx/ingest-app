@@ -37,7 +37,7 @@
 import DriveList from '../../../../utils/DriveListHelper'
 import FileHelper from '../../../../utils/fileHelper'
 import FileInfo from '../../services/FileInfo'
-import AudioMothTag from '../Common/AudioMothTag'
+import AudioMothTag from '../Common/Tag/AudioMothTag'
 export default {
   data: () => ({
     driveFetchingInterval: null,

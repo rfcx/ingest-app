@@ -19,6 +19,9 @@ export default {
     isChecking: {
       type: Boolean,
       default: false
+    },
+    error: {
+      type: Error
     }
   },
   components: { TagWithIcon },

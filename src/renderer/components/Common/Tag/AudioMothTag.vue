@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import TagWithIcon from './Tag/TagWithIcon.vue'
+import TagWithIcon from './TagWithIcon.vue'
 export default {
   components: { TagWithIcon },
   props: {

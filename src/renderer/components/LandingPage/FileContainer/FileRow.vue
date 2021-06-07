@@ -77,7 +77,7 @@
 import fileState from '../../../../../utils/fileState'
 import fileHelper from '../../../../../utils/fileHelper'
 import { faRedo, faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
-import AudioMothTag from '../../Common/AudioMothTag'
+import AudioMothTag from '../../Common/Tag/AudioMothTag'
 
 export default {
   props: {
