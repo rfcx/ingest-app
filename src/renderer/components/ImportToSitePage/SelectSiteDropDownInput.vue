@@ -53,6 +53,10 @@ export default {
       type: Boolean,
       default: false
     },
+    disabled: {
+      type: Boolean,
+      default: false
+    },
     initialSite: {
       type: Object,
       default: () => {
@@ -84,7 +88,7 @@ export default {
     isDisabled () {
       // no project and no default site selected
       const noProjectSelected = !this.project || (this.project && Object.keys(this.project).length === 0)
-      return noProjectSelected && !this.initialSite
+      return (noProjectSelected && !this.initialSite) || this.disabled
     },
     shouldShowErrorView () {
       return this.errorMessage !== ''

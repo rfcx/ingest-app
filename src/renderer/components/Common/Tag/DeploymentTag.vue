@@ -19,9 +19,6 @@ export default {
     isChecking: {
       type: Boolean,
       default: false
-    },
-    error: {
-      type: Error
     }
   },
   components: { TagWithIcon },
@@ -51,8 +48,5 @@ export default {
     .detected {
       color: $body-text-color;
     }
-  }
-  .error {
-    cursor: help;
   }
 </style>

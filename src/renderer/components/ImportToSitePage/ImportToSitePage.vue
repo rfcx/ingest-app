@@ -24,6 +24,7 @@
         <SelectProjectDropDownInput
         :helpText="siteDropdownHelpText"
         :initialProject="detectedProjectFromDeployment"
+        :disabled="isFetchingDeploymentInfo"
         @onSelectedProjectNameChanged="onSelectedProject"/>
       </div>
       <div class="field field-dropdown" :class="{'field-dropdown-with-help': siteDropdownHelpText !== null}">
@@ -38,6 +39,7 @@
         :isWarning="shouldShowNameHelperMessage === true"
         :initialSite="detectedSiteFromDeployment"
         :helpText="siteDropdownHelpText"
+        :disabled="isFetchingDeploymentInfo"
         @onSelectedSiteNameChanged="onSelectedSite"/>
       </div>
       <div class="field">
@@ -120,7 +122,7 @@ export default {
     this.props.deploymentId = this.$route.query.deploymentId
     this.props.deviceId = this.$route.query.deviceId
 
-    // TODO: refactor this if
+    // TODO: refactor this condition
     if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
       let deviceInfo
 
@@ -147,7 +149,7 @@ export default {
 
     console.log('create', this.props.deviceId, this.props.deploymentId, this.props.deviceId && !this.props.deploymentId)
     if (this.props.deviceId && !this.props.deploymentId) { // show protip
-      this.errorMessage = 'Pro tip: use RFCx Companion to deploy your AudioMoth next time to get the location prefilled'
+      this.errorMessage = `Suggestion: use the RFCx companion to deploy your AudioMoth device in the future to pre-populate the site name below.`
     }
 
     if (this.props.deploymentId) {
@@ -160,10 +162,10 @@ export default {
         this.isFetchingDeploymentInfo = false
         switch (error.name) {
           case 'EmptyResultError':
-            this.errorMessage = 'Site attached with deployment not found. You might have to manually select site.'
+            this.errorMessage = 'Site with attached deployment could not be found. Please manually select a site.'
             return
           case 'ForbiddenError':
-            this.errorMessage = `You don't have permission to the site attached with deployment.`
+            this.errorMessage = `You don't have permission to the site with attached deployment. Please manually select a site.`
             return
           default:
             this.errorMessage = error.message

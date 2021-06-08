@@ -7,6 +7,7 @@
     :dropdownOptions="projectOptions"
     :text="selectedProjectName"
     :isReadOnly="initialProject ? initialProject.name !== null : null"
+    :isDisabled="disabled"
     :isFetching="isLoading"
     :searchEnabled="false"
     :shouldShowEmptyContent="shouldShowErrorView"
@@ -49,6 +50,10 @@ export default {
       default: () => {
         return {}
       }
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   components: { DropDownWithSearchInput, ErrorMessageView },
