@@ -403,6 +403,7 @@ class FileProvider {
           params: { state: 'server_error', stateMessage: 'Duplicate file. Matching sha1 signature already ingested.' }
         })
         return this.incrementFilesCount(file.streamId, false)
+      // TODO: handle 403 case
       } else if (file.retries < 3) {
         // return File.update({
         //   where: file.id,
@@ -484,6 +485,7 @@ class FileProvider {
             })
             return this.incrementFilesCount(file.streamId, true)
           case 30:
+          case 32:
             if (failureMessage.includes('is zero')) {
               // File.update({
               //   where: file.id,
