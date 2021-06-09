@@ -20,9 +20,9 @@
         <span>+</span>Import Files
       </button>
     </div>
-    <div class="wrapper__title">
+    <div class="wrapper__title" v-if="streams && streams.length > 0">
       <span>
-        Sites
+        Recently Uploads
       </span>
     </div>
     <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">
