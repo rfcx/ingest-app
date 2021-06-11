@@ -22,7 +22,7 @@
     </div>
     <div class="wrapper__title" v-if="streams && streams.length > 0">
       <span>
-        Recently Uploads
+        Recent Uploads
       </span>
     </div>
     <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">

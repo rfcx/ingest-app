@@ -16,6 +16,10 @@ const migrations = [
   {
     name: '20210521000001-update-streams-table.js',
     file: require('./20210521000001-update-streams-table').default
+  },
+  {
+    name: '20210611000001-remove-non-on-going-sites.js',
+    file: require('./20210611000001-remove-non-on-going-sites').default
   }
 ]
 
