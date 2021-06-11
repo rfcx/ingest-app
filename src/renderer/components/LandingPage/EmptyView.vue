@@ -6,7 +6,7 @@
 </template>
 
 <script>
-const dropFileDefaultMessage = 'Use + Import Files button on the left or drop your audio files here to start an uploading session.'
+const dropFileDefaultMessage = 'Use + Import Files button on the left or drop a folder of audio files here to start an uploading session.'
 export default {
   props: {
     isDragging: Boolean,
