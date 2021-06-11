@@ -13,7 +13,6 @@
         <button
           type="button"
           class="button is-rounded is-primary"
-          :class="{ 'is-loading': isLoading }"
           :disabled="!selectedSource"
           @click.prevent="importFiles"
         >Import</button>
@@ -25,11 +24,9 @@
 <script>
 import SourceList from './SourceList'
 import HeaderView from '../Common/HeaderWithBackButton'
-import api from '../../../../utils/api'
 
 export default {
   data: () => ({
-    isLoading: false,
     selectedSource: null,
     deviceId: null,
     deploymentId: null
@@ -41,38 +38,11 @@ export default {
       this.deviceId = this.selectedSource.deviceId
       this.deploymentId = this.selectedSource.deploymentId
     },
-    async getDeploymentInfo (deploymentId) {
-      if (!deploymentId) return Promise.resolve(null)
-      return new Promise((resolve, reject) => {
-        let listener = (event, idToken) => {
-          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-          api.getDeploymentInfo(deploymentId, idToken)
-            .then(response => {
-              this.isLoading = false
-              console.log('getDeploymentInfo', response)
-              const stream = response.stream
-              const id = response.id
-              const deploymentType = response.deploymentType
-              const deployedAt = response.deployedAt
-              if (!(stream && id)) resolve(null) // response doesn't have all required field
-              else resolve({stream, id, deploymentType, deployedAt})
-            }).catch(error => {
-              console.log('getDeploymentInfo error', error)
-              this.isLoading = false
-              resolve(null)
-            })
-        }
-        this.isLoading = true
-        this.$electron.ipcRenderer.send('getIdToken')
-        this.$electron.ipcRenderer.on('sendIdToken', listener)
-      })
-    },
     async importFiles () {
-      const deploymentInfo = await this.getDeploymentInfo(this.deploymentId)
-      this.redirectUserToSelectSiteScreen(deploymentInfo)
+      this.redirectUserToSelectSiteScreen()
     },
-    redirectUserToSelectSiteScreen (deploymentInfo) {
-      this.$router.push({path: '/select-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentInfo: JSON.stringify(deploymentInfo) }})
+    redirectUserToSelectSiteScreen () {
+      this.$router.push({path: '/select-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentId: this.deploymentId }})
     }
   }
 }

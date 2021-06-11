@@ -1,9 +1,20 @@
 <template>
   <div class="wrapper">
-    <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath != null"/>
+    <div class="header">
+      <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath !== null"/>
+      <div class="tag__wrapper">
+        <AudioMothTag :show="props.deviceId" :isSelected="true"/>
+        <deployment-tag 
+          v-if="isFetchingDeploymentInfo || props.deploymentId"
+          :isChecking="isFetchingDeploymentInfo"
+          :isDetected="props.deploymentId !== null && deployment.info !== null"
+          :error="deployment.error"
+        />
+      </div>
+    </div>
     <fieldset>
       <div class="notification default-notice" v-if="errorMessage">
-        <button class="delete" @click="onCloseAlert()"></button>
+        <button class="delete" @click="errorMessage = ''"></button>
         {{ errorMessage }}
       </div>
       <div class="field field-dropdown" v-if="shouldShowProjectSelector">
@@ -13,6 +24,7 @@
         <SelectProjectDropDownInput
         :helpText="siteDropdownHelpText"
         :initialProject="detectedProjectFromDeployment"
+        :disabled="isFetchingDeploymentInfo"
         @onSelectedProjectNameChanged="onSelectedProject"/>
       </div>
       <div class="field field-dropdown" :class="{'field-dropdown-with-help': siteDropdownHelpText !== null}">
@@ -27,6 +39,7 @@
         :isWarning="shouldShowNameHelperMessage === true"
         :initialSite="detectedSiteFromDeployment"
         :helpText="siteDropdownHelpText"
+        :disabled="isFetchingDeploymentInfo"
         @onSelectedSiteNameChanged="onSelectedSite"/>
       </div>
       <div class="field">
@@ -55,13 +68,17 @@
 
 <script>
 import Map from '../Common/Map/Map'
+import AudioMothTag from '../Common/Tag/AudioMothTag'
+import DeploymentTag from '../Common/Tag/DeploymentTag'
 import HeaderView from '../Common/HeaderWithBackButton'
 import SelectProjectDropDownInput from './SelectProjectDropDownInput'
 import SelectSiteDropdownInput from './SelectSiteDropDownInput'
 import api from '../../../../utils/api'
+import fileHelper from '../../../../utils/fileHelper'
 import ipcRendererSend from '../../services/ipc'
 import settings from 'electron-settings'
 import streamHelper from '../../../../utils/streamHelper'
+
 export default {
   data () {
     return {
@@ -72,43 +89,102 @@ export default {
         selectedLongitude: null
       },
       props: {
-        deploymentInfo: null,
+        deploymentId: null,
+        deviceId: null,
         selectedFolderPath: null,
         selectedFiles: null
       },
+      deployment: {
+        info: null,
+        error: null
+      },
       selectedProject: null,
       selectedExistingSite: null,
+      deploymentInfo: null,
       isLoading: false,
+      isFetchingDeploymentInfo: false,
       isCreatingNewSite: true,
       errorMessage: ''
     }
   },
-  components: { Map, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
+  components: { Map, AudioMothTag, DeploymentTag, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
   async created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
+
+    // handle selected folder / files
     if (this.$route.query.folderPath) {
       this.props.selectedFolderPath = this.$route.query.folderPath
-    }
-    if (this.$route.query.deploymentInfo) {
-      this.props.deploymentInfo = JSON.parse(this.$route.query.deploymentInfo)
-      // check if there is any site detected
-      if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
-        // and set the selected site to be the detected site from deployment
-        this.updateSelectedExistingSite(this.detectedSiteFromDeployment)
-      }
-      if (this.detectedProjectFromDeployment) {
-        this.selectedProject = this.detectedProjectFromDeployment
-      }
-    }
-    if (this.$route.query.selectedFiles) {
+    } else if (this.$route.query.selectedFiles) {
       this.props.selectedFiles = JSON.parse(this.$route.query.selectedFiles)
+    }
+
+    this.props.deploymentId = this.$route.query.deploymentId
+    this.props.deviceId = this.$route.query.deviceId
+
+    // TODO: refactor this condition
+    if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
+      let deviceInfo
+
+      // try to get device info from the first wav file
+      const firstWavFile = this.props.selectedFiles.find(file => {
+        return fileHelper.getExtension(file.path) === 'wav' // read only wav file header info
+      })
+      deviceInfo = this.$file.getDeviceInfo(firstWavFile)
+
+      // try to get device info from the first directory
+      if (!deviceInfo) {
+        const firstFolder = this.props.selectedFiles.find(file => {
+          return fileHelper.isFolder(file.path)
+        })
+        deviceInfo = this.$file.getDeviceInfoFromFolder(firstFolder.path)
+      }
+
+      // set device id & deployment id if any
+      if (deviceInfo) {
+        this.props.deviceId = deviceInfo.deviceId
+        this.props.deploymentId = deviceInfo.deploymentId
+      }
+    }
+
+    console.log('create', this.props.deviceId, this.props.deploymentId, this.props.deviceId && !this.props.deploymentId)
+    if (this.props.deviceId && !this.props.deploymentId) { // show protip
+      this.errorMessage = `Suggestion: use the RFCx companion to deploy your AudioMoth device in the future to pre-populate the site name below.`
+    }
+
+    if (this.props.deploymentId) {
+    // get deployment info
+      try {
+        this.isFetchingDeploymentInfo = true
+        this.deployment.info = await this.getDeploymentInfo(this.props.deploymentId)
+        this.isFetchingDeploymentInfo = false
+      } catch (error) {
+        this.isFetchingDeploymentInfo = false
+        switch (error.name) {
+          case 'EmptyResultError':
+            this.errorMessage = 'Site with attached deployment could not be found. Please manually select a site.'
+            return
+          case 'ForbiddenError':
+            this.errorMessage = `You don't have permission to the site with attached deployment. Please manually select a site.`
+            return
+          default:
+            this.errorMessage = error.message
+        }
+      }
+    }
+    // check if site detected
+    if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
+      // and set the selected site to be the detected site from deployment
+      this.updateSelectedExistingSite(this.detectedSiteFromDeployment)
+    }
+    if (this.detectedProjectFromDeployment) {
+      this.selectedProject = this.detectedProjectFromDeployment
     }
   },
   computed: {
     detectedSiteFromDeployment () {
-      if (this.props.deploymentInfo && this.props.deploymentInfo.stream) {
-        return streamHelper.parseSite(this.props.deploymentInfo.stream)
+      if (this.deployment.info && this.deployment.info.stream) {
+        return streamHelper.parseSite(this.deployment.info.stream)
       } else {
         return null
       }
@@ -123,25 +199,47 @@ export default {
       return this.detectedSiteFromDeployment ? 'Detected deployment from RFCx Companion' : null
     },
     shouldShowProjectSelector () {
-      return !this.detectedSiteFromDeployment || (this.detectedSiteFromDeployment && this.detectedProjectFromDeployment)
+      return !this.detectedSiteFromDeployment || (this.detectedSiteFromDeployment !== null && this.detectedProjectFromDeployment !== null)
     },
     shouldShowNameHelperMessage () {
       return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '') && this.hasPassProjectValidation
     },
     hasPassProjectValidation () {
-      return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject)
+      return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject !== null)
     },
     hasPassedValidation () {
-      return this.form.selectedSiteName && this.form.selectedLatitude && this.form.selectedLongitude && this.hasPassProjectValidation
+      return this.form.selectedSiteName && this.selectedCoordinates && this.selectedCoordinates.length > 1 && this.hasPassProjectValidation
     },
     selectedCoordinates () {
-      return this.form.selectedLatitude ? [this.form.selectedLongitude, this.form.selectedLatitude] : null
+      if (typeof this.form.selectedLatitude !== 'number' || typeof this.form.selectedLongitude !== 'number') {
+        return null
+      }
+      return [this.form.selectedLongitude, this.form.selectedLatitude]
     },
     actionButtonTitle () {
       return this.isCreatingNewSite ? 'Create' : 'Import'
     }
   },
   methods: {
+    async getDeploymentInfo (deploymentId) {
+      if (!deploymentId) return Promise.resolve(null)
+      return new Promise(async (resolve, reject) => {
+        const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
+        api.getDeploymentInfo(deploymentId, idToken).then(response => {
+          console.log('getDeploymentInfo', response)
+          const stream = response.stream
+          const id = response.id
+          const deploymentType = response.deploymentType
+          const deployedAt = response.deployedAt
+          if (!(stream && id)) resolve(null) // response doesn't have all required field
+          else resolve({stream, id, deploymentType, deployedAt})
+        }).catch(error => {
+          console.log('getDeploymentInfo error', error.name)
+          // TODO: handle error
+          reject(error)
+        })
+      })
+    },
     async importFiles () {
       if (this.isCreatingNewSite) {
         await this.createSite()
@@ -156,8 +254,11 @@ export default {
       this.selectedExistingSite = localSite
       if (this.props.selectedFolderPath) {
         this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, {
-          deploymentId: this.props.deploymentInfo ? this.props.deploymentInfo.id : ''
+          deploymentId: this.deployment.info ? this.deployment.info.id : ''
         })
+      }
+      if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
+        this.$file.handleDroppedFiles(this.props.selectedFiles, this.selectedExistingSite)
       }
       await this.$store.dispatch('setSelectedStreamId', this.selectedExistingSite.id)
       this.$router.push('/')
@@ -183,8 +284,7 @@ export default {
           latitude,
           longitude,
           isPublic: isPublic,
-          projectId,
-          projectName: this.selectedProject.name
+          project: this.selectedProject
         })
       } catch (error) {
         this.isLoading = false
@@ -213,7 +313,7 @@ export default {
       }
     },
     onUpdateLocation (coordinates) {
-      console.log('onUpdateLocation')
+      console.log('onUpdateLocation', coordinates)
       this.form.selectedLongitude = coordinates[0]
       this.form.selectedLatitude = coordinates[1]
     },
@@ -238,7 +338,6 @@ export default {
   watch: {
     selectedProject: {
       handler (val, previousVal) {
-        console.log('watch: selected project', val.name, this.selectedExistingSite)
         if (val === previousVal) return
         if (val === null || val === undefined) { // has reset project data
           this.updateSelectedExistingSite(null)
@@ -251,34 +350,4 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
-  .wrapper {
-    margin: $wrapper-margin;
-    padding: $default-padding-margin;
-    max-width: $wrapper-width;
-  }
-  span.help {
-    display: inline;
-  }
-  .field-dropdown-with-help {
-    margin-bottom: 2rem !important;
-  }
-  .controls-group {
-    margin-top: $default-padding-margin;
-  }
-  .is-link {
-    cursor: pointer;
-    color: $body-text-color !important;
-  }
-</style>
-
-<style lang="scss">
-  .map-wrapper {
-    height: 300px;
-    width: $wrapper-width;
-    margin-bottom: $default-padding-margin;
-    .mapboxgl-canvas {
-      height: 300px !important;
-    }
-  }
-</style>
+<style src="./ImportToSitePage.scss" scoped></style>

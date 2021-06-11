@@ -145,7 +145,7 @@ export default {
         api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken)
           .then(async (data) => {
             console.log('stream is deleted')
-            await ipcRendererSend('db.streams.delete', `db.streams.delete.${Date.now()}`, this.selectedStream.id)
+            await ipcRendererSend('db.streams.deleteById', `db.streams.deleteById.${Date.now()}`, this.selectedStream.id)
             this.modalHandler()
           }).catch(error => {
             console.log('error while deleting site', error)
@@ -207,16 +207,5 @@ export default {
   }
   .iconTrash {
     margin-right: 4px;
-  }
-</style>
-
-<style lang="scss">
-  .map-wrapper {
-    height: 300px;
-    width: $wrapper-width;
-    margin-bottom: $default-padding-margin;
-    .mapboxgl-canvas {
-      height: 300px !important;
-    }
   }
 </style>

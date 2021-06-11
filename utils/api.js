@@ -1,5 +1,6 @@
 // import File from '../src/renderer/store/models/File'
 import fileHelper from './fileHelper'
+import errors from './errors'
 import Analytics from 'electron-ga'
 import settings from 'electron-settings'
 import ipcRendererSend from '../src/renderer/services/ipc'
@@ -183,8 +184,8 @@ const deleteStream = (env, streamId, idToken) => {
 const getUserSites = (idToken, keyword = null, projectId, limit, offset) => {
   const env = settings.get('settings.production_env')
   let params = { keyword, projects: projectId }
-  if (!isNaN(limit)) { params.limit = limit }
-  if (!isNaN(offset)) { params.offset = offset }
+  if (typeof limit === 'number') { params.limit = limit }
+  if (typeof offset === 'number') { params.offset = offset }
   return httpClient.get(apiUrl(env) + `/streams`, { headers: { 'Authorization': 'Bearer ' + idToken }, params })
     .then(function (response) {
       return response.data
@@ -200,8 +201,10 @@ const getDeploymentInfo = (deploymentId, idToken) => {
     .then(response => {
       return response.data
     }).catch(error => {
+      let e = errors.matchAxiosErrorToRfcx(error)
       console.log('error', error)
-      throw error.response ? (error.response.data ? error.response.data : error.response) : error
+      console.log('match err', e, e.messsge)
+      throw errors.matchAxiosErrorToRfcx(error)
     })
 }
 
