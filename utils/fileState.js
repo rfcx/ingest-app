@@ -121,7 +121,7 @@ const isCompleted = function (state) {
 
 const canRedo = function (state, message) {
   if (!message) return false
-  return ['failed', 'server_error'].includes(state) && !['duplicate', 'corrupt'].includes(message.toLowerCase())
+  return ['failed', 'server_error'].includes(state) && !['duplicate', 'corrupt', 'no duration'].some(errMsg => message.toLowerCase().includes(errMsg))
 }
 
 const canRemove = function (state) {

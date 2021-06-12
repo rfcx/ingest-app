@@ -109,7 +109,7 @@ const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, 
       const uploadId = response.data.uploadId
       return { url, uploadId }
     }).catch(error => {
-      throw error.response ? (error.response.data ? error.response.data : error.response) : error
+      throw errors.matchAxiosErrorToRfcx(error)
     })
 }
 
