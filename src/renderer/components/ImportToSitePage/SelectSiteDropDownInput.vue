@@ -19,7 +19,10 @@
     :shouldShowEmptyContent="shouldShowErrorView"
   >
   <ErrorMessageView slot="emptyStateView" v-if="!isLoading">
-      <span slot="message">
+    <span slot="message" v-if="hasNoSite"> 
+        No site in this project. Start typing site name to create one.
+      </span>
+      <span slot="message" v-else>
         {{ errorMessage }}
       </span>
       <a href="#" slot="refreshButton" class="dropdown-sub-content__link" @click.prevent="getSiteOptions()">
@@ -91,7 +94,10 @@ export default {
       return (noProjectSelected && !this.initialSite) || this.disabled
     },
     shouldShowErrorView () {
-      return this.errorMessage !== ''
+      return this.errorMessage !== '' || (this.hasNoSite && this.selectedSiteName === '')
+    },
+    hasNoSite () {
+      return this.siteOptions.length === 0
     }
   },
   methods: {
