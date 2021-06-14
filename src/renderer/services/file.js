@@ -169,6 +169,8 @@ class FileProvider {
         params: { state: fileState.state.WAITING, stateMessage: null, sessionId: sessionId }
       })
     }
+    // always enable uploading process
+    await store.dispatch('enableUploadingProcess', true)
   }
 
   /**

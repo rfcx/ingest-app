@@ -130,16 +130,16 @@ const isError = function (state) {
   return isLocalError(state) || isServerError(state) || isDuplicated(state)
 }
 
-const isProcessing = function (state) {
-  return state === state.PROCESSING
+const isProcessing = function (s) {
+  return s === state.PROCESSING
 }
 
-const isDuplicated = function (state) {
-  return state === state.DUPLICATED
+const isDuplicated = function (s) {
+  return s === state.DUPLICATED
 }
 
-const isCompleted = function (state) {
-  return state === state.COMPLETED
+const isCompleted = function (s) {
+  return s === state.COMPLETED
 }
 
 const canRedo = function (s, message) {
