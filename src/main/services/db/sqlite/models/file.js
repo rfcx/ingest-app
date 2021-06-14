@@ -38,7 +38,7 @@ export default function (sequelize) {
       allowNull: true
     },
     state: {
-      type: DataTypes.STRING, // preparing, local_error, waiting, uploading, ingesting, completed, server_error
+      type: DataTypes.INTEGER, // preparing, local_error, waiting, uploading, ingesting, completed, server_error
       allowNull: false
     },
     stateMessage: {

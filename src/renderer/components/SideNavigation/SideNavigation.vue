@@ -36,7 +36,7 @@
     <ul>
       <li v-for="stream in streams" :key="stream.id">
         <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'wrapper__stream-row_active': isActive(stream)}">
-          <div class="menu-container" :class="{ 'menu-container-failed': stream.state === 'failed' || stream.state && stream.state.includes('error') }">
+          <div class="menu-container" :class="{ 'menu-container-failed': stream.state && fileState.isError(stream.state) }">
             <div class="wrapper__stream-name">{{ stream.name }}</div>
             <fa-icon class="iconRedo" v-if="stream.canRedo" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
             <img :src="getStateImgUrl(getState(stream))">
@@ -197,14 +197,14 @@
         // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reuploadFailedFilesRequest, data)
         // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
         this.isRetryUploading = true
-        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: streamId, state: ['failed', 'server_error'] } })
+        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: streamId, state: [fileState.state.ERROR_SERVER] } })
         files = files.filter((f) => {
           return fileState.canRedo(f.state, f.stateMessage)
         })
         for (let file of files) {
           await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
             id: file.id,
-            params: { state: 'waiting', stateMessage: null, sessionId }
+            params: { state: fileState.state.WAITING, stateMessage: null, sessionId }
           })
         }
 

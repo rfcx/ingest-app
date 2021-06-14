@@ -26,11 +26,11 @@ const checkMaxLength = (streamName) => {
 const getState = function (stream) {
   const stats = stream.stats
   if (!stats || stats.length <= 0) return ''
-  if (stats.find(stat => FileState.isInQueuedGroup(stat.state))) return 'uploading'
-  if (stats.find(stat => FileState.isProcessing(stat.state))) return 'ingesting'
-  if (stats.find(stat => FileState.isError(stat.state))) return 'failed'
-  if (stats.find(stat => FileState.isInPreparedGroup(stat.state))) return 'preparing'
-  if (stats.find(stat => FileState.isInCompletedGroup(stat.state))) return 'completed'
+  if (stats.find(stat => FileState.isInQueuedGroup(stat.state))) return FileState.state.UPLOADING
+  if (stats.find(stat => FileState.isProcessing(stat.state))) return FileState.state.PROCESSING
+  if (stats.find(stat => FileState.isError(stat.state))) return FileState.state.ERROR_SERVER
+  if (stats.find(stat => FileState.isInPreparedGroup(stat.state))) return FileState.state.PREPARING
+  if (stats.find(stat => FileState.isInCompletedGroup(stat.state))) return FileState.state.COMPLETED
   return ''
 }
 

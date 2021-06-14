@@ -157,7 +157,7 @@ export default {
       return groupFileCount.map(s => s.stateCount).reduce((a, b) => a + b, 0)
     },
     checkIfHasErrorFiles (files) {
-      return files.filter((file) => file.state.includes('error')).length > 0
+      return files.filter((file) => FileState.isError(file.state)).length > 0
     },
     async reloadFiles (query, offset = null, merged = false) {
       let queryOpts = { where: query, order: [['updatedAt', 'DESC']] }
