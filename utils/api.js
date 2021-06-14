@@ -1,4 +1,3 @@
-// import File from '../src/renderer/store/models/File'
 import fileHelper from './fileHelper'
 import fileState from './fileState'
 import errors from './errors'

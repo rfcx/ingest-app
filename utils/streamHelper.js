@@ -1,4 +1,3 @@
-import Stream from './../src/renderer/store/models/Stream'
 import dateHelper from './dateHelper'
 import FileState from './fileState'
 import settings from 'electron-settings'
@@ -34,18 +33,6 @@ const getState = function (stream) {
   return ''
 }
 
-const insertSites = async function (sites) {
-  const idOfSitesInUploadingSession = Stream.query().where(stream => {
-    return stream.sessionTotalCount > 0 || stream.sessionSuccessCount > 0 || stream.sessionFailCount > 0
-  }).get().map(stream => stream.id)
-  const sitesInuploadingSession = sites.filter(site => idOfSitesInUploadingSession.includes(site.id))
-  const otherSites = sites.filter(site => !idOfSitesInUploadingSession.includes(site.id))
-  await Stream.insertOrUpdate({ data: sitesInuploadingSession })
-  await Stream.insert({ data: otherSites })
-  console.log('[sitesInuploadingSession] insertOrUpdate sites', sitesInuploadingSession.length)
-  console.log('[otherSites] insert sites', otherSites.length)
-}
-
 const parseUserSites = (sites) => {
   return sites.map((site) => {
     return parseSite(site)
@@ -79,7 +66,6 @@ const isProductionEnv = () => {
 export default {
   isValidName,
   getNameError,
-  insertSites,
   parseUserSites,
   parseSite,
   getState

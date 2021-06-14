@@ -16,8 +16,6 @@ import FileNameFormatInfo from './FileNameFormatInfo'
 import FileList from './FileList'
 import SummaryView from './Summary'
 import FileState from '../../../../../utils/fileState'
-// import File from '../../../store/models/File'
-// import Stream from '../../../store/models/Stream'
 import infiniteScroll from 'vue-infinite-scroll'
 import ipcRendererSend from '../../../services/ipc'
 
@@ -160,7 +158,7 @@ export default {
       return files.filter((file) => FileState.isError(file.state)).length > 0
     },
     async reloadFiles (query, offset = null, merged = false) {
-      let queryOpts = { where: query, order: [['updatedAt', 'DESC']] }
+      let queryOpts = { where: query, order: [['state', 'ASC']] }
       if (typeof offset === 'number') { queryOpts = {...queryOpts, offset, limit: this.$getConst('DEFAULT_LIMIT')} }
       const newFiles = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, queryOpts)
       if (merged) {
