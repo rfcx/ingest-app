@@ -49,7 +49,8 @@ async function getAudioDurationInSeconds (input) {
     throw new Error('No duration found!')
   } catch (error) {
     console.error('error: getAudioDurationInSeconds', error)
-    throw new Error('Something went wrong. Please try again in a little later.')
+    if (error.message !== 'No duration found!') { throw new Error('Something went wrong. Please try again in a little later.') }
+    throw error
   }
 }
 
