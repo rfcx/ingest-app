@@ -11,12 +11,6 @@ export default new Router({
       component: require('@/components/LandingPage').default
     },
     {
-      path: '/add',
-      name: 'add-new-stream-page',
-      component: require('@/components/CreateStream/CreateStreamPage').default,
-      props: (route) => ({ query: route.query })
-    },
-    {
       path: '/import',
       name: 'import-files',
       component: require('@/components/ImportFiles/ImportFilesPage').default

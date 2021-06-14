@@ -2,15 +2,11 @@
   <div class="centered-block has-text-centered">
       <img :src="stateIcon" class="container__state-icon"><br>
       <span class="container__state-status">{{ stateStatus }}</span>
-      <button class="button is-rounded is-primary container__button" v-if="!isEmptyStream">
-        Import files
-        <input class="file-input" type="file" ref="file" v-on:change="importFiles($event)" multiple/>
-      </button>
   </div>
 </template>
 
 <script>
-const dropFileDefaultMessage = 'Drop or import audio files here and press start upload to start uploading them to the site.'
+const dropFileDefaultMessage = 'Use + Import Files button on the left or drop a folder of audio files here to start an uploading session.'
 export default {
   props: {
     isDragging: Boolean,
@@ -25,9 +21,7 @@ export default {
   },
   computed: {
     stateStatus () {
-      if (this.isEmptyStream) { // has no stream
-        return 'Use + button or drop your audio files here to create your first site.'
-      } else if (this.hasFileInQueued) {
+      if (this.hasFileInQueued) {
         return 'Your audio is being uploaded.\n\nYou can still drop files here to upload more!'
       }
       return dropFileDefaultMessage
@@ -40,11 +34,6 @@ export default {
         return require('../../assets/ic-queuing.gif')
       }
       return require('../../assets/ic-file.svg')
-    }
-  },
-  methods: {
-    importFiles (e) {
-      this.$emit('onImportFiles', e.target.files)
     }
   }
 }

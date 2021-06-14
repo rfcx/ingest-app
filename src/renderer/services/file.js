@@ -403,6 +403,7 @@ class FileProvider {
           params: { state: 'server_error', stateMessage: 'Duplicate file. Matching sha1 signature already ingested.' }
         })
         return this.incrementFilesCount(file.streamId, false)
+      // TODO: handle 403 case
       } else if (file.retries < 3) {
         // return File.update({
         //   where: file.id,
@@ -484,6 +485,7 @@ class FileProvider {
             })
             return this.incrementFilesCount(file.streamId, true)
           case 30:
+          case 32:
             if (failureMessage.includes('is zero')) {
               // File.update({
               //   where: file.id,
@@ -570,6 +572,29 @@ class FileProvider {
 
   async insertFiles (files) {
     await ipcRendererSend('db.files.bulkCreate', `db.files.bulkCreate.${Date.now()}`, files)
+  }
+
+  /* -- Import -- */
+
+  getDeviceInfoFromFolder (path) {
+    const stuffInDirectory = fileHelper
+      .getFilesFromDirectoryPath(path)
+      .map((name) => {
+        return { name: name, path: path + '/' + name }
+      })
+    // read file header info
+    const firstWavFile = stuffInDirectory.find(file => {
+      return fileHelper.getExtension(file.path) === 'wav' // read only wav file header info
+    })
+    return this.getDeviceInfo(firstWavFile)
+  }
+
+  getDeviceInfo (file) {
+    if (!file) return undefined
+    const fileInfo = new FileInfo(file.path)
+    const deviceId = fileInfo.deviceId
+    const deploymentId = fileInfo.deployment
+    return {deviceId, deploymentId}
   }
 
   /* -- Helper -- */
