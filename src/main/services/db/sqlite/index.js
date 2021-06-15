@@ -1,5 +1,6 @@
 import migrateDatabase from './migrations'
 import initModels from './models'
+import fileState from '../../../../../utils/fileState'
 const { Sequelize, Op } = require('sequelize')
 
 let sequelize
@@ -55,7 +56,9 @@ async function init (app) {
         $gt: Op.gt,
         $gte: Op.gte,
         $like: Op.like,
-        $nin: Op.notIn
+        $nin: Op.notIn,
+        $nLike: Op.notLike,
+        $and: Op.and
       }
     })
     await sequelize.authenticate()
@@ -135,6 +138,19 @@ const collections = {
         attributes: ['state', [sequelize.fn('COUNT', 'state'), 'stateCount']]
       }).then(states => {
         return states.map(s => s.dataValues)
+      })
+    },
+    canRetryFilesInStreamCount: function (streamId) {
+      return models.File.findAndCountAll({
+        where: {stream_id: streamId,
+          state: fileState.state.ERROR_SERVER,
+          stateMessage: { // state message is not in cannot redo group
+            $and: fileState.cannotRedoGroup.map(m => {
+              return { $nLike: `%${m}%` }
+            })
+          }}
+      }).then(obj => {
+        return obj.count
       })
     },
     filesInStreamsCount: function (streamIds) {
