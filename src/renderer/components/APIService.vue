@@ -5,6 +5,7 @@
 <script>
   import { mapState } from 'vuex'
   import ipcRendererSend from '../services/ipc'
+  import fileState from '../../../utils/fileState'
 
   const workerTimeoutMinimum = 3000
   const queueFileToUploadWorkerTimeoutMinimum = 1000
@@ -58,18 +59,18 @@
         //   let files = File.query().where(file => { return ['uploading', 'converting'].includes(file.state) && file.uploaded === false }).orderBy('timestamp').get()
         //   resolve(files != null ? files : [])
         // })
-        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: ['uploading', 'converting'] } })
+        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: [fileState.state.UPLOADING, fileState.state.CONVERTING] } })
           .then((files) => files.filter((file) => !file.uploaded))
       },
       getUnsyncedFile () { // only get files that already have duration to queue to upload
-        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: 'waiting', durationInSecond: { $gt: -1 } }, limit: 1 })
+        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: fileState.state.WAITING, durationInSecond: { $gt: -1 } }, limit: 1 })
         // return File.query().where('state', 'waiting')
         //   .orderBy('retries', 'desc')
         //   .orderBy('timestamp', 'asc')
         //   .first()
       },
       getUploadedFiles () {
-        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: ['uploading', 'ingesting'] } })
+        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: [fileState.state.UPLOADING, fileState.state.PROCESSING] } })
           .then((files) => {
             return files
               .filter((file) => {
@@ -82,7 +83,7 @@
         // }).orderBy('timestamp').limit(5).get()
       },
       getNoDurationFiles () { // get duration of files that is in waiting status
-        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: ['preparing', 'waiting', 'server_error'], durationInSecond: [-1, -2] }, order: [['state', 'DESC'], ['createdAt', 'ASC']], limit: parallelUploads })
+        return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: [fileState.state.PREPARING, fileState.state.WAITING], durationInSecond: [-1] }, order: [['state', 'DESC'], ['createdAt', 'ASC']], limit: parallelUploads })
         // return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 && !file.isError }).orderBy('timestamp').get()
       },
       async uploadFile (file) {
@@ -122,7 +123,7 @@
             if (error.message === 'File does not exist') {
               await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
                 id: unsyncedFile.id,
-                params: { state: 'server_error', stateMessage: 'File does not exist' }
+                params: { state: fileState.state.ERROR_SERVER, stateMessage: 'File does not exist' }
               })
             }
           })
@@ -212,7 +213,7 @@
         // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteOutdatedFilesRequest)
         await ipcRendererSend('db.files.delete', `db.files.delete.${Date.now()}`, {
           where: {
-            state: 'completed',
+            state: fileState.state.COMPLETED,
             uploadedTime: {
               '$lt': Date.now() - 1000 * 60 * 60 * 24 * 30
             }

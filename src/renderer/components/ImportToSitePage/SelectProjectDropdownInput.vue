@@ -1,11 +1,13 @@
 <template>
   <DropDownWithSearchInput
     placeholder="Choose project"
+    @onSearchInputFocus="onSearchInputFocus"
     @onClearSearchInput="onClearProjectNameSearchInput"
     @onOptionSelected="onSelectProject"
     :dropdownOptions="projectOptions"
     :text="selectedProjectName"
     :isReadOnly="initialProject ? initialProject.name !== null : null"
+    :isDisabled="disabled"
     :isFetching="isLoading"
     :searchEnabled="false"
     :shouldShowEmptyContent="shouldShowErrorView"
@@ -48,6 +50,10 @@ export default {
       default: () => {
         return {}
       }
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     }
   },
   components: { DropDownWithSearchInput, ErrorMessageView },
@@ -58,10 +64,6 @@ export default {
     hasNoProject () {
       return this.projectOptions.length === 0
     }
-  },
-  async mounted () {
-    if (this.initialProject && this.initialProject.name) this.selectedProjectName = this.initialProject.name
-    await this.getProjectOptions()
   },
   methods: {
     async getProjectOptions (keyword = null) {
@@ -82,6 +84,9 @@ export default {
         this.errorMessage = error
       }
     },
+    async onSearchInputFocus () {
+      await this.getProjectOptions()
+    },
     onSelectProject (project) {
       console.log('onSelectProjectName:', project.name)
       this.selectedProjectName = project && project.name ? project.name : ''
@@ -96,6 +101,9 @@ export default {
     }
   },
   watch: {
+    initialProject () {
+      if (this.initialProject && this.initialProject.name) this.selectedProjectName = this.initialProject.name
+    },
     selectedProjectName: {
       handler: async function (value, prevValue) {
         if (value === prevValue || this.initialProject) return // ignore to send event when in readonly mode

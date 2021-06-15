@@ -77,7 +77,7 @@
 import fileState from '../../../../../utils/fileState'
 import fileHelper from '../../../../../utils/fileHelper'
 import { faRedo, faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
-import AudioMothTag from '../../Common/AudioMothTag'
+import AudioMothTag from '../../Common/Tag/AudioMothTag'
 
 export default {
   props: {
@@ -168,7 +168,7 @@ export default {
       this.file.displayTimestamp = fileHelper.getDisplayTimestamp(this.file)
       this.file.fileDuration = fileHelper.getDisplayFileDuration(this.file)
       this.file.fileSize = fileHelper.getDisplayFileSize(this.file)
-      this.file.isError = this.file.state.includes('error')
+      this.file.isError = fileState.isError(this.file.state)
       this.file.canRedo = fileState.canRedo(this.file.state, this.file.stateMessage)
       this.file.canRemove = fileState.canRemove(this.file.state)
     }

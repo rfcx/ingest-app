@@ -1,8 +1,6 @@
 import electron from 'electron'
 import settings from 'electron-settings'
 import api from '../../../utils/api'
-// import File from '../store/models/File'
-// import Stream from '../store/models/Stream'
 import fileHelper from '../../../utils/fileHelper'
 import dateHelper from '../../../utils/dateHelper'
 import FileFormat from '../../../utils/FileFormat'
@@ -61,7 +59,7 @@ class FileProvider {
     allFileObjectsFiltered.forEach(file => {
       const hasUploadedBefore = existingPreparedFilePaths[file.path] !== undefined && !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path])
       if (hasUploadedBefore) {
-        file.state = 'local_error'
+        file.state = fileState.state.ERROR_LOCAL
         file.stateMessage = 'Duplicate (uploading or complete)'
       }
     })
@@ -97,7 +95,7 @@ class FileProvider {
     allFileObjectsFiltered.forEach(file => {
       const hasUploadedBefore = existingPreparedFilePaths[file.path] !== undefined && !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path])
       if (hasUploadedBefore) {
-        file.state = 'local_error'
+        file.state = fileState.state.ERROR_LOCAL
         file.stateMessage = 'Duplicate (uploading or complete)'
       }
     })
@@ -154,26 +152,25 @@ class FileProvider {
         console.error('Failed updating file duration', error)
         await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
           id: file.id,
-          params: { durationInSecond: -2, state: 'server_error', stateMessage: error.message || 'No duration found' }
+          params: { durationInSecond: -2, state: fileState.state.ERROR_SERVER, stateMessage: error.message || 'No duration found' }
         })
       }
     }
   }
 
-  putFilesIntoUploadingQueue (files) {
+  async putFilesIntoUploadingQueue (files) {
     console.log('putFilesIntoUploadingQueue')
     // if there is an active session id then reuse that, otherwise generate a new one
     const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
     store.dispatch('setCurrentUploadingSessionId', sessionId)
-    files.forEach(file => {
-      // File.update({ where: file.id,
-      //   data: { state: 'waiting', stateMessage: '', sessionId: sessionId }
-      // })
-      ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
+    for (const file of files) {
+      await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
         id: file.id,
-        params: { state: 'waiting', stateMessage: null, sessionId: sessionId }
+        params: { state: fileState.state.WAITING, stateMessage: null, sessionId: sessionId }
       })
-    })
+    }
+    // always enable uploading process
+    await store.dispatch('enableUploadingProcess', true)
   }
 
   /**
@@ -369,74 +366,42 @@ class FileProvider {
       // return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
       return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: file.id,
-        params: { uploaded: true, uploadedTime: Date.now(), state: 'ingesting', stateMessage: '' }
+        params: { uploaded: true, uploadedTime: Date.now(), state: fileState.state.PROCESSING, stateMessage: '' }
       })
     }).catch(async (error) => {
-      console.log('===> ERROR UPLOAD FILE', file.name, error.message)
-      if (error.message === 'Request body larger than maxBodyLength limit') {
-        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-          id: file.id,
-          params: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
-        })
-        // File.update({
-        //   where: file.id,
-        //   data: { state: 'server_error', stateMessage: 'File size exceeded. Maximum file size is 200 MB' }
-        // })
-        return this.incrementFilesCount(file.streamId, false)
-      } else if (error.message === 'Duplicate.') { // same file data + same name is already ingested
-        // File.update({
-        //   where: file.id,
-        //   data: { state: 'completed', stateMessage: '' }
-        // })
-        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-          id: file.id,
-          params: { state: 'completed', stateMessage: '' }
-        })
-        // return this.incrementFilesCount(file.streamId, true)
-      } else if (error.message === 'Invalid.') { // same file data + different name is already ingested
-        // File.update({
-        //   where: file.id,
-        //   data: { state: 'server_error', stateMessage: 'Duplicate file. Matching sha1 signature already ingested.' }
-        // })
-        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-          id: file.id,
-          params: { state: 'server_error', stateMessage: 'Duplicate file. Matching sha1 signature already ingested.' }
-        })
-        return this.incrementFilesCount(file.streamId, false)
-      } else if (file.retries < 3) {
-        // return File.update({
-        //   where: file.id,
-        //   data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
-        // })
-        return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-          id: file.id,
-          params: { state: 'waiting', uploadId: null, stateMessage: null, progress: 0, retries: file.retries + 1 }
-        })
-      } else if (error.message === 'write EPIPE' || error.message === 'read ECONNRESET' || error.message === 'Network Error' || error.message.includes('ETIMEDOUT' || '400')) {
-        // File.update({
-        //   where: file.id,
-        //   data: { state: 'server_error', stateMessage: 'Network Error' }
-        // })
-        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-          id: file.id,
-          params: { state: 'server_error', stateMessage: 'Network Error' }
-        })
-        return this.incrementFilesCount(file.streamId, false)
-      } else {
-        // File.update({
-        //   where: file.id,
-        //   data: { state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.' }
-        // })
-        await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-          id: file.id,
-          params: { state: 'server_error', stateMessage: 'Server failed with processing your file. Please try again later.' }
-        })
-        return this.incrementFilesCount(file.streamId, false)
+      console.log('===> ERROR UPLOAD FILE', file.name, error.message, error.name)
+      if (error.message === 'Duplicate.') { // if duplicate file (same site, same file data, same filename), then show as completed
+        return this.markFileAsCompleted(file)
       }
+
+      // should not retry
+      const shouldNotAutoRetry = ['Invalid.', 'Request body larger than maxBodyLength limit'].includes(error.message) || ['ForbiddenError'].includes(error.name)
+      if (shouldNotAutoRetry) {
+        if (error.message === 'Invalid.') { // (same site, same file data, different filename)
+          return this.markFileAsFailed(file, 'Duplicate file. Matching sha1 signature already ingested.')
+        }
+        if (error.message === 'Request body larger than maxBodyLength limit') {
+          return this.markFileAsFailed(file, 'File size exceeded. Maximum file size is 200 MB')
+        }
+        return this.markFileAsFailed(file, error.message)
+      }
+
+      // auto retry to upload
+      if (file.retries < 3) {
+        return this.markFileAsRetryToUpload(file)
+      }
+      // error after auto retry
+      if (['write EPIPE', 'read ECONNRESET', 'Network Error', 'ETIMEDOUT', '400'].includes(error.message)) {
+        return this.markFileAsFailed(file, 'Network Error')
+      }
+      // default
+      return this.markFileAsFailed(file, 'Server failed with processing your file. Please try again later.')
     })
   }
 
   checkStatus (file, idToken, isSuspended) {
+    // If the app suspends/loses internet connection the uploading file changes the status to waiting
+    if (!file.uploadId) { return this.markFileAsSuspend(file) }
     return api
       .checkStatus(this.isProductionEnv(), file.uploadId, idToken)
       .then(async (data) => {
@@ -449,111 +414,41 @@ class FileProvider {
           case 0:
             if (isSuspended) {
               // If the app suspends/loses internet connection the uploading file changes the status to waiting
-              // return File.update({
-              //   where: file.id,
-              //   data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: 0 }
-              // })
-              return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-                id: file.id,
-                params: { state: 'waiting', uploadId: null, stateMessage: null, progress: 0, retries: 0 }
-              })
+              return this.markFileAsSuspend(file)
             }
             return
           case 10:
-            if (currentStateOfFile === 'ingesting') return
-            // return File.update({
-            //   where: file.id,
-            //   data: { state: 'ingesting', stateMessage: '', progress: 100 }
-            // })
+            if (currentStateOfFile === fileState.state.PROCESSING) return
             return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
               id: file.id,
-              params: { state: 'ingesting', stateMessage: null, progress: 100 }
+              params: { state: fileState.state.PROCESSING, stateMessage: null, progress: 100 }
             })
           case 20:
-            if (currentStateOfFile === 'completed') return
+            if (currentStateOfFile === fileState.state.COMPLETED) return
             const uploadTime = Date.now() - file.uploadedTime
             const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.ingest, 'el': `${file.name}/${file.uploadId}`, 'ev': uploadTime }
             await analytics.send('event', analyticsEventObj)
-            // File.update({
-            //   where: file.id,
-            //   data: { state: 'completed', stateMessage: '', progress: 100 }
-            // })
-            await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-              id: file.id,
-              params: { state: 'completed', stateMessage: null, progress: 100 }
-            })
-            return this.incrementFilesCount(file.streamId, true)
+            return this.markFileAsCompleted(file)
           case 30:
+          case 32:
             if (failureMessage.includes('is zero')) {
-              // File.update({
-              //   where: file.id,
-              //   data: { state: 'server_error', stateMessage: 'Corrupted file' }
-              // })
-              await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-                id: file.id,
-                params: { state: 'server_error', stateMessage: 'Corrupted file' }
-              })
-              return this.incrementFilesCount(file.streamId, false)
+              return this.markFileAsFailed(file, 'Corrupted file')
             } else if (file.retries < 3) {
-              // File.update({
-              //   where: file.id,
-              //   data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
-              // })
-              await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-                id: file.id,
-                params: { state: 'waiting', uploadId: null, stateMessage: null, progress: 0, retries: file.retries + 1 }
-              })
-            } else {
-              // File.update({
-              //   where: file.id,
-              //   data: { state: 'server_error', stateMessage: failureMessage }
-              // })
-              await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-                id: file.id,
-                params: { state: 'server_error', stateMessage: failureMessage }
-              })
-              return this.incrementFilesCount(file.streamId, false)
+              return this.markFileAsRetryToUpload(file)
             }
-            break
+            return this.markFileAsFailed(file, failureMessage)
           default:
-            // File.update({
-            //   where: file.id,
-            //   data: { state: 'server_error', stateMessage: failureMessage }
-            // })
-            await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-              id: file.id,
-              params: { state: 'server_error', stateMessage: failureMessage }
-            })
-            return this.incrementFilesCount(file.streamId, false)
+            return this.markFileAsFailed(file, failureMessage)
         }
       })
       .catch(async (error) => {
         console.log('check status error', error)
         if (file.retries < 3) {
-          // return File.update({
-          //   where: file.id,
-          //   data: { state: 'waiting', uploadId: '', stateMessage: '', progress: 0, retries: file.retries + 1 }
-          // })
-          return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-            id: file.id,
-            params: { state: 'waiting', uploadId: null, stateMessage: null, progress: 0, retries: file.retries + 1 }
-          })
+          return this.markFileAsRetryToUpload(file)
         } else {
-          // File.update({
-          //   where: file.id,
-          //   data: { state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.' }
-          // })
-          await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-            id: file.id,
-            params: { state: 'failed', stateMessage: 'Server failed with processing your file. Please try again later.' }
-          })
-          return this.incrementFilesCount(file.streamId, false)
+          return this.markFileAsFailed(file, 'Server failed with processing your file. Please try again later.')
         }
       })
-  }
-
-  async incrementFilesCount (streamId, success) {
-    // await Stream.dispatch('filesCompletedUploadSession', { streamId, amount: 1, success })
   }
 
   isProductionEnv () {
@@ -570,6 +465,57 @@ class FileProvider {
 
   async insertFiles (files) {
     await ipcRendererSend('db.files.bulkCreate', `db.files.bulkCreate.${Date.now()}`, files)
+  }
+
+  async markFileAsRetryToUpload (file) {
+    return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+      id: file.id,
+      params: { state: fileState.state.WAITING, uploadId: null, stateMessage: null, progress: 0, retries: file.retries + 1 }
+    })
+  }
+
+  async markFileAsSuspend (file) {
+    return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+      id: file.id,
+      params: { state: fileState.state.WAITING, uploadId: null, stateMessage: null, progress: 0, retries: 0 }
+    })
+  }
+
+  async markFileAsCompleted (file) {
+    return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+      id: file.id,
+      params: { state: fileState.state.COMPLETED, stateMessage: '' }
+    })
+  }
+
+  async markFileAsFailed (file, errorMessage) {
+    return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+      id: file.id,
+      params: { state: fileState.state.ERROR_SERVER, stateMessage: errorMessage }
+    })
+  }
+
+  /* -- Import -- */
+
+  getDeviceInfoFromFolder (path) {
+    const stuffInDirectory = fileHelper
+      .getFilesFromDirectoryPath(path)
+      .map((name) => {
+        return { name: name, path: path + '/' + name }
+      })
+    // read file header info
+    const firstWavFile = stuffInDirectory.find(file => {
+      return fileHelper.getExtension(file.path) === 'wav' // read only wav file header info
+    })
+    return this.getDeviceInfo(firstWavFile)
+  }
+
+  getDeviceInfo (file) {
+    if (!file) return undefined
+    const fileInfo = new FileInfo(file.path)
+    const deviceId = fileInfo.deviceId
+    const deploymentId = fileInfo.deployment
+    return {deviceId, deploymentId}
   }
 
   /* -- Helper -- */
@@ -613,11 +559,11 @@ class FileProvider {
   getState (timestamp, fileExt) {
     const momentDate = dateHelper.getMomentDateFromISODate(timestamp)
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
-      return { state: 'local_error', message: 'File extension is not supported' }
+      return { state: fileState.state.ERROR_LOCAL, message: 'File extension is not supported' }
     } else if (!momentDate.isValid()) {
-      return { state: 'local_error', message: 'Filename does not match with a filename format' }
+      return { state: fileState.state.ERROR_LOCAL, message: 'Filename does not match with a filename format' }
     } else {
-      return { state: 'preparing', message: '' }
+      return { state: fileState.state.PREPARING, message: '' }
     }
   }
 

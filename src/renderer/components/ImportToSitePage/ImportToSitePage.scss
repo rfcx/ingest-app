@@ -1,0 +1,24 @@
+.wrapper {
+  margin: $wrapper-margin;
+  padding: $default-padding-margin;
+  max-width: $wrapper-width;
+}
+.header {
+  display:inline-flex;
+}
+.tag__wrapper {
+  display:flex;
+}
+span.help {
+  display: inline;
+}
+.field-dropdown-with-help {
+  margin-bottom: 2rem !important;
+}
+.controls-group {
+  margin-top: $default-padding-margin;
+}
+.is-link {
+  cursor: pointer;
+  color: $body-text-color !important;
+}

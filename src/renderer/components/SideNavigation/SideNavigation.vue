@@ -20,13 +20,9 @@
         <span>+</span>Import Files
       </button>
     </div>
-    <div class="wrapper__title">
+    <div class="wrapper__title" v-if="streams && streams.length > 0">
       <span>
-        Sites
-        <div class="wrapper__loader">
-          <fa-icon class="iconRefresh" :icon="iconRefresh" @click.prevent="fetchUserSites()" v-if="!isFetching"></fa-icon>
-          <div class="loader" v-if="isFetching"></div>
-        </div>
+        Recent Uploads
       </span>
     </div>
     <div v-if="toggleSearch" class="wrapper__search" :class="{ 'search-wrapper_red': isRequiredSymbols }">
@@ -40,7 +36,7 @@
     <ul>
       <li v-for="stream in streams" :key="stream.id">
         <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'wrapper__stream-row_active': isActive(stream)}">
-          <div class="menu-container" :class="{ 'menu-container-failed': stream.state === 'failed' || stream.state && stream.state.includes('error') }">
+          <div class="menu-container" :class="{ 'menu-container-failed': stream.state && fileState.isError(stream.state) }">
             <div class="wrapper__stream-name">{{ stream.name }}</div>
             <fa-icon class="iconRedo" v-if="stream.canRedo" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
             <img :src="getStateImgUrl(getState(stream))">
@@ -63,13 +59,11 @@
   import { mapState } from 'vuex'
   import fileState from '../../../../utils/fileState'
   import streamHelper from '../../../../utils/streamHelper'
-  import api from '../../../../utils/api'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
   import { faRedo, faSync } from '@fortawesome/free-solid-svg-icons'
   import infiniteScroll from 'vue-infinite-scroll'
   import ipcRendererSend from '../../services/ipc'
-  import streamService from '../../services/stream'
   const { remote } = window.require('electron')
 
   const DEFAULT_PAGE_SIZE = 50
@@ -203,14 +197,14 @@
         // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reuploadFailedFilesRequest, data)
         // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
         this.isRetryUploading = true
-        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: streamId, state: ['failed', 'server_error'] } })
+        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: streamId, state: [fileState.state.ERROR_SERVER] } })
         files = files.filter((f) => {
           return fileState.canRedo(f.state, f.stateMessage)
         })
         for (let file of files) {
           await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
             id: file.id,
-            params: { state: 'waiting', stateMessage: null, sessionId }
+            params: { state: fileState.state.WAITING, stateMessage: null, sessionId }
           })
         }
 
@@ -236,31 +230,6 @@
       },
       isProductionEnv () {
         return settings.get('settings.production_env')
-      },
-      fetchUserSites () {
-        let listener = (event, arg) => {
-          this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
-          console.log('getUserSites')
-          api.getUserSites(arg)
-            .then(async sites => {
-              this.isFetching = false
-              if (sites && sites.length) {
-                let userSites = streamHelper.parseUserSites(sites).sort((siteA, siteB) => siteB.serverUpdatedAt - siteA.serverUpdatedAt)
-                await streamService.upsertStreams(userSites)
-                // insert site success set selected site
-                await this.reloadStreamListFromLocalDB()
-                if (!this.selectedStreamId && userSites.length > 0) {
-                  await this.$store.dispatch('setSelectedStreamId', userSites[0].id)
-                }
-              }
-            }).catch(error => {
-              this.isFetching = false
-              console.log(`error while getting user's sites`, error)
-            })
-        }
-        this.isFetching = true
-        this.$electron.ipcRenderer.send('getIdToken')
-        this.$electron.ipcRenderer.on('sendIdToken', listener)
       },
       async reloadStreamListFromLocalDB () {
         const limit = (this.streams.length > 0 && this.streams.length > DEFAULT_PAGE_SIZE) ? this.streams.length : DEFAULT_PAGE_SIZE
@@ -317,7 +286,6 @@
     async created () {
       await this.reloadStreamListFromLocalDB()
       this.manageStreamFetchingInterval(this.currentUploadingSessionId, this.isUploadingProcessEnabled)
-      this.fetchUserSites()
       if (remote.getGlobal('firstLogIn')) {
         this.$electron.ipcRenderer.send('resetFirstLogIn')
       }
@@ -505,14 +473,6 @@
     font-size: 13px;
     cursor: pointer;
     margin: 6px 6px 6px 0;
-  }
-  .iconRefresh {
-    color: grey;
-    font-size: 13px;
-    cursor: pointer;
-  }
-  .iconRefresh:hover {
-    color: white;
   }
   input[type="text"]::-webkit-input-placeholder {
     color: $input-placeholder !important;

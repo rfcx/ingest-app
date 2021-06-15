@@ -1,6 +1,9 @@
 <template>
   <div class="wrapper__content-wrapper" v-if="shouldShowProgress" :class="shouldShowProgress ? '' : 'hidden'">
-    <progress class="progress is-success wrapper__progress-bar" :value="getProgressPercent()" max="100"></progress>
+    <div class="progress">
+      <div class="progress-bar completed" :style="{ width: completedFilesPercentage+'%' }"></div>
+      <div class="progress-bar processing"  :style="{ width: processingFilesPercentage+'%' }"></div>
+    </div>
     <div class="wrapper__content">
       <div class="wrapper__text-wrapper">
         <div class="wrapper__progress-title">Uploading</div>
@@ -10,6 +13,11 @@
         href="#" @click="toggleUploadingProcess()" style="padding-right: 0.25rem"><img :src="getUploadingProcessIcon(isUploadingProcessEnabled)">
       </a>
     </div>
+    <div class="wrapper__content-detail is-size-7">
+      <state-group :state="fileState.state.PROCESSING" :number="numberOfProcessingFilesInTheSession"/>
+      <state-group :state="fileState.state.COMPLETED" :number="numberOfSuccessFilesInTheSession"/>
+      <state-group :state="fileState.state.ERROR_SERVER" :number="numberOfFailFilesInTheSession"/>
+    </div>
   </div>
 </template>
 
@@ -17,6 +25,7 @@
 import { mapState } from 'vuex'
 import FileState from '../../../../utils/fileState'
 import ipcRendererSend from '../../services/ipc'
+import StateGroup from './StateGroup'
 export default {
   data () {
     return {
@@ -29,11 +38,23 @@ export default {
       refreshInterval: null
     }
   },
+  components: { StateGroup },
   computed: {
     ...mapState({
       currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
       isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
-    })
+    }),
+    completedFilesPercentage () {
+      if (!this.numberOfAllFilesInTheSession || !this.numberOfCompleteFilesInTheSession) return 0
+      else return ((this.numberOfCompleteFilesInTheSession / this.numberOfAllFilesInTheSession) * 100)
+    },
+    processingFilesPercentage () {
+      if (!this.numberOfAllFilesInTheSession || !this.numberOfCompleteFilesInTheSession) return 0
+      return this.numberOfProcessingFilesInTheSession / this.numberOfAllFilesInTheSession * 100
+    },
+    fileState () {
+      return FileState
+    }
   },
   watch: {
     isUploadingEnabled (val, oldVal) {
@@ -60,10 +81,8 @@ export default {
       }
     },
     getState () {
-      const error = this.numberOfFailFilesInTheSession
       const processing = this.numberOfProcessingFilesInTheSession
-      let text = `${processing > 0 ? `(${processing}) ` : ''}${this.numberOfSuccessFilesInTheSession}/${this.numberOfAllFilesInTheSession} files`
-      text += error > 0 ? ` ${error} ${error <= 1 ? 'error' : 'errors'}` : ''
+      let text = `${(processing + this.numberOfSuccessFilesInTheSession).toLocaleString()}/${(this.numberOfAllFilesInTheSession).toLocaleString()} files`
       return text
     },
     getUploadingProcessIcon (enabled) {
@@ -81,13 +100,13 @@ export default {
       let groupFileCount = []
       switch (group) {
         case 'error':
-          groupFileCount = stats.filter(group => FileState.isServerError(group.state))
+          groupFileCount = stats.filter(s => FileState.isServerError(s.state))
           break
         case 'success':
-          groupFileCount = stats.filter(group => FileState.isCompleted(group.state))
+          groupFileCount = stats.filter(s => FileState.isCompleted(s.state))
           break
         case 'processing':
-          groupFileCount = stats.filter(group => FileState.isProcessing(group.state))
+          groupFileCount = stats.filter(s => FileState.isProcessing(s.state))
           break
         case 'all':
           groupFileCount = stats
@@ -114,6 +133,9 @@ export default {
       this.numberOfCompleteFilesInTheSession = 0
       this.numberOfProcessingFilesInTheSession = 0
       this.shouldShowProgress = false
+    },
+    toggleDetail () {
+      this.shouldShowDetail = !this.shouldShowDetail
     }
   },
   created () {
@@ -143,25 +165,44 @@ export default {
       height: $global-progress-height;
       background: $side-menu-background;
     }
+    &__content-detail {
+      padding: 2px 16px 0;
+    }
     &__content {
       display: flex;
-      padding: 9px 16px 0;
+      padding: 6px 16px 0;
       justify-content: space-between;
       align-items: center;
     }
     &__progress-title {
       font-weight: $title-font-weight;
+      font-size: $default-font-size;
     }
     &__button {
-      margin: auto 0;
+      margin: 0;
       img {
-        width: 17px;
+        width: 24px;
       }
     }
     &__progress-bar {
       display: block;
       margin-top: 0 !important;
     }
+  }
+  .progress {
+    background-color: $progress-bar-background-color;
+    width: 100%;
+    height: 10px;
+  }
+  .progress-bar { float: left; }
+  .progress-bar.completed {
+    background-color: $brand-primary;
+    height: 100%;
+  }
+  .progress-bar.processing {
+    background-color: $brand-primary;
+    opacity: 0.6;
+    height: 100%;
   }
   .hidden {
     display: none;

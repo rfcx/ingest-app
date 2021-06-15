@@ -72,26 +72,17 @@
       async handleFiles (files) {
         this.isDragging = false
         if (!files) { return }
-        // TODO: fix this logic in CE-799
-        /* if (!(this.streams && this.streams.length > 0)) { // create new streams with files
-          const fileObjects = [...files].map(file => {
-            return {
-              'lastModified': file.lastModified,
-              'lastModifiedDate': file.lastModifiedDate,
-              'name': file.name,
-              'size': file.size,
-              'type': file.type,
-              'path': file.path
-            }
-          })
-          this.$router.push({path: '/add', query: { selectedFiles: JSON.stringify(fileObjects) }})
-          return
-        } */
-        // reset selected tab
-        await this.$store.dispatch('setSelectedTab', { [this.selectedStreamId]: 'Prepared' })
-        await this.$file.handleDroppedFiles(files, this.selectedStream)
-        await this.$refs.fileContainer.resetFiles()
-        await this.resetStreamList()
+        const fileObjects = [...files].map(file => {
+          return {
+            'lastModified': file.lastModified,
+            'lastModifiedDate': file.lastModifiedDate,
+            'name': file.name,
+            'size': file.size,
+            'type': file.type,
+            'path': file.path
+          }
+        })
+        this.$router.push({path: '/select-site', query: { selectedFiles: JSON.stringify(fileObjects) }})
       },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
@@ -319,7 +310,6 @@
 
   .drag-active {
     border: 2px solid #cac5c5 !important;
-    background-color: #cac5c5 !important;
     opacity: 0.5 !important;
   }
 
