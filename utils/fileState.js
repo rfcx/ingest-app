@@ -75,7 +75,6 @@ const getName = function (id, message) {
 }
 
 const getIconName = function (id) {
-  console.log('getIconName: id', id)
   switch (id) {
     case state.PREPARING:
     case state.WAITING:
