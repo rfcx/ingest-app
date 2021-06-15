@@ -7,8 +7,7 @@
         <deployment-tag 
           v-if="isFetchingDeploymentInfo || props.deploymentId"
           :isChecking="isFetchingDeploymentInfo"
-          :isDetected="props.deploymentId !== null && deployment.info !== null"
-          :error="deployment.error"
+          :isDetected="props.deploymentId !== null && deploymentInfo !== null"
         />
       </div>
     </div>
@@ -94,10 +93,6 @@ export default {
         selectedFolderPath: null,
         selectedFiles: null
       },
-      deployment: {
-        info: null,
-        error: null
-      },
       selectedProject: null,
       selectedExistingSite: null,
       deploymentInfo: null,
@@ -156,7 +151,7 @@ export default {
     // get deployment info
       try {
         this.isFetchingDeploymentInfo = true
-        this.deployment.info = await this.getDeploymentInfo(this.props.deploymentId)
+        this.deploymentInfo = await this.getDeploymentInfo(this.props.deploymentId)
         this.isFetchingDeploymentInfo = false
       } catch (error) {
         this.isFetchingDeploymentInfo = false
@@ -183,8 +178,8 @@ export default {
   },
   computed: {
     detectedSiteFromDeployment () {
-      if (this.deployment.info && this.deployment.info.stream) {
-        return streamHelper.parseSite(this.deployment.info.stream)
+      if (this.deploymentInfo && this.deploymentInfo.stream) {
+        return streamHelper.parseSite(this.deploymentInfo.stream)
       } else {
         return null
       }
@@ -254,7 +249,7 @@ export default {
       this.selectedExistingSite = localSite
       if (this.props.selectedFolderPath) {
         this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, {
-          deploymentId: this.deployment.info ? this.deployment.info.id : ''
+          deploymentId: this.deploymentInfo ? this.deploymentInfo.id : ''
         })
       }
       if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
