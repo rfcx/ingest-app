@@ -33,6 +33,11 @@ const getState = function (stream) {
   return ''
 }
 
+const hasErrorState = function (stream) {
+  const stats = stream.stats
+  return stats.find(stat => FileState.isError(stat.state))
+}
+
 const parseUserSites = (sites) => {
   return sites.map((site) => {
     return parseSite(site)
@@ -68,5 +73,6 @@ export default {
   getNameError,
   parseUserSites,
   parseSite,
-  getState
+  getState,
+  hasErrorState
 }
