@@ -18,7 +18,8 @@ export default new Router({
     {
       path: '/select-site',
       name: 'select-site',
-      component: require('@/components/ImportToSitePage/ImportToSitePage').default
+      component: require('@/components/ImportToSitePage/ImportToSitePage').default,
+      props: (route) => ({ query: route.query })
     },
     {
       path: '/import-to-existing-site',
