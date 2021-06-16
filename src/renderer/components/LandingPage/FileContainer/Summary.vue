@@ -20,7 +20,7 @@
     <span class="info-text is-size-7">Completed uploads are shown for up to 30 days. To see all uploads, open in Arbimon.</span>
   </div>
   <div>
-    <button type="button" class="button is-rounded is-cancel"  :class="{ 'is-loading': isRetryUploading }" @click.prevent="repeatUploading" :disabled="isRetryUploading || retryableFileCount < 1">
+    <button type="button" class="button is-rounded is-cancel" :class="{ 'is-loading': isRetryUploading }" @click.prevent="repeatUploading" :disabled="isRetryUploading || retryableFileCount < 1">
       Retry upload ({{retryableFileCount}})
     </button>
   </div>
