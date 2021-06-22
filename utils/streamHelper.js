@@ -1,6 +1,7 @@
 import dateHelper from './dateHelper'
 import FileState from './fileState'
 import settings from 'electron-settings'
+const { PREPARING, ERROR_SERVER, UPLOADING, PROCESSING, COMPLETED } = FileState.state
 
 const getNameError = (streamName) => {
   if (!checkMinLength(streamName)) {
@@ -25,11 +26,11 @@ const checkMaxLength = (streamName) => {
 const getState = function (stream) {
   const stats = stream.stats
   if (!stats || stats.length <= 0) return ''
-  if (stats.find(stat => FileState.isInQueuedGroup(stat.state))) return FileState.state.UPLOADING
-  if (stats.find(stat => FileState.isProcessing(stat.state))) return FileState.state.PROCESSING
-  if (stats.find(stat => FileState.isError(stat.state))) return FileState.state.ERROR_SERVER
-  if (stats.find(stat => FileState.isInPreparedGroup(stat.state))) return FileState.state.PREPARING
-  if (stats.find(stat => FileState.isInCompletedGroup(stat.state))) return FileState.state.COMPLETED
+  if (stats.find(stat => FileState.isInQueuedGroup(stat.state))) return UPLOADING
+  if (stats.find(stat => FileState.isProcessing(stat.state))) return PROCESSING
+  if (stats.find(stat => FileState.isError(stat.state))) return ERROR_SERVER
+  if (stats.find(stat => FileState.isInPreparedGroup(stat.state))) return PREPARING
+  if (stats.find(stat => FileState.isInCompletedGroup(stat.state))) return COMPLETED
   return ''
 }
 

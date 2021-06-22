@@ -65,6 +65,7 @@
   import infiniteScroll from 'vue-infinite-scroll'
   import ipcRendererSend from '../../services/ipc'
   const { remote } = window.require('electron')
+  const { WAITING, ERROR_SERVER } = fileState.state
 
   const DEFAULT_PAGE_SIZE = 50
 
@@ -197,14 +198,14 @@
         // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reuploadFailedFilesRequest, data)
         // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
         this.isRetryUploading = true
-        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: streamId, state: [fileState.state.ERROR_SERVER] } })
+        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: streamId, state: [ERROR_SERVER] } })
         files = files.filter((f) => {
           return fileState.canRedo(f.state, f.stateMessage)
         })
         for (let file of files) {
           await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
             id: file.id,
-            params: { state: fileState.state.WAITING, stateMessage: null, sessionId }
+            params: { state: WAITING, stateMessage: null, sessionId }
           })
         }
 
