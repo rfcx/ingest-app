@@ -17,11 +17,5 @@ export default {
         queryInterface.sequelize.query(query)
       }))
     })
-  },
-  down: (queryInterface, Sequelize) => {
-    // logic for reverting the changes
-    return Promise.all([
-      queryInterface.removeColumn('files', 'state_id')
-    ])
   }
 }
