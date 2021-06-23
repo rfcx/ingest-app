@@ -6,7 +6,36 @@ ffmpeg.setFfmpegPath(ffmpegPath)
    * convert wav files to flac
    * @returns desination path of the converted file
    */
-const convert = () => {}
+const convert = (sourceFile, destinationPath) => {
+  return new Promise((resolve, reject) => {
+    const command = ffmpeg(sourceFile)
+      .noVideo()
+      .output(destinationPath)
+      .outputOptions([
+        '-ac 1' // force to mono channel
+      ])
+
+    const timeout = setTimeout(function () {
+      command.kill()
+      reject(Error('Timeout')) // TODO: move to errors
+    }, 60000)
+
+    command
+      .on('error', function (err, stdout, stderr) {
+        clearTimeout(timeout)
+        reject(err)
+      })
+      .on('end', async function (stdout, stderr) {
+        clearTimeout(timeout)
+        try {
+          resolve({
+            path: destinationPath
+          })
+        } catch (e) { reject(e) }
+      })
+      .run()
+  })
+}
 
 /**
  * Probe an audio file to find its sample rate, duration and other meta data
