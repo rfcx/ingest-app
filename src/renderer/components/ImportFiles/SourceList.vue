@@ -54,8 +54,8 @@ export default {
       DriveList.getExternalDriveList().then(drives => {
         this.isLoading = false
         if (drives.length === 0) return
-        this.drives = drives.map(drive => {
-          const deviceInfo = this.getDeviceInfo(drive.path)
+        this.drives = drives.map(async drive => {
+          const deviceInfo = await this.getDeviceInfo(drive.path)
           if (deviceInfo) {
             const deviceId = deviceInfo.deviceId
             const deploymentId = deviceInfo.deploymentId
@@ -65,7 +65,7 @@ export default {
         })
       })
     },
-    getDeviceInfo (path) {
+    async getDeviceInfo (path) {
       const stuffInDirectory = FileHelper
         .getFilesFromDirectoryPath(path)
         .map((name) => {
@@ -76,7 +76,7 @@ export default {
         return FileHelper.getExtension(file.path) === 'wav' // read only wav file header info
       })
       if (!firstWavFile) return undefined
-      const fileInfo = new FileInfo(firstWavFile.path)
+      const fileInfo = await new FileInfo(firstWavFile.path)
       const deviceId = fileInfo.deviceId
       const deploymentId = fileInfo.deployment
       return {deviceId, deploymentId}
@@ -94,10 +94,10 @@ export default {
       }
       this.$refs.file.click()
     },
-    handleFileChange (event) {
+    async handleFileChange (event) {
       console.log(event.target.files)
       const path = event.target.files[0].path
-      const deviceInfo = this.getDeviceInfo(path)
+      const deviceInfo = await this.getDeviceInfo(path)
       if (deviceInfo) {
         const deviceId = deviceInfo.deviceId
         const deploymentId = deviceInfo.deploymentId

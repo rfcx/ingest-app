@@ -125,14 +125,14 @@ export default {
       const firstWavFile = this.props.selectedFiles.find(file => {
         return fileHelper.getExtension(file.path) === 'wav' // read only wav file header info
       })
-      deviceInfo = this.$file.getDeviceInfo(firstWavFile)
+      deviceInfo = await this.$file.getDeviceInfo(firstWavFile)
 
       // try to get device info from the first directory
       if (!deviceInfo) {
         const firstFolder = this.props.selectedFiles.find(file => {
           return fileHelper.isFolder(file.path)
         })
-        deviceInfo = this.$file.getDeviceInfoFromFolder(firstFolder.path)
+        deviceInfo = await this.$file.getDeviceInfoFromFolder(firstFolder.path)
       }
 
       // set device id & deployment id if any

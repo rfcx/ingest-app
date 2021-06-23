@@ -182,11 +182,11 @@ class FileProvider {
     const fileObjectList = (await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
       where: { state: fileState.preparedGroup }
     })).filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage))
-    const updatedFiles = fileObjectList.map(file => {
+    const updatedFiles = fileObjectList.map(async file => {
       let timestamp
       if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
         console.log('create file object with file info yes!')
-        const info = new FileInfo(file.path)
+        const info = await new FileInfo(file.path)
         const momentDate = info.recordedDate
         if (momentDate) {
           timestamp = momentDate.format()
@@ -495,7 +495,7 @@ class FileProvider {
 
   /* -- Import -- */
 
-  getDeviceInfoFromFolder (path) {
+  async getDeviceInfoFromFolder (path) {
     const stuffInDirectory = fileHelper
       .getFilesFromDirectoryPath(path)
       .map((name) => {
@@ -508,9 +508,9 @@ class FileProvider {
     return this.getDeviceInfo(firstWavFile)
   }
 
-  getDeviceInfo (file) {
+  async getDeviceInfo (file) {
     if (!file) return undefined
-    const fileInfo = new FileInfo(file.path)
+    const fileInfo = await new FileInfo(file.path)
     const deviceId = fileInfo.deviceId
     const deploymentId = fileInfo.deployment
     return {deviceId, deploymentId}
