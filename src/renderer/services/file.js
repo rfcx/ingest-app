@@ -150,9 +150,14 @@ class FileProvider {
         })
       } catch (error) {
         console.error('Failed updating file duration', error)
+        const hasNoDuration = 'No duration found'.includes(error.message)
+        let errorState = fileState.state.ERROR_SERVER
+        if (fileState.isInPreparedGroup(file.state) && hasNoDuration) {
+          errorState = fileState.state.ERROR_LOCAL
+        }
         await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
           id: file.id,
-          params: { durationInSecond: -2, state: 'server_error', stateMessage: error.message || 'No duration found' }
+          params: { durationInSecond: -2, state: errorState, stateMessage: error.message || 'No duration found' }
         })
       }
     }
