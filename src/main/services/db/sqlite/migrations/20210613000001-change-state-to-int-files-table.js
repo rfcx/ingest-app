@@ -36,6 +36,16 @@ export default {
       return Promise.all(queries.map(query => {
         queryInterface.sequelize.query(query)
       }))
+    }).then(() => {
+      return queryInterface.addIndex('files', ['id'])
+    }).then(() => {
+      return queryInterface.addIndex('files', ['session_id'])
+    }).then(() => {
+      return queryInterface.addIndex('files', ['stream_id', 'updated_at'])
+    }).then(() => {
+      return queryInterface.addIndex('files', ['stream_id', 'state'])
+    }).then(() => {
+      return queryInterface.addIndex('files', ['state', 'uploaded_time'])
     })
   }
 }
