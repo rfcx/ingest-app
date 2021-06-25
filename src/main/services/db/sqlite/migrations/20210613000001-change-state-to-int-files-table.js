@@ -1,4 +1,4 @@
-const fileState = require('../../../../../../utils/fileState')
+import fileState from '../../../../../../utils/fileState'
 
 const mapPossibleStatesWithId = function () {
   let stateObject = {}
@@ -29,7 +29,7 @@ export default {
         allowNull: false,
         defaultValue: 0
       }).then(() => {
-      const queries = Object.entries(mapPossibleStatesWithId).map(s => {
+      const queries = Object.entries(mapPossibleStatesWithId()).map(s => {
         const [key, values] = s
         return `UPDATE files SET state=${parseInt(key)} WHERE state IN (${values.map(v => `'${v}'`).join()})`
       })
