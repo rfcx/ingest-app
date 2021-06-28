@@ -5,6 +5,8 @@ import Analytics from 'electron-ga'
 import settings from 'electron-settings'
 import ipcRendererSend from '../src/renderer/services/ipc'
 
+const { CONVERTING, UPLOADING } = fileState.state
+
 const axios = require('axios')
 const fileStreamAxios = axios.create({
   adapter: require('./axios-http-adapter').default
@@ -46,7 +48,7 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       // })
       await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: fileId,
-        params: { state: fileState.state.CONVERTING, uploaded: false }
+        params: { state: CONVERTING, uploaded: false }
       })
       console.log('\n\n\n\n\n CONVERT STARTED', new Date().toISOString(), '\n\n\n')
       uploadFilePath = (await fileHelper.convert(filePath, remote.app.getPath('temp'), streamId)).path
@@ -68,7 +70,7 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       // })
       await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: fileId,
-        params: { state: fileState.state.UPLOADING, uploadId: data.uploadId, progress: 0, uploaded: false }
+        params: { state: UPLOADING, uploadId: data.uploadId, progress: 0, uploaded: false }
       })
       console.log('\n\n\n\n\n UPLOAD STARTED', new Date().toISOString(), '\n\n\n')
       return performUpload(data.url, data.uploadId, uploadFilePath, uploadFileExt, progressCallback).then(async () => {

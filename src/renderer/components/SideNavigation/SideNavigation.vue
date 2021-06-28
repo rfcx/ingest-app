@@ -67,6 +67,7 @@
   import infiniteScroll from 'vue-infinite-scroll'
   import ipcRendererSend from '../../services/ipc'
   const { remote } = window.require('electron')
+  const { ERROR_SERVER } = fileState.state
 
   const DEFAULT_PAGE_SIZE = 50
 
@@ -106,7 +107,7 @@
         return this.searchStr && this.searchStr.length > 0 && this.searchStr.length < 3
       },
       errorState () {
-        return fileState.state.ERROR_SERVER
+        return ERROR_SERVER
       }
     },
     methods: {

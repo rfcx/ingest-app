@@ -14,9 +14,9 @@
       </a>
     </div>
     <div class="wrapper__content-detail is-size-7">
-      <state-group :state="fileState.state.PROCESSING" :number="numberOfProcessingFilesInTheSession"/>
-      <state-group :state="fileState.state.COMPLETED" :number="numberOfSuccessFilesInTheSession"/>
-      <state-group :state="fileState.state.ERROR_SERVER" :number="numberOfFailFilesInTheSession"/>
+      <state-group :state="state.PROCESSING" :number="numberOfProcessingFilesInTheSession"/>
+      <state-group :state="state.COMPLETED" :number="numberOfSuccessFilesInTheSession"/>
+      <state-group :state="state.ERROR_SERVER" :number="numberOfFailFilesInTheSession"/>
     </div>
   </div>
 </template>
@@ -52,8 +52,8 @@ export default {
       if (!this.numberOfAllFilesInTheSession || !this.numberOfCompleteFilesInTheSession) return 0
       return this.numberOfProcessingFilesInTheSession / this.numberOfAllFilesInTheSession * 100
     },
-    fileState () {
-      return FileState
+    state () {
+      return FileState.state
     }
   },
   watch: {

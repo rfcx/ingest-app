@@ -45,6 +45,8 @@ import OptionsDropdown from '../../Common/OptionsDropdown'
 import ErrorAlert from '../../Common/ErrorAlert'
 import ipcRendererSend from '../../../services/ipc'
 
+const { PREPARING, WAITING } = fileState.state
+
 export default {
   props: {
     numberOfReadyToUploadFiles: {
@@ -107,10 +109,10 @@ export default {
       // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.putFilesIntoUploadingQueueRequest, data)
       // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
       const streamId = this.selectedStreamId
-      const query = { streamId, state: fileState.state.PREPARING }
+      const query = { streamId, state: PREPARING }
       await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
         where: query,
-        values: { state: fileState.state.WAITING, stateMessage: null, sessionId, timezone: this.getSelectedTimezoneValue() }
+        values: { state: WAITING, stateMessage: null, sessionId, timezone: this.getSelectedTimezoneValue() }
       })
       this.isQueuingToUpload = false
 
