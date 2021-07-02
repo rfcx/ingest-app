@@ -140,17 +140,14 @@ const collections = {
         return states.map(s => s.dataValues)
       })
     },
-    canRetryFilesInStreamCount: function (streamId) {
-      return models.File.findAndCountAll({
-        where: {stream_id: streamId,
-          state: fileState.state.ERROR_SERVER,
-          stateMessage: { // state message is not in cannot redo group
-            $and: fileState.cannotRedoGroup.map(m => {
-              return { $nLike: `%${m}%` }
-            })
-          }}
-      }).then(obj => {
-        return obj.count
+    getNumberOfRetryableFiles: function (streamId) {
+      return models.File.findAll({
+        where: {
+          stream_id: streamId,
+          state: fileState.state.ERROR_SERVER
+        }
+      }).then(files => {
+        return files.filter(file => fileState.canRedo(file.state, file.stateMessage)).length
       })
     },
     filesInStreamsCount: function (streamIds) {

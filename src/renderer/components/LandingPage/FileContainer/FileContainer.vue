@@ -173,7 +173,7 @@ export default {
     },
     async reloadStats () {
       this.stats = await ipcRendererSend('db.files.filesInStreamCount', `db.files.filesInStreamCount.${Date.now()}`, this.selectedStreamId)
-      this.retryableFileCount = await ipcRendererSend('db.files.canRetryFilesInStreamCount', `db.files.canRetryFilesInStreamCount.${Date.now()}`, this.selectedStreamId)
+      this.retryableFileCount = await ipcRendererSend('db.files.getNumberOfRetryableFiles', `db.files.getNumberOfRetryableFiles.${Date.now()}`, this.selectedStreamId)
     },
     async initFilesFetcher () {
       // fetch at first load
