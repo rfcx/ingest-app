@@ -8,7 +8,7 @@ const state = {
   WAITING: 32, // in queue waiting to upload
   PROCESSING: 40, // uploaded, but in process of a.k.a. verifing / ingesting
   COMPLETED: 50 // uploaded and ingested
-} // TODO: change all the string in the code to use these keys
+}
 
 const mapPossibleStatesWithId = function () {
   let stateObject = {}

@@ -47,5 +47,14 @@ export default {
     }).then(() => {
       return queryInterface.addIndex('files', ['state', 'uploaded_time'])
     })
+  },
+  down: (queryInterface, Sequelize) => {
+    // logic for reverting the changes
+    return Promise.all([
+      queryInterface.changeColumn('files', 'state', {
+        type: Sequelize.STRING,
+        allowNull: false
+      })
+    ])
   }
 }
