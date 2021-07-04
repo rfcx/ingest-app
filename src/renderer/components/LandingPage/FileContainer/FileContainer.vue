@@ -101,19 +101,12 @@ export default {
       if (this.isUploading) { return } // only support pagination when not in uploading mode
       this.isFetching = true
       const offset = this.files.length
-      const query = this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false)
+      const query = this.getQueryBySelectedTab(this.selectedTab)
       await this.reloadFiles(query, offset, true)
       this.isFetching = false
     },
-    getQueryBySelectedTabAndUpdatedAt (selectedTab, onlyLatestUpdated = false) {
+    getQueryBySelectedTab (selectedTab) {
       let commonQuery = { streamId: this.selectedStreamId }
-      if (onlyLatestUpdated) {
-        const currentFiles = this.files
-        const latestUpdateDate = currentFiles.map(file => new Date(file.updatedAt).valueOf()).reduce((a, b) => a <= b ? b : a, 0) || 0
-        commonQuery.updatedAt = {
-          '$gte': latestUpdateDate
-        }
-      }
       switch (selectedTab) {
         case 'Prepared':
           return { ...commonQuery, state: FileState.preparedGroup }
@@ -158,7 +151,7 @@ export default {
     checkIfHasErrorFiles (files) {
       return files.filter((file) => FileState.isError(file.state)).length > 0
     },
-    async reloadFiles (query, offset = null, merged = false) {
+    async reloadFiles (query, offset, merged = false) {
       let queryOpts = { where: query, order: [['state', 'ASC']] }
       if (typeof offset === 'number') { queryOpts = {...queryOpts, offset, limit: this.$getConst('DEFAULT_LIMIT')} }
       const newFiles = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, queryOpts)
@@ -179,7 +172,7 @@ export default {
       // fetch at first load
       this.isFetching = true
       await this.reloadStats()
-      await this.reloadFiles(this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false), 0)
+      await this.reloadFiles(this.getQueryBySelectedTab(this.selectedTab), 0)
       this.isFetching = false
       this.startFilesFetcher()
     },
@@ -193,7 +186,7 @@ export default {
         if (this.selectedTab === 'Prepared') { return }
         // not reloading files in prepare tab
         console.log('=> FETCHING INTERVAL: RELOAD FILES')
-        await this.reloadFiles(this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false), 0)
+        await this.reloadFiles(this.getQueryBySelectedTab(this.selectedTab), 0)
       }, 2000)
     },
     clearFilesFetcher () {
