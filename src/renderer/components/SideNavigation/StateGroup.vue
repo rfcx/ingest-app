@@ -11,7 +11,7 @@ import fileState from '../../../../utils/fileState'
 export default {
   props: {
     state: {
-      type: String,
+      type: Number,
       default: ''
     },
     number: {
