@@ -38,8 +38,11 @@
         <div class="wrapper__stream-row" v-on:click="selectItem(stream)" :class="{'wrapper__stream-row_active': isActive(stream)}">
           <div class="menu-container" :class="{ 'menu-container-failed': stream.state && fileState.isError(stream.state) }">
             <div class="wrapper__stream-name">{{ stream.name }}</div>
-            <fa-icon class="iconRedo" v-if="stream.canRedo" :icon="iconRedo" @click="repeatUploading(stream.id)"></fa-icon>
-            <img :src="getStateImgUrl(getState(stream))">
+            <div class="wrapper__stream-icon">
+              <!-- show error icon next if some files are error -->
+              <img :src="getStateImgUrl(errorState)" v-if="hasErrorState(stream) && getState(stream) !== errorState" class="icon-error">
+              <img :src="getStateImgUrl(getState(stream))">
+            </div>
           </div>
         </div>
       </li>
@@ -61,11 +64,10 @@
   import streamHelper from '../../../../utils/streamHelper'
   import ConfirmAlert from '../Common/ConfirmAlert'
   import settings from 'electron-settings'
-  import { faRedo, faSync } from '@fortawesome/free-solid-svg-icons'
   import infiniteScroll from 'vue-infinite-scroll'
   import ipcRendererSend from '../../services/ipc'
   const { remote } = window.require('electron')
-  const { WAITING, ERROR_SERVER } = fileState.state
+  const { ERROR_SERVER } = fileState.state
 
   const DEFAULT_PAGE_SIZE = 50
 
@@ -73,8 +75,6 @@
     directives: { infiniteScroll },
     data () {
       return {
-        iconRedo: faRedo,
-        iconRefresh: faSync,
         uploadingStreams: {},
         timeoutKeyboard: {},
         searchStr: '',
@@ -85,7 +85,6 @@
         userName: this.getUserName(),
         userSites: [],
         isFetching: false,
-        isRetryUploading: false,
         alertTitle: 'Are you sure you would like to continue?',
         alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.',
         streams: [],
@@ -106,6 +105,9 @@
       },
       isRequiredSymbols () {
         return this.searchStr && this.searchStr.length > 0 && this.searchStr.length < 3
+      },
+      errorState () {
+        return ERROR_SERVER
       }
     },
     methods: {
@@ -177,51 +179,8 @@
       getState (stream) {
         return streamHelper.getState(stream)
       },
-      async repeatUploading (streamId) {
-        if (this.isRetryUploading) return // prevent double click
-        console.log('repeatUploading')
-        // set session id
-        const sessionId = this.$store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
-        await this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
-
-        // completion listener
-        // let listen = (event, arg) => {
-        //   this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
-        //   const t1 = performance.now()
-        //   this.isRetryUploading = false
-        //   console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
-        // }
-
-        // // emit to main process to put file in uploading queue
-        // this.isRetryUploading = true
-        // const data = {streamId: streamId, sessionId: sessionId}
-        // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.reuploadFailedFilesRequest, data)
-        // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.reuploadFailedFilesResponse, listen)
-        this.isRetryUploading = true
-        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: streamId, state: [ERROR_SERVER] } })
-        files = files.filter((f) => {
-          return fileState.canRedo(f.state, f.stateMessage)
-        })
-        for (let file of files) {
-          await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
-            id: file.id,
-            params: { state: WAITING, stateMessage: null, sessionId }
-          })
-        }
-
-        // const stream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, streamId)
-        // const preparingCount = stream.preparingCount - files.length
-        // const sessionTotalCount = stream.sessionTotalCount + files.length
-        // await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, { id: streamId, params: { preparingCount, sessionTotalCount } })
-        this.isRetryUploading = false
-
-        // set selected tab to be queue tab
-        const tabObject = {}
-        tabObject[this.selectedStreamId] = 'Queued'
-        await this.$store.dispatch('setSelectedTab', tabObject)
-
-        // always enable uploading process
-        await this.$store.dispatch('enableUploadingProcess', true)
+      hasErrorState (stream) {
+        return streamHelper.hasErrorState(stream)
       },
       showPopupToLogOut () {
         this.showConfirmToLogOut = true
@@ -402,6 +361,9 @@
       margin-right: 3px;
       align-self: center;
     }
+    &__stream-icon {
+      display: flex;
+    }
     &__loader {
       display: inline-block;
       margin: 0 4px;
@@ -474,6 +436,9 @@
     font-size: 13px;
     cursor: pointer;
     margin: 6px 6px 6px 0;
+  }
+  .icon-error {
+    margin-right: 4px;
   }
   input[type="text"]::-webkit-input-placeholder {
     color: $input-placeholder !important;

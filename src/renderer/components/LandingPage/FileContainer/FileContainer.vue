@@ -3,7 +3,7 @@
     <header-view :selectedStream="selectedStream"></header-view>
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream" @onNeedResetFileList="resetFiles" @onNeedResetStreamList="resetStreams"></file-name-format-info>
-    <summary-view :stats="getStatsOfTab(selectedTab)" v-if="selectedTab === 'Completed' && hasCompletedFiles"></summary-view>
+    <summary-view :stats="getStatsOfTab(selectedTab)" :retryableFileCount="retryableFileCount" v-if="selectedTab === 'Completed' && hasCompletedFiles"></summary-view>
     <file-list ref="fileList" :files="files" :stats="getStatsOfTab(selectedTab)" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="files.length <= 0 && isFetching" :isLoadingMore="isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
 </div>
 </template>
@@ -43,6 +43,7 @@ export default {
     return {
       files: [],
       stats: [],
+      retryableFileCount: 0,
       fetchFilesInterval: null,
       selectedStream: null,
       isFetching: false
@@ -165,6 +166,7 @@ export default {
     },
     async reloadStats () {
       this.stats = await ipcRendererSend('db.files.filesInStreamCount', `db.files.filesInStreamCount.${Date.now()}`, this.selectedStreamId)
+      this.retryableFileCount = await ipcRendererSend('db.files.getNumberOfRetryableFiles', `db.files.getNumberOfRetryableFiles.${Date.now()}`, this.selectedStreamId)
     },
     async initFilesFetcher () {
       // fetch at first load

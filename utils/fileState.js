@@ -10,6 +10,12 @@ const state = {
   COMPLETED: 50 // uploaded and ingested
 }
 
+const preparedGroup = [state.PREPARING, state.ERROR_LOCAL]
+const queuedGroup = [state.WAITING, state.UPLOADING, state.CONVERTING]
+const completedGroup = [state.COMPLETED, state.PROCESSING, state.ERROR_SERVER]
+
+const cannotRedoGroup = ['duplicate', 'corrupt', 'duration']
+
 const mapPossibleStatesWithId = function () {
   let stateObject = {}
   for (const [key, id] of Object.entries(state)) {
@@ -92,11 +98,6 @@ const getIconName = function (id) {
       return 'ic-state-completed.svg'
   }
 }
-
-const preparedGroup = [state.PREPARING, state.ERROR_LOCAL]
-const queuedGroup = [state.WAITING, state.UPLOADING, state.CONVERTING]
-const completedGroup = [state.COMPLETED, state.PROCESSING, state.ERROR_SERVER]
-
 const isInPreparedGroup = function (state) {
   return preparedGroup.includes(state)
 }
@@ -143,7 +144,7 @@ const isCompleted = function (s) {
 
 const canRedo = function (s, message) {
   if (!message) return false
-  return s === state.ERROR_SERVER && !['duplicate', 'corrupt', 'no duration'].some(errMsg => message.toLowerCase().includes(errMsg))
+  return s === state.ERROR_SERVER && !cannotRedoGroup.some(errMsg => message.toLowerCase().includes(errMsg))
 }
 
 const canRemove = function (state) {
@@ -176,6 +177,7 @@ export default {
   isProcessing,
   isDuplicated,
   isCompleted,
+  cannotRedoGroup,
   canRedo,
   canRemove,
   canChangeTimestampFormat

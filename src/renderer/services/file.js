@@ -161,7 +161,7 @@ class FileProvider {
   }
 
   async putFilesIntoUploadingQueue (files) {
-    console.log('putFilesIntoUploadingQueue')
+    console.log('putFilesIntoUploadingQueue', files)
     // if there is an active session id then reuse that, otherwise generate a new one
     const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
     store.dispatch('setCurrentUploadingSessionId', sessionId)
