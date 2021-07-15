@@ -35,8 +35,6 @@
 
 <script>
 import DriveList from '../../../../utils/DriveListHelper'
-import FileHelper from '../../../../utils/fileHelper'
-import FileInfo from '../../services/FileInfo'
 import AudioMothTag from '../Common/Tag/AudioMothTag'
 export default {
   data: () => ({
@@ -66,20 +64,7 @@ export default {
       })
     },
     async getDeviceInfo (path) {
-      const stuffInDirectory = FileHelper
-        .getFilesFromDirectoryPath(path)
-        .map((name) => {
-          return { name: name, path: path + '/' + name }
-        })
-      // read file header info
-      const firstWavFile = stuffInDirectory.find(file => {
-        return FileHelper.getExtension(file.path) === 'wav' // read only wav file header info
-      })
-      if (!firstWavFile) return undefined
-      const fileInfo = await new FileInfo(firstWavFile.path)
-      const deviceId = fileInfo.deviceId
-      const deploymentId = fileInfo.deployment
-      return {deviceId, deploymentId}
+      return this.$file.getDeviceInfoFromFolder(path)
     },
     onDriveSelected (drive) {
       this.selectedSource = drive
