@@ -13,6 +13,8 @@ import env from '../../../env.json'
 import fileState from '../../../utils/fileState'
 import ipcRendererSend from './ipc'
 
+const { PREPARING, ERROR_LOCAL, ERROR_SERVER, WAITING, PROCESSING, COMPLETED } = fileState.state
+
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
 
@@ -59,7 +61,7 @@ class FileProvider {
     allFileObjectsFiltered.forEach(file => {
       const hasUploadedBefore = existingPreparedFilePaths[file.path] !== undefined && !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path])
       if (hasUploadedBefore) {
-        file.state = 'local_error'
+        file.state = ERROR_LOCAL
         file.stateMessage = 'Duplicate (uploading or complete)'
       }
     })
@@ -95,7 +97,7 @@ class FileProvider {
     allFileObjectsFiltered.forEach(file => {
       const hasUploadedBefore = existingPreparedFilePaths[file.path] !== undefined && !fileState.isInPreparedGroup(existingPreparedFilePaths[file.path])
       if (hasUploadedBefore) {
-        file.state = 'local_error'
+        file.state = ERROR_LOCAL
         file.stateMessage = 'Duplicate (uploading or complete)'
       }
     })
@@ -151,9 +153,9 @@ class FileProvider {
       } catch (error) {
         console.error('Failed updating file duration', error)
         const hasNoDuration = 'No duration found'.includes(error.message)
-        let errorState = fileState.state.ERROR_SERVER
+        let errorState = ERROR_SERVER
         if (fileState.isInPreparedGroup(file.state) && hasNoDuration) {
-          errorState = fileState.state.ERROR_LOCAL
+          errorState = ERROR_LOCAL
         }
         await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
           id: file.id,
@@ -163,17 +165,19 @@ class FileProvider {
     }
   }
 
-  putFilesIntoUploadingQueue (files) {
-    console.log('putFilesIntoUploadingQueue')
+  async putFilesIntoUploadingQueue (files) {
+    console.log('putFilesIntoUploadingQueue', files)
     // if there is an active session id then reuse that, otherwise generate a new one
     const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
     store.dispatch('setCurrentUploadingSessionId', sessionId)
-    files.forEach(file => {
-      ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
+    for (const file of files) {
+      await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
         id: file.id,
-        params: { state: 'waiting', stateMessage: null, sessionId: sessionId }
+        params: { state: WAITING, stateMessage: null, sessionId: sessionId }
       })
-    })
+    }
+    // always enable uploading process
+    await store.dispatch('enableUploadingProcess', true)
   }
 
   /**
@@ -369,7 +373,7 @@ class FileProvider {
       // return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
       return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: file.id,
-        params: { uploaded: true, uploadedTime: Date.now(), state: 'ingesting', stateMessage: '' }
+        params: { uploaded: true, uploadedTime: Date.now(), state: PROCESSING, stateMessage: '' }
       })
     }).catch(async (error) => {
       console.log('===> ERROR UPLOAD FILE', file.name, error.message, error.name)
@@ -421,13 +425,13 @@ class FileProvider {
             }
             return
           case 10:
-            if (currentStateOfFile === 'ingesting') return
+            if (currentStateOfFile === PROCESSING) return
             return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
               id: file.id,
-              params: { state: 'ingesting', stateMessage: null, progress: 100 }
+              params: { state: PROCESSING, stateMessage: null, progress: 100 }
             })
           case 20:
-            if (currentStateOfFile === 'completed') return
+            if (currentStateOfFile === COMPLETED) return
             const uploadTime = Date.now() - file.uploadedTime
             const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.ingest, 'el': `${file.name}/${file.uploadId}`, 'ev': uploadTime }
             await analytics.send('event', analyticsEventObj)
@@ -473,28 +477,28 @@ class FileProvider {
   async markFileAsRetryToUpload (file) {
     return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
       id: file.id,
-      params: { state: 'waiting', uploadId: null, stateMessage: null, progress: 0, retries: file.retries + 1 }
+      params: { state: WAITING, uploadId: null, stateMessage: null, progress: 0, retries: file.retries + 1 }
     })
   }
 
   async markFileAsSuspend (file) {
     return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
       id: file.id,
-      params: { state: 'waiting', uploadId: null, stateMessage: null, progress: 0, retries: 0 }
+      params: { state: WAITING, uploadId: null, stateMessage: null, progress: 0, retries: 0 }
     })
   }
 
   async markFileAsCompleted (file) {
     return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
       id: file.id,
-      params: { state: 'completed', stateMessage: '' }
+      params: { state: COMPLETED, stateMessage: '' }
     })
   }
 
   async markFileAsFailed (file, errorMessage) {
     return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
       id: file.id,
-      params: { state: 'server_error', stateMessage: errorMessage }
+      params: { state: ERROR_SERVER, stateMessage: errorMessage }
     })
   }
 
@@ -562,11 +566,11 @@ class FileProvider {
   getState (timestamp, fileExt) {
     const momentDate = dateHelper.getMomentDateFromISODate(timestamp)
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
-      return { state: 'local_error', message: 'File extension is not supported' }
+      return { state: ERROR_LOCAL, message: 'File extension is not supported' }
     } else if (!momentDate.isValid()) {
-      return { state: 'local_error', message: 'Filename does not match with a filename format' }
+      return { state: ERROR_LOCAL, message: 'Filename does not match with a filename format' }
     } else {
-      return { state: 'preparing', message: '' }
+      return { state: PREPARING, message: '' }
     }
   }
 

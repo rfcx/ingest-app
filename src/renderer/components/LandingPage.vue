@@ -287,11 +287,6 @@
     background-color: #131525 !important;
     opacity: 0.8 !important;
   }
-  .is-cancel:hover {
-    border-color: $button-hover-border-color !important;
-    color: #fff !important;
-    background: $button-hover-border-color !important;
-  }
   .empty {
     background-color: #131525 !important;
   }

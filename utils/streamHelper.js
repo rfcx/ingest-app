@@ -1,7 +1,7 @@
-import Stream from './../src/renderer/store/models/Stream'
 import dateHelper from './dateHelper'
 import FileState from './fileState'
 import settings from 'electron-settings'
+const { PREPARING, ERROR_SERVER, UPLOADING, PROCESSING, COMPLETED } = FileState.state
 
 const getNameError = (streamName) => {
   if (!checkMinLength(streamName)) {
@@ -26,24 +26,17 @@ const checkMaxLength = (streamName) => {
 const getState = function (stream) {
   const stats = stream.stats
   if (!stats || stats.length <= 0) return ''
-  if (stats.find(stat => FileState.isInQueuedGroup(stat.state))) return 'uploading'
-  if (stats.find(stat => FileState.isProcessing(stat.state))) return 'ingesting'
-  if (stats.find(stat => FileState.isError(stat.state))) return 'failed'
-  if (stats.find(stat => FileState.isInPreparedGroup(stat.state))) return 'preparing'
-  if (stats.find(stat => FileState.isInCompletedGroup(stat.state))) return 'completed'
+  if (stats.find(stat => FileState.isInQueuedGroup(stat.state))) return UPLOADING
+  if (stats.find(stat => FileState.isProcessing(stat.state))) return PROCESSING
+  if (stats.find(stat => FileState.isError(stat.state))) return ERROR_SERVER
+  if (stats.find(stat => FileState.isInPreparedGroup(stat.state))) return PREPARING
+  if (stats.find(stat => FileState.isInCompletedGroup(stat.state))) return COMPLETED
   return ''
 }
 
-const insertSites = async function (sites) {
-  const idOfSitesInUploadingSession = Stream.query().where(stream => {
-    return stream.sessionTotalCount > 0 || stream.sessionSuccessCount > 0 || stream.sessionFailCount > 0
-  }).get().map(stream => stream.id)
-  const sitesInuploadingSession = sites.filter(site => idOfSitesInUploadingSession.includes(site.id))
-  const otherSites = sites.filter(site => !idOfSitesInUploadingSession.includes(site.id))
-  await Stream.insertOrUpdate({ data: sitesInuploadingSession })
-  await Stream.insert({ data: otherSites })
-  console.log('[sitesInuploadingSession] insertOrUpdate sites', sitesInuploadingSession.length)
-  console.log('[otherSites] insert sites', otherSites.length)
+const hasErrorState = function (stream) {
+  const stats = stream.stats
+  return stats.find(stat => FileState.isError(stat.state))
 }
 
 const parseUserSites = (sites) => {
@@ -79,8 +72,8 @@ const isProductionEnv = () => {
 export default {
   isValidName,
   getNameError,
-  insertSites,
   parseUserSites,
   parseSite,
-  getState
+  getState,
+  hasErrorState
 }

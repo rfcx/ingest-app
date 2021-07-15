@@ -137,6 +137,15 @@ a.is-button {
   }
 }
 
+.is-cancel:hover {
+  border-color: $button-hover-border-color !important;
+  color: #fff !important;
+  background: $button-hover-border-color !important;
+}
+.is-cancel:disabled {
+  border-color: transparent !important;
+}
+
 .rounded-button {
   width: $full-width;
   padding-bottom: calc(0.175em - 1px);

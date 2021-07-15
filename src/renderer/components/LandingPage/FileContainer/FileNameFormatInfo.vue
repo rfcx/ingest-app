@@ -39,10 +39,13 @@
 import { mapState } from 'vuex'
 import FileNameFormatSettings from '../FileNameFormatSettings/FileNameFormatSettings.vue'
 import fileFormat from '../../../../../utils/FileFormat'
+import fileState from '../../../../../utils/fileState'
 import FileTimeZoneHelper from '../../../../../utils/FileTimezoneHelper'
 import OptionsDropdown from '../../Common/OptionsDropdown'
 import ErrorAlert from '../../Common/ErrorAlert'
 import ipcRendererSend from '../../../services/ipc'
+
+const { PREPARING, WAITING } = fileState.state
 
 export default {
   props: {
@@ -106,10 +109,10 @@ export default {
       // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.putFilesIntoUploadingQueueRequest, data)
       // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
       const streamId = this.selectedStreamId
-      const query = { streamId, state: 'preparing' }
+      const query = { streamId, state: PREPARING }
       await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
         where: query,
-        values: { state: 'waiting', stateMessage: null, sessionId, timezone: this.getSelectedTimezoneValue() }
+        values: { state: WAITING, stateMessage: null, sessionId, timezone: this.getSelectedTimezoneValue() }
       })
       this.isQueuingToUpload = false
 
@@ -131,7 +134,7 @@ export default {
       await ipcRendererSend('db.files.delete', `db.files.delete.${Date.now()}`, {
         where: {
           streamId: this.selectedStreamId,
-          state: ['preparing', 'local_error']
+          state: fileState.preparedGroup
         }
       })
       this.$emit('onNeedResetFileList')
