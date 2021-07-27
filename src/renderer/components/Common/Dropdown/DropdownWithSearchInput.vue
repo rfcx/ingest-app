@@ -126,7 +126,6 @@ export default {
       this.toggleDropdown(true)
     },
     onSearchInputBlur (e) {
-      console.log('onSearchInputBlur', e)
       this.$emit('onSearchInputBlur')
       // hide dropdown when click outside
       const classesInsideDropdown = ['dropdown-item', 'dropdown-sub-content', 'dropdown-sub-content__link']

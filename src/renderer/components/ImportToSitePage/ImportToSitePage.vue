@@ -317,7 +317,8 @@ export default {
       this.form.selectedSiteName = site.name
 
       // update location in the form, if needed (select existing site or on the first attempt to create new)
-      const hasBeenChoosingExistingSiteBefore = this.isCreatingNewSite && this.selectedExistingSite // create new site, after been choosing existing one
+      const hasBeenChoosingExistingSiteBefore = this.isCreatingNewSite && this.selectedExistingSite !== null // create new site, after been choosing existing one
+      console.log('onSelectedSite', site.name, this.isCreatingNewSite, hasBeenChoosingExistingSiteBefore)
       if (!this.isCreatingNewSite || hasBeenChoosingExistingSiteBefore) {
         this.onUpdateLocation([site.longitude, site.latitude])
       }
@@ -334,9 +335,10 @@ export default {
     selectedProject: {
       handler (val, previousVal) {
         if (val === previousVal) return
+        const getProjectName = project => project ? project.name : null
         if (val === null || val === undefined) { // has reset project data
           this.updateSelectedExistingSite(null)
-        } else if (!this.isCreatingNewSite && this.selectedExistingSite.projectName !== val.name) { // existing site that been selected is in different project
+        } else if (!this.isCreatingNewSite && getProjectName(this.selectedExistingSite) !== val.name) { // existing site that been selected is in different project
           this.updateSelectedExistingSite(null)
         }
       }

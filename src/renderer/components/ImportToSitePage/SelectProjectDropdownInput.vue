@@ -6,7 +6,6 @@
     @onOptionSelected="onSelectProject"
     :dropdownOptions="projectOptions"
     :text="selectedProjectName"
-    :isReadOnly="initialProject ? initialProject.name !== null : null"
     :isDisabled="disabled"
     :isFetching="isLoading"
     :searchEnabled="false"
@@ -39,6 +38,7 @@ export default {
     return {
       iconRefresh: faSync,
       isLoading: false,
+      selectedProject: this.initialProject,
       selectedProjectName: '',
       projectOptions: [],
       errorMessage: ''
@@ -67,7 +67,6 @@ export default {
   },
   methods: {
     async getProjectOptions (keyword = null) {
-      if (this.initialProject) return // no need to call api to search, as it's readonly when there is initial project provided
       if (keyword) {
         let selectedProject = this.projectOptions.find(s => s.name === keyword)
         if (selectedProject) return
@@ -89,10 +88,12 @@ export default {
     },
     onSelectProject (project) {
       console.log('onSelectProjectName:', project.name)
+      this.selectedProject = project
       this.selectedProjectName = project && project.name ? project.name : ''
     },
     onClearProjectNameSearchInput () {
       console.log('onClearProjectNameSearchInput')
+      this.selectedProject = null
       this.selectedProjectName = ''
     },
     redirectToArbimon () {
@@ -104,11 +105,9 @@ export default {
     initialProject () {
       if (this.initialProject && this.initialProject.name) this.selectedProjectName = this.initialProject.name
     },
-    selectedProjectName: {
+    selectedProject: {
       handler: async function (value, prevValue) {
-        if (value === prevValue || this.initialProject) return // ignore to send event when in readonly mode
-        let selectedProject = this.projectOptions.find(s => s.name === value)
-        this.$emit('onSelectedProjectNameChanged', selectedProject)
+        this.$emit('onSelectedProjectNameChanged', value)
       }
     }
   }
