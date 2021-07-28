@@ -8,6 +8,7 @@
           v-if="isFetchingDeploymentInfo || props.deploymentId"
           :isChecking="isFetchingDeploymentInfo"
           :isDetected="props.deploymentId !== null && deploymentInfo !== null"
+          :isNotMatched="!isSelectedSiteMatchWithDetectedDeployment"
         />
       </div>
     </div>
@@ -35,7 +36,7 @@
         ref="siteSelector"
         :project="selectedProject"
         :updateIsCreatingNewSite.sync="isCreatingNewSite"
-        :isWarning="shouldShowNameHelperMessage === true"
+        :isWarning="shouldShowNameHelperMessage === true || shouldShowDetectedSiteWarning === true"
         :initialSite="detectedSiteFromDeployment"
         :helpText="siteDropdownHelpText"
         :disabled="isFetchingDeploymentInfo"
@@ -190,14 +191,29 @@ export default {
       }
       return null
     },
+    isSelectedSiteMatchWithDetectedDeployment () {
+      const getSiteId = site => site ? site.id : null
+      const bothValuesExist = this.detectedSiteFromDeployment && this.selectedExistingSite
+      const bothValuesHaveSameId = getSiteId(this.detectedSiteFromDeployment) === getSiteId(this.selectedExistingSite)
+      return bothValuesExist && bothValuesHaveSameId
+    },
     siteDropdownHelpText () {
-      return this.detectedSiteFromDeployment ? 'Detected deployment from RFCx Companion' : null
+      if (this.detectedSiteFromDeployment && this.selectedExistingSite) {
+        if (this.isSelectedSiteMatchWithDetectedDeployment) {
+          return 'Detected deployment from RFCx Companion'
+        }
+        return `Site doesn't match with detectetd deployment from RFCx Companion`
+      }
+      return null
     },
     shouldShowProjectSelector () {
       return !this.detectedSiteFromDeployment || (this.detectedSiteFromDeployment !== null && this.detectedProjectFromDeployment !== null)
     },
     shouldShowNameHelperMessage () {
       return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '') && this.hasPassProjectValidation
+    },
+    shouldShowDetectedSiteWarning () {
+      return this.detectedSiteFromDeployment && this.selectedExistingSite && !this.isSelectedSiteMatchWithDetectedDeployment
     },
     hasPassProjectValidation () {
       return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject !== null)
