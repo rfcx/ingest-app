@@ -48,6 +48,7 @@ const parseUserSites = (sites) => {
 const parseSite = (site) => {
   const latitude = site.latitude || 0
   const longitude = site.longitude || 0
+  const project = site.project
   return {
     id: site.id,
     name: site.name,
@@ -60,8 +61,8 @@ const parseSite = (site) => {
     env: isProductionEnv() ? 'production' : 'staging',
     visibility: site.is_public,
     timezone: dateHelper.getDefaultTimezone(latitude, longitude),
-    projectId: site.project ? site.project.id : null,
-    projectName: site.project ? site.project.name : null
+    projectId: project ? project.id : (site.projectId || null),
+    projectName: project ? project.name : (site.projectName || null)
   }
 }
 
