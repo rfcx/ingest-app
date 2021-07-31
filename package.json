@@ -130,8 +130,7 @@
     "vue-mapbox": "^0.4.1",
     "vue-router": "^3.0.1",
     "vuex": "^3.1.2",
-    "vuex-electron": "git+https://github.com/rassokhin-s/vuex-electron.git",
-    "wavefile": "^11.0.0"
+    "vuex-electron": "git+https://github.com/rassokhin-s/vuex-electron.git"
   },
   "devDependencies": {
     "ajv": "^6.5.0",

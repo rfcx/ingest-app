@@ -151,10 +151,16 @@ class FileProvider {
           params: { durationInSecond }
         })
       } catch (error) {
+        const nodurationErrorMessage = 'No duration found'
         console.error('Failed updating file duration', error)
+        const hasNoDuration = error.message.includes(nodurationErrorMessage)
+        let errorState = ERROR_SERVER
+        if (fileState.isInPreparedGroup(file.state) && hasNoDuration) {
+          errorState = ERROR_LOCAL
+        }
         await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
           id: file.id,
-          params: { durationInSecond: -2, state: ERROR_SERVER, stateMessage: error.message || 'No duration found' }
+          params: { durationInSecond: -2, state: errorState, stateMessage: error.message || nodurationErrorMessage }
         })
       }
     }
@@ -186,11 +192,11 @@ class FileProvider {
     const fileObjectList = (await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
       where: { state: fileState.preparedGroup }
     })).filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage))
-    const updatedFiles = fileObjectList.map(file => {
+    const updatedFiles = fileObjectList.map(async file => {
       let timestamp
       if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
         console.log('create file object with file info yes!')
-        const info = new FileInfo(file.path)
+        const info = await new FileInfo(file.path)
         const momentDate = info.recordedDate
         if (momentDate) {
           timestamp = momentDate.format()
@@ -499,7 +505,7 @@ class FileProvider {
 
   /* -- Import -- */
 
-  getDeviceInfoFromFolder (path) {
+  async getDeviceInfoFromFolder (path) {
     const stuffInDirectory = fileHelper
       .getFilesFromDirectoryPath(path)
       .map((name) => {
@@ -512,9 +518,9 @@ class FileProvider {
     return this.getDeviceInfo(firstWavFile)
   }
 
-  getDeviceInfo (file) {
+  async getDeviceInfo (file) {
     if (!file) return undefined
-    const fileInfo = new FileInfo(file.path)
+    const fileInfo = await new FileInfo(file.path)
     const deviceId = fileInfo.deviceId
     const deploymentId = fileInfo.deployment
     return {deviceId, deploymentId}
