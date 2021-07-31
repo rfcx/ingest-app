@@ -143,7 +143,6 @@ export default {
       }
     }
 
-    console.log('create', this.props.deviceId, this.props.deploymentId, this.props.deviceId && !this.props.deploymentId)
     if (this.props.deviceId && !this.props.deploymentId) { // show protip
       this.errorMessage = `Suggestion: use the RFCx companion to deploy your AudioMoth device in the future to pre-populate the site name below.`
     }
@@ -237,7 +236,6 @@ export default {
       return new Promise(async (resolve, reject) => {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
         api.getDeploymentInfo(deploymentId, idToken).then(response => {
-          console.log('getDeploymentInfo', response)
           const stream = response.stream
           const id = response.id
           const deploymentType = response.deploymentType
@@ -334,7 +332,6 @@ export default {
 
       // update location in the form, if needed (select existing site or on the first attempt to create new)
       const hasBeenChoosingExistingSiteBefore = this.isCreatingNewSite && this.selectedExistingSite !== null // create new site, after been choosing existing one
-      console.log('onSelectedSite', site.name, this.isCreatingNewSite, hasBeenChoosingExistingSiteBefore)
       if (!this.isCreatingNewSite || hasBeenChoosingExistingSiteBefore) {
         this.onUpdateLocation([site.longitude, site.latitude])
       }

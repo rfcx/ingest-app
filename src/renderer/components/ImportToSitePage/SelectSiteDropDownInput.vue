@@ -83,17 +83,12 @@ export default {
       return this.selectedSiteName && !this.selectedSiteNameHasExactMatchsWithOptions ? `Create New Site: ${this.selectedSiteName}` : null
     },
     selectedSiteNameHasExactMatchsWithOptions () {
-      const x = this.siteOptions.filter(s => s.name === this.selectedSiteName).length === 1
-      console.log('selectedSiteNameHasExactMatchsWithOptions', x, this.siteOptions.length)
-      return x // only 1 that exact matchs
-      // if (this.initialSite) return true
-      // if (!this.siteOptions || this.siteOptions.length === 0) return false
-      // return this.siteOptions.map(s => s.name).includes(this.selectedSiteName)
+      return this.siteOptions.filter(s => s.name === this.selectedSiteName).length === 1 // only 1 that exact matchs
     },
     isDisabled () {
       // no project and no default site selected
       const noProjectSelected = !this.project || (this.project && Object.keys(this.project).length === 0)
-      return (noProjectSelected && !this.initialSite) || this.disabled
+      return noProjectSelected || this.disabled
     },
     shouldShowErrorView () {
       return this.errorMessage !== '' || (this.hasNoSite && this.selectedSiteName === '')
@@ -124,7 +119,6 @@ export default {
       await this.getSiteOptions()
     },
     async onSeachInputTextChanged (text) {
-      console.log('onSeachInputTextChanged', text)
       if (text === this.selectedSite.name) { return }
       this.selectedSiteName = text
 
@@ -148,23 +142,19 @@ export default {
       }
     },
     onSelectExistingSiteName (site) {
-      console.log('onSelectSiteName:', site.name)
       this.updateSelectedSite(site)
     },
     onSelectToCreateSite () {
-      console.log('onSelectToCreateSite')
       this.updateIsCreatingNewSite(true)
       this.updateTagTitle()
     },
     onClearSiteNameSearchInput () {
-      console.log('onClearSiteNameSearchInput')
       this.updateSelectedSite(null)
     },
     onBlurSiteNameSearchInput () {
       this.updateTagTitle()
     },
     updateIsCreatingNewSite (isCreating) {
-      console.log('updateIsCreatingNewSite', isCreating)
       this.isCreatingNewSite = isCreating
       this.$emit('update:updateIsCreatingNewSite', this.isCreatingNewSite)
     },
@@ -180,7 +170,6 @@ export default {
       return this.siteOptions.find(site => site.name === name && (id ? site.id === id : true))
     },
     updateSelectedSite (site) {
-      console.log('updateSelectedSiteupdateSelectedSite:', site)
       // consider if it is a valid site / potentially a new site
       const s = site || {name: ''}
       const isExistingSite = site && site.id
@@ -199,7 +188,6 @@ export default {
     },
     project: {
       handler: async function (value, prevValue) {
-        console.log('watch: project', value)
         if (value === prevValue) return
         await this.getSiteOptions()
       }

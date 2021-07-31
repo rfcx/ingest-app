@@ -71,7 +71,6 @@ export default {
         let selectedProject = this.projectOptions.find(s => s.name === keyword)
         if (selectedProject) return
       }
-      console.log('getProjectOptions: start')
       this.isLoading = true
       try {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
@@ -87,12 +86,10 @@ export default {
       await this.getProjectOptions()
     },
     onSelectProject (project) {
-      console.log('onSelectProjectName:', project.name)
       this.selectedProject = project
       this.selectedProjectName = project && project.name ? project.name : ''
     },
     onClearProjectNameSearchInput () {
-      console.log('onClearProjectNameSearchInput')
       this.selectedProject = null
       this.selectedProjectName = ''
     },
@@ -104,6 +101,7 @@ export default {
   watch: {
     initialProject () {
       if (this.initialProject && this.initialProject.name) this.selectedProjectName = this.initialProject.name
+      this.selectedProject = this.initialProject
     },
     selectedProject: {
       handler: async function (value, prevValue) {
