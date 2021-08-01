@@ -96,12 +96,18 @@ export default {
     redirectToArbimon () {
       const isProd = settings.get('settings.production_env')
       this.$electron.shell.openExternal(api.arbimonWebUrl(isProd))
+    },
+    updateSelectedProject (project) {
+      if (project && project.name) this.selectedProjectName = project.name
+      this.selectedProject = project
     }
+  },
+  created () {
+    this.updateSelectedProject(this.initialProject)
   },
   watch: {
     initialProject () {
-      if (this.initialProject && this.initialProject.name) this.selectedProjectName = this.initialProject.name
-      this.selectedProject = this.initialProject
+      this.updateSelectedProject(this.initialProject)
     },
     selectedProject: {
       handler: async function (value, prevValue) {

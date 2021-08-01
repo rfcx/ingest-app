@@ -23,7 +23,7 @@
         </label>
         <SelectProjectDropDownInput
         :helpText="siteDropdownHelpText"
-        :initialProject="detectedProjectFromDeployment"
+        :initialProject="preselectedProject"
         :disabled="isFetchingDeploymentInfo"
         @onSelectedProjectNameChanged="onSelectedProject"/>
       </div>
@@ -37,7 +37,7 @@
         :project="selectedProject"
         :updateIsCreatingNewSite.sync="isCreatingNewSite"
         :isWarning="shouldShowNameHelperMessage === true || shouldShowDetectedSiteWarning === true"
-        :initialSite="detectedSiteFromDeployment"
+        :initialSite="preselectedSite"
         :helpText="siteDropdownHelpText"
         :disabled="isFetchingDeploymentInfo"
         @onSelectedSiteNameChanged="onSelectedSite"/>
@@ -92,7 +92,8 @@ export default {
         deploymentId: null,
         deviceId: null,
         selectedFolderPath: null,
-        selectedFiles: null
+        selectedFiles: null,
+        currentActiveSite: null
       },
       selectedProject: null,
       selectedExistingSite: null,
@@ -113,6 +114,10 @@ export default {
       this.props.selectedFolderPath = this.$route.query.folderPath
     } else if (this.$route.query.selectedFiles) {
       this.props.selectedFiles = JSON.parse(this.$route.query.selectedFiles)
+    }
+
+    if (this.$route.query.currentActiveSite) {
+      this.props.currentActiveSite = JSON.parse(this.$route.query.currentActiveSite)
     }
 
     this.props.deploymentId = this.$route.query.deploymentId
@@ -167,13 +172,15 @@ export default {
         }
       }
     }
-    // check if site detected
-    if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
+
+    if (this.preselectedSite && this.preselectedSite.id) { // has stream infomation attached to deployment info
       // and set the selected site to be the detected site from deployment
-      this.updateSelectedExistingSite(this.detectedSiteFromDeployment)
+      this.updateSelectedExistingSite(this.preselectedSite)
     }
-    if (this.detectedProjectFromDeployment) {
-      this.selectedProject = this.detectedProjectFromDeployment
+
+    // check if site detected
+    if (this.preselectedProject) {
+      this.selectedProject = this.preselectedProject
     }
   },
   computed: {
@@ -187,6 +194,22 @@ export default {
     detectedProjectFromDeployment () {
       if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.projectName && this.detectedSiteFromDeployment.projectId) {
         return { id: this.detectedSiteFromDeployment.projectId, name: this.detectedSiteFromDeployment.projectName }
+      }
+      return null
+    },
+    preselectedSite () {
+      const currentSelectedSiteInGlobalNavigation = this.props.currentActiveSite
+      if (currentSelectedSiteInGlobalNavigation) {
+        return currentSelectedSiteInGlobalNavigation
+      }
+      if (this.detectedSiteFromDeployment) {
+        return this.detectedSiteFromDeployment
+      }
+      return null
+    },
+    preselectedProject () {
+      if (this.preselectedSite && this.preselectedSite.projectName && this.preselectedSite.projectId) {
+        return { id: this.preselectedSite.projectId, name: this.preselectedSite.projectName }
       }
       return null
     },
@@ -206,7 +229,7 @@ export default {
       return null
     },
     shouldShowProjectSelector () {
-      return !this.detectedSiteFromDeployment || (this.detectedSiteFromDeployment !== null && this.detectedProjectFromDeployment !== null)
+      return !this.preselectedSite || (this.preselectedSite !== null && this.preselectedProject !== null)
     },
     shouldShowNameHelperMessage () {
       return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '') && this.hasPassProjectValidation
@@ -351,7 +374,7 @@ export default {
         const getProjectName = project => project ? project.name : null
         if (val === null || val === undefined) { // has reset project data
           this.updateSelectedExistingSite(null)
-        } else if (!this.isCreatingNewSite && getProjectName(this.selectedExistingSite) !== val.name) { // existing site that been selected is in different project
+        } else if (!this.isCreatingNewSite && previousVal && getProjectName(previousVal) !== val.name) { // existing site that been selected is in different project
           this.updateSelectedExistingSite(null)
         }
       }

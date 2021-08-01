@@ -82,7 +82,7 @@
             'path': file.path
           }
         })
-        this.$router.push({path: '/select-site', query: { selectedFiles: JSON.stringify(fileObjects) }})
+        this.$router.push({path: '/select-site', query: { selectedFiles: JSON.stringify(fileObjects), currentActiveSite: JSON.stringify(this.selectedStream) }})
       },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')

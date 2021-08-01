@@ -97,6 +97,9 @@ export default {
       return this.siteOptions.length === 0
     }
   },
+  created () {
+    this.updateSelectedSite(this.initialSite)
+  },
   methods: {
     async getSiteOptions (keyword = null) {
       if (keyword) {
@@ -171,11 +174,12 @@ export default {
     },
     updateSelectedSite (site) {
       // consider if it is a valid site / potentially a new site
-      const s = site || {name: ''}
+      const newSite = site || {name: ''}
       const isExistingSite = site && site.id
       // assign value to selected site & site name
-      this.selectedSite = s
-      this.selectedSiteName = this.selectedSite.name
+      this.selectedSiteName = newSite.name
+      if (newSite === this.selectedSite) return
+      this.selectedSite = newSite
       // update other conditions
       this.updateIsCreatingNewSite(!isExistingSite) // to update the import / create button
       this.updateTagTitle() // to show 'New' tag on a new site
@@ -185,12 +189,6 @@ export default {
   watch: {
     initialSite () {
       this.updateSelectedSite(this.initialSite)
-    },
-    project: {
-      handler: async function (value, prevValue) {
-        if (value === prevValue) return
-        await this.getSiteOptions()
-      }
     }
   }
 }
