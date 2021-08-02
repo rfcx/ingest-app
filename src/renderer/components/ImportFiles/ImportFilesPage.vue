@@ -1,7 +1,7 @@
 <template>
   <div class="import-stream__wrapper">
-    <header-view title="Import audio files from folder" />
-    <p class="subtitle">Insert SD Card or choose the folder to import.</p>
+    <header-view title="Import audio files" />
+    <p class="subtitle">Insert AudioMoth SD Card or choose the folder/files to import.</p>
     <source-list @sourceSelected="onSourceSelected"></source-list>
     <div class="field is-grouped">
       <p class="control control-btn">
@@ -35,6 +35,7 @@ export default {
   methods: {
     onSourceSelected (newSource) {
       this.selectedSource = newSource
+      console.log('onSourceSelected', this.selectedSource)
       this.deviceId = this.selectedSource.deviceId
       this.deploymentId = this.selectedSource.deploymentId
     },
@@ -42,6 +43,7 @@ export default {
       this.redirectUserToSelectSiteScreen()
     },
     redirectUserToSelectSiteScreen () {
+      // TODO: add logic to check the files/folder
       this.$router.push({path: '/select-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentId: this.deploymentId }})
     }
   }
