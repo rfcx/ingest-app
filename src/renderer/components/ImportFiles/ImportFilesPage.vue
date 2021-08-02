@@ -23,6 +23,7 @@
 
 <script>
 import SourceList from './SourceList'
+import FileSource from './FileSorce'
 import HeaderView from '../Common/HeaderWithBackButton'
 
 export default {
@@ -43,8 +44,12 @@ export default {
       this.redirectUserToSelectSiteScreen()
     },
     redirectUserToSelectSiteScreen () {
-      // TODO: add logic to check the files/folder
-      this.$router.push({path: '/select-site', query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentId: this.deploymentId }})
+      const selectSitePath = '/select-site'
+      if (this.selectedSource instanceof FileSource.FileSourceFromFiles) {
+        this.$router.push({path: selectSitePath, query: { selectedFiles: JSON.stringify(this.selectedSource.selectedFiles), deviceId: this.deviceId, deploymentId: this.deploymentId }})
+      } else {
+        this.$router.push({path: selectSitePath, query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentId: this.deploymentId }})
+      }
     }
   }
 }
