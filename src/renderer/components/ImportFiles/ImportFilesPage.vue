@@ -1,23 +1,8 @@
 <template>
   <div class="import-stream__wrapper">
-    <header-view title="Import audio files" />
+    <header-view title="Import audio files" :shouldShowBackButton="true" />
     <p class="subtitle">Insert AudioMoth SD Card or choose the folder/files to import.</p>
     <source-list @sourceSelected="onSourceSelected"></source-list>
-    <div class="field is-grouped">
-      <p class="control control-btn">
-        <router-link class="control-btn" to="/">
-          <button type="button" class="button is-rounded is-cancel">Cancel</button>
-        </router-link>
-      </p>
-      <p class="control control-btn">
-        <button
-          type="button"
-          class="button is-rounded is-primary"
-          :disabled="!selectedSource"
-          @click.prevent="importFiles"
-        >Import</button>
-      </p>
-    </div>
   </div>
 </template>
 
@@ -39,9 +24,9 @@ export default {
       console.log('onSourceSelected', this.selectedSource)
       this.deviceId = this.selectedSource.deviceId
       this.deploymentId = this.selectedSource.deploymentId
-    },
-    async importFiles () {
-      this.redirectUserToSelectSiteScreen()
+      setTimeout(() => {
+        this.redirectUserToSelectSiteScreen()
+      }, 50)
     },
     redirectUserToSelectSiteScreen () {
       const selectSitePath = '/select-site'
