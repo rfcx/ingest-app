@@ -7,10 +7,6 @@ const cryptoJS = require('crypto-js')
 const moment = require('moment-timezone')
 const archiver = require('archiver')
 
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path.replace('app.asar', 'app.asar.unpacked')
-const ffmpeg = require('fluent-ffmpeg')
-ffmpeg.setFfmpegPath(ffmpegPath)
-
 const dayInMs = 1000 * 60 * 60 * 24
 
 const getFilePath = (directoryPath, fileName) => {
