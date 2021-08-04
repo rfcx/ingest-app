@@ -118,7 +118,6 @@ export default {
       return geocodes
     },
     updateCoordinates (coordinates) {
-      console.log('updateCoordinates', coordinates)
       this.selectedCoordinates = coordinates
       this.updateTextInput(coordinates[0], coordinates[1])
       this.center = coordinates

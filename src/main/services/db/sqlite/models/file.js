@@ -38,7 +38,18 @@ export default function (sequelize) {
       allowNull: true
     },
     state: {
-      type: DataTypes.STRING, // preparing, local_error, waiting, uploading, ingesting, completed, server_error
+      /* {
+        PREPARING: 10, // in prepare tab
+        ERROR_LOCAL: 20, // e.g. file not found, file not support
+        ERROR_SERVER: 21, // e.g. duplicated, network error
+        DUPLICATED: 22, // specified case for server error
+        CONVERTING: 30, // converting to flac
+        UPLOADING: 31, // uploading to server
+        WAITING: 32, // in queue waiting to upload
+        PROCESSING: 40, // uploaded, but in process of a.k.a. verifing / ingesting
+        COMPLETED: 50 // uploaded and ingested
+      } */
+      type: DataTypes.INTEGER,
       allowNull: false
     },
     stateMessage: {

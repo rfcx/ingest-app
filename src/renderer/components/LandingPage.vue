@@ -82,7 +82,7 @@
             'path': file.path
           }
         })
-        this.$router.push({path: '/select-site', query: { selectedFiles: JSON.stringify(fileObjects) }})
+        this.$router.push({path: '/select-site', query: { selectedFiles: JSON.stringify(fileObjects), currentActiveSite: JSON.stringify(this.selectedStream) }})
       },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
@@ -286,11 +286,6 @@
     border: 4px solid #131525 !important;
     background-color: #131525 !important;
     opacity: 0.8 !important;
-  }
-  .is-cancel:hover {
-    border-color: $button-hover-border-color !important;
-    color: #fff !important;
-    background: $button-hover-border-color !important;
   }
   .empty {
     background-color: #131525 !important;

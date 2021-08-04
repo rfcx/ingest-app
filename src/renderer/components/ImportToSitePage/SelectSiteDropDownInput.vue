@@ -7,7 +7,6 @@
     @onSearchInputBlur="onBlurSiteNameSearchInput"
     @onOptionSelected="onSelectExistingSiteName"
     :text="selectedSiteName"
-    :isReadOnly="initialSite ? initialSite.name !== null : null"
     :dropdownOptions="siteOptions"
     :specialOption="specialOptionTitle"
     @onSpecialOptionSelected="onSelectToCreateSite"
@@ -19,7 +18,10 @@
     :shouldShowEmptyContent="shouldShowErrorView"
   >
   <ErrorMessageView slot="emptyStateView" v-if="!isLoading">
-      <span slot="message">
+    <span slot="message" v-if="hasNoSite"> 
+        No site in this project. Start typing site name to create one.
+      </span>
+      <span slot="message" v-else>
         {{ errorMessage }}
       </span>
       <a href="#" slot="refreshButton" class="dropdown-sub-content__link" @click.prevent="getSiteOptions()">
@@ -38,6 +40,7 @@ import ipcRendererSend from '../../services/ipc'
 export default {
   data () {
     return {
+      selectedSite: this.initialSite,
       selectedSiteName: '',
       isCreatingNewSite: false,
       siteOptions: [],
@@ -80,23 +83,25 @@ export default {
       return this.selectedSiteName && !this.selectedSiteNameHasExactMatchsWithOptions ? `Create New Site: ${this.selectedSiteName}` : null
     },
     selectedSiteNameHasExactMatchsWithOptions () {
-      console.log('selectedSiteNameHasExactMatchsWithOptions', this.siteOptions)
-      if (this.initialSite) return true
-      if (!this.siteOptions || this.siteOptions.length === 0) return false
-      return this.siteOptions.map(s => s.name).includes(this.selectedSiteName)
+      return this.siteOptions.filter(s => s.name === this.selectedSiteName).length === 1 // only 1 that exact matchs
     },
     isDisabled () {
       // no project and no default site selected
       const noProjectSelected = !this.project || (this.project && Object.keys(this.project).length === 0)
-      return (noProjectSelected && !this.initialSite) || this.disabled
+      return noProjectSelected || this.disabled
     },
     shouldShowErrorView () {
-      return this.errorMessage !== ''
+      return this.errorMessage !== '' || (this.hasNoSite && this.selectedSiteName === '')
+    },
+    hasNoSite () {
+      return this.siteOptions.length === 0
     }
+  },
+  created () {
+    this.updateSelectedSite(this.initialSite)
   },
   methods: {
     async getSiteOptions (keyword = null) {
-      if (this.initialSite) return // no need to call api to search, as it's readonly when there is initial project provided
       if (keyword) {
         let selectedSite = this.siteOptions.find(s => s.name === keyword)
         if (selectedSite) return
@@ -117,7 +122,7 @@ export default {
       await this.getSiteOptions()
     },
     async onSeachInputTextChanged (text) {
-      console.log('onSeachInputTextChanged', text)
+      if (text === this.selectedSite.name) { return }
       this.selectedSiteName = text
 
       if (this.searchTimer) {
@@ -128,63 +133,62 @@ export default {
         await this.getSiteOptions(this.selectedSiteName)
       }, 300) // debounce, wait 300 mil sec for user to type, then call api to get data
 
-      console.log('onSeachInputTextChanged prepare to update is create', this.selectedSiteNameHasExactMatchsWithOptions)
-      if (this.selectedSiteNameHasExactMatchsWithOptions) {
-        this.updateIsCreatingNewSite(false) // use exact matchs
+      const hasTypingKeywordThatExacyMatchWithExistingSite = this.selectedSiteNameHasExactMatchsWithOptions
+      const hasChosenPreselectedSite = this.selectedSiteName === this.initialSite.name
+      if (hasChosenPreselectedSite) {
+        this.updateSelectedSite(this.initialSite)
+      } else if (hasTypingKeywordThatExacyMatchWithExistingSite) {
+        let site = this.getSiteFromSiteList(this.selectedSiteName)
+        this.updateSelectedSite(site)
       } else {
-        this.updateIsCreatingNewSite(true)
+        this.updateSelectedSite({name: text})
       }
     },
     onSelectExistingSiteName (site) {
-      console.log('onSelectSiteName:', site.name)
-      this.selectedSiteName = site.name
-      this.updateIsCreatingNewSite(false)
-      this.updateTagTitle()
+      this.updateSelectedSite(site)
     },
     onSelectToCreateSite () {
-      console.log('onSelectToCreateSite')
       this.updateIsCreatingNewSite(true)
       this.updateTagTitle()
     },
     onClearSiteNameSearchInput () {
-      console.log('onClearSiteNameSearchInput')
-      this.selectedSiteName = ''
-      this.updateTagTitle()
+      this.updateSelectedSite(null)
     },
     onBlurSiteNameSearchInput () {
       this.updateTagTitle()
     },
     updateIsCreatingNewSite (isCreating) {
-      console.log('updateIsCreatingNewSite', isCreating)
       this.isCreatingNewSite = isCreating
       this.$emit('update:updateIsCreatingNewSite', this.isCreatingNewSite)
     },
     resetSelectedSite () {
-      this.selectedSiteName = ''
+      this.updateSelectedSite(null)
     },
     updateTagTitle () {
       const isCreatingNewAndAlreadyInputSomeText = this.selectedSiteName && this.isCreatingNewSite
-      const hasDefaultSiteSelectedAndInReadOnlyMode = this.initialSite !== null
-      this.tagTitle = isCreatingNewAndAlreadyInputSomeText && !hasDefaultSiteSelectedAndInReadOnlyMode ? 'New' : null
+      this.tagTitle = isCreatingNewAndAlreadyInputSomeText ? 'New' : null
+    },
+    /** get matching site from site list by name and id */
+    getSiteFromSiteList (name, id = null) {
+      return this.siteOptions.find(site => site.name === name && (id ? site.id === id : true))
+    },
+    updateSelectedSite (site) {
+      // consider if it is a valid site / potentially a new site
+      const newSite = site || {name: ''}
+      const isExistingSite = site && site.id
+      // assign value to selected site & site name
+      this.selectedSiteName = newSite.name
+      if (newSite === this.selectedSite) return
+      this.selectedSite = newSite
+      // update other conditions
+      this.updateIsCreatingNewSite(!isExistingSite) // to update the import / create button
+      this.updateTagTitle() // to show 'New' tag on a new site
+      this.$emit('onSelectedSiteNameChanged', this.selectedSite)
     }
   },
   watch: {
     initialSite () {
-      if (this.initialSite && this.initialSite.name) this.selectedSiteName = this.initialSite.name
-    },
-    selectedSiteName: {
-      handler: async function (value, prevValue) {
-        if (value === prevValue || this.initialSite) return // ignore to send event when in readonly mode
-        let selectedSite = this.siteOptions.find(s => s.name === value) || { name: value }
-        this.$emit('onSelectedSiteNameChanged', selectedSite)
-      }
-    },
-    project: {
-      handler: async function (value, prevValue) {
-        console.log('watch: project', value)
-        if (value === prevValue) return
-        await this.getSiteOptions()
-      }
+      this.updateSelectedSite(this.initialSite)
     }
   }
 }

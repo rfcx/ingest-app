@@ -3,7 +3,7 @@
     <header-view :selectedStream="selectedStream"></header-view>
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream" @onNeedResetFileList="resetFiles" @onNeedResetStreamList="resetStreams"></file-name-format-info>
-    <summary-view :stats="getStatsOfTab(selectedTab)" v-if="selectedTab === 'Completed' && hasCompletedFiles"></summary-view>
+    <summary-view :stats="getStatsOfTab(selectedTab)" :retryableFileCount="retryableFileCount" v-if="selectedTab === 'Completed' && hasCompletedFiles"></summary-view>
     <file-list ref="fileList" :files="files" :stats="getStatsOfTab(selectedTab)" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="files.length <= 0 && isFetching" :isLoadingMore="isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
 </div>
 </template>
@@ -16,8 +16,6 @@ import FileNameFormatInfo from './FileNameFormatInfo'
 import FileList from './FileList'
 import SummaryView from './Summary'
 import FileState from '../../../../../utils/fileState'
-// import File from '../../../store/models/File'
-// import Stream from '../../../store/models/Stream'
 import infiniteScroll from 'vue-infinite-scroll'
 import ipcRendererSend from '../../../services/ipc'
 
@@ -45,6 +43,7 @@ export default {
     return {
       files: [],
       stats: [],
+      retryableFileCount: 0,
       fetchFilesInterval: null,
       selectedStream: null,
       isFetching: false
@@ -102,19 +101,12 @@ export default {
       if (this.isUploading) { return } // only support pagination when not in uploading mode
       this.isFetching = true
       const offset = this.files.length
-      const query = this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false)
+      const query = this.getQueryBySelectedTab(this.selectedTab)
       await this.reloadFiles(query, offset, true)
       this.isFetching = false
     },
-    getQueryBySelectedTabAndUpdatedAt (selectedTab, onlyLatestUpdated = false) {
+    getQueryBySelectedTab (selectedTab) {
       let commonQuery = { streamId: this.selectedStreamId }
-      if (onlyLatestUpdated) {
-        const currentFiles = this.files
-        const latestUpdateDate = currentFiles.map(file => new Date(file.updatedAt).valueOf()).reduce((a, b) => a <= b ? b : a, 0) || 0
-        commonQuery.updatedAt = {
-          '$gte': latestUpdateDate
-        }
-      }
       switch (selectedTab) {
         case 'Prepared':
           return { ...commonQuery, state: FileState.preparedGroup }
@@ -157,10 +149,10 @@ export default {
       return groupFileCount.map(s => s.stateCount).reduce((a, b) => a + b, 0)
     },
     checkIfHasErrorFiles (files) {
-      return files.filter((file) => file.state.includes('error')).length > 0
+      return files.filter((file) => FileState.isError(file.state)).length > 0
     },
-    async reloadFiles (query, offset = null, merged = false) {
-      let queryOpts = { where: query, order: [['updatedAt', 'DESC']] }
+    async reloadFiles (query, offset, merged = false) {
+      let queryOpts = { where: query, order: [['state', 'ASC']] }
       if (typeof offset === 'number') { queryOpts = {...queryOpts, offset, limit: this.$getConst('DEFAULT_LIMIT')} }
       const newFiles = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, queryOpts)
       if (merged) {
@@ -174,12 +166,13 @@ export default {
     },
     async reloadStats () {
       this.stats = await ipcRendererSend('db.files.filesInStreamCount', `db.files.filesInStreamCount.${Date.now()}`, this.selectedStreamId)
+      this.retryableFileCount = await ipcRendererSend('db.files.getNumberOfRetryableFiles', `db.files.getNumberOfRetryableFiles.${Date.now()}`, this.selectedStreamId)
     },
     async initFilesFetcher () {
       // fetch at first load
       this.isFetching = true
       await this.reloadStats()
-      await this.reloadFiles(this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false), 0)
+      await this.reloadFiles(this.getQueryBySelectedTab(this.selectedTab), 0)
       this.isFetching = false
       this.startFilesFetcher()
     },
@@ -193,7 +186,7 @@ export default {
         if (this.selectedTab === 'Prepared') { return }
         // not reloading files in prepare tab
         console.log('=> FETCHING INTERVAL: RELOAD FILES')
-        await this.reloadFiles(this.getQueryBySelectedTabAndUpdatedAt(this.selectedTab, false), 0)
+        await this.reloadFiles(this.getQueryBySelectedTab(this.selectedTab), 0)
       }, 2000)
     },
     clearFilesFetcher () {

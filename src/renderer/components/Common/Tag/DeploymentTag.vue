@@ -1,9 +1,9 @@
 <template>
   <tag-with-icon :class="{'error': !isChecking && !isDetected}">
     <fa-icon :icon="icons.loading" class="tag__icon" slot="icon" aria-hidden="true" spin v-if="isChecking"></fa-icon>
-    <fa-icon :icon="icons.detected" class="tag__icon detected" slot="icon" aria-hidden="true" v-else-if="isDetected"/>
+    <fa-icon :icon="icons.detected" class="tag__icon detected" slot="icon" aria-hidden="true" v-else-if="isDetected && !isNotMatched"/>
     <fa-icon :icon="icons.error" class="tag__icon" slot="icon" aria-hidden="true" v-else/>
-    <span class="tag__text is-size-7" slot="text" :class="{'detected': isDetected}">{{ title }}</span>
+    <span class="tag__text is-size-7" slot="text" :class="{'detected': isDetected && !isNotMatched}">{{ title }}</span>
   </tag-with-icon>
 </template>
 
@@ -19,6 +19,10 @@ export default {
     isChecking: {
       type: Boolean,
       default: false
+    },
+    isNotMatched: {
+      type: Boolean,
+      default: false
     }
   },
   components: { TagWithIcon },
@@ -32,6 +36,7 @@ export default {
     },
     title () {
       if (this.isChecking) return 'Getting deployment information'
+      if (this.isDetected && this.isNotMatched) return `Selected site doesn't match with deployment`
       if (this.isDetected) return 'Deployment detected'
       return 'Deployment not found'
     }

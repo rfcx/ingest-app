@@ -20,6 +20,10 @@ const migrations = [
   {
     name: '20210611000001-remove-non-on-going-sites.js',
     file: require('./20210611000001-remove-non-on-going-sites').default
+  },
+  {
+    name: '20210613000001-change-state-to-int-files-table.js',
+    file: require('./20210613000001-change-state-to-int-files-table').default
   }
 ]
 

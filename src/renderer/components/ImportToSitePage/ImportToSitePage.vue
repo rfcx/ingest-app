@@ -7,8 +7,8 @@
         <deployment-tag 
           v-if="isFetchingDeploymentInfo || props.deploymentId"
           :isChecking="isFetchingDeploymentInfo"
-          :isDetected="props.deploymentId !== null && deployment.info !== null"
-          :error="deployment.error"
+          :isDetected="props.deploymentId !== null && deploymentInfo !== null"
+          :isNotMatched="!isSelectedSiteMatchWithDetectedDeployment"
         />
       </div>
     </div>
@@ -23,7 +23,7 @@
         </label>
         <SelectProjectDropDownInput
         :helpText="siteDropdownHelpText"
-        :initialProject="detectedProjectFromDeployment"
+        :initialProject="preselectedProject"
         :disabled="isFetchingDeploymentInfo"
         @onSelectedProjectNameChanged="onSelectedProject"/>
       </div>
@@ -36,8 +36,8 @@
         ref="siteSelector"
         :project="selectedProject"
         :updateIsCreatingNewSite.sync="isCreatingNewSite"
-        :isWarning="shouldShowNameHelperMessage === true"
-        :initialSite="detectedSiteFromDeployment"
+        :isWarning="shouldShowNameHelperMessage === true || shouldShowDetectedSiteWarning === true"
+        :initialSite="preselectedSite"
         :helpText="siteDropdownHelpText"
         :disabled="isFetchingDeploymentInfo"
         @onSelectedSiteNameChanged="onSelectedSite"/>
@@ -92,11 +92,8 @@ export default {
         deploymentId: null,
         deviceId: null,
         selectedFolderPath: null,
-        selectedFiles: null
-      },
-      deployment: {
-        info: null,
-        error: null
+        selectedFiles: null,
+        currentActiveSite: null
       },
       selectedProject: null,
       selectedExistingSite: null,
@@ -119,6 +116,10 @@ export default {
       this.props.selectedFiles = JSON.parse(this.$route.query.selectedFiles)
     }
 
+    if (this.$route.query.currentActiveSite) {
+      this.props.currentActiveSite = JSON.parse(this.$route.query.currentActiveSite)
+    }
+
     this.props.deploymentId = this.$route.query.deploymentId
     this.props.deviceId = this.$route.query.deviceId
 
@@ -130,14 +131,14 @@ export default {
       const firstWavFile = this.props.selectedFiles.find(file => {
         return fileHelper.getExtension(file.path) === 'wav' // read only wav file header info
       })
-      deviceInfo = this.$file.getDeviceInfo(firstWavFile)
+      deviceInfo = await this.$file.getDeviceInfo(firstWavFile)
 
       // try to get device info from the first directory
       if (!deviceInfo) {
         const firstFolder = this.props.selectedFiles.find(file => {
           return fileHelper.isFolder(file.path)
         })
-        deviceInfo = this.$file.getDeviceInfoFromFolder(firstFolder.path)
+        deviceInfo = await this.$file.getDeviceInfoFromFolder(firstFolder.path)
       }
 
       // set device id & deployment id if any
@@ -147,7 +148,6 @@ export default {
       }
     }
 
-    console.log('create', this.props.deviceId, this.props.deploymentId, this.props.deviceId && !this.props.deploymentId)
     if (this.props.deviceId && !this.props.deploymentId) { // show protip
       this.errorMessage = `Suggestion: use the RFCx companion to deploy your AudioMoth device in the future to pre-populate the site name below.`
     }
@@ -156,7 +156,7 @@ export default {
     // get deployment info
       try {
         this.isFetchingDeploymentInfo = true
-        this.deployment.info = await this.getDeploymentInfo(this.props.deploymentId)
+        this.deploymentInfo = await this.getDeploymentInfo(this.props.deploymentId)
         this.isFetchingDeploymentInfo = false
       } catch (error) {
         this.isFetchingDeploymentInfo = false
@@ -172,19 +172,21 @@ export default {
         }
       }
     }
-    // check if site detected
-    if (this.detectedSiteFromDeployment && this.detectedSiteFromDeployment.id) { // has stream infomation attached to deployment info
+
+    if (this.preselectedSite && this.preselectedSite.id) { // has stream infomation attached to deployment info
       // and set the selected site to be the detected site from deployment
-      this.updateSelectedExistingSite(this.detectedSiteFromDeployment)
+      this.updateSelectedExistingSite(this.preselectedSite)
     }
-    if (this.detectedProjectFromDeployment) {
-      this.selectedProject = this.detectedProjectFromDeployment
+
+    // check if site detected
+    if (this.preselectedProject) {
+      this.selectedProject = this.preselectedProject
     }
   },
   computed: {
     detectedSiteFromDeployment () {
-      if (this.deployment.info && this.deployment.info.stream) {
-        return streamHelper.parseSite(this.deployment.info.stream)
+      if (this.deploymentInfo && this.deploymentInfo.stream) {
+        return streamHelper.parseSite(this.deploymentInfo.stream)
       } else {
         return null
       }
@@ -195,14 +197,45 @@ export default {
       }
       return null
     },
+    preselectedSite () {
+      const currentSelectedSiteInGlobalNavigation = this.props.currentActiveSite
+      if (currentSelectedSiteInGlobalNavigation) {
+        return currentSelectedSiteInGlobalNavigation
+      }
+      if (this.detectedSiteFromDeployment) {
+        return this.detectedSiteFromDeployment
+      }
+      return null
+    },
+    preselectedProject () {
+      if (this.preselectedSite && this.preselectedSite.projectName && this.preselectedSite.projectId) {
+        return { id: this.preselectedSite.projectId, name: this.preselectedSite.projectName }
+      }
+      return null
+    },
+    isSelectedSiteMatchWithDetectedDeployment () {
+      const getSiteId = site => site ? site.id : null
+      const bothValuesExist = this.detectedSiteFromDeployment && this.selectedExistingSite
+      const bothValuesHaveSameId = getSiteId(this.detectedSiteFromDeployment) === getSiteId(this.selectedExistingSite)
+      return bothValuesExist && bothValuesHaveSameId
+    },
     siteDropdownHelpText () {
-      return this.detectedSiteFromDeployment ? 'Detected deployment from RFCx Companion' : null
+      if (this.detectedSiteFromDeployment && this.selectedExistingSite) {
+        if (this.isSelectedSiteMatchWithDetectedDeployment) {
+          return 'Detected deployment from RFCx Companion'
+        }
+        return `Site doesn't match with detectetd deployment from RFCx Companion`
+      }
+      return null
     },
     shouldShowProjectSelector () {
-      return !this.detectedSiteFromDeployment || (this.detectedSiteFromDeployment !== null && this.detectedProjectFromDeployment !== null)
+      return !this.preselectedSite || (this.preselectedSite !== null && this.preselectedProject !== null)
     },
     shouldShowNameHelperMessage () {
       return this.selectedCoordinates && this.selectedCoordinates.length > 0 && (!this.form.selectedSiteName || this.form.selectedSiteName === '') && this.hasPassProjectValidation
+    },
+    shouldShowDetectedSiteWarning () {
+      return this.detectedSiteFromDeployment && this.selectedExistingSite && !this.isSelectedSiteMatchWithDetectedDeployment
     },
     hasPassProjectValidation () {
       return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject !== null)
@@ -226,7 +259,6 @@ export default {
       return new Promise(async (resolve, reject) => {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
         api.getDeploymentInfo(deploymentId, idToken).then(response => {
-          console.log('getDeploymentInfo', response)
           const stream = response.stream
           const id = response.id
           const deploymentType = response.deploymentType
@@ -254,7 +286,7 @@ export default {
       this.selectedExistingSite = localSite
       if (this.props.selectedFolderPath) {
         this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, {
-          deploymentId: this.deployment.info ? this.deployment.info.id : ''
+          deploymentId: this.deploymentInfo ? this.deploymentInfo.id : ''
         })
       }
       if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
@@ -322,7 +354,7 @@ export default {
       this.form.selectedSiteName = site.name
 
       // update location in the form, if needed (select existing site or on the first attempt to create new)
-      const hasBeenChoosingExistingSiteBefore = this.isCreatingNewSite && this.selectedExistingSite // create new site, after been choosing existing one
+      const hasBeenChoosingExistingSiteBefore = this.isCreatingNewSite && this.selectedExistingSite !== null // create new site, after been choosing existing one
       if (!this.isCreatingNewSite || hasBeenChoosingExistingSiteBefore) {
         this.onUpdateLocation([site.longitude, site.latitude])
       }
@@ -339,9 +371,10 @@ export default {
     selectedProject: {
       handler (val, previousVal) {
         if (val === previousVal) return
+        const getProjectName = project => project ? project.name : null
         if (val === null || val === undefined) { // has reset project data
           this.updateSelectedExistingSite(null)
-        } else if (!this.isCreatingNewSite && this.selectedExistingSite.projectName !== val.name) { // existing site that been selected is in different project
+        } else if (!this.isCreatingNewSite && previousVal && getProjectName(previousVal) !== val.name) { // existing site that been selected is in different project
           this.updateSelectedExistingSite(null)
         }
       }

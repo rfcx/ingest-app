@@ -1,5 +1,6 @@
-import getAudioDurationInSeconds from './fileDurationHelper'
 import FileTimezoneHelper from './FileTimezoneHelper'
+import audioService from '../services/audio'
+import FileInfo from '../src/renderer/services/FileInfo'
 const fs = require('fs')
 const path = require('path')
 const cryptoJS = require('crypto-js')
@@ -110,8 +111,16 @@ const getUtcTimestamp = (file) => {
   return moment.tz(file.timestamp, file.timezone).toISOString() // parse with timezone and return as UTC
 }
 
-const getFileDuration = (filePath) => {
-  return getAudioDurationInSeconds(filePath)
+const getFileDuration = async (filePath) => {
+  try {
+    const fileInfo = await new FileInfo(filePath)
+    if (!fileInfo.duration || fileInfo.duration === 0) {
+      throw new Error('No duration found!')
+    }
+    return fileInfo.duration
+  } catch (error) {
+    throw error
+  }
 }
 
 const isSupportedFileExtension = (fileExtension) => {
@@ -144,34 +153,7 @@ const getTempPath = (tmpPath, fileName, streamId) => {
 const convert = (sourceFile, tempPath, streamId) => {
   const destinationPath = `${getTempPath(tempPath, getFileNameFromFilePath(sourceFile), streamId)}.flac`
   console.log('converting: ', sourceFile, destinationPath)
-  return new Promise((resolve, reject) => {
-    const command = ffmpeg(sourceFile)
-      .noVideo()
-      .output(destinationPath)
-      .outputOptions([
-        '-ac 1'
-      ])
-
-    const timeout = setTimeout(function () {
-      command.kill()
-      reject(Error('Timeout')) // TODO: move to errors
-    }, 60000)
-
-    command
-      .on('error', function (err, stdout, stderr) {
-        clearTimeout(timeout)
-        reject(err)
-      })
-      .on('end', async function (stdout, stderr) {
-        clearTimeout(timeout)
-        try {
-          resolve({
-            path: destinationPath
-          })
-        } catch (e) { reject(e) }
-      })
-      .run()
-  })
+  return audioService.convert(sourceFile, destinationPath)
 }
 
 const remove = (path) => {

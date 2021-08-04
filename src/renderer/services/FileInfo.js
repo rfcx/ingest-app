@@ -1,23 +1,27 @@
-import fs from 'fs'
-import { WaveFile } from 'wavefile'
+import audio from '../../../services/audio'
 import moment from 'moment'
 
 export default class FileInfo {
   comment = ''
   authors = ''
+  duration = -1
 
   constructor (filePath) {
     try {
-      const buffer = fs.readFileSync(filePath)
-      const wav = new WaveFile(buffer)
-      this.comment = wav.getTag('ICMT') || ''
-      this.authors = wav.getTag('IART') || ''
+      return (async () => {
+        const fileHeaderData = await audio.identify(filePath)
+        this.comment = fileHeaderData.comment || ''
+        this.authors = fileHeaderData.artist || ''
+        this.duration = fileHeaderData.duration
+        return this
+      })()
     } catch (e) {
       console.log('Read file info error', e)
     }
   }
 
   get deviceId () {
+    console.log('get device id')
     const getDeviceId = string => string.replace(/AudioMoth\s/g, '').trim()
     if (this.authors !== '') {
       return getDeviceId(this.authors)

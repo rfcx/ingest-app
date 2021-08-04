@@ -22,7 +22,7 @@
               <fa-icon :icon="icons.arrowDown" aria-hidden="true" @click="hideOnlyDropdownOptions()" />
             </span>
           </div>
-        <p class="help" v-if="helpText !== ''">{{ helpText }}</p>
+        <p class="help" v-if="helpText !== ''" :class="{'is-warning': isWarning}">{{ helpText }}</p>
       </div>
     </div>
     <div class="dropdown-menu" id="dropdown-menu" role="menu" v-if="shouldShowDropDownOptions">
@@ -126,7 +126,6 @@ export default {
       this.toggleDropdown(true)
     },
     onSearchInputBlur (e) {
-      console.log('onSearchInputBlur', e)
       this.$emit('onSearchInputBlur')
       // hide dropdown when click outside
       const classesInsideDropdown = ['dropdown-item', 'dropdown-sub-content', 'dropdown-sub-content__link']

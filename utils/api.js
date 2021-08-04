@@ -1,9 +1,11 @@
-// import File from '../src/renderer/store/models/File'
 import fileHelper from './fileHelper'
+import fileState from './fileState'
 import errors from './errors'
 import Analytics from 'electron-ga'
 import settings from 'electron-settings'
 import ipcRendererSend from '../src/renderer/services/ipc'
+
+const { CONVERTING, UPLOADING } = fileState.state
 
 const axios = require('axios')
 const fileStreamAxios = axios.create({
@@ -46,7 +48,7 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       // })
       await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: fileId,
-        params: { state: 'converting', uploaded: false }
+        params: { state: CONVERTING, uploaded: false }
       })
       console.log('\n\n\n\n\n CONVERT STARTED', new Date().toISOString(), '\n\n\n')
       uploadFilePath = (await fileHelper.convert(filePath, remote.app.getPath('temp'), streamId)).path
@@ -68,7 +70,7 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       // })
       await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: fileId,
-        params: { state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false }
+        params: { state: UPLOADING, uploadId: data.uploadId, progress: 0, uploaded: false }
       })
       console.log('\n\n\n\n\n UPLOAD STARTED', new Date().toISOString(), '\n\n\n')
       return performUpload(data.url, data.uploadId, uploadFilePath, uploadFileExt, progressCallback).then(async () => {
@@ -109,7 +111,7 @@ const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, 
       const uploadId = response.data.uploadId
       return { url, uploadId }
     }).catch(error => {
-      throw error.response ? (error.response.data ? error.response.data : error.response) : error
+      throw errors.matchAxiosErrorToRfcx(error)
     })
 }
 

@@ -152,7 +152,6 @@ export default {
       }
       &_controls {
         width: 10%;
-        width: 8%;
         text-align: right;
         padding-right: 24px;
       }

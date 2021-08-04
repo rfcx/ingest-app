@@ -35,8 +35,6 @@
 
 <script>
 import DriveList from '../../../../utils/DriveListHelper'
-import FileHelper from '../../../../utils/fileHelper'
-import FileInfo from '../../services/FileInfo'
 import AudioMothTag from '../Common/Tag/AudioMothTag'
 export default {
   data: () => ({
@@ -54,8 +52,8 @@ export default {
       DriveList.getExternalDriveList().then(drives => {
         this.isLoading = false
         if (drives.length === 0) return
-        this.drives = drives.map(drive => {
-          const deviceInfo = this.getDeviceInfo(drive.path)
+        this.drives = drives.map(async drive => {
+          const deviceInfo = await this.getDeviceInfo(drive.path)
           if (deviceInfo) {
             const deviceId = deviceInfo.deviceId
             const deploymentId = deviceInfo.deploymentId
@@ -65,21 +63,8 @@ export default {
         })
       })
     },
-    getDeviceInfo (path) {
-      const stuffInDirectory = FileHelper
-        .getFilesFromDirectoryPath(path)
-        .map((name) => {
-          return { name: name, path: path + '/' + name }
-        })
-      // read file header info
-      const firstWavFile = stuffInDirectory.find(file => {
-        return FileHelper.getExtension(file.path) === 'wav' // read only wav file header info
-      })
-      if (!firstWavFile) return undefined
-      const fileInfo = new FileInfo(firstWavFile.path)
-      const deviceId = fileInfo.deviceId
-      const deploymentId = fileInfo.deployment
-      return {deviceId, deploymentId}
+    async getDeviceInfo (path) {
+      return this.$file.getDeviceInfoFromFolder(path)
     },
     onDriveSelected (drive) {
       this.selectedSource = drive
@@ -94,10 +79,10 @@ export default {
       }
       this.$refs.file.click()
     },
-    handleFileChange (event) {
+    async handleFileChange (event) {
       console.log(event.target.files)
       const path = event.target.files[0].path
-      const deviceInfo = this.getDeviceInfo(path)
+      const deviceInfo = await this.getDeviceInfo(path)
       if (deviceInfo) {
         const deviceId = deviceInfo.deviceId
         const deploymentId = deviceInfo.deploymentId
