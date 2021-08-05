@@ -74,13 +74,21 @@ export default {
       this.isLoading = true
       try {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
-        this.projectOptions = await api.getUserProjects(idToken, keyword)
+        const projectOptions = await api.getUserProjects(idToken, keyword)
+        this.setProjectOptions(projectOptions)
         this.isLoading = false
         this.errorMessage = ''
       } catch (error) {
         this.isLoading = false
         this.errorMessage = error
       }
+    },
+    setProjectOptions (options) {
+      this.projectOptions = options.map(option => {
+        const permissions = option.permissions || []
+        const hasPermission = (name) => ['C', 'U', 'D'].includes(name.toUpperCase())
+        return {id: option.id, name: option.name, isReadOnly: !permissions.some(hasPermission)}
+      })
     },
     async onSearchInputFocus () {
       await this.getProjectOptions()
