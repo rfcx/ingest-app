@@ -24,9 +24,7 @@ export default {
       console.log('onSourceSelected', this.selectedSource)
       this.deviceId = this.selectedSource.deviceId
       this.deploymentId = this.selectedSource.deploymentId
-      setTimeout(() => {
-        this.redirectUserToSelectSiteScreen()
-      }, 50)
+      this.redirectUserToSelectSiteScreen()
     },
     redirectUserToSelectSiteScreen () {
       const selectSitePath = '/select-site'
