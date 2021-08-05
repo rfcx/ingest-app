@@ -86,8 +86,9 @@ export default {
     setProjectOptions (options) {
       this.projectOptions = options.map(option => {
         const permissions = option.permissions || []
-        const hasPermission = (name) => ['C', 'U', 'D'].includes(name.toUpperCase())
-        return {id: option.id, name: option.name, isReadOnly: !permissions.some(hasPermission)}
+        const hasPermission = (name) => ['C', 'U'].includes(name.toUpperCase())
+        const isReadOnly = permissions.length > 0 && !permissions.some(hasPermission)
+        return {id: option.id, name: option.name, isReadOnly}
       })
     },
     async onSearchInputFocus () {
