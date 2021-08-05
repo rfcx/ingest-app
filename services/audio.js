@@ -53,7 +53,6 @@ const identify = (sourceFile) => {
           console.log('identify err', err)
           reject(err)
         } else {
-          console.log('identify stream', result)
           const format = result.format && result.format.format_name ? result.format.format_name : undefined
           const duration = result.format && parseFloat(result.format.duration)
           const tags = result.format.tags
