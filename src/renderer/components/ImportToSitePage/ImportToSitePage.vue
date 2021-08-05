@@ -118,6 +118,7 @@ export default {
 
     if (this.$route.query.currentActiveSite) {
       this.props.currentActiveSite = JSON.parse(this.$route.query.currentActiveSite)
+      this.updateSelectedExistingSite(this.preselectedSite) // update site
     }
 
     this.props.deploymentId = this.$route.query.deploymentId
@@ -154,25 +155,23 @@ export default {
 
     if (this.props.deploymentId) {
     // get deployment info
+      this.isFetchingDeploymentInfo = true
       try {
-        this.isFetchingDeploymentInfo = true
         this.deploymentInfo = await this.getDeploymentInfo(this.props.deploymentId)
-        this.isFetchingDeploymentInfo = false
       } catch (error) {
-        this.isFetchingDeploymentInfo = false
         switch (error.name) {
           case 'EmptyResultError':
             this.errorMessage = 'Site with attached deployment could not be found. Please manually select a site.'
-            return
+            break
           case 'ForbiddenError':
             this.errorMessage = `You don't have permission to the site with attached deployment. Please manually select a site.`
-            return
+            break
           default:
             this.errorMessage = error.message
         }
       }
+      this.isFetchingDeploymentInfo = false
     }
-
     if (this.preselectedSite && this.preselectedSite.id) { // has stream infomation attached to deployment info
       // and set the selected site to be the detected site from deployment
       this.updateSelectedExistingSite(this.preselectedSite)
@@ -255,22 +254,15 @@ export default {
   },
   methods: {
     async getDeploymentInfo (deploymentId) {
-      if (!deploymentId) return Promise.resolve(null)
-      return new Promise(async (resolve, reject) => {
-        const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
-        api.getDeploymentInfo(deploymentId, idToken).then(response => {
-          const stream = response.stream
-          const id = response.id
-          const deploymentType = response.deploymentType
-          const deployedAt = response.deployedAt
-          if (!(stream && id)) resolve(null) // response doesn't have all required field
-          else resolve({stream, id, deploymentType, deployedAt})
-        }).catch(error => {
-          console.log('getDeploymentInfo error', error.name)
-          // TODO: handle error
-          reject(error)
-        })
-      })
+      if (!deploymentId) return null
+      const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
+      const response = await api.getDeploymentInfo(deploymentId, idToken)
+      const stream = response.stream
+      const id = response.id
+      const deploymentType = response.deploymentType
+      const deployedAt = response.deployedAt
+      if (!stream || !id) return null // response doesn't have all required field
+      return {stream, id, deploymentType, deployedAt}
     },
     async importFiles () {
       if (this.isCreatingNewSite) {
@@ -328,6 +320,7 @@ export default {
       return ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, obj)
     },
     updateSelectedExistingSite (site) {
+      console.log('updateSelectedExistingSite')
       this.selectedExistingSite = site
       if (site) {
         this.isCreatingNewSite = false
