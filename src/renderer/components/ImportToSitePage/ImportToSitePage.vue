@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <div class="header">
-      <header-view title="Select Site" :shouldShowBackButton="props.selectedFolderPath !== null"/>
+      <header-view title="Select Site" :shouldShowBackButton="true"/>
       <div class="tag__wrapper">
         <AudioMothTag :show="props.deviceId" :isSelected="true"/>
         <deployment-tag 
@@ -124,8 +124,7 @@ export default {
     this.props.deploymentId = this.$route.query.deploymentId
     this.props.deviceId = this.$route.query.deviceId
 
-    // TODO: refactor this condition
-    if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
+    if (this.props.selectedFiles && this.props.selectedFiles.length > 0 && !this.props.deviceId) {
       let deviceInfo
 
       // try to get device info from the first wav file

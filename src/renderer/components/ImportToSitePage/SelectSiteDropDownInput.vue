@@ -122,7 +122,7 @@ export default {
       await this.getSiteOptions()
     },
     async onSeachInputTextChanged (text) {
-      if (text === this.selectedSite.name) { return }
+      if (this.selectedSite && this.selectedSite.name === text) { return }
       this.selectedSiteName = text
 
       if (this.searchTimer) {
@@ -134,7 +134,7 @@ export default {
       }, 300) // debounce, wait 300 mil sec for user to type, then call api to get data
 
       const hasTypingKeywordThatExacyMatchWithExistingSite = this.selectedSiteNameHasExactMatchsWithOptions
-      const hasChosenPreselectedSite = this.selectedSiteName === this.initialSite.name
+      const hasChosenPreselectedSite = this.initialSite && (this.initialSite.name === this.selectedSiteName)
       if (hasChosenPreselectedSite) {
         this.updateSelectedSite(this.initialSite)
       } else if (hasTypingKeywordThatExacyMatchWithExistingSite) {
