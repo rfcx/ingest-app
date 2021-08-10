@@ -8,17 +8,6 @@ class FileSource {
     this.deviceId = deviceId
     this.deploymentId = deploymentId
   }
-
-  // get title () {
-  //   if (this.type === 'files') {
-  //     const num = this.selectedFiles.length
-  //     return num + (num > 1 ? ' files' : 'file') + ' selected'
-  //   }
-  //   if (this.type === 'folder') {
-  //     return this.path
-  //   }
-  //   return this.label
-  // }
 }
 
 class FileSourceFromExternal extends FileSource {

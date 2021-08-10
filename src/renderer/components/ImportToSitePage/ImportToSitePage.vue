@@ -124,7 +124,6 @@ export default {
     this.props.deploymentId = this.$route.query.deploymentId
     this.props.deviceId = this.$route.query.deviceId
 
-    // TODO: refactor this condition
     if (this.props.selectedFiles && this.props.selectedFiles.length > 0 && this.props.deviceId === null) {
       let deviceInfo
 
