@@ -124,7 +124,7 @@ export default {
     this.props.deploymentId = this.$route.query.deploymentId
     this.props.deviceId = this.$route.query.deviceId
 
-    if (this.props.selectedFiles && this.props.selectedFiles.length > 0 && this.props.deviceId === null) {
+    if (this.props.selectedFiles && this.props.selectedFiles.length > 0 && !this.props.deviceId) {
       let deviceInfo
 
       // try to get device info from the first wav file
