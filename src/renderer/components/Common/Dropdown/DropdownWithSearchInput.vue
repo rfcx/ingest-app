@@ -37,7 +37,20 @@
         </div>
       </div>
       <div class="dropdown-content" v-else>
-        <a href="#" class="dropdown-item" v-for="option in dropdownOptions" :key="option.id" :class="{'is-active': option === selectedOption}" @click="onOptionSelected(option)"> {{ option.name }} </a>
+        <a href="#" class="dropdown-item" v-for="option in dropdownOptions" 
+        :key="option.id" :class="{'is-active': option === selectedOption, 'is-disabled': option.isReadOnly }" 
+        @click="onOptionSelected(option)"> 
+        <div class="level is-mobile">
+          <div class="level-left">
+            <span class="level-item">{{ option.name }}</span>
+          </div>
+        <div class="level-right">
+          <span class="icon level-item" v-if="option.isReadOnly">
+            <read-only-tag/>
+          </span>      
+        </div>
+        </div>
+        </a>
         <hr class="dropdown-divider" v-if="specialOption && dropdownOptions.length > 0">
         <a href="#" class="dropdown-item special-option" v-if="specialOption" @click="onSpecialOptionSelected()">
           {{ specialOption }}
@@ -47,7 +60,8 @@
   </div>
 </template>
 <script>
-import { faAngleDown, faCircleNotch } from '@fortawesome/free-solid-svg-icons'
+import { faAngleDown, faCircleNotch, faLock } from '@fortawesome/free-solid-svg-icons'
+import ReadOnlyTag from '../Tag/ReadOnlyTag'
 export default {
   data () {
     return {
@@ -57,6 +71,7 @@ export default {
       selectedOption: ''
     }
   },
+  components: { ReadOnlyTag },
   props: {
     // Input
     text: String,
@@ -114,7 +129,8 @@ export default {
   computed: {
     icons: () => ({
       arrowDown: faAngleDown,
-      loading: faCircleNotch
+      loading: faCircleNotch,
+      lock: faLock
     }),
     canEdit () {
       return this.searchText !== '' && !this.isReadOnly && !this.isDisabled
@@ -196,6 +212,16 @@ export default {
   .dropdown-item.special-option {
     font-weight: $title-font-weight;
   }
+
+  .dropdown-item.is-disabled {
+    pointer-events: none;
+    opacity: 0.65;
+  }
+
+  .level {
+    width: 100%;
+  }
+
   .clearable-input {
     position: relative;
   }
