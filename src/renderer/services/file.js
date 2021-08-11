@@ -192,7 +192,7 @@ class FileProvider {
     const fileObjectList = (await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
       where: { state: fileState.preparedGroup }
     })).filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage))
-    const updatedFiles = fileObjectList.map(async file => {
+    const updatedFiles = await Promise.all(fileObjectList.map(async file => {
       let timestamp
       if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
         console.log('create file object with file info yes!')
@@ -213,7 +213,7 @@ class FileProvider {
       newFile.stateMessage = message
       newFile.timestamp = timestamp
       return newFile
-    })
+    }))
     const t1 = performance.now()
     console.log('[Measure] finish forming objects ' + (t1 - t0) + ' ms')
     // let listen = (event, arg) => {
