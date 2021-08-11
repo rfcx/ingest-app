@@ -138,7 +138,9 @@ export default {
         const firstFolder = this.props.selectedFiles.find(file => {
           return fileHelper.isFolder(file.path)
         })
-        deviceInfo = await this.$file.getDeviceInfoFromFolder(firstFolder.path)
+        if (firstFolder) {
+          deviceInfo = await this.$file.getDeviceInfoFromFolder(firstFolder.path)
+        }
       }
 
       // set device id & deployment id if any
