@@ -1,10 +1,12 @@
+import fileFormat from './FileFormat'
+
 const moment = require('moment')
 const appDate = 'YYYY-MM-DD HH:mm:ss'
 
 const getIsoDateWithFormat = (format, fileName) => {
   switch (format) {
-    case 'Auto-detect': return parseTimestampAuto(fileName)
-    case 'unix-hex': return parseTimestampUnixHex(fileName)
+    case fileFormat.fileFormat.AUTO_DETECT: return parseTimestampAuto(fileName)
+    case fileFormat.fileFormat.UNIX_HEX: return parseTimestampUnixHex(fileName)
     default: return parseTimestamp(fileName, format)
   }
 }
