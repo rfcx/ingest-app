@@ -161,7 +161,6 @@ export default {
         console.log(`reload files ${currentFiles.length} + ${newFiles.length} = ${this.files.length}`)
       } else {
         this.files = newFiles.sort(fileComparator)
-        console.log(`update last ${this.$getConst('DEFAULT_LIMIT')} : ${this.files.length}`)
       }
     },
     async reloadStats () {
@@ -180,12 +179,9 @@ export default {
       this.clearFilesFetcher() // make sure it's null before setting a new one
       if (this.files.length <= 0 || !this.isUploading) return // not initial a fetcher when there is no files or when the uploading process is not running
       this.fetchFilesInterval = setInterval(async () => {
-        console.log('=> FETCHING INTERVAL: START')
         await this.reloadStats()
-        console.log('=> FETCHING INTERVAL: RELOAD STATS')
         if (this.selectedTab === 'Prepared') { return }
         // not reloading files in prepare tab
-        console.log('=> FETCHING INTERVAL: RELOAD FILES')
         await this.reloadFiles(this.getQueryBySelectedTab(this.selectedTab), 0)
       }, 2000)
     },
@@ -193,7 +189,6 @@ export default {
       if (this.fetchFilesInterval) {
         clearInterval(this.fetchFilesInterval)
         this.fetchFilesInterval = null
-        console.log('FETCHING INTERVAL: STOP <=')
       }
     },
     async resetFiles () {
