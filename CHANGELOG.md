@@ -1,3 +1,10 @@
+<a name="1.4.7"></a>
+## 1.4.7 (2021-09-xx)
+
+### Features
+
+* CE-1381 add timezone confirm dialog before upload
+
 <a name="1.4.6"></a>
 ## 1.4.6 (2021-08-16)
 
