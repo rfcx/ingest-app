@@ -61,17 +61,14 @@ export default {
     onClickOutside () {
       this.$emit('onClickOutside')
       this.show = false
-      this.isFocus = false
     },
     onSelectOption (option) {
       this.$emit('onSelectOption', option)
       this.show = false
-      this.isFocus = false
     },
     onSelectSpecialOption () {
       this.$emit('onSelectSpecialOption')
       this.show = false
-      this.isFocus = false
     }
   }
 }
