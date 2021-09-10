@@ -15,12 +15,13 @@
         :options="fileNameTimezoneOptions"
         :isLoading="isUpdatingFilenameFormat"
         :selectedOptionText="getTimezoneOptionText(selectedTimezone)"
-        @onSelectOption="onTimezoneSave">
+        @onSelectOption="onTimezoneSave"
+        :isFocus="shouldFocusTimezoneInput">
       </options-dropdown>
     </div>
     <div>
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
-      <button type="button" class="button is-rounded is-primary" @click.prevent="queueToUpload()" :disabled="numberOfReadyToUploadFiles < 1 || isDeletingAllFiles">Start upload ({{numberOfReadyToUploadFiles}})</button>
+      <button type="button" class="button is-rounded is-primary" @click.prevent="shouldShowConfirmTimezoneAlert = true" :disabled="numberOfReadyToUploadFiles < 1 || isDeletingAllFiles">Start upload ({{numberOfReadyToUploadFiles}})</button>
     </div>
     <div class="modal is-active" v-if="showSettingModal">
       <div class="modal-background"></div>
@@ -30,6 +31,14 @@
         @save="onFormatSave"/>
       <button class="modal-close is-large" aria-label="close"></button>
     </div>
+    <ConfirmAlert
+    v-if="shouldShowConfirmTimezoneAlert"
+    :title="confirmTimezoneAlertText.title"
+    :contentHTML="confirmTimezoneAlertText.message"  
+    :confirmButtonText="confirmTimezoneAlertText.confirmTitle"
+    :cancelButtonText="confirmTimezoneAlertText.cancelTitle"
+    @onCancelPressed="recheckTimezoneSettings()"
+    @onConfirmPressed="queueToUpload()" />
     <ErrorAlert v-if="errorMessage" :content="errorMessage" @onCancelPressed="errorMessage = null"/>
   </div>
 </template>
@@ -42,6 +51,7 @@ import fileFormat from '../../../../../utils/FileFormat'
 import fileState from '../../../../../utils/fileState'
 import FileTimeZoneHelper from '../../../../../utils/FileTimezoneHelper'
 import OptionsDropdown from '../../Common/OptionsDropdown'
+import ConfirmAlert from '../../Common/ConfirmAlert'
 import ErrorAlert from '../../Common/ErrorAlert'
 import ipcRendererSend from '../../../services/ipc'
 
@@ -55,7 +65,7 @@ export default {
     },
     selectedStream: Object
   },
-  components: { FileNameFormatSettings, ErrorAlert, OptionsDropdown },
+  components: { FileNameFormatSettings, ConfirmAlert, ErrorAlert, OptionsDropdown },
   data () {
     return {
       showSettingModal: false,
@@ -63,7 +73,9 @@ export default {
       isQueuingToUpload: false,
       isUpdatingFilenameFormat: false,
       errorMessage: null,
-      selectedTimezone: ''
+      selectedTimezone: '',
+      shouldShowConfirmTimezoneAlert: false,
+      shouldFocusTimezoneInput: false
     }
   },
   computed: {
@@ -82,6 +94,15 @@ export default {
     defaultTimezone () {
       const savedSelectedTimezone = this.$store.getters.getSelectedTimezoneByStreamId(this.selectedStreamId)
       return this.getTimezoneOptionText(savedSelectedTimezone || FileTimeZoneHelper.fileTimezone.UTC)
+    },
+    confirmTimezoneAlertText () {
+      const timezone = this.getTimezoneOptionText(this.selectedTimezone)
+      return {
+        title: `Upload audios in ${timezone}?`,
+        message: `Please confirm if the filename timezone is correct. Your audios will be upload to the system with <b>${timezone}</b>?`,
+        confirmTitle: `Upload audios in ${timezone}`,
+        cancelTitle: `Recheck`
+      }
     }
   },
   created () {
@@ -89,25 +110,15 @@ export default {
   },
   methods: {
     async queueToUpload () {
+      this.shouldFocusTimezoneInput = false
+      this.shouldShowConfirmTimezoneAlert = false
+
       this.isQueuingToUpload = true
 
       // set session id
       const sessionId = this.$store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
       await this.$store.dispatch('setCurrentUploadingSessionId', sessionId)
 
-      // completion listener
-      // const t0 = performance.now()
-      // let listen = (event, arg) => {
-      //   this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
-      //   this.isQueuingToUpload = false
-      //   const t1 = performance.now()
-      //   console.log('[Measure] putFilesIntoUploadingQueue ' + (t1 - t0) + ' ms')
-      // }
-
-      // emit to main process to put file in uploading queue
-      // const data = {streamId: this.selectedStreamId, sessionId: sessionId}
-      // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.putFilesIntoUploadingQueueRequest, data)
-      // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.putFilesIntoUploadingQueueResponse, listen)
       const streamId = this.selectedStreamId
       const query = { streamId, state: PREPARING }
       await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
@@ -140,19 +151,6 @@ export default {
       this.$emit('onNeedResetFileList')
       this.$emit('onNeedResetStreamList')
       this.isDeletingAllFiles = false
-      // await streamService.updateStreamStats(streamId, [
-      //   { name: 'preparingCount', action: '-', diff: files.length },
-      //   { name: 'sessionTotalCount', action: '+', diff: files.length }
-      // ])
-      // const t0 = performance.now()
-      // let listen = (event, arg) => {
-      //   this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
-      //   this.isDeletingAllFiles = false
-      //   const t1 = performance.now()
-      //   console.log('[Measure] delete prepare files ' + (t1 - t0) + ' ms')
-      // }
-      // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deletePreparingFilesRequest, this.selectedStreamId)
-      // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.deletePreparingFilesResponse, listen)
     },
     openFileNameFormatSettingModal () {
       this.showSettingModal = true
@@ -187,6 +185,10 @@ export default {
     getTimezoneOptionText (optionTitle) {
       if (optionTitle === FileTimeZoneHelper.fileTimezone.LOCAL_TIME) return `${optionTitle} (${this.selectedStream.timezone})`
       else return optionTitle
+    },
+    recheckTimezoneSettings () {
+      this.shouldShowConfirmTimezoneAlert = false
+      this.shouldFocusTimezoneInput = true
     }
   }
 }
