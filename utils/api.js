@@ -50,9 +50,7 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
         id: fileId,
         params: { state: CONVERTING, uploaded: false }
       })
-      console.log('\n\n\n\n\n CONVERT STARTED', new Date().toISOString(), '\n\n\n')
       uploadFilePath = (await fileHelper.convert(filePath, remote.app.getPath('temp'), streamId)).path
-      console.log('\n\n\n\n\n CONVERT ENDED', new Date().toISOString(), '\n\n\n')
       uploadFileExt = 'flac'
       isConverted = true
       console.log('update upload path', uploadFilePath, uploadFileExt, fileName)
@@ -72,7 +70,6 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
         id: fileId,
         params: { state: UPLOADING, uploadId: data.uploadId, progress: 0, uploaded: false }
       })
-      console.log('\n\n\n\n\n UPLOAD STARTED', new Date().toISOString(), '\n\n\n')
       return performUpload(data.url, data.uploadId, uploadFilePath, uploadFileExt, progressCallback).then(async () => {
         const uploadTime = Date.now() - now
         const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.upload, 'el': fileName, 'ev': uploadTime }

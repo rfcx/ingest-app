@@ -113,10 +113,8 @@
           return
         }
         this.filesInUploadingQueue.push(unsyncedFile.id)
-        console.log('\n\n\n\n\n UPLOAD TRIGGERED', new Date().toISOString(), '\n\n\n')
         return this.uploadFile(unsyncedFile)
           .then(() => {
-            console.log('\n\n\n\n\n UPLOAD ENDED', new Date().toISOString(), '\n\n\n')
             this.filesInUploadingQueue.pop(unsyncedFile.id)
           })
           .catch(async (error) => {
