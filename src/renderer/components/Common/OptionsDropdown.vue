@@ -3,7 +3,7 @@
     <span class="wrapper__title">{{title}}</span>
     <div class="dropdown" :class="{'is-active': show}">
       <div class="dropdown-trigger">
-        <button class="button" :class="{'is-loading': isLoading}" aria-haspopup="true" aria-controls="dropdown-menu" @click="onClick" v-click-outside="onClickOutside">
+        <button class="button" :class="{'is-loading': isLoading, 'focus': isFocus}" aria-haspopup="true" aria-controls="dropdown-menu" @click="onClick" v-click-outside="onClickOutside">
           <span>{{ selectedOptionText }}</span>
           <span class="icon is-small">
             <fa-icon :icon="icons.arrowDown" aria-hidden="true" />
@@ -42,7 +42,8 @@ export default {
     isLoading: false,
     selectedOptionText: '',
     options: Array,
-    specialOptionTitle: null
+    specialOptionTitle: null,
+    isFocus: false
   },
   computed: {
     icons: () => ({
@@ -83,5 +84,9 @@ export default {
   }
   .dropdown {
     margin-top: 4px;
+  }
+
+  .dropdown-trigger .button.focus {
+    border-color: $warning-text-color;
   }
 </style>

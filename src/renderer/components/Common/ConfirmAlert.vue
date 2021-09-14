@@ -9,9 +9,12 @@
         <img v-if="image" class="logo" :src="require(`../../assets/${image}`)">
         {{ content }}
       </section>
+      <section class="modal-card-body" :class="{'modal-card-body-with-title': title}" v-else-if="contentHTML">
+        <div class="modal-content-text" v-html="contentHTML"></div>
+      </section>
       <footer class="modal-card-foot">
         <button class="button is-rounded" @click="cancelButtonPressed()">{{ cancelButtonText }}</button>
-        <button v-if="confirmButtonText" class="button is-danger is-rounded" :class="{ 'is-loading': isProcessing }" @click.prevent="confirmButtonPressed()">{{ confirmButtonText }}</button>
+        <button v-if="confirmButtonText" class="button is-rounded is-primary" :class="{ 'is-loading': isProcessing, 'is-danger': isDanger }" @click.prevent="confirmButtonPressed()">{{ confirmButtonText }}</button>
       </footer>
     </div>
   </div>
@@ -22,13 +25,15 @@ export default {
   props: {
     title: String,
     content: String,
+    contentHTML: String,
     image: String,
     confirmButtonText: String,
     cancelButtonText: {
       type: String,
       default: 'Cancel'
     },
-    isProcessing: false
+    isProcessing: false,
+    isDanger: true
   },
   methods: {
     cancelButtonPressed () {
@@ -56,6 +61,15 @@ export default {
   .modal-card-body-with-title {
     border-top-left-radius: 0px !important;
     border-top-right-radius: 0px !important;
+  }
+
+  .modal-card-body {
+    white-space: normal;
+    color: $body-text-color !important;
+  }
+
+  .modal-content-text strong {
+    color: $body-text-color !important;
   }
 
 </style>
