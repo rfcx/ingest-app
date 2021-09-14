@@ -98,9 +98,9 @@ export default {
     confirmTimezoneAlertText () {
       const timezone = this.getTimezoneOptionText(this.selectedTimezone)
       return {
-        title: `Upload audios in ${timezone}?`,
-        message: `Please confirm if the filename timezone is correct. Your audios will be upload to the system with <b>${timezone}</b>?`,
-        confirmTitle: `Upload audios in ${timezone}`,
+        title: `Upload audio in ${timezone}?`,
+        message: `Please confirm if the filename timezone is correct. Your audio will be upload to the system in <b>${timezone}</b>?`,
+        confirmTitle: `Upload audio in ${this.selectedTimezone}`,
         cancelTitle: `Recheck`
       }
     }
