@@ -14,7 +14,7 @@
         title="Filename Timezone" 
         :options="fileNameTimezoneOptions"
         :isLoading="isUpdatingFilenameFormat"
-        :selectedOptionText="getTimezoneOptionText(selectedTimezone)"
+        :selectedOptionText="selectedTimezoneText"
         @onSelectOption="onTimezoneSave"
         :isFocus="shouldFocusTimezoneInput">
       </options-dropdown>
@@ -94,6 +94,9 @@ export default {
     defaultTimezone () {
       const savedSelectedTimezone = this.$store.getters.getSelectedTimezoneByStreamId(this.selectedStreamId)
       return this.getTimezoneOptionText(savedSelectedTimezone || FileTimeZoneHelper.fileTimezone.UTC)
+    },
+    selectedTimezoneText () {
+      return this.getTimezoneOptionText(this.selectedTimezone)
     },
     confirmTimezoneAlertText () {
       const timezone = this.getTimezoneOptionText(this.selectedTimezone)
@@ -189,6 +192,12 @@ export default {
     recheckTimezoneSettings () {
       this.shouldShowConfirmTimezoneAlert = false
       this.shouldFocusTimezoneInput = true
+    }
+  },
+  watch: {
+    selectedStream () {
+      // if updated selected stream, then reset selected timezone
+      this.selectedTimezone = this.defaultTimezone
     }
   }
 }

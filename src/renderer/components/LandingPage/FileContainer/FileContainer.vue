@@ -1,6 +1,6 @@
 <template>
     <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10" :infinite-scroll-disabled="!infiniteScrollEnabled">
-    <header-view :selectedStream="selectedStream"></header-view>
+    <header-view :selectedStream="selectedStream" @onClickRefreshStream="updateStream" :isFetching="isFetchingStreamInfo"></header-view>
     <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
     <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream" @onNeedResetFileList="resetFiles" @onNeedResetStreamList="resetStreams"></file-name-format-info>
     <summary-view :stats="getStatsOfTab(selectedTab)" :retryableFileCount="retryableFileCount" v-if="selectedTab === 'Completed' && hasCompletedFiles"></summary-view>
@@ -18,6 +18,7 @@ import SummaryView from './Summary'
 import FileState from '../../../../../utils/fileState'
 import infiniteScroll from 'vue-infinite-scroll'
 import ipcRendererSend from '../../../services/ipc'
+import streamService from '../../../services/stream'
 
 const fileComparator = (fileA, fileB) => {
   const stateResult = FileState.getStatePriority(fileA.state) - FileState.getStatePriority(fileB.state)
@@ -46,7 +47,8 @@ export default {
       retryableFileCount: 0,
       fetchFilesInterval: null,
       selectedStream: null,
-      isFetching: false
+      isFetching: false,
+      isFetchingStreamInfo: false
     }
   },
   props: {
@@ -202,6 +204,17 @@ export default {
     },
     async getCurrentStream () {
       this.selectedStream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedStreamId)
+    },
+    async updateStream () {
+      try {
+        this.isFetchingStreamInfo = true
+        const updatedStream = await streamService.fetchStream(this.selectedStream.id)
+        this.isFetchingStreamInfo = false
+        this.selectedStream = await streamService.updateStream(updatedStream)
+      } catch (e) {
+        this.isFetchingStreamInfo = false
+        console.error('updateStreamIfNeeded: fetch stream error', e)
+      }
     }
   },
   watch: {
