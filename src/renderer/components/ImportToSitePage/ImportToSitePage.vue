@@ -286,7 +286,6 @@ export default {
         // then, call fetch stream data from the server
         const isDataFromLocalDatabase = this.selectedExistingSite.serverCreatedAt
         if (isDataFromLocalDatabase) {
-          console.log('updateisDataFromLocalDatabase')
           try {
             const updatedSite = await streamService.fetchStream(this.selectedExistingSite.id) // fetch fresh stream data from server
             this.selectedExistingSite = await streamService.updateStream(updatedSite)
