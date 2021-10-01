@@ -288,7 +288,7 @@ export default {
         if (isDataFromLocalDatabase) {
           try {
             const updatedSite = await streamService.fetchStream(this.selectedExistingSite.id) // fetch fresh stream data from server
-            this.selectedExistingSite = await streamService.updateStream(updatedSite)
+            this.selectedExistingSite = updatedSite
           } catch (error) {
             console.log('error', error)
           }
