@@ -1,4 +1,27 @@
 import ipcRendererSend from './ipc'
+import streamHelper from '../../../utils/streamHelper'
+import api from '../../../utils/api'
+
+const fetchStream = async (id) => {
+  const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
+  try {
+    const site = await api.getStream(id, idToken)
+    return streamHelper.parseSite(site)
+  } catch (e) {
+    throw (e)
+  }
+}
+
+const updateStream = async (streamObj) => {
+  const id = streamObj.id
+  const obj = streamHelper.parseSite(streamObj)
+  return ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, {
+    id: id,
+    params: obj
+  }).then(data => {
+    return data.dataValues
+  })
+}
 
 const updateStreamStats = async (id, stats) => {
   const stream = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, id)
@@ -31,6 +54,8 @@ const updateStreams = async (streams) => {
 }
 
 export default {
+  fetchStream,
+  updateStream,
   upsertStreams,
   updateStreams,
   updateStreamStats

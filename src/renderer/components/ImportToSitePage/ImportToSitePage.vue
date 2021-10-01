@@ -78,6 +78,7 @@ import fileHelper from '../../../../utils/fileHelper'
 import ipcRendererSend from '../../services/ipc'
 import settings from 'electron-settings'
 import streamHelper from '../../../../utils/streamHelper'
+import streamService from '../../services/stream'
 
 export default {
   data () {
@@ -275,7 +276,28 @@ export default {
       let localSite = await ipcRendererSend('db.streams.get', `db.streams.get.${Date.now()}`, this.selectedExistingSite.id)
       if (!localSite) { // double check if the selected site already saved to local db
         localSite = await this.saveSiteInLocalDB(this.selectedExistingSite)
+      } else {
+        // selectedExistingSite can be data from server / local depends on which site the user chose
+        // - if the user drag the file in, then selectedExistingSite will be the preselectedSite that user has chose from the previous page
+        // - once the user choose any site from the dropdown list, then the selectedExistingSite will be site from the server.
+        // to make sure the site information is up to date, then this chuck of code will always save newly fetched site info into local db
+
+        // if there is serverCreatedAt value in selected existing site that means this data comes from local database
+        // then, call fetch stream data from the server
+        const isDataFromLocalDatabase = this.selectedExistingSite.serverCreatedAt
+        if (isDataFromLocalDatabase) {
+          console.log('updateisDataFromLocalDatabase')
+          try {
+            const updatedSite = await streamService.fetchStream(this.selectedExistingSite.id) // fetch fresh stream data from server
+            this.selectedExistingSite = await streamService.updateStream(updatedSite)
+          } catch (error) {
+            console.log('error', error)
+          }
+        }
+        // save site information from server into local db
+        localSite = await streamService.updateStream(this.selectedExistingSite)
       }
+      // use data from local database from now on
       this.selectedExistingSite = localSite
       if (this.props.selectedFolderPath) {
         this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, {
