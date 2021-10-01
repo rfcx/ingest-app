@@ -1,5 +1,12 @@
 <a name="1.4.7"></a>
-## 1.4.7 (2021-09-xx)
+## 1.4.8 (2021-10-xx)
+
+### Improvements
+
+* CE-954 add ability for user to update site information / and auto update site information when user import file to site
+
+<a name="1.4.7"></a>
+## 1.4.7 (2021-09-15)
 
 ### Features
 
