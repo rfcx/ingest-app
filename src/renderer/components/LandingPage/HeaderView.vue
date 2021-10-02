@@ -3,6 +3,8 @@
     <div>
       <div class="stream-info__title-wrapper" v-if="selectedStream">
         <span class="stream-info__title">{{ selectedStream.name }}</span>
+        <fa-icon class="faRefresh" :icon="iconRefresh" @click.prevent="onClickRefreshStream" v-if="!isFetching"></fa-icon>
+        <div class="loader" v-else></div>
       </div>
     </div>
     <div class="stream-info__subtitle">
@@ -26,20 +28,22 @@
 
 <script>
 import api from '../../../../utils/api'
-import { faPencilAlt, faExternalLinkAlt, faFolder } from '@fortawesome/free-solid-svg-icons'
+import { faPencilAlt, faExternalLinkAlt, faFolder, faSyncAlt } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
 
 export default {
   data () {
     return {
       iconPencil: faPencilAlt,
+      iconRefresh: faSyncAlt,
       faExternalLinkAlt: faExternalLinkAlt,
       faProject: faFolder,
       hasClosedNavigateMessage: false
     }
   },
   props: {
-    selectedStream: Object
+    selectedStream: Object,
+    isFetching: Boolean
   },
   computed: {
     ...mapState({
@@ -65,6 +69,9 @@ export default {
         return ''
       }
       return this.selectedStream.siteGuid || `${this.selectedStream.latitude.toFixed(4)}, ${this.selectedStream.longitude.toFixed(4)}`
+    },
+    onClickRefreshStream () {
+      this.$emit('onClickRefreshStream')
     }
   }
 }
@@ -125,6 +132,19 @@ export default {
       color: $white-color;
       font-size: $default-font-size;
     }
+
+    .faRefresh {
+      color: $white-color;
+      font-size: 10px;
+      margin-left: 4px;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+    }
+
     .fixed-notice {
       bottom: 10px;
       top: auto;

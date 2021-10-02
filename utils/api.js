@@ -150,6 +150,16 @@ const checkStatus = (env, uploadId, idToken) => {
     })
 }
 
+const getStream = (streamId, idToken) => {
+  const env = settings.get('settings.production_env')
+  return httpClient.get(apiUrl(env) + `/streams/${streamId}`, { headers: { 'Authorization': 'Bearer ' + idToken } })
+    .then(response => {
+      return response.data
+    }).catch(error => {
+      throw errors.matchAxiosErrorToRfcx(error)
+    })
+}
+
 const updateStream = (env, streamId, opts, idToken) => {
   return httpClient.patch(apiUrl(env) + `/streams/${streamId}`, opts, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
@@ -200,9 +210,6 @@ const getDeploymentInfo = (deploymentId, idToken) => {
     .then(response => {
       return response.data
     }).catch(error => {
-      let e = errors.matchAxiosErrorToRfcx(error)
-      console.log('error', error)
-      console.log('match err', e, e.messsge)
       throw errors.matchAxiosErrorToRfcx(error)
     })
 }
@@ -223,6 +230,7 @@ export default {
   arbimonWebUrl,
   createStream,
   updateStream,
+  getStream,
   uploadFile,
   checkStatus,
   renameStream,
