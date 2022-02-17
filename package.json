@@ -1,6 +1,6 @@
 {
   "name": "rfcx-ingest",
-  "version": "1.4.8",
+  "version": "1.4.9",
   "author": "RFCx",
   "private": true,
   "description": "Desktop application for ingesting audio to RFCx platform",
@@ -122,6 +122,7 @@
     "querystring": "^0.2.0",
     "rxdb": "^9.15.0",
     "sequelize": "^6.5.1",
+    "sha1-file": "^1.0.4",
     "sox": "^0.1.0",
     "sqlite3": "^5.0.2",
     "vue": "^2.5.16",
