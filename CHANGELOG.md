@@ -1,5 +1,21 @@
-<a name="1.4.7"></a>
-## 1.4.8 (2021-10-xx)
+<a name="1.4.10"></a>
+## 1.4.10 (2022-04-28)
+
+### Improvements
+
+* #137 Reload backgroud process for uploading when it crashed
+* #142 Improve error message about 0 byte files
+* #143 Prevent user to queue 0 byte files to upload
+
+<a name="1.4.9"></a>
+## 1.4.9 (2022-02-17)
+
+### Improvements
+
+* HOTFIX Memory leak issue by changing the library for creating checksum
+
+<a name="1.4.8"></a>
+## 1.4.8 (2021-10-01)
 
 ### Improvements
 
