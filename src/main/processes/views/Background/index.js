@@ -19,6 +19,14 @@ export default {
     })
     backgroundAPIWindow.loadURL(backgroundAPIURL)
 
+    // Monitor process
+    backgroundAPIWindow.webContents.on('crashed', (event, killed) => {
+      console.log('💥 backgroundAPIWindow on crashed event:', event)
+      setTimeout(() => { // delay to prevent app crash https://github.com/electron/electron/issues/23291
+        backgroundAPIWindow.reload()
+      }, 5000)
+    })
+
     powerMonitor.on('lock-screen', () => {
       console.log('------------The system is going to lock screen ----------')
       lockScreenPowerSaveBlockerId = powerSaveBlocker.start('prevent-display-sleep')

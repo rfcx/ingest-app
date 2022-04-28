@@ -123,12 +123,10 @@
         this.isCalculatingDurations = false
       },
       tickUpload () {
-        // if (this.isHandlingFileNotExist) { console.log('tickUpload: clearing files that are not exist'); return }
         if (!this.isUploadingProcessEnabled) { console.log('tickUpload: not enable uploading process'); return }
         this.queueFilesToUpload()
       },
       tickCheckStatus () {
-        // if (this.isHandlingFileNotExist) { console.log('tickCheckStatus: clearing files that are not exist'); return }
         if (!this.isUploadingProcessEnabled) { console.log('tickCheckStatus: not enable uploading process'); return }
         this.queueJobToCheckStatus()
       },
@@ -136,7 +134,7 @@
         return this.getSuspendedFiles()
           .then((files) => {
             if (files.length) {
-              console.log('\nuploading files with errors after suspend/loses internet connection', files)
+              console.log('\nuploading files with errors after suspend/loses internet connection', files.length)
               let listener = (event, arg) => {
                 this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
                 let idToken = arg
