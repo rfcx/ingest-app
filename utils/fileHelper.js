@@ -1,9 +1,9 @@
 import FileTimezoneHelper from './FileTimezoneHelper'
 import audioService from '../services/audio'
 import FileInfo from '../src/renderer/services/FileInfo'
+const sha1File = require('sha1-file')
 const fs = require('fs')
 const path = require('path')
-const cryptoJS = require('crypto-js')
 const moment = require('moment-timezone')
 const archiver = require('archiver')
 
@@ -15,10 +15,6 @@ const getFilePath = (directoryPath, fileName) => {
 
 const isExist = (path) => {
   return fs.existsSync(path)
-}
-
-const isFile = (filePath) => {
-  return fs.lstatSync(filePath).isFile()
 }
 
 const isFolder = (filePath) => {
@@ -40,22 +36,9 @@ const getFilesFromDirectoryPath = (directoryPath) => {
   return undefined
 }
 
-const getMD5Hash = (filePath) => {
-  if (!isFile(filePath)) return ''
-  const fileData = readFile(filePath)
-  let fileWordArr = cryptoJS.lib.WordArray.create(fileData)
-  let sha1Hash = cryptoJS.SHA1(fileWordArr)
-  return {
-    hash: cryptoJS.MD5(fileData).toString(),
-    sha1: sha1Hash.toString()
-  }
-}
-
 const getCheckSum = (filePath) => {
-  const fileData = readFile(filePath)
-  let fileWordArr = cryptoJS.lib.WordArray.create(fileData)
-  let sha1Hash = cryptoJS.SHA1(fileWordArr)
-  return sha1Hash.toString()
+  const checksum = sha1File(filePath)
+  return checksum
 }
 
 const getFileNameFromFilePath = (filePath) => {
@@ -193,7 +176,6 @@ export default {
   getFilesFromDirectoryPath,
   readFile,
   isExist,
-  getMD5Hash,
   getFilePath,
   getFileNameFromFilePath,
   getDirectoryFromFilePath,

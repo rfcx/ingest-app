@@ -13,6 +13,14 @@ export default {
 
     await dbService.init(app)
 
+    // Monitor process
+    dbWindow.webContents.on('crashed', (event, killed) => {
+      console.log('💥 dbWindow on crashed event:', event)
+      setTimeout(() => { // delay to prevent app crash https://github.com/electron/electron/issues/23291
+        dbWindow.reload()
+      }, 5000)
+    })
+
     Object.keys(dbService.collections).forEach((collection) => {
       Object.keys(dbService.collections[collection]).forEach((method) => {
         const topic = `db.${collection}.${method}`

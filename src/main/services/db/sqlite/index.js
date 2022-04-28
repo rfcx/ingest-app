@@ -222,7 +222,7 @@ const collections = {
       })
     },
     query: function (opts = {}) {
-      console.log('Database streams.query is called', opts)
+      // console.log('Database streams.query is called', opts)
       const where = opts.where || null
       const order = opts.order || null
       const limit = opts.limit || null

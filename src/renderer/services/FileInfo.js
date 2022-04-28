@@ -7,17 +7,17 @@ export default class FileInfo {
   duration = -1
 
   constructor (filePath) {
-    try {
-      return (async () => {
+    return (async () => {
+      try {
         const fileHeaderData = await audio.identify(filePath)
         this.comment = fileHeaderData.comment || ''
         this.authors = fileHeaderData.artist || ''
         this.duration = fileHeaderData.duration
         return this
-      })()
-    } catch (e) {
-      console.log('Read file info error', e)
-    }
+      } catch (e) {
+        console.log('Read file info error', e)
+      }
+    })()
   }
 
   get deviceId () {
