@@ -120,8 +120,8 @@
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
-      this.$electron.ipcRenderer.on('showUpToDatePopup', (event, message) => {
-        this.isPopupOpened = message
+      this.$electron.ipcRenderer.on('showUpToDatePopup', (event, isDisplayUpToDatePopup) => {
+        this.isPopupOpened = isDisplayUpToDatePopup
       })
       this.$electron.ipcRenderer.on('onClearAllData', async (event, message) => {
         await this.$refs.sideNavigation.reloadStreamListFromLocalDB()
