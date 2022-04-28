@@ -12,9 +12,13 @@
 
 ### Requirements
 
-- Node 8.11.0+
+- Node 8.11.0+ (Workable v10.24.0)
 
 ### Start development environment
+
+0. For windows user:
+
+- Install Visual studio **2017** along with Desktop development with C++
 
 1. Install dependencies
 
