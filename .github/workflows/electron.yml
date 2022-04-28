@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - alpha
 
 jobs:
   release:
@@ -36,5 +37,7 @@ jobs:
           build_script_name: build:ci
           max_attempts: 3
         env:
+          appleId: ${{ secrets.APPLE_ID }}
+          appleIdPassword: ${{ secrets.APPLE_ID_PWD }},
           API_KEY_ID: ${{ secrets.API_KEY_ID }},
           API_KEY_ISSUER_ID: ${{ secrets.API_KEY_ISSUER_ID }}
