@@ -219,6 +219,14 @@
           }
         })
       },
+      async removeEmptyFileInTheQueue () {
+        await ipcRendererSend('db.files.delete', `db.files.delete.${Date.now()}`, {
+          where: {
+            state: WAITING,
+            durationInSecond: -2
+          }
+        })
+      },
       sendCompleteNotification (numberOfCompletedFiles, numberOfFailedFiles) {
         const completedText = `${numberOfCompletedFiles} ${numberOfCompletedFiles > 1 ? 'files' : 'file'} uploaded`
         const failText = `${numberOfFailedFiles} ${numberOfFailedFiles > 1 ? 'files' : 'file'} failed`
@@ -255,6 +263,7 @@
       }, workerTimeoutMinimum)
       setTimeout(() => {
         this.removeOutdatedFiles()
+        this.removeEmptyFileInTheQueue()
       }, 15000) // wait for 15 seconds to reduce pressure on db on app start
       // add get file duration listener
       // let getFileDurationListener = (event, files) => {
