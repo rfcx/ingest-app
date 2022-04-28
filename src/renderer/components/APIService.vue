@@ -30,45 +30,14 @@
         currentUploadingSessionId: state => state.AppSetting.currentUploadingSessionId,
         isUploadingProcessEnabled: state => state.AppSetting.isUploadingProcessEnabled
       })
-      // numberOfAllFilesInTheSession () {
-      //   return Stream.query().sum('sessionTotalCount')
-      // },
-      // numberOfCompleteFilesInTheSession () {
-      //   return this.numberOfSuccessFilesInTheSession + this.numberOfFailFilesInTheSession
-      // },
-      // numberOfSuccessFilesInTheSession () {
-      //   return Stream.query().sum('sessionSuccessCount')
-      // },
-      // numberOfFailFilesInTheSession () {
-      //   return Stream.query().sum('sessionFailCount')
-      // },
-      // isCompleted () {
-      //   return this.numberOfAllFilesInTheSession > 0 && this.numberOfCompleteFilesInTheSession === this.numberOfAllFilesInTheSession
-      // }
     },
-    // watch: {
-    //   async isCompleted (newVal, oldVal) {
-    //     if (oldVal === newVal || newVal === false) return
-    //     this.sendCompleteNotification(this.numberOfSuccessFilesInTheSession, this.numberOfFailFilesInTheSession)
-    //     this.tickCheckSession() // check status 1 last time before reset uploading id (prevent cannot redo file doesn't exist issue)
-    //     await this.resetUploadingSessionId()
-    //   }
-    // },
     methods: {
       getSuspendedFiles () {
-        // return new Promise((resolve, reject) => {
-        //   let files = File.query().where(file => { return ['uploading', 'converting'].includes(file.state) && file.uploaded === false }).orderBy('timestamp').get()
-        //   resolve(files != null ? files : [])
-        // })
         return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: [UPLOADING, CONVERTING] } })
           .then((files) => files.filter((file) => !file.uploaded))
       },
       getUnsyncedFile () { // only get files that already have duration to queue to upload
         return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: WAITING, durationInSecond: { $gt: -1 } }, limit: 1 })
-        // return File.query().where('state', 'waiting')
-        //   .orderBy('retries', 'desc')
-        //   .orderBy('timestamp', 'asc')
-        //   .first()
       },
       getUploadedFiles () {
         return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: [UPLOADING, PROCESSING] } })
@@ -79,13 +48,9 @@
               })
               .slice(0, 5)
           })
-        // return File.query().where((file) => {
-        //   return ['uploading', 'ingesting'].includes(file.state) && file.uploadId !== '' && file.uploaded === true
-        // }).orderBy('timestamp').limit(5).get()
       },
       getNoDurationFiles () { // get duration of files that is in waiting status
         return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: [PREPARING, WAITING], durationInSecond: [-1] }, order: [['state', 'DESC'], ['createdAt', 'ASC']], limit: parallelUploads })
-        // return File.query().where(file => { return FileHelper.isSupportedFileExtension(file.extension) && file.durationInSecond === -1 && !file.isError }).orderBy('timestamp').get()
       },
       async uploadFile (file) {
         return new Promise((resolve, reject) => {
@@ -167,30 +132,6 @@
         if (!this.isUploadingProcessEnabled) { console.log('tickCheckStatus: not enable uploading process'); return }
         this.queueJobToCheckStatus()
       },
-      // async updateFilesDuration (files) {
-      //   if (files && files.length > 0) {
-      //     console.log('update file duration with files params', files.length)
-      //     this.$file.updateFilesDuration(files)
-      //   } else {
-      //     const noDurationFiles = this.getNoDurationFiles()
-      //     console.log('update file duration with no duration files from query snapshot', noDurationFiles.length)
-      //     this.$file.updateFilesDuration(noDurationFiles)
-      //   }
-      // },
-      // clearFilesDoNotExist (directoryName, streamId) {
-      // const filesInStreamFromTheSameDirectory = File.query().where(file => {
-      //   return file.path.includes(directoryName) && file.isInQueuedGroup && file.streamId === streamId
-      // }).get()
-      // let updateFileDoNotExistCompleteListener = async (event) => {
-      //   this.$electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFilesDoNotExistResponse, updateFileDoNotExistCompleteListener)
-      //   // update session count
-      //   await Stream.dispatch('filesCompletedUploadSession', { streamId, amount: filesInStreamFromTheSameDirectory.length, success: false })
-      //   this.isHandlingFileNotExist = false
-      // }
-      // this.$electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFilesDoNotExistResponse, updateFileDoNotExistCompleteListener)
-      // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFilesDoNotExistRequest, filesInStreamFromTheSameDirectory)
-      //   this.isHandlingFileNotExist = false
-      // },
       checkAfterSuspended () {
         return this.getSuspendedFiles()
           .then((files) => {
@@ -209,7 +150,6 @@
           })
       },
       async removeOutdatedFiles () {
-        // this.$electron.ipcRenderer.send(DatabaseEventName.eventsName.deleteOutdatedFilesRequest)
         await ipcRendererSend('db.files.delete', `db.files.delete.${Date.now()}`, {
           where: {
             state: COMPLETED,
@@ -254,7 +194,6 @@
       console.log('API Service')
       this.checkAfterSuspended()
       this.startCalcDurationTick()
-      // this.updateFilesDuration()
       this.checkWaitingFilesInterval = setInterval(() => {
         this.tickUpload()
       }, queueFileToUploadWorkerTimeoutMinimum)
@@ -265,12 +204,6 @@
         this.removeOutdatedFiles()
         this.removeEmptyFileInTheQueue()
       }, 15000) // wait for 15 seconds to reduce pressure on db on app start
-      // add get file duration listener
-      // let getFileDurationListener = (event, files) => {
-      //   console.log('getFileDurationTrigger')
-      //   this.updateFilesDuration(files)
-      // }
-      // this.$electron.ipcRenderer.on('getFileDurationTrigger', getFileDurationListener)
       // listen to file server for any new files added
       this.$electron.ipcRenderer.on('services.file.new', this.startCalcDurationTick.bind(this))
     },
