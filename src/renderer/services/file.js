@@ -520,10 +520,14 @@ class FileProvider {
 
   async getDeviceInfo (file) {
     if (!file) return undefined
-    const fileInfo = await new FileInfo(file.path)
-    const deviceId = fileInfo.deviceId
-    const deploymentId = fileInfo.deployment
-    return {deviceId, deploymentId}
+    try {
+      const fileInfo = await new FileInfo(file.path)
+      const deviceId = fileInfo.deviceId
+      const deploymentId = fileInfo.deployment
+      return {deviceId, deploymentId}
+    } catch (e) {
+      return null
+    }
   }
 
   /* -- Helper -- */
@@ -543,7 +547,7 @@ class FileProvider {
 
     const size = fileHelper.getFileSize(filePath)
     const timestamp = dateHelper.getIsoDateWithFormat(stream.timestampFormat, fileName)
-    const { state, message } = this.getState(timestamp, fileExt)
+    const { state, message } = this.getState(timestamp, fileExt, size)
 
     return {
       id: this.getFileId(filePath),
@@ -564,12 +568,14 @@ class FileProvider {
     }
   }
 
-  getState (timestamp, fileExt) {
+  getState (timestamp, fileExt, sizeInByte) {
     const momentDate = dateHelper.getMomentDateFromISODate(timestamp)
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
       return { state: ERROR_LOCAL, message: 'File extension is not supported' }
     } else if (!momentDate.isValid()) {
       return { state: ERROR_LOCAL, message: 'Filename does not match with a filename format' }
+    } else if (sizeInByte === 0) {
+      return { state: ERROR_LOCAL, message: 'Empty file (0 byte)' }
     } else {
       return { state: PREPARING, message: '' }
     }
