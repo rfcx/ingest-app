@@ -59,10 +59,10 @@ function createWindow (openedAsHidden = false) {
 function createAutoUpdaterSub () {
   updateProcess.createAutoUpdaterSub(() => {
     // update not avaliable
-    const isDisplay = settings.get('settings.display_up_to_date')
+    const isDisplay = settings.get('settings.should_display_up_to_date')
     if (mainWindow && isDisplay) {
       mainWindow.webContents.send('showUpToDatePopup', true)
-      settings.set('settings.display_up_to_date', false)
+      settings.set('settings.should_display_up_to_date', false)
     }
   }, () => {
     // start updating process
@@ -90,7 +90,7 @@ function createAutoUpdaterSub () {
       resetTimers()
       app.exit()
       app.quit()
-      settings.set('settings.display_up_to_date', true)
+      settings.set('settings.should_display_up_to_date', true)
     }, 2000)
   })
 }
@@ -198,14 +198,14 @@ function initialSettings () {
       darkMode: true,
       auto_update_app: true,
       onLine: true,
-      display_up_to_date: true
+      should_display_up_to_date: true
     })
   }
   if (settings.get('settings.auto_update_app') === undefined) {
     settings.set('settings.auto_update_app', true)
   }
-  if (settings.get('settings.display_up_to_date') === undefined) {
-    settings.set('settings.display_up_to_date', true)
+  if (settings.get('settings.should_display_up_to_date') === undefined) {
+    settings.set('settings.should_display_up_to_date', true)
   }
   if (settings.get('settings.onLine') === undefined) {
     settings.set('settings.onLine', true)
