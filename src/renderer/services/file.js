@@ -524,7 +524,8 @@ class FileProvider {
       const fileInfo = await new FileInfo(file.path)
       const deviceId = fileInfo.deviceId
       const deploymentId = fileInfo.deployment
-      return {deviceId, deploymentId}
+      const timezoneOffset = fileInfo.timezoneOffset || 0
+      return {deviceId, deploymentId, timezoneOffset}
     } catch (e) {
       return null
     }

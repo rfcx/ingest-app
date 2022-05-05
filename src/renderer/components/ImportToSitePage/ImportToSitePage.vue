@@ -92,6 +92,7 @@ export default {
       props: {
         deploymentId: null,
         deviceId: null,
+        deploymentConfiguredTimeZone: null,
         selectedFolderPath: null,
         selectedFiles: null,
         currentActiveSite: null
@@ -148,6 +149,7 @@ export default {
       if (deviceInfo) {
         this.props.deviceId = deviceInfo.deviceId
         this.props.deploymentId = deviceInfo.deploymentId
+        this.props.deploymentConfiguredTimeZone = deviceInfo.timezoneOffset
       }
     }
 
@@ -301,7 +303,7 @@ export default {
       const deploymentInfo = {
         deploymentId: this.props.deploymentId || '',
         deviceId: this.props.deviceId || '',
-        timezone: this.props.deploymentConfiguredTimeZone || null
+        timezone: this.props.deploymentConfiguredTimeZone
       }
 
       if (this.props.selectedFolderPath) {
