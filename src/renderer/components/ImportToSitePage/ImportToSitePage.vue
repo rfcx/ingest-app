@@ -298,13 +298,17 @@ export default {
       }
       // use data from local database from now on
       this.selectedExistingSite = localSite
+      const deploymentInfo = {
+        deploymentId: this.props.deploymentId || '',
+        deviceId: this.props.deviceId || '',
+        timezone: this.props.deploymentConfiguredTimeZone || null
+      }
+
       if (this.props.selectedFolderPath) {
-        this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, {
-          deploymentId: this.deploymentInfo ? this.deploymentInfo.id : ''
-        })
+        this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, deploymentInfo)
       }
       if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
-        this.$file.handleDroppedFiles(this.props.selectedFiles, this.selectedExistingSite)
+        this.$file.handleDroppedFiles(this.props.selectedFiles, this.selectedExistingSite, deploymentInfo)
       }
       await this.$store.dispatch('setSelectedStreamId', this.selectedExistingSite.id)
       this.$router.push('/')

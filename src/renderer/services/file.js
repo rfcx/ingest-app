@@ -536,8 +536,6 @@ class FileProvider {
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
 
-    // TODO: request to read file info in bg thread if needed
-
     // read deployment info
     let deviceId, deploymentId
     if (deploymentInfo) {

@@ -85,7 +85,7 @@ const collections = {
       return models.File.findOne({ where: { id: data.id } })
         .then((file) => {
           ['durationInSecond', 'state', 'uploadId', 'stateMessage', 'progress', 'format', 'sessionId',
-            'retries', 'uploaded', 'uploadedTime', 'timestamp', 'name', 'path'].forEach((a) => {
+            'retries', 'uploaded', 'uploadedTime', 'timestamp', 'name', 'path', 'deploymentId', 'deviceId'].forEach((a) => {
             if (data.params[a] !== undefined) {
               file[a] = data.params[a]
             }
