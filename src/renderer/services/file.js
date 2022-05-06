@@ -37,7 +37,7 @@ class FileProvider {
       const file = droppedFiles[i]
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
-          this.getFileObjectsFromFolder(file.path, selectedStream, null)
+          this.getFileObjectsFromFolder(file.path, selectedStream, null, deploymentInfo)
         ).filter(file => fileHelper.isSupportedFileExtension(file.extension))
       } else {
         const fileObject = this.createFileObject(file.path, selectedStream, deploymentInfo)

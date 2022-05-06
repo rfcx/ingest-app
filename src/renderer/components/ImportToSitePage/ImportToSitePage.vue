@@ -79,6 +79,7 @@ import ipcRendererSend from '../../services/ipc'
 import settings from 'electron-settings'
 import streamHelper from '../../../../utils/streamHelper'
 import streamService from '../../services/stream'
+import FileTimezoneHelper from '../../../../utils/FileTimezoneHelper'
 
 export default {
   data () {
@@ -300,19 +301,37 @@ export default {
       }
       // use data from local database from now on
       this.selectedExistingSite = localSite
+      const siteId = this.selectedExistingSite.id
+
+      // setup deployment info
       const deploymentInfo = {
         deploymentId: this.props.deploymentId || '',
         deviceId: this.props.deviceId || '',
         timezone: this.props.deploymentConfiguredTimeZone
       }
 
+      // pass files
       if (this.props.selectedFolderPath) {
         this.$file.handleDroppedFolder(this.props.selectedFolderPath, this.selectedExistingSite, deploymentInfo)
       }
       if (this.props.selectedFiles && this.props.selectedFiles.length > 0) {
         this.$file.handleDroppedFiles(this.props.selectedFiles, this.selectedExistingSite, deploymentInfo)
       }
-      await this.$store.dispatch('setSelectedStreamId', this.selectedExistingSite.id)
+
+      // set default timezone offset settings
+      const timezoneOffsetObject = {}
+      timezoneOffsetObject[siteId] = deploymentInfo.timezone
+      await this.$store.dispatch('setAudiomothTimezoneOffsetConfigs', timezoneOffsetObject)
+
+      // set default timezone settings
+      const timezoneObject = {}
+      timezoneObject[siteId] = deploymentInfo.timezone
+        ? FileTimezoneHelper.fileTimezone.USE_AUDIOMOTH_CONFIG
+        : FileTimezoneHelper.fileTimezone.LOCAL_TIME
+      await this.$store.dispatch('setSelectedTimezone', timezoneObject)
+
+      // set selected stream id
+      await this.$store.dispatch('setSelectedStreamId', siteId)
       this.$router.push('/')
     },
     async createSite () {
