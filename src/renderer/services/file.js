@@ -194,15 +194,6 @@ class FileProvider {
     })).filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage))
     const updatedFiles = await Promise.all(fileObjectList.map(async file => {
       let timestamp
-      if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
-        console.log('create file object with file info yes!')
-        const info = await new FileInfo(file.path)
-        const momentDate = info.recordedDate
-        if (momentDate) {
-          timestamp = momentDate.format()
-        }
-        console.log('create file object fileinfo', info)
-      }
       if (!timestamp) {
         timestamp = dateHelper.getIsoDateWithFormat(format, file.name)
       }
