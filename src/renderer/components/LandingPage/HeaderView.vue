@@ -13,7 +13,7 @@
         <span class="stream-info__project">{{selectedStream.projectName}}</span>
       </div>
         <img src="~@/assets/ic-pin.svg">
-        <span v-if="selectedStream" class="stream-info__coordinates">{{ getStreamLocation() }}</span>
+        <span v-if="selectedStream" class="stream-info__coordinates">{{ getStreamLocation() }} {{ streamTimezone }}</span>
     </div>
     <a title="Redirect to Arbimon" class="button is-rounded rounded-button" @click="redirectToArbimon()">
       <fa-icon class="faExternal" :icon="faExternalLinkAlt"></fa-icon>
@@ -54,6 +54,9 @@ export default {
     },
     showNavigateMessage () {
       return this.selectedStream && this.selectedStream.isCompleted
+    },
+    streamTimezone () {
+      return this.selectedStream.timezone ? `(${this.selectedStream.timezone})` : ''
     }
   },
   methods: {

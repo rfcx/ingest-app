@@ -186,8 +186,7 @@ export default {
       else return ''
     },
     getTimezoneOptionText (optionTitle) {
-      if (optionTitle === FileTimeZoneHelper.fileTimezone.LOCAL_TIME) return `${optionTitle} (${this.selectedStream.timezone})`
-      else return optionTitle
+      return optionTitle
     },
     recheckTimezoneSettings () {
       this.shouldShowConfirmTimezoneAlert = false
