@@ -30,6 +30,7 @@
 import api from '../../../../utils/api'
 import { faPencilAlt, faExternalLinkAlt, faFolder, faSyncAlt } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
+import dateHelper from '../../../../utils/dateHelper'
 
 export default {
   data () {
@@ -56,7 +57,7 @@ export default {
       return this.selectedStream && this.selectedStream.isCompleted
     },
     streamTimezone () {
-      return this.selectedStream.timezone ? `(${this.selectedStream.timezone})` : ''
+      return this.selectedStream.timezone ? `(${dateHelper.getTimezoneOffset(this.selectedStream.timezone)})` : ''
     }
   },
   methods: {
