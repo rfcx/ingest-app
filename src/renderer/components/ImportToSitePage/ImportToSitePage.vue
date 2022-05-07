@@ -325,7 +325,7 @@ export default {
 
       // set default timezone settings
       const timezoneObject = {}
-      timezoneObject[siteId] = deploymentInfo.timezone
+      timezoneObject[siteId] = Number.isInteger(deploymentInfo.timezone)
         ? FileTimezoneHelper.fileTimezone.USE_AUDIOMOTH_CONFIG
         : FileTimezoneHelper.fileTimezone.LOCAL_TIME
       await this.$store.dispatch('setSelectedTimezone', timezoneObject)
