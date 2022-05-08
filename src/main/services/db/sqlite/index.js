@@ -58,7 +58,8 @@ async function init (app) {
         $like: Op.like,
         $nin: Op.notIn,
         $nLike: Op.notLike,
-        $and: Op.and
+        $and: Op.and,
+        $ne: Op.ne
       }
     })
     await sequelize.authenticate()

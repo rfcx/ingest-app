@@ -57,7 +57,7 @@ export default class FileInfo {
   get timezoneOffset () {
     const reg = /\(UTC(?<timezone>(?:[+-]\d{1,2}))?\)/ig
     const matched = reg.exec(this.comment)
-    return parseInt(matched.groups.timezone) || 0
+    return (parseInt(matched.groups.timezone) || 0) * 60
   }
 
   get fileName () {

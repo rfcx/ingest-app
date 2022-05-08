@@ -1,6 +1,6 @@
 import fileFormat from './FileFormat'
 
-const moment = require('moment')
+const moment = require('moment-timezone')
 const appDate = 'YYYY-MM-DD HH:mm:ss'
 
 const getIsoDateWithFormat = (format, fileName) => {
@@ -137,16 +137,30 @@ const getDefaultTimezone = (latitude, longitude) => {
   return 'utc'
 }
 
-/*
-passing in timezone e.g. 'Asia/Bangkok'
-*/
-const getTimezoneOffset = (timezone) => {
-  if (!timezone) return 0
-  var momentTz = require('moment-timezone')
-  const dateString = momentTz().tz(timezone).format()
-  if (!dateString) return 0
-  const offset = moment.parseZone(dateString).utcOffset()
-  return offset / 60
+/**
+ * Get timezone offset (minutes) from timezone name
+ * @param timezone: timezone string  e.g. 'Asia/Bangkok'
+ */
+const tzOffsetMinutesFromTzName = (timezoneName) => {
+  return getMomentFromTimezoneName(timezoneName).utcOffset()
+}
+
+/**
+ * Get timezone offset (formatted) from timezone name
+ * @param timezone: timezone string  e.g. 'Asia/Bangkok'
+ */
+const formattedTzOffsetFromTimezoneName = (timezoneName) => {
+  return getMomentFromTimezoneName(timezoneName).format('zZ')
+}
+
+const formattedTzOffsetFromTzMinutes = (offsetMinute) => {
+  return moment().utcOffset(offsetMinute).format('zZ')
+}
+
+const getMomentFromTimezoneName = (timezone) => {
+  if (!timezone) return null
+  const dateString = moment().tz(timezone).format()
+  return moment.parseZone(dateString)
 }
 
 const getMomentDateFromISODate = (date) => {
@@ -162,6 +176,8 @@ export default {
   getMomentDateFromISODate,
   getDefaultTimezone,
   getPossibleTimezonesFromLocation,
-  getTimezoneOffset,
+  tzOffsetMinutesFromTzName,
+  formattedTzOffsetFromTimezoneName,
+  formattedTzOffsetFromTzMinutes,
   convertMomentDateToAppDate
 }

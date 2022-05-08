@@ -57,7 +57,7 @@ export default {
       return this.selectedStream && this.selectedStream.isCompleted
     },
     streamTimezone () {
-      return this.selectedStream.timezone ? `(${dateHelper.getTimezoneOffset(this.selectedStream.timezone)})` : ''
+      return this.selectedStream.timezone ? `(${dateHelper.formattedTzOffsetFromTimezoneName(this.selectedStream.timezone)})` : ''
     }
   },
   methods: {

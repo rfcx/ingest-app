@@ -84,6 +84,9 @@ const getUtcTimestamp = (file) => {
   if (file.timestamp.substr(-1) === 'Z' || file.timestamp.substr(-6, 1) === '-' || file.timestamp.substr(-6, 1) === '+') {
     return moment.utc(file.timestamp).toISOString() // timezone is in the parsed timestamp
   }
+  if (Number.isInteger(parseInt(file.timezone))) {
+    return moment.utc(file.timestamp).utcOffset(parseInt(file.timezone), true)
+  }
   if (!file.timezone || file.timezone === FileTimezoneHelper.fileTimezone.UTC || file.timezone === '') {
     return file.timestamp + 'Z' // assume file that doesn't have timezone provided is in UTC)
   }

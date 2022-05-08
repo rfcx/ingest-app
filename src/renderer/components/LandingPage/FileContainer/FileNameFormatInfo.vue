@@ -14,14 +14,14 @@
         title="Filename Timezone" 
         :options="fileNameTimezoneOptions"
         :isLoading="isUpdatingFilenameFormat"
-        :selectedOptionText="selectedTimezoneText"
+        :selectedOptionText="selectedTimezone"
         @onSelectOption="onTimezoneSave"
         :isFocus="shouldFocusTimezoneInput">
       </options-dropdown>
     </div>
     <div>
       <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
-      <button type="button" class="button is-rounded is-primary" @click.prevent="shouldShowConfirmTimezoneAlert = true" :disabled="numberOfReadyToUploadFiles < 1 || isDeletingAllFiles">Start upload ({{numberOfReadyToUploadFiles}})</button>
+      <button type="button" class="button is-rounded is-primary" @click.prevent="onClickStartUpload()" :disabled="numberOfReadyToUploadFiles < 1 || isDeletingAllFiles">Start upload ({{numberOfReadyToUploadFiles}})</button>
     </div>
     <div class="modal is-active" v-if="showSettingModal">
       <div class="modal-background"></div>
@@ -54,6 +54,8 @@ import OptionsDropdown from '../../Common/OptionsDropdown'
 import ConfirmAlert from '../../Common/ConfirmAlert'
 import ErrorAlert from '../../Common/ErrorAlert'
 import ipcRendererSend from '../../../services/ipc'
+import FileInfo from '../../../services/FileInfo'
+import dateHelper from '../../../../../utils/dateHelper'
 
 const { PREPARING, WAITING } = fileState.state
 
@@ -74,7 +76,8 @@ export default {
       isUpdatingFilenameFormat: false,
       errorMessage: null,
       selectedTimezone: '',
-      shouldShowConfirmTimezoneAlert: false,
+      audioMothTimezoneOffset: null,
+      didClickStart: false,
       shouldFocusTimezoneInput: false
     }
   },
@@ -91,32 +94,49 @@ export default {
     fileNameTimezoneOptions () {
       return FileTimeZoneHelper.getTimezoneOptions(this.selectedStream.timezone)
     },
-    defaultTimezone () {
+    timezonePreference () {
       const savedSelectedTimezone = this.$store.getters.getSelectedTimezoneByStreamId(this.selectedStreamId)
-      return this.getTimezoneOptionText(savedSelectedTimezone || FileTimeZoneHelper.fileTimezone.UTC)
+      const offset = this.$store.getters.getAudiomothTimezoneOffsetConfigByStreamId(this.selectedStreamId)
+      return { setting: savedSelectedTimezone, audiomothConfig: offset }
     },
-    selectedTimezoneText () {
-      return this.getTimezoneOptionText(this.selectedTimezone)
+    shouldShowConfirmTimezoneAlert () {
+      const mismatchedOption = this.timezonePreference.setting !== this.selectedTimezone
+      const audioMothConfiguredTimezone = this.timezonePreference.audiomothConfig
+      const mismatchedOffset = audioMothConfiguredTimezone !== this.getSelectedTimezoneValue(this.selectedTimezone)
+      return Number.isInteger(audioMothConfiguredTimezone) && mismatchedOption && mismatchedOffset && this.didClickStart
     },
     confirmTimezoneAlertText () {
-      const timezone = this.getTimezoneOptionText(this.selectedTimezone)
+      const timezone = `${this.selectedTimezone} (${dateHelper.formattedTzOffsetFromTzMinutes(this.getSelectedTimezoneValue(this.selectedTimezone))})`
+      const audiomoth = Number.isInteger(this.timezonePreference.audiomothConfig) ? `${FileTimeZoneHelper.fileTimezone.USE_AUDIOMOTH_CONFIG} (${dateHelper.formattedTzOffsetFromTzMinutes(this.timezonePreference.audiomothConfig)})` : ''
       return {
-        title: `Upload audio in ${timezone}?`,
-        message: `Please confirm if the filename timezone is correct. Your audio will be upload to the system in <b>${timezone}</b>?`,
-        confirmTitle: `Upload audio in ${this.selectedTimezone}`,
+        title: `Upload audio in ${this.selectedTimezone}?`,
+        message: `The filename timezone you chose <b>${timezone}</b> is different from <b>${audiomoth}</b>`,
+        confirmTitle: `Upload anyway`,
         cancelTitle: `Recheck`
       }
     }
   },
-  created () {
-    this.selectedTimezone = this.defaultTimezone
+  async created () {
+    this.selectedTimezone = this.timezonePreference.setting
+    this.audioMothTimezoneOffset = (await this.getDefaultAudioMothTimezoneOffset()) || null
   },
   methods: {
+    onClickStartUpload () {
+      this.didClickStart = true
+      if (!this.shouldShowConfirmTimezoneAlert) {
+        this.queueToUpload()
+      }
+    },
     async queueToUpload () {
       this.shouldFocusTimezoneInput = false
-      this.shouldShowConfirmTimezoneAlert = false
+      this.didClickStart = false
 
       this.isQueuingToUpload = true
+
+      // save selected timezone
+      const timezoneObject = {}
+      timezoneObject[this.selectedStreamId] = this.selectedTimezone
+      this.$store.dispatch('setSelectedTimezone', timezoneObject)
 
       // set session id
       const sessionId = this.$store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
@@ -124,9 +144,10 @@ export default {
 
       const streamId = this.selectedStreamId
       const query = { streamId, state: PREPARING }
+      const timezone = await this.getSelectedTimezoneValue(this.selectedTimezone)
       await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
         where: query,
-        values: { state: WAITING, stateMessage: null, sessionId, timezone: this.getSelectedTimezoneValue() }
+        values: { state: WAITING, stateMessage: null, sessionId, timezone }
       })
       this.isQueuingToUpload = false
 
@@ -139,6 +160,23 @@ export default {
 
       // always enable uploading process
       await this.$store.dispatch('enableUploadingProcess', true)
+    },
+    async getDefaultAudioMothTimezoneOffset () {
+      return new Promise(async (resolve, reject) => {
+        const savedAudioMothTimezone = this.$store.getters.getAudiomothTimezoneOffsetConfigByStreamId(this.selectedStreamId)
+        if (Number.isInteger(savedAudioMothTimezone)) return resolve(savedAudioMothTimezone)
+        const files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
+          where: {
+            streamId: this.selectedStreamId,
+            state: fileState.preparedGroup,
+            deviceId: { $ne: '' }
+          },
+          limit: 1
+        })
+        if (files.length <= 0) return resolve(null)
+        const fileInfo = await new FileInfo(files[0].path)
+        return resolve(fileInfo.timezoneOffset)
+      })
     },
     confirmToClearAllFiles () {
       this.clearAllFiles()
@@ -176,27 +214,26 @@ export default {
       })
     },
     async onTimezoneSave (timezone) {
-      this.selectedTimezone = FileTimeZoneHelper.getSelectedTimezoneOption(timezone)
-      const timezoneObject = {}
-      timezoneObject[this.selectedStreamId] = this.selectedTimezone
-      this.$store.dispatch('setSelectedTimezone', timezoneObject)
+      this.selectedTimezone = timezone
     },
-    getSelectedTimezoneValue () {
-      if (this.selectedTimezone.includes(FileTimeZoneHelper.fileTimezone.LOCAL_TIME)) return this.selectedStream.timezone
-      else return ''
-    },
-    getTimezoneOptionText (optionTitle) {
-      return optionTitle
+    getSelectedTimezoneValue (selectedTimezone) {
+      switch (selectedTimezone) {
+        case FileTimeZoneHelper.fileTimezone.UTC: return 0
+        case FileTimeZoneHelper.fileTimezone.LOCAL_TIME: return dateHelper.tzOffsetMinutesFromTzName(this.selectedStream.timezone)
+        case FileTimeZoneHelper.fileTimezone.USE_AUDIOMOTH_CONFIG: return this.audioMothTimezoneOffset
+        default: return 0
+      }
     },
     recheckTimezoneSettings () {
-      this.shouldShowConfirmTimezoneAlert = false
+      this.didClickStart = false
       this.shouldFocusTimezoneInput = true
     }
   },
   watch: {
-    selectedStream () {
+    async selectedStream () {
       // if updated selected stream, then reset selected timezone
-      this.selectedTimezone = this.defaultTimezone
+      this.selectedTimezone = this.timezonePreference.setting
+      this.audioMothTimezoneOffset = (await this.getDefaultAudioMothTimezoneOffset()) || null
     }
   }
 }
