@@ -42,8 +42,7 @@
     data () {
       return {
         alertTitle: 'You are up to date',
-        alertContent: this.getContent(),
-        executed: false,
+        alertContent: this.getAlertContent(),
         isDragging: false,
         isPopupOpened: false,
         streams: []
@@ -94,7 +93,7 @@
       cancel () {
         this.isPopupOpened = false
       },
-      getContent () {
+      getAlertContent () {
         return `You are on the latest version ${remote.getGlobal('version')}`
       },
       async resetStreamList () {
@@ -120,8 +119,8 @@
       let html = document.getElementsByTagName('html')[0]
       html.style.overflowY = 'auto'
       this.sendVersionOfApp()
-      this.$electron.ipcRenderer.on('showUpToDatePopup', (event, isDisplayUpToDatePopup) => {
-        this.isPopupOpened = isDisplayUpToDatePopup
+      this.$electron.ipcRenderer.on('showUpToDatePopup', (event, shouldDisplayUpToDatePopup) => {
+        this.isPopupOpened = shouldDisplayUpToDatePopup
       })
       this.$electron.ipcRenderer.on('onClearAllData', async (event, message) => {
         await this.$refs.sideNavigation.reloadStreamListFromLocalDB()

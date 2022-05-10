@@ -59,8 +59,8 @@ function createWindow (openedAsHidden = false) {
 function createAutoUpdaterSub () {
   updateProcess.createAutoUpdaterSub(() => {
     // update not avaliable
-    const isDisplay = settings.get('settings.should_display_up_to_date')
-    if (mainWindow && isDisplay) {
+    const shouldDisplayUpToDatePopUp = settings.get('settings.should_display_up_to_date')
+    if (mainWindow && shouldDisplayUpToDatePopUp) {
       mainWindow.webContents.send('showUpToDatePopup', true)
       settings.set('settings.should_display_up_to_date', false)
     }
