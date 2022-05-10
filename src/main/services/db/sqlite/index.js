@@ -58,7 +58,8 @@ async function init (app) {
         $like: Op.like,
         $nin: Op.notIn,
         $nLike: Op.notLike,
-        $and: Op.and
+        $and: Op.and,
+        $ne: Op.ne
       }
     })
     await sequelize.authenticate()
@@ -85,7 +86,7 @@ const collections = {
       return models.File.findOne({ where: { id: data.id } })
         .then((file) => {
           ['durationInSecond', 'state', 'uploadId', 'stateMessage', 'progress', 'format', 'sessionId',
-            'retries', 'uploaded', 'uploadedTime', 'timestamp', 'name', 'path'].forEach((a) => {
+            'retries', 'uploaded', 'uploadedTime', 'timestamp', 'name', 'path', 'deploymentId', 'deviceId'].forEach((a) => {
             if (data.params[a] !== undefined) {
               file[a] = data.params[a]
             }

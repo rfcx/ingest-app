@@ -37,7 +37,7 @@ class FileProvider {
       const file = droppedFiles[i]
       if (fileHelper.isFolder(file.path)) {
         fileObjectsInFolder = fileObjectsInFolder.concat(
-          this.getFileObjectsFromFolder(file.path, selectedStream, null)
+          this.getFileObjectsFromFolder(file.path, selectedStream, null, deploymentInfo)
         ).filter(file => fileHelper.isSupportedFileExtension(file.extension))
       } else {
         const fileObject = this.createFileObject(file.path, selectedStream, deploymentInfo)
@@ -194,15 +194,6 @@ class FileProvider {
     })).filter(file => fileState.canChangeTimestampFormat(file.state, file.stateMessage))
     const updatedFiles = await Promise.all(fileObjectList.map(async file => {
       let timestamp
-      if (file.extension === 'wav' && format === FileFormat.fileFormat.FILE_HEADER) {
-        console.log('create file object with file info yes!')
-        const info = await new FileInfo(file.path)
-        const momentDate = info.recordedDate
-        if (momentDate) {
-          timestamp = momentDate.format()
-        }
-        console.log('create file object fileinfo', info)
-      }
       if (!timestamp) {
         timestamp = dateHelper.getIsoDateWithFormat(format, file.name)
       }
@@ -524,7 +515,8 @@ class FileProvider {
       const fileInfo = await new FileInfo(file.path)
       const deviceId = fileInfo.deviceId
       const deploymentId = fileInfo.deployment
-      return {deviceId, deploymentId}
+      const timezoneOffset = fileInfo.timezoneOffset
+      return {deviceId, deploymentId, timezoneOffset}
     } catch (e) {
       return null
     }
@@ -535,8 +527,6 @@ class FileProvider {
   createFileObject (filePath, stream, deploymentInfo = null) {
     const fileName = fileHelper.getFileNameFromFilePath(filePath)
     const fileExt = fileHelper.getExtension(fileName)
-
-    // TODO: request to read file info in bg thread if needed
 
     // read deployment info
     let deviceId, deploymentId
