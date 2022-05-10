@@ -59,8 +59,10 @@ function createWindow (openedAsHidden = false) {
 function createAutoUpdaterSub () {
   updateProcess.createAutoUpdaterSub(() => {
     // update not avaliable
-    if (mainWindow) {
+    const shouldDisplayUpToDatePopUp = settings.get('settings.should_display_up_to_date')
+    if (mainWindow && shouldDisplayUpToDatePopUp) {
       mainWindow.webContents.send('showUpToDatePopup', true)
+      settings.set('settings.should_display_up_to_date', false)
     }
   }, () => {
     // start updating process
@@ -88,6 +90,7 @@ function createAutoUpdaterSub () {
       resetTimers()
       app.exit()
       app.quit()
+      settings.set('settings.should_display_up_to_date', true)
     }, 2000)
   })
 }
@@ -194,11 +197,15 @@ function initialSettings () {
       platform: 'amazon',
       darkMode: true,
       auto_update_app: true,
-      onLine: true
+      onLine: true,
+      should_display_up_to_date: true
     })
   }
   if (settings.get('settings.auto_update_app') === undefined) {
     settings.set('settings.auto_update_app', true)
+  }
+  if (settings.get('settings.should_display_up_to_date') === undefined) {
+    settings.set('settings.should_display_up_to_date', true)
   }
   if (settings.get('settings.onLine') === undefined) {
     settings.set('settings.onLine', true)
