@@ -118,7 +118,7 @@ export default {
   },
   async created () {
     this.selectedTimezone = this.timezonePreference.setting
-    this.audioMothTimezoneOffset = (await this.getDefaultAudioMothTimezoneOffset()) || null
+    this.audioMothTimezoneOffset = await this.getDefaultAudioMothTimezoneOffset()
   },
   methods: {
     onClickStartUpload () {
@@ -214,7 +214,11 @@ export default {
       })
     },
     async onTimezoneSave (timezone) {
-      this.selectedTimezone = timezone
+      if (timezone === FileTimeZoneHelper.fileTimezone.USE_AUDIOMOTH_CONFIG && this.audioMothTimezoneOffset === null) {
+        this.errorMessage = 'No Audiomoth file or configuration found'
+      } else {
+        this.selectedTimezone = timezone
+      }
     },
     getSelectedTimezoneValue (selectedTimezone) {
       switch (selectedTimezone) {
@@ -233,7 +237,7 @@ export default {
     async selectedStream () {
       // if updated selected stream, then reset selected timezone
       this.selectedTimezone = this.timezonePreference.setting
-      this.audioMothTimezoneOffset = (await this.getDefaultAudioMothTimezoneOffset()) || null
+      this.audioMothTimezoneOffset = await this.getDefaultAudioMothTimezoneOffset()
     }
   }
 }

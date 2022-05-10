@@ -54,15 +54,19 @@ export default class FileInfo {
   }
 
   get timezoneOffset () {
-    const reg = /\(UTC(?<symbol>[+-])(?:(?<h>\d{1,2}))(?::(?<m>\d{1,2}))?\)/ig
+    const reg = /((?<prefix>UTC)(?<symbol>[+-])?(?<hour>\d{1,2})?(:)?(?<min>[0-5][0-9])?)/ig
     try {
       const matched = reg.exec(this.comment)
-      const symbol = matched.groups.symbol === '-' ? -1 : 1
-      const hour = (parseFloat(matched.groups.h) || 0) * 60
-      const min = (parseFloat(matched.groups.m) || 0)
-      return (hour + min) * symbol
+      if (!matched || matched.length === 0) {
+        return null
+      }
+      const symbol = ((matched.groups.symbol || '') === '-') ? -1 : 1
+      const hour = (parseFloat(matched.groups.hour) || 0) * 60
+      const min = (parseFloat(matched.groups.min) || 0)
+      const total = (hour + min) * symbol
+      return total
     } catch (e) {
-      return 0
+      return null
     }
   }
 
