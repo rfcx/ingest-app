@@ -55,7 +55,7 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       isConverted = true
       console.log('update upload path', uploadFilePath, uploadFileExt, fileName)
     } catch (error) {
-      console.log('error', error)
+      console.error('error', error)
     }
   }
   return requestUploadUrl(environment, fileName, uploadFilePath, streamId, timestamp, idToken)
@@ -145,7 +145,7 @@ const checkStatus = (env, uploadId, idToken) => {
       const failureMessage = response.data.failureMessage
       return { status: status, failureMessage: failureMessage }
     }).catch(error => {
-      console.log('error', error, error.response)
+      console.error('error', error, error.response)
       throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
@@ -165,7 +165,7 @@ const updateStream = (env, streamId, opts, idToken) => {
     .then(function (response) {
       return response.data
     }).catch(error => {
-      console.log('error', error.response)
+      console.error('error', error.response)
       throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
@@ -175,7 +175,7 @@ const renameStream = (env, streamId, streamName, streamSite, idToken) => {
     .then(function (response) {
       return response.data
     }).catch(error => {
-      console.log('error', error.response)
+      console.error('error', error.response)
       throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
@@ -185,7 +185,7 @@ const deleteStream = (env, streamId, idToken) => {
     .then(function (response) {
       return response.data
     }).catch(error => {
-      console.log('error', error.response)
+      console.error('error', error.response)
       throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
@@ -199,7 +199,7 @@ const getUserSites = (idToken, keyword = null, projectId, limit, offset) => {
     .then(function (response) {
       return response.data
     }).catch(error => {
-      console.log('error', error.response)
+      console.error('error', error.response)
       throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
@@ -220,7 +220,7 @@ const getUserProjects = (idToken, keyword = null) => {
     .then(function (response) {
       return response.data
     }).catch(error => {
-      console.log('error', error.response)
+      console.error('error', error.response)
       throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }

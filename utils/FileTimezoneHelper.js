@@ -1,22 +1,16 @@
 const fileTimezone = {
-  UTC: 'UTC Time',
-  LOCAL_TIME: 'Local Time'
+  UTC: 'UTC',
+  LOCAL_TIME: 'Site timezone',
+  USE_AUDIOMOTH_CONFIG: 'AudioMoth configuration'
+  // USE_FILENAME: 'Timezone in filename' // TODO: add this back once we can read timezone from filename
 }
 
-function getTimezoneOptions (localTimezone) {
+function getTimezoneOptions () {
   const options = {...fileTimezone}
-  options['LOCAL_TIME'] = `${fileTimezone.LOCAL_TIME} (${localTimezone})`
   return Object.values(options)
-}
-
-function getSelectedTimezoneOption (text) {
-  if (text.includes(fileTimezone.LOCAL_TIME)) return fileTimezone.LOCAL_TIME
-  else if (text.includes(fileTimezone.UTC)) return fileTimezone.UTC
-  else return undefined
 }
 
 export default {
   fileTimezone,
-  getTimezoneOptions,
-  getSelectedTimezoneOption
+  getTimezoneOptions
 }

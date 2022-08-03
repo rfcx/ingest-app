@@ -87,7 +87,7 @@
             if (error.message === 'File does not exist') {
               await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
                 id: unsyncedFile.id,
-                params: { state: ERROR_SERVER, stateMessage: 'File does not exist' }
+                params: { state: ERROR_SERVER, stateMessage: 'File not found (removed or disk ejected)' }
               })
             }
           })

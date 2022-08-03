@@ -16,6 +16,14 @@ export default {
 
     mainWindow.loadURL(mainWindowURL)
 
+    // Monitor process
+    mainWindow.webContents.on('crashed', (event, killed) => {
+      console.log('💥 mainWindow on crashed event:', event)
+      setTimeout(() => { // delay to prevent app crash https://github.com/electron/electron/issues/23291
+        mainWindow.reload()
+      }, 5000)
+    })
+
     mainWindow.on('close', (e) => {
       onCloseHandler(e)
     })

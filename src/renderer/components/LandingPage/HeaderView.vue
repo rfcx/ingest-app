@@ -13,7 +13,7 @@
         <span class="stream-info__project">{{selectedStream.projectName}}</span>
       </div>
         <img src="~@/assets/ic-pin.svg">
-        <span v-if="selectedStream" class="stream-info__coordinates">{{ getStreamLocation() }}</span>
+        <span v-if="selectedStream" class="stream-info__coordinates">{{ getStreamLocation() }} {{ streamTimezone }}</span>
     </div>
     <a title="Redirect to Arbimon" class="button is-rounded rounded-button" @click="redirectToArbimon()">
       <fa-icon class="faExternal" :icon="faExternalLinkAlt"></fa-icon>
@@ -30,6 +30,7 @@
 import api from '../../../../utils/api'
 import { faPencilAlt, faExternalLinkAlt, faFolder, faSyncAlt } from '@fortawesome/free-solid-svg-icons'
 import { mapState } from 'vuex'
+import dateHelper from '../../../../utils/dateHelper'
 
 export default {
   data () {
@@ -54,6 +55,9 @@ export default {
     },
     showNavigateMessage () {
       return this.selectedStream && this.selectedStream.isCompleted
+    },
+    streamTimezone () {
+      return this.selectedStream.timezone ? `(${dateHelper.formattedTzOffsetFromTimezoneName(this.selectedStream.timezone)})` : ''
     }
   },
   methods: {
