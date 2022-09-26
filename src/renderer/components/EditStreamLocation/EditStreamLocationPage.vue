@@ -104,7 +104,6 @@ export default {
         api
           .updateStream(this.isProductionEnv(), this.selectedStreamId, opts, idToken)
           .then(async data => {
-            console.log('stream coordinates is updated')
             const timezone = dateHelper.getDefaultTimezone(latitude, longitude)
             await ipcRendererSend('db.streams.update', `db.streams.update.${Date.now()}`, {
               id: this.selectedStream.id,
@@ -114,7 +113,7 @@ export default {
             this.redirectToMainScreen()
           })
           .catch(error => {
-            console.log('error while updating stream coordinates', error)
+            console.info('[EditStream] error while updating stream coordinates', error)
             this.isLoading = false
             this.error = error.message || error.data
           })
@@ -144,11 +143,11 @@ export default {
         idToken = arg
         api.deleteStream(this.isProductionEnv(), this.selectedStream.id, idToken)
           .then(async (data) => {
-            console.log('stream is deleted')
+            console.info('[EditStream] deleted stream')
             await ipcRendererSend('db.streams.deleteById', `db.streams.deleteById.${Date.now()}`, this.selectedStream.id)
             this.modalHandler()
           }).catch(error => {
-            console.log('error while deleting site', error)
+            console.error('[Edit stream] error while deleting site', error)
             this.errorHandler(error, true)
           })
       }

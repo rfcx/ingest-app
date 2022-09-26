@@ -116,10 +116,9 @@ export default {
       try {
         const newFilename = this.fileName.trim()
         const updatedFields = await this.$file.renameFile(this.file, newFilename)
-        console.log('rename success: ', updatedFields)
+        console.info('[FileRow] rename success: ', updatedFields)
         if (typeof updatedFields === 'object') {
           this.file = {...this.file, ...updatedFields}
-          console.log('rename success: ', this.file)
         }
         this.isEdit = false
       } catch (e) {
@@ -129,7 +128,7 @@ export default {
         } else {
           message = 'Unknow error'
         }
-        console.log('Rename file error', message)
+        console.error('Rename file error', message)
         this.error = {
           message
         }
@@ -154,7 +153,7 @@ export default {
     },
     async repeatUploading (file) {
       if (!file.canRedo) return
-      console.log('repeat', file)
+      console.info('[FileRow] repeat upload', file)
       if (file.durationInSecond === -2) { // get duration error
         await this.$file.updateFilesDuration([file])
       }

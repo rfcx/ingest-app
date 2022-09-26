@@ -78,7 +78,7 @@ export default {
         this.isRetryUploading = false
       } catch (e) {
         this.isRetryUploading = false
-        console.log('error retry upload', e)
+        console.error('[FileNameFormat] error retry upload', e)
       }
 
       // set selected tab to be queue tab

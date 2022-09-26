@@ -3,7 +3,7 @@ import dbService from '../../../services/db/sqlite'
 
 export default {
   async createWindow () {
-    console.log('db process: createWindow')
+    console.info('[DBWindow] createWindow')
     const dbURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080/static/empty.html` : `file://${__dirname}/static/empty.html`
     const dbWindow = new BrowserWindow({
       show: false,
@@ -15,7 +15,7 @@ export default {
 
     // Monitor process
     dbWindow.webContents.on('crashed', (event, killed) => {
-      console.log('💥 dbWindow on crashed event:', event)
+      console.error('💥 dbWindow on crashed event:', event)
       setTimeout(() => { // delay to prevent app crash https://github.com/electron/electron/issues/23291
         dbWindow.reload()
       }, 5000)

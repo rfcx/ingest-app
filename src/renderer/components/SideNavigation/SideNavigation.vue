@@ -197,7 +197,7 @@
         this.$emit('update:getStreamList', this.streams)
       },
       async loadMore () {
-        console.log('load more')
+        console.info('[SideNav] load more')
         const mergeById = (oldArray, newArray) => {
           if (oldArray.length <= 0) return newArray
           const updatedItems = oldArray.map(item => {
@@ -212,23 +212,22 @@
         this.streams = mergeById(currentStreams, newStreams)
       },
       startStreamFetchingInterval () {
-        console.log('startStreamFetchingInterval')
+        console.info('[SideNav] startStreamFetchingInterval')
         this.fetchStreamsInterval = setInterval(async () => {
           await this.reloadStreamListFromLocalDB()
         }, 2000)
       },
       stopStreamFetchingInterval () {
-        console.log('stopStreamFetchingInterval')
         if (this.fetchStreamsInterval) {
           setTimeout(() => { // fetch 1 last time to get the complete state
-            console.log('stopStreamFetchingInterval: stop')
+            console.info('[SideNav] stopStreamFetchingInterval: stop')
             clearInterval(this.fetchStreamsInterval)
             this.fetchStreamsInterval = null
           }, 2000)
         }
       },
       manageStreamFetchingInterval (currentUploadingSessionId, isUploadingProcessEnabled) {
-        console.log('manageStreamFetchingInterval', currentUploadingSessionId, isUploadingProcessEnabled)
+        console.info('[SideNav] manageStreamFetchingInterval', currentUploadingSessionId, isUploadingProcessEnabled)
         if (currentUploadingSessionId && isUploadingProcessEnabled) this.startStreamFetchingInterval()
         else this.stopStreamFetchingInterval()
       }

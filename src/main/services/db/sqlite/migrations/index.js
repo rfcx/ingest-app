@@ -46,23 +46,23 @@ function saveMigrationMeta (sequelize, filename) {
 }
 
 export default async function migrate (sequelize) {
-  console.log('Database migration: starting...')
+  console.info('[DB] migration: starting...')
   await createSequelizeMetatable(sequelize)
-  console.log('Database migration: sequelize meta table found or created.')
+  console.info('[DB] migration: sequelize meta table found or created.')
   const migrations = await getMigrations(sequelize)
-  console.log(`Database migration: ${migrations.length} migrations to run.`)
+  console.info(`[DB] migration: ${migrations.length} migrations to run.`)
   for (const migration of migrations) {
     const name = migration.name
     try {
-      console.log(`Database migration: running "${name}".`)
+      console.info(`[DB] migration: running "${name}".`)
       await migration.file.up(sequelize.queryInterface, Sequelize)
-      console.log(`Database migration: saving "${name}" into sequelize meta table.`)
+      console.info(`[DB] migration: saving "${name}" into sequelize meta table.`)
       await saveMigrationMeta(sequelize, name)
-      console.log(`Database migration: "${name}" performed.`)
+      console.info(`[DB] migration: "${name}" performed.`)
     } catch (err) {
-      console.error(`Database migration: "${name}" failed`, err)
+      console.error(`[DB] migration: "${name}" failed`, err)
       break
     }
   }
-  console.log('Database migration: ended.')
+  console.info('Database migration: ended.')
 }

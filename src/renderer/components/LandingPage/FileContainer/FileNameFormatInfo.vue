@@ -200,7 +200,7 @@ export default {
     },
     async onFormatSave (format = '') {
       this.closeFileNameFormatSettingModal()
-      console.log('onFormatSave', format)
+      console.info('[FileNameFormat] onFormatSave', format)
       this.isUpdatingFilenameFormat = true
       this.$file.updateFilesFormat(this.selectedStream, format).then(_ => {
         this.selectedStream.timestampFormat = format

@@ -144,7 +144,7 @@ const getTempPath = (tmpPath, fileName, streamId) => {
 
 const convert = (sourceFile, tempPath, streamId) => {
   const destinationPath = `${getTempPath(tempPath, getFileNameFromFilePath(sourceFile), streamId)}.flac`
-  console.log('converting: ', sourceFile, destinationPath)
+  console.info('[FileHelper] converting: ', sourceFile, destinationPath)
   return audioService.convert(sourceFile, destinationPath)
 }
 
@@ -166,8 +166,7 @@ const archiverDirectory = (sourceDirectory, targetFileName) => {
   var archive = archiver('zip')
 
   output.on('close', function () {
-    console.log(archive.pointer() + ' total bytes')
-    console.log('archiver has been finalized and the output file descriptor has closed.')
+    console.info(`[Archiver] log file created at ${targetFileName}.zip (${archive.pointer()} total bytes)`)
   })
 
   archive.on('error', function (err) {

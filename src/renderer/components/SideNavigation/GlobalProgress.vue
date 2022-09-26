@@ -123,7 +123,7 @@ export default {
       }
       let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
       myNotificationCompleted.onshow = () => {
-        console.log('show notification')
+        console.info('[SideNav] show notification')
       }
     },
     resetNumber () {

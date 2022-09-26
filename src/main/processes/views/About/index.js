@@ -19,7 +19,6 @@ export default {
     aboutWindow.removeMenu()
 
     aboutWindow.on('closed', () => {
-      console.log('aboutWindow closed')
       aboutWindow.destroy()
     })
 

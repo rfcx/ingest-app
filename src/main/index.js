@@ -67,7 +67,7 @@ function createAutoUpdaterSub () {
   }, () => {
     // start updating process
     setTimeout(() => {
-      console.log('start updating')
+      console.info('[Update] start updating...')
       mainWindow = null
       if (backgroundAPIWindow) {
         backgroundAPIWindow = null
@@ -102,7 +102,7 @@ function createMenu () {
   }
 
   const logoutFn = async () => {
-    console.log('logOut')
+    console.info('[Auth] log out')
     logOut()
   }
 
@@ -118,6 +118,8 @@ function createMenu () {
       updatePopupWindow.destroy()
       updatePopupWindow = null
     }
+    // set this to true so that the update popup will be shown
+    settings.set('settings.should_display_up_to_date', true)
     updateProcess.checkForUpdates()
   }
 
@@ -131,7 +133,6 @@ function createMenu () {
 }
 
 function showMainWindow () {
-  console.log('showMainWindow')
   if (mainWindow === null) {
     createWindow()
   } else {
@@ -140,9 +141,9 @@ function showMainWindow () {
 }
 
 function closeMainWindow (e) {
-  console.log('closeMainWindow willQuitApp', willQuitApp)
+  console.info('[MainWindow] closing main window / willQuitApp =', willQuitApp)
   if (willQuitApp) {
-    console.log('mainWindow exit')
+    console.info('[MainWindow] c exit')
     mainWindow = null
     if (backgroundAPIWindow) {
       backgroundAPIWindow = null
@@ -166,7 +167,7 @@ function closeMainWindow (e) {
     app.exit()
     app.quit()
   } else if (isLogOut) {
-    console.log('mainWindow logout')
+    console.info('[MainWindow] logout')
     resetTimers()
     createAuthWindow()
     if (mainWindow) {
@@ -176,7 +177,7 @@ function closeMainWindow (e) {
     idToken = null
     isLogOut = false
   } else {
-    console.log('mainWindow close')
+    console.info('[MainWindow] close')
     if (process.platform === 'win32' || process.platform === 'win64') {
       mainWindow = null
       resetTimers()
@@ -222,18 +223,18 @@ async function createAppWindow (openedAsHidden) {
     await authService.getIdToken()
     await checkToken()
     await getUserInfo()
-    console.log('create main window')
+    console.info('[MainWindow] create')
     createWindow(openedAsHidden)
     resetFirstLogInCondition()
   } catch (err) {
     // An Entry for new users
-    console.log('An Entry for new users: createAuthWindow', err)
+    console.info('[MainWindow] someting wrong about Auth, creating Auth Window', err)
     createAuthWindow()
   }
 }
 
 async function checkToken () {
-  console.log('checkToken')
+  console.info('[Auth] checking token')
   return new Promise(async (resolve, reject) => {
     idToken = null
     const now = Date.now()
@@ -258,7 +259,7 @@ async function getIdToken () {
 }
 
 async function getUserInfo () {
-  console.log('getUserInfo')
+  console.info('[Auth] get user info')
   return new Promise(async (resolve, reject) => {
     if (!idToken) {
       idToken = await authService.getIdToken()
@@ -367,14 +368,13 @@ app.on('ready', async () => {
   let openedAsHidden = false
   if (process.platform === 'darwin') openedAsHidden = app.getLoginItemSettings().wasOpenedAsHidden
   else openedAsHidden = (process.argv || []).indexOf('--hidden') !== -1
-  console.log('open as hidden', openedAsHidden)
   checkIngestServicelUrl()
   initialSettings()
   createAppWindow(openedAsHidden)
   global.version = process.env.NODE_ENV === 'development' ? `${process.env.npm_package_version}` : app.getVersion()
   global.platform = (process.platform === 'win32' || process.platform === 'win64') ? 'win' : 'mac'
+  console.info('[App] version', global.version)
   createAutoUpdaterSub()
-  console.log('get setting')
   if (settings.get('settings.auto_update_app')) {
     updateProcess.checkForUpdates()
     updateProcess.createUpdateInterval()
@@ -383,25 +383,24 @@ app.on('ready', async () => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    console.log('window-all-closed')
+    console.info('[App] window-all-closed')
     app.quit()
   }
 })
 
 app.on('before-quit', () => {
-  console.log('before-quit')
+  console.info('[App] before-quit')
   willQuitApp = true
 })
 
 app.on('activate', () => {
-  console.log('activate')
+  console.info('[App] activate')
   if (mainWindow && idToken) {
     showMainWindow()
   } else app.focus()
 })
 
 ipcMain.on('logOut', (event, data) => {
-  console.log('logOut')
   logOut()
 })
 
@@ -422,10 +421,6 @@ async function listenerOfRefreshToken (event, args) {
 }
 
 ipcMain.on('getRefreshToken', listenerOfRefreshToken)
-
-ipcMain.on('setUploadingProcess', (event, data) => {
-  console.log('setUploadingProcess', data)
-})
 
 ipcMain.on('resetFirstLogIn', () => {
   resetFirstLogInCondition()

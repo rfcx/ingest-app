@@ -7,7 +7,7 @@ let mainWindow
 let willQuitApp = false
 
 function createWindow () {
-  console.log(__dirname)
+  console.info(__dirname)
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,

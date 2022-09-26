@@ -30,7 +30,7 @@ export default {
   methods: {
     onSourceSelected (newSource) {
       this.selectedSource = newSource
-      console.log('onSourceSelected', this.selectedSource)
+      console.info('[ImportFilePage] onSourceSelected', this.selectedSource)
       this.deviceId = this.selectedSource.deviceId
       this.deploymentId = this.selectedSource.deploymentId
       this.recorderType = this.selectedSource.recorderType

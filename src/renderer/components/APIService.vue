@@ -70,11 +70,11 @@
         const unsyncedFile = unsyncedFiles[0]
         if (!unsyncedFile) return // no unsync file
         if (unsyncedFile.durationInSecond <= 0) {
-          console.log('this file does not have duration yet', unsyncedFile.id)
+          console.info('queueFilesToUpload: this file does not have duration yet', unsyncedFile.id)
           return
         }
         if (this.filesInUploadingQueue.includes(unsyncedFile.id)) { // that file is already in the queue
-          console.log('this id is already in queue', unsyncedFile.id)
+          console.info('queueFilesToUpload: this id is already in queue', unsyncedFile.id)
           return
         }
         this.filesInUploadingQueue.push(unsyncedFile.id)
@@ -103,7 +103,7 @@
               await this.$file.checkStatus(file, idToken, false)
               // TODO: what happen if the ingest service never ingest/change the status
             } catch (e) {
-              console.log('checkStatus failed', e)
+              console.error('[QueueJobToCheckStatus] failed', e)
             }
           }
           this.isCheckingStatus = false
@@ -123,18 +123,18 @@
         this.isCalculatingDurations = false
       },
       tickUpload () {
-        if (!this.isUploadingProcessEnabled) { console.log('tickUpload: not enable uploading process'); return }
+        if (!this.isUploadingProcessEnabled) { console.info('tickUpload: not enable uploading process'); return }
         this.queueFilesToUpload()
       },
       tickCheckStatus () {
-        if (!this.isUploadingProcessEnabled) { console.log('tickCheckStatus: not enable uploading process'); return }
+        if (!this.isUploadingProcessEnabled) { console.info('tickCheckStatus: not enable uploading process'); return }
         this.queueJobToCheckStatus()
       },
       checkAfterSuspended () {
         return this.getSuspendedFiles()
           .then((files) => {
             if (files.length) {
-              console.log('\nuploading files with errors after suspend/loses internet connection', files.length)
+              console.info('checkAfterSuspended: uploading files with errors after suspend/loses internet connection', files.length)
               let listener = (event, arg) => {
                 this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
                 let idToken = arg
@@ -174,7 +174,7 @@
         }
         let myNotificationCompleted = new window.Notification(notificationCompleted.title, notificationCompleted)
         myNotificationCompleted.onshow = () => {
-          console.log('show notification')
+          console.info('sendCompleteNotification: show notification')
         }
       },
       startCalcDurationTick () {
@@ -189,7 +189,7 @@
       }
     },
     created () {
-      console.log('API Service')
+      console.info('API Service')
       this.checkAfterSuspended()
       this.startCalcDurationTick()
       this.checkWaitingFilesInterval = setInterval(() => {
@@ -206,7 +206,7 @@
       this.$electron.ipcRenderer.on('services.file.new', this.startCalcDurationTick.bind(this))
     },
     beforeDestroy () {
-      console.log('\nclearInterval')
+      console.info('[APIService] clearInterval')
       if (this.checkWaitingFilesInterval) {
         clearInterval(this.checkWaitingFilesInterval)
         this.checkWaitingFilesInterval = null

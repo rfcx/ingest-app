@@ -10,7 +10,7 @@ export default class SongMeterFileInfo {
         this.metadata = fileHeaderData || ''
         return this
       } catch (e) {
-        console.log('Read file info error', e)
+        console.error('Read file info error', e)
       }
     })()
   }

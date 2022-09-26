@@ -113,7 +113,7 @@ export default {
         this.errorMessage = ''
         this.isLoading = false
       } catch (error) {
-        console.log('getSiteOptions error', error)
+        console.error('[Select Site DropDown] getSiteOptions error', error)
         this.isLoading = false
         this.errorMessage = error
       }

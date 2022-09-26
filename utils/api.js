@@ -53,7 +53,7 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       uploadFilePath = (await fileHelper.convert(filePath, remote.app.getPath('temp'), streamId)).path
       uploadFileExt = 'flac'
       isConverted = true
-      console.log('update upload path', uploadFilePath, uploadFileExt, fileName)
+      console.info('[API] update upload path', uploadFilePath, uploadFileExt, fileName)
     } catch (error) {
       console.error('error', error)
     }
@@ -84,13 +84,13 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
 
 // Part 0: Create stream
 const createStream = (env, streamName, latitude, longitude, isPublic, projectId, idToken) => {
-  console.log('creating stream api:', streamName)
+  console.info('[API] creating stream api', streamName)
   return httpClient.post(apiUrl(env) + '/streams', { name: streamName, latitude: latitude, longitude: longitude, is_public: isPublic, project_id: projectId }, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(function (response) {
       const streamId = response.data.id
       return streamId
     }).catch(error => {
-      console.log('error response', error.response)
+      console.error('error response', error.response)
       throw error.response ? (error.response.data ? error.response.data : error.response) : error
     })
 }
@@ -99,7 +99,7 @@ const createStream = (env, streamName, latitude, longitude, isPublic, projectId,
 
 const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, idToken) => {
   // Make a request for a user with a given ID
-  console.log('===> requestUploadUrl for', originalFilename)
+  console.info('[API] requestUploadUrl', originalFilename)
   const sha1 = fileHelper.getCheckSum(filePath)
   const params = { filename: originalFilename, checksum: sha1, stream: streamId, timestamp: timestamp }
   return httpClient.post(apiUrl(env) + '/uploads', params, { headers: { 'Authorization': 'Bearer ' + idToken } })

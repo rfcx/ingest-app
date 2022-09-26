@@ -32,7 +32,7 @@ function getAuthenticationURL () {
 }
 
 async function refreshTokens () {
-  console.log('refreshTokens')
+  console.info('[AuthService] refreshTokens')
   return new Promise(async (resolve, reject) => {
     const refreshToken = await keytar.getPassword('ingest-app-refresh-token', keytarAccount)
     if (!refreshToken) return reject(new Error('no refresh token available'))
@@ -61,7 +61,7 @@ async function refreshTokens () {
 }
 
 async function loadTokens (callbackURL) {
-  console.log('loadTokens')
+  console.info('[AuthService] loadTokens')
   return new Promise((resolve, reject) => {
     const urlParts = url.parse(callbackURL, true)
     const query = urlParts.query
@@ -120,7 +120,7 @@ async function parseTokens (responseBody) {
   }
   global.consentGiven = profile && profile[userMetadata] && profile[userMetadata].consentGiven !== undefined &&
     profile[userMetadata].consentGiven.toString() === 'true'
-  console.log('parse tokens finished')
+  console.info('[AuthService] parse tokens finished')
 }
 
 async function logout () {

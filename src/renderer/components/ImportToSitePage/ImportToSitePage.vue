@@ -374,7 +374,7 @@ export default {
       return ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, obj)
     },
     updateSelectedExistingSite (site) {
-      console.info('updateSelectedExistingSite')
+      console.info('[ImportToSitePage] updateSelectedExistingSite')
       this.selectedExistingSite = site
       if (site) {
         this.isCreatingNewSite = false

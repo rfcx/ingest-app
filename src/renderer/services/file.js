@@ -49,7 +49,7 @@ class FileProvider {
     }
     const allFileObjects = fileObjects.concat(fileObjectsInFolder)
     const t1 = performance.now()
-    console.log('[Measure] forming file objects ' + (t1 - t0) + ' ms')
+    console.info('[FileService] ⏱ forming file objects ' + (t1 - t0) + ' ms')
 
     // Remove duplicates that are already in prepare tab
     // const existingPreparedFilePaths = File.query().where((file) => file.streamId === selectedStream.id).get().reduce((result, value) => {
@@ -67,7 +67,7 @@ class FileProvider {
       }
     })
     const t2 = performance.now()
-    console.log('[Measure] perform duplicate checks ' + (t2 - t1) + ' ms')
+    console.info('[FileService] ⏱ perform duplicate checks ' + (t2 - t1) + ' ms')
 
     // Insert converted files into db
     await this.insertNewFiles(allFileObjectsFiltered, selectedStream)
@@ -80,7 +80,7 @@ class FileProvider {
 
   async handleDroppedFolder (folderPath, selectedStream, deploymentInfo = null) {
     if (!folderPath) return
-    console.log('handleDroppedFolder', folderPath, selectedStream)
+    console.info('[FileService] handleDroppedFolder', folderPath, selectedStream)
     let fileObjectsInFolder = []
     fileObjectsInFolder = fileObjectsInFolder.concat(
       this.getFileObjectsFromFolder(folderPath, selectedStream, null, deploymentInfo)
@@ -168,7 +168,7 @@ class FileProvider {
   }
 
   async putFilesIntoUploadingQueue (files) {
-    console.log('putFilesIntoUploadingQueue', files)
+    console.info('[FileService] putFilesIntoUploadingQueue', files)
     // if there is an active session id then reuse that, otherwise generate a new one
     const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
     store.dispatch('setCurrentUploadingSessionId', sessionId)
@@ -207,13 +207,7 @@ class FileProvider {
       return newFile
     }))
     const t1 = performance.now()
-    console.log('[Measure] finish forming objects ' + (t1 - t0) + ' ms')
-    // let listen = (event, arg) => {
-    //   electron.ipcRenderer.removeListener(DatabaseEventName.eventsName.updateFileTimestampResponse, listen)
-    //   const t2 = performance.now()
-    //   console.log('[Measure] update timestamp format ' + (t2 - t1) + ' ms')
-    // }
-    // const data = {streamId: stream.id, files: updatedFiles, format: format}
+    console.info('[FileService] ⏱ finish forming objects ' + (t1 - t0) + ' ms')
     for (let file of updatedFiles) {
       await ipcRendererSend('db.files.update', `db.files.update.${file.id}.${Date.now()}`, {
         id: file.id,
@@ -225,7 +219,7 @@ class FileProvider {
       })
     }
     const t2 = performance.now()
-    console.log('[Measure] update timestamp format ' + (t2 - t1) + ' ms')
+    console.info('[FileService] ⏱ update timestamp format ' + (t2 - t1) + ' ms')
     // electron.ipcRenderer.send(DatabaseEventName.eventsName.updateFileTimestampRequest, data)
     // electron.ipcRenderer.on(DatabaseEventName.eventsName.updateFileTimestampResponse, listen)
 
@@ -239,8 +233,8 @@ class FileProvider {
       params: { timestampFormat: format }
     })
 
-    console.log(`Updated ${updatedFiles.length} file(s) to stream '${stream.id}'`)
-    console.log(`Updated timestampFormat '${format}' to stream '${stream.id}'`)
+    console.info(`[FileService] Updated ${updatedFiles.length} file(s) to stream '${stream.id}'`)
+    console.info(`[FileService] Updated timestampFormat '${format}' to stream '${stream.id}'`)
   }
 
   /**
@@ -354,7 +348,7 @@ class FileProvider {
 
   /* -- API Wrapper -- */
   async uploadFile (file, idToken) {
-    console.log('\nupload file ', file.id)
+    console.info('[FileService] ⬆ uploading...', file.id)
     if (!fileHelper.isExist(file.path)) {
       return Promise.reject(new Error('File does not exist'))
     }
@@ -362,14 +356,14 @@ class FileProvider {
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, timestamp, idToken, (progress) => {
       // FIX progress scale when we will start work with google cloud
     }).then((uploadId) => {
-      console.log(`\n ===> file uploaded to the temp folder S3 ${file.name} ${uploadId}`)
+      console.info(`[FileService] ⬆ on S3 ${file.name} ${uploadId} ${file.id}`)
       // return File.update({ where: file.id, data: { uploaded: true, uploadedTime: Date.now() } })
       return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: file.id,
         params: { uploaded: true, uploadedTime: Date.now(), state: PROCESSING, stateMessage: '' }
       })
     }).catch(async (error) => {
-      console.log('===> ERROR UPLOAD FILE', file.name, error.message, error.name)
+      console.error('[FileService] ⬆ error', file.name, error.message, error.name)
       if (error.message === 'Duplicate.') { // if duplicate file (same site, same file data, same filename), then show as completed
         return this.markFileAsCompleted(file)
       }
@@ -442,7 +436,7 @@ class FileProvider {
         }
       })
       .catch(async (error) => {
-        console.log('check status error', error)
+        console.error('[FileService] check status error', error)
         if (file.retries < 3) {
           return this.markFileAsRetryToUpload(file)
         } else {
@@ -460,7 +454,7 @@ class FileProvider {
     const t0 = performance.now()
     await this.insertFiles(files)
     const t1 = performance.now()
-    console.log('[Measure] insertNewFiles ' + (t1 - t0) + ' ms')
+    console.info('[FileService] ⏱ insertNewFiles ' + (t1 - t0) + ' ms')
   }
 
   async insertFiles (files) {

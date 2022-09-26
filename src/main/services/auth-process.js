@@ -10,8 +10,8 @@ let win = null
 let menu, currentUrl
 
 function createAuthWindow () {
-  console.log('createAuthWindow')
-  let isDarkMode = true
+  console.info('[AuthWindow] create')
+  let isDarkMode = false
   createMenu()
   win = new BrowserWindow({
     width: 615,
@@ -26,7 +26,6 @@ function createAuthWindow () {
   win.loadURL(authService.getAuthenticationURL(), { userAgent: 'Chrome' })
   currentUrl = authService.getAuthenticationURL()
   webRequest.onBeforeRequest(filter, async ({ url }) => {
-    console.log('authWindow onBeforeRequest')
     await authService.loadTokens(url)
     index.createWindow(false)
     global.firstLogIn = true
@@ -76,7 +75,7 @@ function createAuthWindow () {
   })
   win.on('closed', () => {
     win = null
-    console.log('auth window closed')
+    console.info('[AuthWindow] closed')
   })
   win.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL, isMainFrame) => {
     if (errorDescription === 'ERR_INTERNET_DISCONNECTED') {
@@ -96,12 +95,12 @@ function createAuthWindow () {
         }
         checkInternetConnected(config)
           .then(() => {
-            console.log('Connection available')
+            console.info('[AuthWindow] Connection available')
             win.loadURL(authService.getAuthenticationURL(), { userAgent: 'Chrome' })
             currentUrl = authService.getAuthenticationURL()
             clearInterval(interval)
           }).catch((err) => {
-            console.log('No connection', err)
+            console.info('[AuthWindow] No connection', err)
           })
       }, 5000)
     }
@@ -193,7 +192,7 @@ function createBackButton () {
 }
 
 function setLoginItem (openAtLogin) {
-  console.log('setLoginItem', openAtLogin)
+  console.info('[AuthWindow] setLoginItem', openAtLogin)
   const args = openAtLogin ? ['--process-start-args', `"--hidden"`] : []
   app.setLoginItemSettings({
     openAtLogin: openAtLogin,

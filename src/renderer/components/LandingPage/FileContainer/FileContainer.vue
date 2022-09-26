@@ -96,7 +96,7 @@ export default {
       return 'Prepared'
     },
     async onImportFiles (files) {
-      console.log('onImportFiles = filecontainer', files)
+      console.info('[FileContainer] onImportFiles', files)
       this.$emit('onImportFiles', files)
     },
     async loadMore () {
