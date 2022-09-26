@@ -21,7 +21,6 @@ export default class FileInfo {
   }
 
   get deviceId () {
-    console.log('get device id')
     const getDeviceId = string => string.replace(/AudioMoth\s/g, '').trim()
     if (this.authors !== '') {
       return getDeviceId(this.authors)

@@ -4,11 +4,11 @@ class FileSource {
   deploymentId = null
   recorderType = null
 
-  constructor (id, deviceId, deploymentId) {
+  constructor (id, deviceId, deploymentId, recorderType) {
     this.id = id
     this.deviceId = deviceId
     this.deploymentId = deploymentId
-    this.recorderType = null
+    this.recorderType = recorderType
   }
 }
 
@@ -34,7 +34,7 @@ class FileSourceFromFolder extends FileSource {
 class FileSourceFromFiles extends FileSource {
   selectedFiles = []
   constructor (id, deviceId, deploymentId, recorderType, selectedFiles) {
-    super(id, deviceId, deploymentId)
+    super(id, deviceId, deploymentId, recorderType)
     this.selectedFiles = selectedFiles
   }
 }

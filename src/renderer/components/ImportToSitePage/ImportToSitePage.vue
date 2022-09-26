@@ -3,8 +3,7 @@
     <div class="header">
       <header-view title="Select Site" :shouldShowBackButton="true"/>
       <div class="tag__wrapper">
-        <AudioMothTag v-if="props.recorderType === 'AudioMoth'" :isSelected="true"/>
-        <span v-else-if="props.recorderType === 'SongMeter'">SongMeter</span>
+        <RecorderTag :show="props.deviceId" :isSelected="true" :type="props.recorderType"/>
         <deployment-tag 
           v-if="isFetchingDeploymentInfo || props.deploymentId"
           :isChecking="isFetchingDeploymentInfo"
@@ -69,7 +68,7 @@
 
 <script>
 import Map from '../Common/Map/Map'
-import AudioMothTag from '../Common/Tag/AudioMothTag'
+import RecorderTag from '../Common/Tag/RecorderTag'
 import DeploymentTag from '../Common/Tag/DeploymentTag'
 import HeaderView from '../Common/HeaderWithBackButton'
 import SelectProjectDropDownInput from './SelectProjectDropDownInput'
@@ -109,7 +108,7 @@ export default {
       errorMessage: ''
     }
   },
-  components: { Map, AudioMothTag, DeploymentTag, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
+  components: { Map, RecorderTag, DeploymentTag, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
   async created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
@@ -136,7 +135,6 @@ export default {
       this.props.deploymentId = deviceInfo.deploymentId
       this.props.deploymentConfiguredTimeZone = deviceInfo.timezoneOffset
       this.props.recorderType = deviceInfo.recorderType
-      console.log('import device info', deviceInfo)
     }
 
     if (this.props.deviceId && !this.props.deploymentId) { // show protip
@@ -335,7 +333,7 @@ export default {
       // set default timezone settings
       const timezoneObject = {}
       timezoneObject[siteId] = Number.isInteger(deploymentInfo.timezone)
-        ? FileTimezoneHelper.fileTimezone.USE_AUDIOMOTH_CONFIG
+        ? FileTimezoneHelper.fileTimezone.USE_DEVICE_CONFIG
         : FileTimezoneHelper.fileTimezone.LOCAL_TIME
       await this.$store.dispatch('setSelectedTimezone', timezoneObject)
 

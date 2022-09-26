@@ -43,7 +43,7 @@ export default class SongMeterFileInfo {
   }
 
   get timezoneOffset () {
-    const reg = /Timestamp:(?<year>[1-9][0-9][0-9][0-9])-(?<month>[0-1][0-9])-(?<day>[0-3][0-9]) (?<hour>[0-2][0-9]):(?<min>[0-2][0-9]):(?<sec>[0-2][0-9])(?<tzsymbol>[+-])?(?<tzhour>\d{1,2})?(:)?(?<tzmin>[0-5][0-9])?/ig
+    const reg = /Timestamp:(?<year>[1-9][0-9][0-9][0-9])-(?<month>[0-1][0-9])-(?<day>[0-3][0-9]) (?<hour>[0-2][0-9]):(?<min>[0-5][0-9]):(?<sec>[0-5][0-9])(?<tzsymbol>[+-])?(?<tzhour>\d{1,2})?(:)?(?<tzmin>[0-5][0-9])?/ig
     try {
       const matched = reg.exec(this.metadata)
       if (!matched || matched.length === 0) {

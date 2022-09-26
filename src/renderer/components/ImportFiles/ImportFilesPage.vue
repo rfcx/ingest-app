@@ -1,8 +1,16 @@
 <template>
   <div class="import-stream__wrapper">
     <header-view title="Import audio files" :shouldShowBackButton="true" />
-    <p class="subtitle">Insert AudioMoth SD Card or choose the folder/files to import.</p>
+    <p class="subtitle">Insert RFCx Companion SD Card or choose the folder/files to import.</p>
     <source-list @sourceSelected="onSourceSelected"></source-list>
+    <p class="control control-btn">
+        <button
+          type="button"
+          class="button is-rounded is-primary"
+          :disabled="!selectedSource"
+          @click.prevent="redirectUserToSelectSiteScreen"
+        >Import</button>
+      </p>
   </div>
 </template>
 
@@ -26,7 +34,7 @@ export default {
       this.deviceId = this.selectedSource.deviceId
       this.deploymentId = this.selectedSource.deploymentId
       this.recorderType = this.selectedSource.recorderType
-      this.redirectUserToSelectSiteScreen()
+      // this.redirectUserToSelectSiteScreen()
     },
     redirectUserToSelectSiteScreen () {
       const selectSitePath = '/select-site'
