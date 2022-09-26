@@ -160,7 +160,6 @@ export default {
       if (merged) {
         const currentFiles = this.files
         this.files = mergeById(currentFiles, newFiles).sort(fileComparator)
-        console.log(`reload files ${currentFiles.length} + ${newFiles.length} = ${this.files.length}`)
       } else {
         this.files = newFiles.sort(fileComparator)
       }

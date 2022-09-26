@@ -101,7 +101,7 @@ const collections = {
       return models.File.update(values, { where })
     },
     delete: function (opts) {
-      console.info(`[DB] db.files.delete: ${opts}`)
+      // console.info(`[DB] db.files.delete: ${opts}`)
       return models.File.destroy({ where: opts.where })
         .then(() => {
           return sequelize.query('VACUUM;', { type: sequelize.QueryTypes.RAW })
