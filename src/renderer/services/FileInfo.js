@@ -15,13 +15,12 @@ export default class FileInfo {
         this.duration = fileHeaderData.duration
         return this
       } catch (e) {
-        console.log('Read file info error', e)
+        console.error('Read file info error', e)
       }
     })()
   }
 
   get deviceId () {
-    console.log('get device id')
     const getDeviceId = string => string.replace(/AudioMoth\s/g, '').trim()
     if (this.authors !== '') {
       return getDeviceId(this.authors)

@@ -96,7 +96,7 @@ export default {
       return 'Prepared'
     },
     async onImportFiles (files) {
-      console.log('onImportFiles = filecontainer', files)
+      console.info('[FileContainer] onImportFiles', files)
       this.$emit('onImportFiles', files)
     },
     async loadMore () {
@@ -160,7 +160,6 @@ export default {
       if (merged) {
         const currentFiles = this.files
         this.files = mergeById(currentFiles, newFiles).sort(fileComparator)
-        console.log(`reload files ${currentFiles.length} + ${newFiles.length} = ${this.files.length}`)
       } else {
         this.files = newFiles.sort(fileComparator)
       }

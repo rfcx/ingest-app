@@ -45,7 +45,6 @@
         </template>
         <template v-else>
           <div class="cell-file-name" v-text="file.name" />
-          <AudioMothTag :show="file.deviceId" isSelected="true" />
           <button class="button edit-file-name-btn" @click="editClick()" title="Edit file name" v-if="canEdit">
             <fa-icon class="icon-redo" :icon="icons.edit" />
           </button>
@@ -77,7 +76,7 @@
 import fileState from '../../../../../utils/fileState'
 import fileHelper from '../../../../../utils/fileHelper'
 import { faRedo, faTrash, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
-import AudioMothTag from '../../Common/Tag/AudioMothTag'
+import RecorderTag from '../../Common/Tag/RecorderTag'
 
 export default {
   props: {
@@ -94,7 +93,7 @@ export default {
     }
   },
   components: {
-    AudioMothTag
+    RecorderTag
   },
   mounted () {
     this.fileName = this.file.name || ''
@@ -117,10 +116,9 @@ export default {
       try {
         const newFilename = this.fileName.trim()
         const updatedFields = await this.$file.renameFile(this.file, newFilename)
-        console.log('rename success: ', updatedFields)
+        console.info('[FileRow] rename success: ', updatedFields)
         if (typeof updatedFields === 'object') {
           this.file = {...this.file, ...updatedFields}
-          console.log('rename success: ', this.file)
         }
         this.isEdit = false
       } catch (e) {
@@ -130,7 +128,7 @@ export default {
         } else {
           message = 'Unknow error'
         }
-        console.log('Rename file error', message)
+        console.error('Rename file error', message)
         this.error = {
           message
         }
@@ -155,7 +153,7 @@ export default {
     },
     async repeatUploading (file) {
       if (!file.canRedo) return
-      console.log('repeat', file)
+      console.info('[FileRow] repeat upload', file)
       if (file.durationInSecond === -2) { // get duration error
         await this.$file.updateFilesDuration([file])
       }

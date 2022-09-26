@@ -6,6 +6,8 @@ const fs = require('fs')
 const path = require('path')
 const moment = require('moment-timezone')
 const archiver = require('archiver')
+const { RIFFFile } = require('riff-file')
+const { unpackString } = require('byte-data')
 
 const dayInMs = 1000 * 60 * 60 * 24
 
@@ -23,6 +25,14 @@ const isFolder = (filePath) => {
 
 const readFile = (filePath) => {
   return fs.readFileSync(filePath)
+}
+/** Function to read SongMeter metadata in GUAN format */
+const readGuanMetadata = (filePath) => {
+  const wavFile = fs.readFileSync(filePath)
+  const riff = new RIFFFile()
+  riff.setSignature(wavFile)
+  const guanChunk = riff.findChunk('guan')
+  return guanChunk ? unpackString(wavFile, guanChunk.chunkData.start, guanChunk.end) : null
 }
 
 const getExtension = (fileName) => {
@@ -134,7 +144,7 @@ const getTempPath = (tmpPath, fileName, streamId) => {
 
 const convert = (sourceFile, tempPath, streamId) => {
   const destinationPath = `${getTempPath(tempPath, getFileNameFromFilePath(sourceFile), streamId)}.flac`
-  console.log('converting: ', sourceFile, destinationPath)
+  console.info('[FileHelper] converting: ', sourceFile, destinationPath)
   return audioService.convert(sourceFile, destinationPath)
 }
 
@@ -156,8 +166,7 @@ const archiverDirectory = (sourceDirectory, targetFileName) => {
   var archive = archiver('zip')
 
   output.on('close', function () {
-    console.log(archive.pointer() + ' total bytes')
-    console.log('archiver has been finalized and the output file descriptor has closed.')
+    console.info(`[Archiver] log file created at ${targetFileName}.zip (${archive.pointer()} total bytes)`)
   })
 
   archive.on('error', function (err) {
@@ -178,6 +187,7 @@ const archiverDirectory = (sourceDirectory, targetFileName) => {
 export default {
   getFilesFromDirectoryPath,
   readFile,
+  readGuanMetadata,
   isExist,
   getFilePath,
   getFileNameFromFilePath,

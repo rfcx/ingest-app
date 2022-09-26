@@ -34,7 +34,7 @@ function addHooks () {
 
 async function init (app) {
   try {
-    console.log('Initializaing database...')
+    console.info('Initializaing database...')
     const storage = `${app.getPath('userData')}/database.sqlite`
     sequelize = new Sequelize('database', 'username', 'password', {
       host: 'localhost',
@@ -63,26 +63,26 @@ async function init (app) {
       }
     })
     await sequelize.authenticate()
-    console.log('Database connection has been established successfully.')
+    console.info('[DB] Database connection has been established successfully.')
     await migrateDatabase(sequelize)
     models = initModels(sequelize)
     addHooks()
-    console.log('Database models initialized successfully: ', Object.keys(models))
+    console.info('[DB] Database models initialized successfully: ', Object.keys(models))
   } catch (err) {
-    console.error('Error occured during database initialization.', err)
+    console.error('[DB] Error occured during database initialization.', err)
   }
 }
 
 const collections = {
   files: {
     bulkCreate: function (data) {
-      console.log(`Database files.bulkCreate is called with ${data.length} items.`)
+      console.info(`[DB] db.files.bulkCreate: ${data.length} files`)
       return models.File.bulkCreate(data, {
         validate: false // assume data is correct for speed boost
       })
     },
     update: function (data) {
-      // console.log('Database files.update is called.', data)
+      console.info(`[DB] db.files.update: ${data}`)
       return models.File.findOne({ where: { id: data.id } })
         .then((file) => {
           ['durationInSecond', 'state', 'uploadId', 'stateMessage', 'progress', 'format', 'sessionId',
@@ -95,13 +95,13 @@ const collections = {
         })
     },
     bulkUpdate: function (opts) {
-      console.log('Database files.bulkUpdate is called.', opts)
+      console.info(`[DB] db.files.bulkUpdate: ${opts}`)
       const where = opts.where || null
       const values = opts.values || {}
       return models.File.update(values, { where })
     },
     delete: function (opts) {
-      console.log('Database files.delete is called.', opts)
+      // console.info(`[DB] db.files.delete: ${opts}`)
       return models.File.destroy({ where: opts.where })
         .then(() => {
           return sequelize.query('VACUUM;', { type: sequelize.QueryTypes.RAW })
@@ -117,7 +117,7 @@ const collections = {
         .then((files) => files.map(f => f.toJSON()))
     },
     deleteAll: function () {
-      console.log('Database files.deleteAll is called.')
+      console.info('[DB] db.files.deleteAll')
       return models.File.destroy({
         where: {},
         truncate: true
@@ -163,23 +163,23 @@ const collections = {
   },
   streams: {
     get: function (id) {
-      console.log('Database streams.get is called.', id)
+      console.info(`[DB] db.streams.get: ${id}`)
       return models.Stream.findOne({ where: { id } })
         .then(s => s ? s.toJSON() : s)
     },
     create: function (data) {
-      console.log('Database streams.create is called.', data)
+      console.info(`[DB] db.streams.create: ${data}`)
       return models.Stream.create(data)
         .then(s => s.toJSON())
     },
     bulkCreate: function (data) {
-      console.log(`Database streams.bulkCreate is called with ${data.length} items.`)
+      console.info(`[DB] db.streams.bulkCreate: ${data.length} streams`)
       return models.Stream.bulkCreate(data, {
         validate: false // assume data is correct for speed boost
       })
     },
     upsert: function (data) {
-      console.log(`Database streams.upsert is called with ${data.length} items.`)
+      console.info(`[DB] db.streams.upsert: ${data}`)
       return data.map(item => {
         return models.Stream.upsert(item, {
           validate: false // assume data is correct for speed boost
@@ -187,7 +187,7 @@ const collections = {
       })
     },
     update: function (data) {
-      console.log('Database streams.update is called.', data)
+      console.info(`[DB] db.streams.update: ${data}`)
       return models.Stream.findOne({ where: { id: data.id } })
         .then((stream) => {
           ['name', 'latitude', 'longitude', 'timezone', 'timestampFormat', 'lastModifiedAt'].forEach((a) => {
@@ -199,24 +199,24 @@ const collections = {
         })
     },
     bulkUpdate: function (opts) {
-      console.log('Database streams.bulkUpdate is called.', opts)
+      console.info(`[DB] db.streams.bulkUpdate: ${opts}`)
       const where = opts.where || null
       const values = opts.values || {}
       return models.Stream.update(values, { where })
     },
     deleteById: function (id) {
-      console.log('Database streams.deleById is called.', id)
+      console.info(`[DB] db.streams.deleteById: ${id}`)
       return collections.streams.delete({ where: { id } })
     },
     delete: function (opts) {
-      console.log('Database streams.delete is called.', opts)
+      console.info(`[DB] db.streams.delete: ${opts}`)
       return models.Stream.destroy({ where: opts.where })
         .then(() => {
           return sequelize.query('VACUUM;', { type: sequelize.QueryTypes.RAW })
         })
     },
     deleteAll: function () {
-      console.log('Database streams.deleteAll is called.')
+      console.info('[DB] db.streams.deleteAll')
       return models.Stream.destroy({
         where: {},
         truncate: true

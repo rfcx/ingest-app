@@ -66,7 +66,7 @@
         const t0 = performance.now()
         await this.handleFiles(e.dataTransfer.files)
         const t1 = performance.now()
-        console.log('[Measure] handleDrop ' + (t1 - t0) + ' ms')
+        console.info('[Landing] ⏱ handleDrop ' + (t1 - t0) + ' ms')
       },
       async handleFiles (files) {
         this.isDragging = false

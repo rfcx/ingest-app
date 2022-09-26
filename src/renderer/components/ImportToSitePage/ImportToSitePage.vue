@@ -3,7 +3,7 @@
     <div class="header">
       <header-view title="Select Site" :shouldShowBackButton="true"/>
       <div class="tag__wrapper">
-        <AudioMothTag :show="props.deviceId" :isSelected="true"/>
+        <RecorderTag :show="props.deviceId" :isSelected="true" :type="props.recorderType"/>
         <deployment-tag 
           v-if="isFetchingDeploymentInfo || props.deploymentId"
           :isChecking="isFetchingDeploymentInfo"
@@ -68,7 +68,7 @@
 
 <script>
 import Map from '../Common/Map/Map'
-import AudioMothTag from '../Common/Tag/AudioMothTag'
+import RecorderTag from '../Common/Tag/RecorderTag'
 import DeploymentTag from '../Common/Tag/DeploymentTag'
 import HeaderView from '../Common/HeaderWithBackButton'
 import SelectProjectDropDownInput from './SelectProjectDropDownInput'
@@ -93,6 +93,7 @@ export default {
       props: {
         deploymentId: null,
         deviceId: null,
+        recorderType: null,
         deploymentConfiguredTimeZone: null,
         selectedFolderPath: null,
         selectedFiles: null,
@@ -107,7 +108,7 @@ export default {
       errorMessage: ''
     }
   },
-  components: { Map, AudioMothTag, DeploymentTag, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
+  components: { Map, RecorderTag, DeploymentTag, HeaderView, SelectSiteDropdownInput, SelectProjectDropDownInput },
   async created () {
     if (!this.$route.query) return
     // TODO: add logic & UI to go back to import step
@@ -126,16 +127,19 @@ export default {
 
     this.props.deploymentId = this.$route.query.deploymentId
     this.props.deviceId = this.$route.query.deviceId
+    this.props.recorderType = this.$route.query.recorderType
 
     const deviceInfo = await this.extractDeviceInfoFromQuery()
     if (deviceInfo) {
       this.props.deviceId = deviceInfo.deviceId
       this.props.deploymentId = deviceInfo.deploymentId
       this.props.deploymentConfiguredTimeZone = deviceInfo.timezoneOffset
+      this.props.recorderType = deviceInfo.recorderType
     }
 
     if (this.props.deviceId && !this.props.deploymentId) { // show protip
-      this.errorMessage = `Suggestion: use the RFCx companion to deploy your AudioMoth device in the future to pre-populate the site name below.`
+      const recorderType = this.props.recorderType
+      this.errorMessage = `Suggestion: use the RFCx companion to deploy your ${recorderType} device in the future to pre-populate the site name below.`
     }
 
     if (this.props.deploymentId) {
@@ -329,7 +333,7 @@ export default {
       // set default timezone settings
       const timezoneObject = {}
       timezoneObject[siteId] = Number.isInteger(deploymentInfo.timezone)
-        ? FileTimezoneHelper.fileTimezone.USE_AUDIOMOTH_CONFIG
+        ? FileTimezoneHelper.fileTimezone.USE_DEVICE_CONFIG
         : FileTimezoneHelper.fileTimezone.LOCAL_TIME
       await this.$store.dispatch('setSelectedTimezone', timezoneObject)
 
@@ -370,7 +374,7 @@ export default {
       return ipcRendererSend('db.streams.create', `db.streams.create.${Date.now()}`, obj)
     },
     updateSelectedExistingSite (site) {
-      console.info('updateSelectedExistingSite')
+      console.info('[ImportToSitePage] updateSelectedExistingSite')
       this.selectedExistingSite = site
       if (site) {
         this.isCreatingNewSite = false

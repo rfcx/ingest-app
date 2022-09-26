@@ -54,7 +54,6 @@ import OptionsDropdown from '../../Common/OptionsDropdown'
 import ConfirmAlert from '../../Common/ConfirmAlert'
 import ErrorAlert from '../../Common/ErrorAlert'
 import ipcRendererSend from '../../../services/ipc'
-import FileInfo from '../../../services/FileInfo'
 import dateHelper from '../../../../../utils/dateHelper'
 
 const { PREPARING, WAITING } = fileState.state
@@ -76,7 +75,7 @@ export default {
       isUpdatingFilenameFormat: false,
       errorMessage: null,
       selectedTimezone: '',
-      audioMothTimezoneOffset: null,
+      deviceTimezoneOffset: null,
       didClickStart: false,
       shouldFocusTimezoneInput: false
     }
@@ -96,7 +95,7 @@ export default {
     },
     timezonePreference () {
       const savedSelectedTimezone = this.$store.getters.getSelectedTimezoneByStreamId(this.selectedStreamId)
-      const offset = this.$store.getters.getAudiomothTimezoneOffsetConfigByStreamId(this.selectedStreamId)
+      const offset = this.$store.getters.getDeviceTimezoneOffsetConfigByStreamId(this.selectedStreamId)
       return { setting: savedSelectedTimezone, audiomothConfig: offset }
     },
     shouldShowConfirmTimezoneAlert () {
@@ -107,7 +106,7 @@ export default {
     },
     confirmTimezoneAlertText () {
       const timezone = `${this.selectedTimezone} (${dateHelper.formattedTzOffsetFromTzMinutes(this.getSelectedTimezoneValue(this.selectedTimezone))})`
-      const audiomoth = Number.isInteger(this.timezonePreference.audiomothConfig) ? `${FileTimeZoneHelper.fileTimezone.USE_AUDIOMOTH_CONFIG} (${dateHelper.formattedTzOffsetFromTzMinutes(this.timezonePreference.audiomothConfig)})` : ''
+      const audiomoth = Number.isInteger(this.timezonePreference.audiomothConfig) ? `${FileTimeZoneHelper.fileTimezone.USE_DEVICE_CONFIG} (${dateHelper.formattedTzOffsetFromTzMinutes(this.timezonePreference.audiomothConfig)})` : ''
       return {
         title: `Upload audio in ${this.selectedTimezone}?`,
         message: `The filename timezone you chose <b>${timezone}</b> is different from <b>${audiomoth}</b>`,
@@ -118,7 +117,7 @@ export default {
   },
   async created () {
     this.selectedTimezone = this.timezonePreference.setting
-    this.audioMothTimezoneOffset = await this.getDefaultAudioMothTimezoneOffset()
+    this.deviceTimezoneOffset = await this.getDefaultDeviceTimezoneOffset()
   },
   methods: {
     onClickStartUpload () {
@@ -161,9 +160,9 @@ export default {
       // always enable uploading process
       await this.$store.dispatch('enableUploadingProcess', true)
     },
-    async getDefaultAudioMothTimezoneOffset () {
+    async getDefaultDeviceTimezoneOffset () {
       return new Promise(async (resolve, reject) => {
-        const savedAudioMothTimezone = this.$store.getters.getAudiomothTimezoneOffsetConfigByStreamId(this.selectedStreamId)
+        const savedAudioMothTimezone = this.$store.getters.getDeviceTimezoneOffsetConfigByStreamId(this.selectedStreamId)
         if (Number.isInteger(savedAudioMothTimezone)) return resolve(savedAudioMothTimezone)
         const files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
           where: {
@@ -174,7 +173,7 @@ export default {
           limit: 1
         })
         if (files.length <= 0) return resolve(null)
-        const fileInfo = await new FileInfo(files[0].path)
+        const fileInfo = await this.$file.getDeviceInfo(files[0].path)
         return resolve(fileInfo.timezoneOffset)
       })
     },
@@ -201,7 +200,7 @@ export default {
     },
     async onFormatSave (format = '') {
       this.closeFileNameFormatSettingModal()
-      console.log('onFormatSave', format)
+      console.info('[FileNameFormat] onFormatSave', format)
       this.isUpdatingFilenameFormat = true
       this.$file.updateFilesFormat(this.selectedStream, format).then(_ => {
         this.selectedStream.timestampFormat = format
@@ -214,8 +213,8 @@ export default {
       })
     },
     async onTimezoneSave (timezone) {
-      if (timezone === FileTimeZoneHelper.fileTimezone.USE_AUDIOMOTH_CONFIG && this.audioMothTimezoneOffset === null) {
-        this.errorMessage = 'No Audiomoth file or configuration found'
+      if (timezone === FileTimeZoneHelper.fileTimezone.USE_DEVICE_CONFIG && this.deviceTimezoneOffset === null) {
+        this.errorMessage = 'No device configuration found'
       } else {
         this.selectedTimezone = timezone
       }
@@ -224,7 +223,7 @@ export default {
       switch (selectedTimezone) {
         case FileTimeZoneHelper.fileTimezone.UTC: return 0
         case FileTimeZoneHelper.fileTimezone.LOCAL_TIME: return dateHelper.tzOffsetMinutesFromTzName(this.selectedStream.timezone)
-        case FileTimeZoneHelper.fileTimezone.USE_AUDIOMOTH_CONFIG: return this.audioMothTimezoneOffset
+        case FileTimeZoneHelper.fileTimezone.USE_DEVICE_CONFIG: return this.deviceTimezoneOffset
         default: return 0
       }
     },
@@ -237,7 +236,7 @@ export default {
     async selectedStream () {
       // if updated selected stream, then reset selected timezone
       this.selectedTimezone = this.timezonePreference.setting
-      this.audioMothTimezoneOffset = await this.getDefaultAudioMothTimezoneOffset()
+      this.deviceTimezoneOffset = await this.getDefaultDeviceTimezoneOffset()
     }
   }
 }

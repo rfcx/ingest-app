@@ -2,7 +2,7 @@ import { BrowserWindow } from 'electron'
 
 export default {
   createWindow (isShow, onCloseHandler, onClosedHandler) {
-    console.log('preferences process: createWindow')
+    console.info('[MainWindow] createWindow')
     const mainWindowURL = process.env.NODE_ENV === 'development' ? `http://localhost:9080` : `file://${__dirname}/index.html`
     const mainWindow = new BrowserWindow({
       show: isShow,
@@ -18,7 +18,7 @@ export default {
 
     // Monitor process
     mainWindow.webContents.on('crashed', (event, killed) => {
-      console.log('💥 mainWindow on crashed event:', event)
+      console.error('💥 mainWindow on crashed event:', event)
       setTimeout(() => { // delay to prevent app crash https://github.com/electron/electron/issues/23291
         mainWindow.reload()
       }, 5000)

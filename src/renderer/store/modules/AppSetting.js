@@ -1,7 +1,7 @@
 const state = {
   selectedTabs: {},
   selectedTimezones: {},
-  audiomothTimezoneOffsetConfigs: {},
+  deviceTimezoneOffsetConfigs: {},
   selectedStreamId: '',
   currentUploadingSessionId: null,
   isUploadingProcessEnabled: true
@@ -14,8 +14,8 @@ const mutations = {
   SET_SELECTED_TIMEZONE (state, timezoneObject) {
     state.selectedTimezones = Object.assign({}, state.selectedTimezones, timezoneObject)
   },
-  SET_AUDIOMOTH_CONFIGURED_TIMEZONE (state, timezoneOffsetObject) {
-    state.audiomothTimezoneOffsetConfigs = Object.assign({}, state.audiomothTimezoneOffsetConfigs, timezoneOffsetObject)
+  SET_DEVICE_CONFIGURED_TIMEZONE (state, timezoneOffsetObject) {
+    state.deviceTimezoneOffsetConfigs = Object.assign({}, state.deviceTimezoneOffsetConfigs, timezoneOffsetObject)
   },
   SET_SELECTED_STREAM_ID (state, streamId) {
     state.selectedStreamId = streamId
@@ -32,7 +32,7 @@ const mutations = {
     state.isUploadingProcessEnabled = true
     state.selectedStreamId = null
     state.selectedTimezones = {}
-    state.audiomothTimezoneOffsetConfigs = {}
+    state.deviceTimezoneOffsetConfigs = {}
   }
 }
 
@@ -44,7 +44,7 @@ const actions = {
     commit('SET_SELECTED_TIMEZONE', timezoneObject)
   },
   setAudiomothTimezoneOffsetConfigs ({ commit }, timezoneOffsetObject) {
-    commit('SET_AUDIOMOTH_CONFIGURED_TIMEZONE', timezoneOffsetObject)
+    commit('SET_DEVICE_CONFIGURED_TIMEZONE', timezoneOffsetObject)
   },
   setSelectedStreamId ({ commit }, streamId) {
     commit('SET_SELECTED_STREAM_ID', streamId)
@@ -63,7 +63,7 @@ const actions = {
 const getters = {
   getSelectedTabByStreamId: state => streamId => state.selectedTabs[streamId],
   getSelectedTimezoneByStreamId: state => streamId => state.selectedTimezones[streamId],
-  getAudiomothTimezoneOffsetConfigByStreamId: state => streamId => state.audiomothTimezoneOffsetConfigs[streamId]
+  getDeviceTimezoneOffsetConfigByStreamId: state => streamId => state.deviceTimezoneOffsetConfigs[streamId]
 }
 
 export default {

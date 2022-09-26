@@ -33,11 +33,11 @@
         const { type } = e
         this.onLine = type === 'online'
         if (!this.onLine) {
-          console.log('\nupdateOnlineStatus', this.onLine)
+          console.info('\nupdateOnlineStatus', this.onLine)
           settings.set('settings.onLine', this.onLine)
         } else {
           isOnline().then(online => {
-            console.log('\nupdateOnlineStatus', online)
+            console.unfo('\nupdateOnlineStatus', online)
             settings.set('settings.onLine', online)
           })
         }

@@ -1,20 +1,20 @@
 <template>
   <table>
     <tr class="source-type__row">
-      <span class="source-type__title">AudioMoth SD Card</span>
+      <span class="source-type__title">RFCx Companion SD Card</span>
     </tr>
-    <template v-if="!audioMothDrives || audioMothDrives.length === 0">
+    <template v-if="!companionDrives || companionDrives.length === 0">
       <tr>
         <img class="row__icon" src="@/assets/ic-sd-card-gray.svg"/>
-        <span class="row__source-title">No AudioMoth SD Card detected</span>
+        <span class="row__source-title">No RFCx Companion SD Card detected</span>
       </tr>
     </template>
     <template v-else>
-    <tr v-for="drive in audioMothDrives" :key="drive.id" @click="onDriveSelected(drive)" :class="{'selected': isSelected('external') }">
+    <tr v-for="drive in companionDrives" :key="drive.id" @click="onDriveSelected(drive)" :class="{'selected': isSelected('external') }">
       <img class="row__icon" src="@/assets/ic-sd-card-white.svg" v-if="isSelected('external') || defaultState"/>
       <img class="row__icon" src="@/assets/ic-sd-card-gray.svg" v-else/>
       <span class="row__source-title" :class="{'default': defaultState}">{{ drive.label }}</span>
-      <AudioMothTag :show="drive.deviceId" :isSelected="(isSelected('external') || defaultState)"/>
+      <RecorderTag :show="drive.deviceId" :isSelected="(isSelected('external') || defaultState)" :type="drive.recorderType"/>
     </tr>
     </template>
     <template>
@@ -27,7 +27,7 @@
       <img class="row__icon" src="@/assets/ic-folder-empty.svg" v-else/>
       <span class="row__source-title" :class="{'default': defaultState}" v-if="selectedFolder.path">{{ selectedFolder.path }}</span>
       <span class="row__folder-button" :class="{'default': defaultState}" v-else>Choose a folder</span>
-      <AudioMothTag :show="selectedFolder.deviceId" :isSelected="(isSelected('folder') || defaultState)"/>
+      <RecorderTag :show="selectedFolder.deviceId" :isSelected="(isSelected('folder') || defaultState)" :type="selectedFolder.recorderType"/>
     </tr>
     <tr @click="onClickChooseFiles" :class="{'selected':  isSelected('file') }">
       <input type="file" ref="file" multiple @change="handleFilesChange" style="display:none"/>
@@ -35,7 +35,7 @@
       <img class="row__icon" src="@/assets/ic-file.svg" v-else/>
       <span class="row__source-title" :class="{'default': defaultState}" v-if="numberOfSelectedFiles > 0">{{ numberOfSelectedFiles + ' files selected' }}</span>
       <span class="row__folder-button" :class="{'default': defaultState}" v-else>Choose files</span>
-      <AudioMothTag :show="isSelected('file') && selectedSource.deviceId" :isSelected="(isSelected('file') || defaultState)"/>
+      <RecorderTag :show="isSelected('file') && selectedSource.deviceId" :isSelected="(isSelected('file') || defaultState)" :type="selectedSource.recorderType"/>
     </tr>
     </template>
   </table>
@@ -45,7 +45,7 @@
 import DriveList from '../../../../utils/DriveListHelper'
 import fileHelper from '../../../../utils/fileHelper'
 import FileSource from './FileSorce'
-import AudioMothTag from '../Common/Tag/AudioMothTag'
+import RecorderTag from '../Common/Tag/RecorderTag'
 
 function getDeviceId (deviceInfo) {
   return deviceInfo ? deviceInfo.deviceId : null
@@ -53,6 +53,10 @@ function getDeviceId (deviceInfo) {
 
 function getDeploymentId (deviceInfo) {
   return deviceInfo ? deviceInfo.deploymentId : null
+}
+
+function getDeviceRecorderType (deviceInfo) {
+  return deviceInfo ? deviceInfo.recorderType : null
 }
 
 export default {
@@ -65,14 +69,14 @@ export default {
     defaultState: true,
     isLoading: false // user hasn't selected any options before
   }),
-  components: { AudioMothTag },
+  components: { RecorderTag },
   computed: {
     numberOfSelectedFiles () {
       return this.selectedFiles.length
     },
-    audioMothDrives () {
+    companionDrives () {
       if (this.drives === null || this.drives.length === 0) return []
-      return this.drives.filter(drive => drive.deviceId)
+      return this.drives.filter(drive => drive.deploymentId)
     }
   },
   methods: {
@@ -86,7 +90,8 @@ export default {
         if (deviceInfo) {
           const deviceId = deviceInfo.deviceId
           const deploymentId = deviceInfo.deploymentId
-          return {...drive, deviceId, deploymentId}
+          const recorderType = deviceInfo.recorderType
+          return {...drive, deviceId, deploymentId, recorderType}
         }
         return drive
       }))
@@ -95,19 +100,19 @@ export default {
       return this.$file.getDeviceInfoFromFolder(path)
     },
     onDriveSelected (drive) {
-      this.selectedSource = new FileSource.FileSourceFromExternal(drive.id, drive.deviceId, drive.deploymentId, drive.path, drive.label)
+      this.selectedSource = new FileSource.FileSourceFromExternal(drive.id, drive.deviceId, drive.deploymentId, drive.recorderType, drive.path, drive.label)
     },
     onClickChangeFolder () {
       this.$refs.folder.click()
     },
     async handleFolderChange (event) {
-      console.log(event.target.files)
       const path = event.target.files[0].path
       const deviceInfo = await this.getDeviceInfo(path)
       const deviceId = getDeviceId(deviceInfo)
       const deploymentId = getDeploymentId(deviceInfo)
-      this.selectedFolder = {path, deviceId, deploymentId}
-      this.selectedSource = new FileSource.FileSourceFromFolder(path, deviceId, deploymentId)
+      const recorderType = getDeviceRecorderType(deviceInfo)
+      this.selectedFolder = {path, deviceId, deploymentId, recorderType}
+      this.selectedSource = new FileSource.FileSourceFromFolder(path, deviceId, deploymentId, recorderType)
       // reset selected files
       this.selectedFiles = []
     },
@@ -115,7 +120,6 @@ export default {
       this.$refs.file.click()
     },
     async handleFilesChange (event) {
-      console.log(event.target.files)
       if (!event.target.files) { return }
       const files = [...event.target.files].map(file => {
         return {
@@ -130,7 +134,10 @@ export default {
       this.selectedFiles = files
       const firstWavFile = files.find(file => fileHelper.getExtension(file.path) === 'wav') // read only wav file header info
       const deviceInfo = await this.$file.getDeviceInfo(firstWavFile)
-      this.selectedSource = new FileSource.FileSourceFromFiles('id', getDeviceId(deviceInfo), getDeploymentId(deviceInfo), files)
+      const deviceId = getDeviceId(deviceInfo)
+      const deploymentId = getDeploymentId(deviceInfo)
+      const recorderType = getDeviceRecorderType(deviceInfo)
+      this.selectedSource = new FileSource.FileSourceFromFiles('id', deviceId, deploymentId, recorderType, files)
       // reset selected folder
       this.selectedFolder = {}
     },
@@ -178,7 +185,7 @@ export default {
   }
   table {
     margin: $default-padding-margin 0px;
-    width: 280px;
+    width: 300px;
   }
   tr {
     margin-bottom: $default-padding-margin;

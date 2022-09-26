@@ -25,16 +25,16 @@ module.exports = {
       case '--squirrel-updated':
         spawnUpdate(['--createShortcut', exeName])
         setTimeout(app.quit, 1000)
-        console.log('squirrel updated')
+        console.info('[squirrel] d updated')
         return true
       case '--squirrel-uninstall':
         spawnUpdate(['--removeShortcut', exeName])
         setTimeout(app.quit, 1000)
-        console.log('squirrel uninstall')
+        console.info('[squirrel] uninstall')
         return true
       case '--squirrel-obsolete':
         app.quit()
-        console.log('squirrel obsolete')
+        console.info('[squirrel] obsolete')
         return true
     }
   }

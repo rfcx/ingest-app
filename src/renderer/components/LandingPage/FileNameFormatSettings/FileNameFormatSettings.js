@@ -23,7 +23,7 @@ export default {
         this.$emit('save', format)
       } else {
         this.shouldShowErrorMessage = true
-        console.log('error not pass validation')
+        console.error('error not pass validation')
       }
     },
     closeModal () {
@@ -90,7 +90,6 @@ export default {
       }
     },
     customInputBlur (e, idx) {
-      console.log('customInputBlur', idx)
       this.selectedIndexCursor = idx
     },
     resetTheSelectedItems (newItem) {
@@ -107,13 +106,10 @@ export default {
         }) > -1
         if (!hasSelected) {
           if (this.selectedItems.length > 0) { // if already has some items in the list
-            console.log('formatItemClick: already has some items')
             if (this.lastInputText !== '') { // if last input text has some value, then add it to the list
-              console.log('formatItemClick: last input text is not an empty string')
               const inputFormat = new CustomInputFormat(this.lastInputText)
               this.insertOrPushToSelectedItems(inputFormat, this.selectedIndexCursor)
             } else { // if not then add an empty string into the list
-              console.log('formatItemClick: last input text is an empty string')
               this.insertOrPushToSelectedItems(new CustomInputFormat(''), this.selectedIndexCursor)
               this.lastInputText = ''
             }

@@ -23,7 +23,6 @@ export default {
     updatePopupWindow.loadURL(updateURL)
 
     updatePopupWindow.on('closed', () => {
-      console.log('updatePopupWindow closed')
       updatePopupWindow.destroy()
     })
 
@@ -52,11 +51,11 @@ export default {
       autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
       autoUpdater.on('update-available', () => { console.log('update-available') })
       autoUpdater.on('update-not-available', () => {
-        console.log('update-not-available')
+        console.info('[Update] update-not-available')
         updateNotAvaliableHandler()
       })
       autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-        console.log('update-downloaded', releaseName, releaseNotes)
+        console.info('[Update] update-downloaded', releaseName, releaseNotes)
         if (releaseName) global.newVersion = releaseName
         if (releaseNotes) global.notes = releaseNotes
         const currentWin = BrowserWindow.getFocusedWindow()
@@ -69,11 +68,11 @@ export default {
     }
   },
   checkForUpdates () {
-    console.log('auto update process: checkForUpdates')
+    console.info('[Update] auto update process: checkForUpdates')
     autoUpdater.checkForUpdates()
   },
   createUpdateInterval () {
-    console.log('auto update process: createUpdateInterval')
+    console.info('[Update] auto update process: createUpdateInterval')
     updateIntervalTimeout = setInterval(() => {
       this.checkForUpdates()
     }, dayInMs)
