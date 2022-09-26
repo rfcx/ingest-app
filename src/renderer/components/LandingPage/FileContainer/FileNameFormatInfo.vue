@@ -54,7 +54,6 @@ import OptionsDropdown from '../../Common/OptionsDropdown'
 import ConfirmAlert from '../../Common/ConfirmAlert'
 import ErrorAlert from '../../Common/ErrorAlert'
 import ipcRendererSend from '../../../services/ipc'
-import FileInfo from '../../../services/FileInfo'
 import dateHelper from '../../../../../utils/dateHelper'
 
 const { PREPARING, WAITING } = fileState.state
@@ -174,7 +173,7 @@ export default {
           limit: 1
         })
         if (files.length <= 0) return resolve(null)
-        const fileInfo = await new FileInfo(files[0].path)
+        const fileInfo = await this.$file.getDeviceInfo(files[0].path)
         return resolve(fileInfo.timezoneOffset)
       })
     },

@@ -12,6 +12,7 @@ import Analytics from 'electron-ga'
 import env from '../../../env.json'
 import fileState from '../../../utils/fileState'
 import ipcRendererSend from './ipc'
+import SongMeterFileInfo from './SongMeterFileInfo'
 
 const { PREPARING, ERROR_LOCAL, ERROR_SERVER, WAITING, PROCESSING, COMPLETED } = fileState.state
 
@@ -512,11 +513,18 @@ class FileProvider {
   async getDeviceInfo (file) {
     if (!file) return undefined
     try {
-      const fileInfo = await new FileInfo(file.path)
-      const deviceId = fileInfo.deviceId
-      const deploymentId = fileInfo.deployment
-      const timezoneOffset = fileInfo.timezoneOffset
-      return {deviceId, deploymentId, timezoneOffset}
+      // find AudioMoth metadata
+      const audioMothFileInfo = await new FileInfo(file.path)
+      if (audioMothFileInfo.comment) {
+        return { deviceId: audioMothFileInfo.deviceId, deploymentId: audioMothFileInfo.deployment, timezoneOffset: audioMothFileInfo.timezoneOffset, recorderType: 'AudioMoth' }
+      }
+      // find SongMeter metadata
+      const songMeterFileInfo = await new SongMeterFileInfo(file.path)
+      if (songMeterFileInfo.metadata) {
+        return { deviceId: songMeterFileInfo.deviceId, deploymentId: songMeterFileInfo.deployment, timezoneOffset: songMeterFileInfo.timezoneOffset, recorderType: 'SongMeter' }
+      }
+      // return null if there is no metadata
+      return null
     } catch (e) {
       return null
     }

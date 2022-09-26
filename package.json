@@ -120,6 +120,7 @@
     "moment-timezone": "^0.5.31",
     "node-localstorage": "2.1.5",
     "querystring": "^0.2.0",
+    "riff-file": "^1.0.3",
     "rxdb": "^9.15.0",
     "sequelize": "^6.5.1",
     "sha1-file": "^1.0.4",

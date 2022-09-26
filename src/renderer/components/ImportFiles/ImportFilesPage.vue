@@ -15,7 +15,8 @@ export default {
   data: () => ({
     selectedSource: null,
     deviceId: null,
-    deploymentId: null
+    deploymentId: null,
+    recorderType: null
   }),
   components: { SourceList, HeaderView },
   methods: {
@@ -24,14 +25,20 @@ export default {
       console.log('onSourceSelected', this.selectedSource)
       this.deviceId = this.selectedSource.deviceId
       this.deploymentId = this.selectedSource.deploymentId
+      this.recorderType = this.selectedSource.recorderType
       this.redirectUserToSelectSiteScreen()
     },
     redirectUserToSelectSiteScreen () {
       const selectSitePath = '/select-site'
+      const query = {
+        deviceId: this.deviceId,
+        deploymentId: this.deploymentId,
+        recorderType: this.recorderType
+      }
       if (this.selectedSource instanceof FileSource.FileSourceFromFiles) {
-        this.$router.push({path: selectSitePath, query: { selectedFiles: JSON.stringify(this.selectedSource.selectedFiles), deviceId: this.deviceId, deploymentId: this.deploymentId }})
+        this.$router.push({path: selectSitePath, query: { ...query, selectedFiles: JSON.stringify(this.selectedSource.selectedFiles) }})
       } else {
-        this.$router.push({path: selectSitePath, query: { folderPath: this.selectedSource.path, deviceId: this.deviceId, deploymentId: this.deploymentId }})
+        this.$router.push({path: selectSitePath, query: { ...query, folderPath: this.selectedSource.path }})
       }
     }
   }

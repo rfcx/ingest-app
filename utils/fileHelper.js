@@ -6,6 +6,8 @@ const fs = require('fs')
 const path = require('path')
 const moment = require('moment-timezone')
 const archiver = require('archiver')
+const { RIFFFile } = require('riff-file')
+const { unpackString } = require('byte-data')
 
 const dayInMs = 1000 * 60 * 60 * 24
 
@@ -23,6 +25,14 @@ const isFolder = (filePath) => {
 
 const readFile = (filePath) => {
   return fs.readFileSync(filePath)
+}
+/** Function to read SongMeter metadata in GUAN format */
+const readGuanMetadata = (filePath) => {
+  const wavFile = fs.readFileSync(filePath)
+  const riff = new RIFFFile()
+  riff.setSignature(wavFile)
+  const guanChunk = riff.findChunk('guan')
+  return guanChunk ? unpackString(wavFile, guanChunk.chunkData.start, guanChunk.end) : null
 }
 
 const getExtension = (fileName) => {
@@ -178,6 +188,7 @@ const archiverDirectory = (sourceDirectory, targetFileName) => {
 export default {
   getFilesFromDirectoryPath,
   readFile,
+  readGuanMetadata,
   isExist,
   getFilePath,
   getFileNameFromFilePath,

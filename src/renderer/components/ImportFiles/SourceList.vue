@@ -55,6 +55,10 @@ function getDeploymentId (deviceInfo) {
   return deviceInfo ? deviceInfo.deploymentId : null
 }
 
+function getDeviceRecorderType (deviceInfo) {
+  return deviceInfo ? deviceInfo.recorderType : null
+}
+
 export default {
   data: () => ({
     driveFetchingInterval: null,
@@ -95,7 +99,7 @@ export default {
       return this.$file.getDeviceInfoFromFolder(path)
     },
     onDriveSelected (drive) {
-      this.selectedSource = new FileSource.FileSourceFromExternal(drive.id, drive.deviceId, drive.deploymentId, drive.path, drive.label)
+      this.selectedSource = new FileSource.FileSourceFromExternal(drive.id, drive.deviceId, drive.deploymentId, drive.recorderType, drive.path, drive.label)
     },
     onClickChangeFolder () {
       this.$refs.folder.click()
@@ -106,8 +110,9 @@ export default {
       const deviceInfo = await this.getDeviceInfo(path)
       const deviceId = getDeviceId(deviceInfo)
       const deploymentId = getDeploymentId(deviceInfo)
-      this.selectedFolder = {path, deviceId, deploymentId}
-      this.selectedSource = new FileSource.FileSourceFromFolder(path, deviceId, deploymentId)
+      const recorderType = getDeviceRecorderType(deviceInfo)
+      this.selectedFolder = {path, deviceId, deploymentId, recorderType}
+      this.selectedSource = new FileSource.FileSourceFromFolder(path, deviceId, deploymentId, recorderType)
       // reset selected files
       this.selectedFiles = []
     },
@@ -130,7 +135,7 @@ export default {
       this.selectedFiles = files
       const firstWavFile = files.find(file => fileHelper.getExtension(file.path) === 'wav') // read only wav file header info
       const deviceInfo = await this.$file.getDeviceInfo(firstWavFile)
-      this.selectedSource = new FileSource.FileSourceFromFiles('id', getDeviceId(deviceInfo), getDeploymentId(deviceInfo), files)
+      this.selectedSource = new FileSource.FileSourceFromFiles('id', getDeviceId(deviceInfo), getDeploymentId(deviceInfo), getDeviceRecorderType(deviceInfo), files)
       // reset selected folder
       this.selectedFolder = {}
     },

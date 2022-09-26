@@ -3,7 +3,8 @@
     <div class="header">
       <header-view title="Select Site" :shouldShowBackButton="true"/>
       <div class="tag__wrapper">
-        <AudioMothTag :show="props.deviceId" :isSelected="true"/>
+        <AudioMothTag v-if="props.recorderType === 'AudioMoth'" :isSelected="true"/>
+        <span v-else-if="props.recorderType === 'SongMeter'">SongMeter</span>
         <deployment-tag 
           v-if="isFetchingDeploymentInfo || props.deploymentId"
           :isChecking="isFetchingDeploymentInfo"
@@ -93,6 +94,7 @@ export default {
       props: {
         deploymentId: null,
         deviceId: null,
+        recorderType: null,
         deploymentConfiguredTimeZone: null,
         selectedFolderPath: null,
         selectedFiles: null,
@@ -126,16 +128,20 @@ export default {
 
     this.props.deploymentId = this.$route.query.deploymentId
     this.props.deviceId = this.$route.query.deviceId
+    this.props.recorderType = this.$route.query.recorderType
 
     const deviceInfo = await this.extractDeviceInfoFromQuery()
     if (deviceInfo) {
       this.props.deviceId = deviceInfo.deviceId
       this.props.deploymentId = deviceInfo.deploymentId
       this.props.deploymentConfiguredTimeZone = deviceInfo.timezoneOffset
+      this.props.recorderType = deviceInfo.recorderType
+      console.log('import device info', deviceInfo)
     }
 
     if (this.props.deviceId && !this.props.deploymentId) { // show protip
-      this.errorMessage = `Suggestion: use the RFCx companion to deploy your AudioMoth device in the future to pre-populate the site name below.`
+      const recorderType = this.props.recorderType
+      this.errorMessage = `Suggestion: use the RFCx companion to deploy your ${recorderType} device in the future to pre-populate the site name below.`
     }
 
     if (this.props.deploymentId) {
