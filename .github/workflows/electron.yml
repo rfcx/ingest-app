@@ -20,7 +20,6 @@ jobs:
         with:
           node-version: 10.17.0
       - name: set visual studio 2017
-        shell: powershell
         if: startsWith(matrix.os, 'windows-2019')
         run: |
           npm install --global --production windows-build-tools --vs2017
