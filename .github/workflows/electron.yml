@@ -18,11 +18,7 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@master
         with:
-          node-version: 10.17.0
-      - name: set visual studio 2017
-        if: startsWith(matrix.os, 'windows-2019')
-        run: |
-          npm install --global windows-build-tools@4.0.0
+          node-version: 14.20.0
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
         # Import Apple API key for app notarization on macOS
