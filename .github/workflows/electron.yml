@@ -23,7 +23,7 @@ jobs:
         shell: powershell
         if: startsWith(matrix.os, 'windows-2019')
         run: |
-          npm install -g windows-build-tools
+          npm install --global --production windows-build-tools --vs2017
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
         # Import Apple API key for app notarization on macOS
