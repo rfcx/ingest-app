@@ -22,7 +22,7 @@ jobs:
       - name: set visual studio 2017
         if: startsWith(matrix.os, 'windows-2019')
         run: |
-          npm install --global --production windows-build-tools --vs2017
+          npm install --global windows-build-tools@4.0.0
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
         # Import Apple API key for app notarization on macOS
