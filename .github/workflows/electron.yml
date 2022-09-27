@@ -23,7 +23,7 @@ jobs:
         shell: powershell
         if: startsWith(matrix.os, 'windows-2019')
         run: |
-          npm install --global node-gyp@latest
+          npm install --global node-gyp
           npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
