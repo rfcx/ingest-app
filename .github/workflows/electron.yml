@@ -19,6 +19,12 @@ jobs:
         uses: actions/setup-node@master
         with:
           node-version: 10.17.0
+      - name: patch node gyp on windows to support Visual Studio 2019
+        shell: powershell
+        if: startsWith(matrix.os, 'windows-2019')
+        run: |
+          npm install --global node-gyp@latest
+          npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
         # Import Apple API key for app notarization on macOS
