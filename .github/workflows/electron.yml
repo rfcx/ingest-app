@@ -23,6 +23,8 @@ jobs:
         shell: powershell
         if: startsWith(matrix.os, 'windows-2019')
         run: |
+          npm install -g windows-build-tools
+          npm config set python python2.7
           npm config set msvs_version 2017
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
