@@ -35,6 +35,7 @@
   const { remote } = window.require('electron')
   const log = require('electron-log')
   console.log = log.log
+  console.info = log.info
 
   export default {
     name: 'landing-page',
