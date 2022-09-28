@@ -16,7 +16,7 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@master
       - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@master
+        uses: actions/setup-node@v1
         with:
           node-version: 14.0.0
       - name: Prepare for app notarization
@@ -41,3 +41,4 @@ jobs:
           appleIdPassword: ${{ secrets.APPLE_ID_PWD }},
           API_KEY_ID: ${{ secrets.API_KEY_ID }},
           API_KEY_ISSUER_ID: ${{ secrets.API_KEY_ISSUER_ID }}
+          NODE_OPTIONS: '--max_old_space_size=4096'
