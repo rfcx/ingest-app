@@ -11,6 +11,7 @@ const jwtDecode = require('jwt-decode')
 const setupEvents = require('./../../setupEvents')
 const log = require('electron-log')
 console.log = log.log
+console.info = log.info
 log.transports.console.format = '{h}:{i}:{s} {text}'
 log.transports.file.getFile()
 
