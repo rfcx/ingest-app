@@ -8,14 +8,15 @@ ffmpeg.setFfprobePath(ffprobePath)
    * convert wav files to flac
    * @returns desination path of the converted file
    */
-const convert = (sourceFile, destinationPath) => {
+const convert = (sourceFile, destinationPath, metadata) => {
+  const basedOutputOptions = ['-ac 1'] // force convert to mono channel
+  const meta = metadata ? ['-metadata', `comment=${metadata.comment}`, '-metadata', `artist=${metadata.artist}`] : []
+  const outputOptions = basedOutputOptions.concat(meta)
   return new Promise((resolve, reject) => {
     const command = ffmpeg(sourceFile)
       .noVideo()
       .output(destinationPath)
-      .outputOptions([
-        '-ac 1' // force to mono channel
-      ])
+      .outputOptions(outputOptions)
 
     const timeout = setTimeout(function () {
       command.kill()

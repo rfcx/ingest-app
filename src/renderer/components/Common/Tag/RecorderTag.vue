@@ -15,7 +15,7 @@ export default {
     isSelected: false,
     type: {
       type: String,
-      validator: value => ['SongMeter', 'AudioMoth'].includes(value) ? value : undefined
+      validator: value => ['Song Meter', 'AudioMoth'].includes(value) ? value : undefined
     }
   },
   computed: {

@@ -142,10 +142,10 @@ const getTempPath = (tmpPath, fileName, streamId) => {
   return `${tmpPath}/${fileName}-${streamId}`
 }
 
-const convert = (sourceFile, tempPath, streamId) => {
+const convert = (sourceFile, tempPath, streamId, metadata) => {
   const destinationPath = `${getTempPath(tempPath, getFileNameFromFilePath(sourceFile), streamId)}.flac`
   console.info('[FileHelper] converting: ', sourceFile, destinationPath)
-  return audioService.convert(sourceFile, destinationPath)
+  return audioService.convert(sourceFile, destinationPath, metadata)
 }
 
 const remove = (path) => {

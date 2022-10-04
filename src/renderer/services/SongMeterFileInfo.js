@@ -15,6 +15,14 @@ export default class SongMeterFileInfo {
     })()
   }
 
+  get formattedMetadata () {
+    console.log('this.metadata', this.metadata)
+    // eslint-disable-next-line no-control-regex, no-useless-escape
+    const formatted = (this.metadata.replace(/\n/g, ';')).replace(/[\[\]\{\}\"\x07]/g, '')
+    console.log('formatted', formatted)
+    return formatted
+  }
+
   get deviceId () {
     // eslint-disable-next-line no-useless-escape
     const reg = /WA\|Song Meter\|Prefix:(?<prefix>[a-zA-Z0-9_\-]{0,12})/ig
@@ -37,6 +45,19 @@ export default class SongMeterFileInfo {
         return null
       }
       return matched.groups.prefix
+    } catch (e) {
+      return null
+    }
+  }
+
+  get model () {
+    const reg = /Model:(?<model>.*)/ig
+    try {
+      const matched = reg.exec(this.metadata)
+      if (!matched || matched.length === 0) {
+        return null
+      }
+      return matched.groups.model
     } catch (e) {
       return null
     }

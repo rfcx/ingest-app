@@ -353,7 +353,9 @@ class FileProvider {
       return Promise.reject(new Error('File does not exist'))
     }
     const timestamp = fileHelper.getUtcTimestamp(file)
-    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, timestamp, idToken, (progress) => {
+    const songMeterFileInfo = await new SongMeterFileInfo(file.path)
+    const metadata = songMeterFileInfo.metadata ? {comment: songMeterFileInfo.formattedMetadata, artist: songMeterFileInfo.model} : null
+    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, timestamp, idToken, metadata, (progress) => {
       // FIX progress scale when we will start work with google cloud
     }).then((uploadId) => {
       console.info(`[FileService] ⬆ on S3 ${file.name} ${uploadId} ${file.id}`)
@@ -515,7 +517,7 @@ class FileProvider {
       // find SongMeter metadata
       const songMeterFileInfo = await new SongMeterFileInfo(file.path)
       if (songMeterFileInfo.metadata) {
-        return { deviceId: songMeterFileInfo.deviceId, deploymentId: songMeterFileInfo.deployment, timezoneOffset: songMeterFileInfo.timezoneOffset, recorderType: 'SongMeter' }
+        return { deviceId: songMeterFileInfo.deviceId, deploymentId: songMeterFileInfo.deployment, timezoneOffset: songMeterFileInfo.timezoneOffset, recorderType: 'Song Meter' }
       }
       // return null if there is no metadata
       return null
