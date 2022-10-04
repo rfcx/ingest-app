@@ -34,7 +34,7 @@ const arbimonWebUrl = (isProd, streamId = null) => {
   return baseUrl + query
 }
 
-const uploadFile = async (environment, fileId, fileName, filePath, fileExt, streamId, timestamp, idToken, progressCallback) => {
+const uploadFile = async (environment, fileId, fileName, filePath, fileExt, streamId, timestamp, idToken, metadata, progressCallback) => {
   const now = Date.now()
   const analytics = new Analytics(env.analytics.id)
   console.log(`===> upload file ${fileName}`)
@@ -50,7 +50,7 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
         id: fileId,
         params: { state: CONVERTING, uploaded: false }
       })
-      uploadFilePath = (await fileHelper.convert(filePath, remote.app.getPath('temp'), streamId)).path
+      uploadFilePath = (await fileHelper.convert(filePath, remote.app.getPath('temp'), streamId, metadata)).path
       uploadFileExt = 'flac'
       isConverted = true
       console.info('[API] update upload path', uploadFilePath, uploadFileExt, fileName)
