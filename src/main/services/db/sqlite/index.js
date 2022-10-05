@@ -34,8 +34,8 @@ function addHooks () {
 
 async function init (app) {
   try {
-    console.info('Initializaing database...')
     const storage = `${app.getPath('userData')}/database.sqlite`
+    console.info('[DB] Initializaing database...', storage)
     sequelize = new Sequelize('database', 'username', 'password', {
       host: 'localhost',
       dialect: 'sqlite',
