@@ -12,13 +12,12 @@
 
 ### Requirements
 
-- Node 8.11.0+ (Workable v10.24.0)
+- Node 14 (tested on 14.18.2)
+
+Additional requirements for Windows
+- Visual Studio **2017** along with Desktop development with C++
 
 ### Start development environment
-
-0. For windows user:
-
-- Install Visual studio **2017** along with Desktop development with C++
 
 1. Install dependencies
 
@@ -44,9 +43,8 @@
     ```
 
 ## Build
-Build electron application for production
 
-This project has got Github Action workflow integrated, which will start building and releasing the app automatically when PR merged to develop / pushed to master branch. 🦾
+The project has a Github Action workflow, which will start building and releasing the app automatically on push to `master` branch. 🦾
 
 Check the script in `.github/workflows/electron.yml` to see how it works.
 
