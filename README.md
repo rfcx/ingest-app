@@ -1,4 +1,4 @@
-# RFCx Ingest App
+# Arbimon Uploader (previously RFCx Ingest App)
 
 > Desktop application for ingesting audio to RFCx platform
 
