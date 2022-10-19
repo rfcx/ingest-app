@@ -2,8 +2,8 @@ name: Build/release
 
 on:
   push:
-    branches:
-      - master
+    tags:
+      - v**
 
 jobs:
   release:
@@ -35,7 +35,7 @@ jobs:
           mac_certs_password: ${{ secrets.MAC_CERT_PWD }}
           windows_certs: ${{ secrets.WIN_CERT }}
           windows_certs_password: ${{ secrets.WIN_CERT_PWD }}
-          release: true
+          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           build_script_name: build:ci
           max_attempts: 3
         env:
