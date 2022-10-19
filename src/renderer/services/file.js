@@ -8,6 +8,7 @@ import cryptoJS from 'crypto-js'
 import store from '../store'
 import FileInfo from './FileInfo'
 import fs from 'fs'
+import path from 'path'
 import Analytics from 'electron-ga'
 import env from '../../../env.json'
 import fileState from '../../../utils/fileState'
@@ -36,15 +37,9 @@ class FileProvider {
     let fileObjectsInFolder = []
     for (let i = 0; i < droppedFiles.length; i++) {
       const file = droppedFiles[i]
-      if (fileHelper.isFolder(file.path)) {
-        fileObjectsInFolder = fileObjectsInFolder.concat(
-          this.getFileObjectsFromFolder(file.path, selectedStream, null, deploymentInfo)
-        ).filter(file => fileHelper.isSupportedFileExtension(file.extension))
-      } else {
-        const fileObject = this.createFileObject(file.path, selectedStream, deploymentInfo)
-        if (fileObject) {
-          fileObjects.push(fileObject)
-        }
+      const fileObject = this.createFileObject(file.path, selectedStream, deploymentInfo)
+      if (fileObject) {
+        fileObjects.push(fileObject)
       }
     }
     const allFileObjects = fileObjects.concat(fileObjectsInFolder)
@@ -81,10 +76,8 @@ class FileProvider {
   async handleDroppedFolder (folderPath, selectedStream, deploymentInfo = null) {
     if (!folderPath) return
     console.info('[FileService] handleDroppedFolder', folderPath, selectedStream)
-    let fileObjectsInFolder = []
-    fileObjectsInFolder = fileObjectsInFolder.concat(
-      this.getFileObjectsFromFolder(folderPath, selectedStream, null, deploymentInfo)
-    ).filter(file => fileHelper.isSupportedFileExtension(file.extension))
+    const fileObjectsInFolder = (await this.getFileObjectsFromFolder(folderPath, selectedStream, null, deploymentInfo))
+      .filter(file => fileHelper.isSupportedFileExtension(file.extension))
     // insert converted files into db
 
     // Remove duplicates that are already in prepare tab
@@ -122,17 +115,9 @@ class FileProvider {
       })
   }
 
-  getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null, deploymentInfo = null) {
-    // see all stuff in the directory
-    const stuffInDirectory = fileHelper
-      .getFilesFromDirectoryPath(folderPath)
-      .map((name) => {
-        return { name: name, path: folderPath + '/' + name }
-      })
+  async getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null, deploymentInfo = null) {
     // get the files in the directory
-    const files = stuffInDirectory.filter(
-      (file) => !fileHelper.isFolder(file.path)
-    )
+    const files = await this.searchFilesFromFolder(folderPath)
     // write file into file object array
     let fileObjects = existingFileObjects || []
     files.forEach(file => {
@@ -493,14 +478,20 @@ class FileProvider {
 
   /* -- Import -- */
 
-  async getDeviceInfoFromFolder (path) {
-    const stuffInDirectory = fileHelper
-      .getFilesFromDirectoryPath(path)
-      .map((name) => {
-        return { name: name, path: path + '/' + name }
-      })
-    // read file header info
-    const firstWavFile = stuffInDirectory.find(file => {
+  async searchFilesFromFolder (folderPath) {
+    const searchPaths = ['.', './Data']
+    const files = []
+    for (const searchPath of searchPaths) {
+      const pa = path.join(folderPath, searchPath)
+      files.push(...fileHelper.getFilesFromDirectoryPath(pa))
+    }
+    return files
+  }
+
+  async getDeviceInfoFromFolder (folder) {
+    const files = await this.searchFilesFromFolder(folder)
+    if (!files || files.length < 0) { return null }
+    const firstWavFile = files.find(file => {
       return fileHelper.getExtension(file.path) === 'wav' // read only wav file header info
     })
     return this.getDeviceInfo(firstWavFile)

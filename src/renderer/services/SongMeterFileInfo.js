@@ -16,10 +16,8 @@ export default class SongMeterFileInfo {
   }
 
   get formattedMetadata () {
-    console.log('this.metadata', this.metadata)
     // eslint-disable-next-line no-control-regex, no-useless-escape
     const formatted = (this.metadata.replace(/\n/g, ';')).replace(/[\[\]\{\}\"\x07]/g, '')
-    console.log('formatted', formatted)
     return formatted
   }
 

@@ -40,10 +40,12 @@ const getExtension = (fileName) => {
 }
 
 const getFilesFromDirectoryPath = (directoryPath) => {
-  if (fs.existsSync(directoryPath)) {
-    return fs.readdirSync(directoryPath).filter(item => !(/(^|\/)\.[^/.]/g).test(item))
-  }
-  return undefined
+  if (!fs.existsSync(directoryPath)) { return [] }
+  const filesSortByRecent = fs.readdirSync(directoryPath).filter(item => !(/(^|\/)\.[^/.]/g).test(item))
+    .filter(file => fs.lstatSync(path.join(directoryPath, file)).isFile())
+    .map(file => ({ name: file, mtime: fs.lstatSync(path.join(directoryPath, file)).mtime.getTime() }))
+    .sort((a, b) => b.mtime - a.mtime)
+  return filesSortByRecent.map(item => ({name: item.name, path: directoryPath + '/' + item.name, lastModified: item.mtime}))
 }
 
 const getCheckSum = (filePath) => {

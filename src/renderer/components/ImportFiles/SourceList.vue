@@ -10,11 +10,11 @@
       </tr>
     </template>
     <template v-else>
-    <tr v-for="drive in companionDrives" :key="drive.id" @click="onDriveSelected(drive)" :class="{'selected': isSelected('external') }">
-      <img class="row__icon" src="@/assets/ic-sd-card-white.svg" v-if="isSelected('external') || defaultState"/>
+    <tr v-for="drive in companionDrives" :key="drive.id" @click="onDriveSelected(drive)" :class="{'selected': isSelectedDrive(drive)}">
+      <img class="row__icon" src="@/assets/ic-sd-card-white.svg" v-if="isSelectedDrive(drive) || defaultState"/>
       <img class="row__icon" src="@/assets/ic-sd-card-gray.svg" v-else/>
       <span class="row__source-title" :class="{'default': defaultState}">{{ drive.label }}</span>
-      <RecorderTag :show="drive.deviceId" :isSelected="(isSelected('external') || defaultState)" :type="drive.recorderType"/>
+      <RecorderTag :show="drive.deviceId" :isSelected="(isSelectedDrive(drive) || defaultState)" :type="drive.recorderType"/>
     </tr>
     </template>
     <template>
@@ -86,18 +86,12 @@ export default {
       this.isLoading = false
       if (drives.length === 0) return
       this.drives = await Promise.all(drives.map(async drive => {
-        const deviceInfo = await this.getDeviceInfo(drive.path)
-        if (deviceInfo) {
-          const deviceId = deviceInfo.deviceId
-          const deploymentId = deviceInfo.deploymentId
-          const recorderType = deviceInfo.recorderType
-          return {...drive, deviceId, deploymentId, recorderType}
-        }
-        return drive
+        const deviceInfo = await this.$file.getDeviceInfoFromFolder(drive.path)
+        const deviceId = deviceInfo ? deviceInfo.deviceId : null
+        const deploymentId = deviceInfo ? deviceInfo.deploymentId : null
+        const recorderType = deviceInfo ? deviceInfo.recorderType : null
+        return {...drive, deviceId, deploymentId, recorderType}
       }))
-    },
-    async getDeviceInfo (path) {
-      return this.$file.getDeviceInfoFromFolder(path)
     },
     onDriveSelected (drive) {
       this.selectedSource = new FileSource.FileSourceFromExternal(drive.id, drive.deviceId, drive.deploymentId, drive.recorderType, drive.path, drive.label)
@@ -107,7 +101,7 @@ export default {
     },
     async handleFolderChange (event) {
       const path = event.target.files[0].path
-      const deviceInfo = await this.getDeviceInfo(path)
+      const deviceInfo = await this.$file.getDeviceInfoFromFolder(path)
       const deviceId = getDeviceId(deviceInfo)
       const deploymentId = getDeploymentId(deviceInfo)
       const recorderType = getDeviceRecorderType(deviceInfo)
@@ -148,6 +142,9 @@ export default {
         case 'folder': return this.selectedSource instanceof FileSource.FileSourceFromFolder
         default: return false
       }
+    },
+    isSelectedDrive (drive) {
+      return this.isSelected('external') && this.selectedSource.id === drive.id
     }
   },
   watch: {
