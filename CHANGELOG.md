@@ -1,3 +1,22 @@
+<a name="1.5.1"></a>
+## 1.5.1 (2022-10-18)
+
+### Improvements
+
+* rfcx/engineering-support#167 SD cards from Song Meter Micro (SMM) recorders are not showing up
+* rfcx/engineering-support#172 Cannot auto-detect the first file in the SD card/folder/files from Song Meter
+
+<a name="1.5.0"></a>
+## 1.5.0 (2022-10-11)
+
+### Features
+
+* #169 #170 #171 #172 #173 Song Meter support (auto-detect when using Companion)
+
+### Improvements
+
+* #166 Fix double-click on import incorrectly selects multiple options
+
 <a name="1.4.10"></a>
 ## 1.4.10 (2022-04-28)
 
