@@ -11,6 +11,8 @@ export default class SongMeterFileInfo {
         return this
       } catch (e) {
         console.error('Read file info error', e)
+        this.metadata = ''
+        return this
       }
     })()
   }

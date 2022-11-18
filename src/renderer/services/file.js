@@ -19,6 +19,7 @@ const { PREPARING, ERROR_LOCAL, ERROR_SERVER, WAITING, PROCESSING, COMPLETED } =
 
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
+const { remote } = window.require('electron')
 
 class FileProvider {
   /**
@@ -338,7 +339,12 @@ class FileProvider {
       return Promise.reject(new Error('File does not exist'))
     }
     const timestamp = fileHelper.getUtcTimestamp(file)
-    const songMeterFileInfo = await new SongMeterFileInfo(file.path)
+    const isWavFile = file.extension === 'wav'
+    let convertedPath
+    if (!isWavFile) {
+      convertedPath = (await fileHelper.convert(file.path, remote.app.getPath('temp'), file.streamId, null, 'wav')).path
+    }
+    const songMeterFileInfo = await new SongMeterFileInfo(isWavFile ? file.path : convertedPath)
     const metadata = songMeterFileInfo.metadata ? {comment: songMeterFileInfo.formattedMetadata, artist: songMeterFileInfo.model} : null
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, timestamp, idToken, metadata, (progress) => {
       // FIX progress scale when we will start work with google cloud
