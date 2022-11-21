@@ -1,4 +1,11 @@
 <a name="1.5.1"></a>
+## 1.5.2 (2022-11-21)
+
+### Bug Fixes
+
+* rfcx/engineering-support#197 Files are not uploaded on Uploader app
+
+<a name="1.5.1"></a>
 ## 1.5.1 (2022-10-18)
 
 ### Improvements
