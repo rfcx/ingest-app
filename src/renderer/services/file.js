@@ -327,6 +327,16 @@ class FileProvider {
     // }
   }
 
+  async extractSongMeterFileInfo (filePath) {
+    try {
+      const fileHeaderData = await fileHelper.readGuanMetadata(filePath)
+      return fileHeaderData || ''
+    } catch (e) {
+      console.error('Read file info error', e)
+      return ''
+    }
+  }
+
   // 2. Upload files
   // - Upload
   // - check status
@@ -338,8 +348,7 @@ class FileProvider {
       return Promise.reject(new Error('File does not exist'))
     }
     const timestamp = fileHelper.getUtcTimestamp(file)
-    const songMeterFileClass = await new SongMeterFileInfo(file.path)
-    const songMeterFileInfo = file.extension === 'wav' ? await songMeterFileClass.extract() : { metadata: '' }
+    const songMeterFileInfo = file.extension === 'wav' ? await this.extractSongMeterFileInfo(file.path) : { metadata: '' }
     const metadata = songMeterFileInfo.metadata ? {comment: songMeterFileInfo.formattedMetadata, artist: songMeterFileInfo.model} : null
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, timestamp, idToken, metadata, (progress) => {
       // FIX progress scale when we will start work with google cloud

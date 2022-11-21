@@ -2,21 +2,19 @@ import fileHelper from '../../../utils/fileHelper'
 
 export default class SongMeterFileInfo {
   metadata = ''
-  filePath = ''
 
   constructor (filePath) {
-    this.filePath = filePath
-  }
-
-  async extract () {
-    try {
-      const fileHeaderData = await fileHelper.readGuanMetadata(this.filePath)
-      this.metadata = fileHeaderData || ''
-      return this.metadata
-    } catch (e) {
-      console.error('Read file info error', e)
-      return this.metadata
-    }
+    return (async () => {
+      try {
+        const fileHeaderData = await fileHelper.readGuanMetadata(filePath)
+        this.metadata = fileHeaderData || ''
+        return this
+      } catch (e) {
+        console.error('Read file info error', e)
+        this.metadata = ''
+        return this
+      }
+    })()
   }
 
   get formattedMetadata () {
