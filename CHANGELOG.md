@@ -1,3 +1,10 @@
+<a name="1.5.2"></a>
+## 1.5.2 (2022-11-21)
+
+### Bug Fixes
+
+* rfcx/engineering-support#197 Fix flac and opus files fail to upload correctly
+
 <a name="1.5.1"></a>
 ## 1.5.1 (2022-10-18)
 

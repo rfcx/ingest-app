@@ -20,6 +20,17 @@ const { PREPARING, ERROR_LOCAL, ERROR_SERVER, WAITING, PROCESSING, COMPLETED } =
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
 
+const extractSongMeterFileInfo = async (file) => {
+  if (file.extension !== 'wav') return new SongMeterFileInfo('')
+  try {
+    const metadata = await fileHelper.readGuanMetadata(file.path)
+    return new SongMeterFileInfo(metadata || '')
+  } catch (e) {
+    console.error('Read file info error', e)
+    return new SongMeterFileInfo('')
+  }
+}
+
 class FileProvider {
   /**
   * Import files
@@ -338,7 +349,7 @@ class FileProvider {
       return Promise.reject(new Error('File does not exist'))
     }
     const timestamp = fileHelper.getUtcTimestamp(file)
-    const songMeterFileInfo = await new SongMeterFileInfo(file.path)
+    const songMeterFileInfo = await extractSongMeterFileInfo(file)
     const metadata = songMeterFileInfo.metadata ? {comment: songMeterFileInfo.formattedMetadata, artist: songMeterFileInfo.model} : null
     return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, timestamp, idToken, metadata, (progress) => {
       // FIX progress scale when we will start work with google cloud
@@ -506,7 +517,7 @@ class FileProvider {
         return { deviceId: audioMothFileInfo.deviceId, deploymentId: audioMothFileInfo.deployment, timezoneOffset: audioMothFileInfo.timezoneOffset, recorderType: 'AudioMoth' }
       }
       // find SongMeter metadata
-      const songMeterFileInfo = await new SongMeterFileInfo(file.path)
+      const songMeterFileInfo = await extractSongMeterFileInfo(file)
       if (songMeterFileInfo.metadata) {
         return { deviceId: songMeterFileInfo.deviceId, deploymentId: songMeterFileInfo.deployment, timezoneOffset: songMeterFileInfo.timezoneOffset, recorderType: 'Song Meter' }
       }
