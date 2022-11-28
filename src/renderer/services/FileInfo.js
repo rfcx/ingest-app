@@ -53,6 +53,7 @@ export default class FileInfo {
   }
 
   get timezoneOffset () {
+    // File comment contains: ...UTC-02:30...
     const reg = /((?<prefix>UTC)(?<symbol>[+-])?(?<hour>\d{1,2})?(:)?(?<min>[0-5][0-9])?)/ig
     try {
       const matched = reg.exec(this.comment)
