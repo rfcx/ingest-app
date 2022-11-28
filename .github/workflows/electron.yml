@@ -21,6 +21,11 @@ jobs:
       - name: Clean cache
         run: |
             npm cache clean -force
+      - name: Patch node gyp # on windows to support Visual Studio 2019
+        shell: powershell
+        run: |
+          npm install --global node-gyp@latest
+          npm prefix -g | % {npm config set node_gyp "$_\node_modules\node-gyp\bin\node-gyp.js"}
       - name: Prepare for app notarization
         if: startsWith(matrix.os, 'macos')
         # Import Apple API key for app notarization on macOS
