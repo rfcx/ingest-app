@@ -1,7 +1,8 @@
 ## ✅ DoD
 
-- [x] Resolves [CE-XXX](https://jira.rfcx.org/browse/CE-XXX)
-- [ ] Release notes updated (_or_ n/a)
+- [x] Resolves #XX
+- [ ] Release notes updated / na
+- [ ] HelpScout documentation updates proposed / na
 
 _(use n/a when API docs (Release notes, etc) do not need to be updated)_
 
