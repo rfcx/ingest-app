@@ -38,7 +38,7 @@ jobs:
           windows_certs_password: ${{ secrets.WIN_CERT_PWD }}
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           build_script_name: build:ci
-          max_attempts: 3
+          max_attempts: 10
         env:
           appleId: ${{ secrets.APPLE_ID }}
           appleIdPassword: ${{ secrets.APPLE_ID_PWD }},
