@@ -19,13 +19,12 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
         with:
-          node-version: 14.21.1
+          node-version: 16
       - name: Clean cache
         run: |
             npm cache clean -force
-      - name: Prepare for app notarization
+      - name: Prepare for app notarization (macOS)
         if: startsWith(matrix.os, 'macos')
-        # Import Apple API key for app notarization on macOS
         run: |
           mkdir -p ~/private_keys/
           echo '${{ secrets.API_KEY }}' > ~/private_keys/AuthKey_${{ secrets.API_KEY_ID }}.p8
