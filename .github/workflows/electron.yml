@@ -19,7 +19,7 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
         with:
-          node-version: 14.21.1
+          node-version: 14.14.0
       - name: Clean cache
         run: |
             npm cache clean -force
@@ -28,6 +28,8 @@ jobs:
         run: |
           mkdir -p ~/private_keys/
           echo '${{ secrets.API_KEY }}' > ~/private_keys/AuthKey_${{ secrets.API_KEY_ID }}.p8
+      - name: Pre npm install
+        run: npm install
       - name: Build/release Electron app
         uses: Yan-Jobs/action-electron-builder@v1.7.0
         with:
