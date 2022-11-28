@@ -100,7 +100,7 @@
     "check-internet-connected": "^2.0.4",
     "chokidar": "^3.3.1",
     "crypto-js": "^3.1.9-1",
-    "drivelist": "^11.0.4",
+    "drivelist": "^9.1.0",
     "electron-drivelist": "^8.0.10",
     "electron-installer-squirrel-windows": "^1.3.0",
     "electron-log": "^4.2.4",
