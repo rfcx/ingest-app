@@ -517,6 +517,7 @@ class FileProvider {
         return { deviceId: audioMothFileInfo.deviceId, deploymentId: audioMothFileInfo.deployment, timezoneOffset: audioMothFileInfo.timezoneOffset, recorderType: 'AudioMoth' }
       }
       // find SongMeter metadata
+      file.extension = fileHelper.getExtension(file.name)
       const songMeterFileInfo = await extractSongMeterFileInfo(file)
       if (songMeterFileInfo.metadata) {
         return { deviceId: songMeterFileInfo.deviceId, deploymentId: songMeterFileInfo.deployment, timezoneOffset: songMeterFileInfo.timezoneOffset, recorderType: 'Song Meter' }
