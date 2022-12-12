@@ -108,6 +108,9 @@ const getUtcTimestamp = (file) => {
 const getFileDuration = async (filePath) => {
   try {
     const fileInfo = await new FileInfo(filePath)
+    if (fileInfo === undefined) {
+      return null
+    }
     if (!fileInfo.duration || fileInfo.duration === 0) {
       throw new Error('No duration found!')
     }
