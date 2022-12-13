@@ -28,6 +28,7 @@
   import SideNavigation from './SideNavigation/SideNavigation'
   import EmptyView from './LandingPage/EmptyView'
   import FileContainer from './LandingPage/FileContainer/FileContainer'
+  import fileHelper from '../../../utils/fileHelper'
   import ConfirmAlert from './Common/ConfirmAlert'
   import { mapState } from 'vuex'
   import Analytics from 'electron-ga'
@@ -82,7 +83,14 @@
             'path': file.path
           }
         })
-        this.$router.push({path: '/select-site', query: { selectedFiles: JSON.stringify(fileObjects), currentActiveSite: JSON.stringify(this.selectedStream) }})
+        const query = { currentActiveSite: JSON.stringify(this.selectedStream) }
+        const isFolder = [...files].length === 1 && ![...files].find(item => ['wav', 'opus', 'flac'].includes(fileHelper.getExtension(item.path)))
+        if (isFolder) {
+          query.folderPath = fileObjects[0].path
+        } else {
+          query.selectedFiles = JSON.stringify(fileObjects)
+        }
+        this.$router.push({path: '/select-site', query: query})
       },
       async sendVersionOfApp () {
         let version = remote.getGlobal('version')
