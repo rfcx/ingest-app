@@ -504,8 +504,7 @@ class FileProvider {
     if (!files || files.length < 0) { return null }
     // First wav file with duration
     for (let file of files) {
-      const durationInSecond = await fileHelper.getFileDuration(file.path)
-      if (durationInSecond !== null && fileHelper.getExtension(file.path) === 'wav') {
+      if (fileHelper.getExtension(file.path) === 'wav' && await fileHelper.getFileDuration(file.path).catch(() => false)) {
         return this.getDeviceInfo(file)
       }
     }
