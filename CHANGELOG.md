@@ -4,6 +4,7 @@
 ### Bug Fixes
 
 * rfcx/engineering-support#219 Detect site and project when 0 bytes file in the list
+* Fixed a drag & drop folder issue
 
 ## 1.5.2 (2022-11-21)
 
