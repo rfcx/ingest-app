@@ -502,10 +502,12 @@ class FileProvider {
   async getDeviceInfoFromFolder (folder) {
     const files = await this.searchFilesFromFolder(folder)
     if (!files || files.length < 0) { return null }
-    const firstWavFile = files.find(file => {
-      return fileHelper.getExtension(file.path) === 'wav' // read only wav file header info
-    })
-    return this.getDeviceInfo(firstWavFile)
+    // First wav file with duration
+    for (let file of files) {
+      if (fileHelper.getExtension(file.path) === 'wav' && await fileHelper.getFileDuration(file.path).catch(() => false)) {
+        return this.getDeviceInfo(file)
+      }
+    }
   }
 
   async getDeviceInfo (file) {

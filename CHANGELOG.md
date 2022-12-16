@@ -1,4 +1,10 @@
 <a name="1.5.2"></a>
+## 1.5.3 (2022-12-14)
+
+### Bug Fixes
+
+* rfcx/engineering-support#219 Detect site and project when 0 bytes file in the list
+
 ## 1.5.2 (2022-11-21)
 
 ### Bug Fixes
