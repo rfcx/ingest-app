@@ -27,7 +27,9 @@ jobs:
           mkdir -p ~/private_keys/
           echo '${{ secrets.API_KEY }}' > ~/private_keys/AuthKey_${{ secrets.API_KEY_ID }}.p8
       - name: Pre npm install
-        run: ELECTRON_MIRROR="https://npmmirror.com/mirrors/electron/" npm install
+        run: npm install
+        env: 
+          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
       - name: Build/release Electron app
         uses: Yan-Jobs/action-electron-builder@v1.7.0
         with:
