@@ -32,7 +32,7 @@ jobs:
           $NodeDirPath = Split-Path $WhereNode -Parent
           $NodeModulesPath = $NodeDirPath + "\node_modules\npm\node_modules\npm-lifecycle"
           cd $NodeModulesPath
-          npm install node-gyp@8.x
+          npm install node-gyp@latest
       - name: Pre npm install
         run: npm install
         env: 
