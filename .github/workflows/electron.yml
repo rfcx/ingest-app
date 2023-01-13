@@ -26,17 +26,8 @@ jobs:
         run: |
           mkdir -p ~/private_keys/
           echo '${{ secrets.API_KEY }}' > ~/private_keys/AuthKey_${{ secrets.API_KEY_ID }}.p8
-      - name: Update node-gyp
-        run: |
-          $WhereNode = Get-Command node | Select-Object -ExpandProperty Definition
-          $NodeDirPath = Split-Path $WhereNode -Parent
-          $NodeModulesPath = $NodeDirPath + "\node_modules\npm\node_modules\npm-lifecycle"
-          cd $NodeModulesPath
-          npm install node-gyp@latest
       - name: Pre npm install
         run: npm install
-        env: 
-          ELECTRON_MIRROR: https://npmmirror.com/mirrors/electron/
       - name: Build/release Electron app
         uses: Yan-Jobs/action-electron-builder@v1.7.0
         with:
