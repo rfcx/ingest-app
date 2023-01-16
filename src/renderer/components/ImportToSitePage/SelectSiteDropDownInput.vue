@@ -109,7 +109,7 @@ export default {
       this.isLoading = true
       try {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
-        this.siteOptions = await api.getUserSites(idToken, keyword, this.project ? this.project.id : null, 10, 0)
+        this.siteOptions = await api.getUserSites(idToken, keyword, this.project ? this.project.id : null, 100, 0)
         this.errorMessage = ''
         this.isLoading = false
       } catch (error) {
