@@ -31,6 +31,12 @@ function getAuthenticationURL () {
   )
 }
 
+function getLogoutURL () {
+  return (
+    `https://${auth0Domain}/v2/logout?client_id=${clientId}`
+  )
+}
+
 async function refreshTokens () {
   console.info('[AuthService] refreshTokens')
   return new Promise(async (resolve, reject) => {
@@ -135,6 +141,7 @@ async function logout () {
 export default {
   getAccessToken,
   getAuthenticationURL,
+  getLogoutURL,
   getIdToken,
   loadTokens,
   logout,

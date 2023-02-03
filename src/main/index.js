@@ -234,6 +234,18 @@ async function createAppWindow (openedAsHidden) {
   }
 }
 
+async function createLogoutWindow (logOutUrl) {
+  const logoutWindow = new BrowserWindow({
+    show: false
+  })
+
+  logoutWindow.loadURL(logOutUrl)
+
+  logoutWindow.on('ready-to-show', async () => {
+    logoutWindow.close()
+  })
+}
+
 async function checkToken () {
   console.info('[Auth] checking token')
   return new Promise(async (resolve, reject) => {
@@ -299,6 +311,7 @@ async function refreshTokens () {
 }
 
 async function logOut () {
+  await createLogoutWindow(authService.getLogoutURL())
   await authService.logout()
   settings.set('settings.production_env', true)
   await commonProcess.clearAllData()
