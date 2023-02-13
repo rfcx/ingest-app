@@ -33,7 +33,7 @@ function getAuthenticationURL () {
 
 function getLogoutURL () {
   return (
-    `https://${auth0Domain}/v2/logout?client_id=${clientId}`
+    `https://${auth0Domain}/v2/logout`
   )
 }
 

@@ -234,14 +234,15 @@ async function createAppWindow (openedAsHidden) {
   }
 }
 
-async function createLogoutWindow (logOutUrl) {
+async function createLogoutWindow () {
   const logoutWindow = new BrowserWindow({
     show: false
   })
 
-  logoutWindow.loadURL(logOutUrl)
+  logoutWindow.loadURL(authService.getLogoutURL())
 
   logoutWindow.on('ready-to-show', async () => {
+    await authService.logout()
     logoutWindow.close()
   })
 }
@@ -311,8 +312,7 @@ async function refreshTokens () {
 }
 
 async function logOut () {
-  await createLogoutWindow(authService.getLogoutURL())
-  await authService.logout()
+  await createLogoutWindow()
   settings.set('settings.production_env', true)
   await commonProcess.clearAllData()
   hideMainWindowAndForceLogin()
