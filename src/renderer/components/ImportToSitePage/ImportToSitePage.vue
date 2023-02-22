@@ -212,7 +212,7 @@ export default {
         if (this.isSelectedSiteMatchWithDetectedDeployment) {
           return 'Detected deployment from RFCx Companion'
         }
-        return `Site doesn't match with detectetd deployment from RFCx Companion`
+        return `Site doesn't match with detected deployment from RFCx Companion`
       }
       return null
     },
