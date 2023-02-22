@@ -90,11 +90,18 @@ async function loadTokens (callbackURL) {
 
     request(options, async (error, resp, body) => {
       if (error) {
+        console.info('[AuthService] loadTokens error', error)
         logout()
         return reject(error)
       }
       const responseBody = JSON.parse(body)
-      await parseTokens(responseBody)
+      try {
+        await parseTokens(responseBody)
+      } catch (e) {
+        console.info('[AuthService] parseTokens error', e)
+        logout()
+        return reject(e)
+      }
       refreshToken = responseBody.refresh_token
       await keytar.setPassword('ingest-app-refresh-token', keytarAccount, refreshToken)
       resolve()

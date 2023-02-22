@@ -26,7 +26,12 @@ function createAuthWindow () {
   win.loadURL(authService.getAuthenticationURL(), { userAgent: 'Chrome' })
   currentUrl = authService.getAuthenticationURL()
   webRequest.onBeforeRequest(filter, async ({ url }) => {
-    await authService.loadTokens(url)
+    try {
+      await authService.loadTokens(url)
+    } catch (e) {
+      // Set a universal login page if the load tokens issue occurs
+      index.createLogoutWindow()
+    }
     index.createWindow(false)
     global.firstLogIn = true
     await destroyAuthWin()

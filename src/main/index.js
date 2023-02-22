@@ -462,5 +462,6 @@ ipcMain.on('client.message', function (event, data) {
 // })
 
 export default {
-  createWindow
+  createWindow,
+  createLogoutWindow
 }
