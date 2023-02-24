@@ -104,7 +104,11 @@ export default {
     async getSiteOptions (keyword = null) {
       if (keyword) {
         let selectedSite = this.siteOptions.find(s => s.name === keyword)
-        if (selectedSite) return
+        if (selectedSite) {
+          // Order matched site to the top of the list
+          this.siteOptions = this.siteOptions.sort(item => item.name.toUpperCase().indexOf(keyword.toUpperCase()) !== -1 ? -1 : 1)
+          return
+        }
       }
       this.isLoading = true
       try {
