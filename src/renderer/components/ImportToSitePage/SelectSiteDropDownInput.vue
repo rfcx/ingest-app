@@ -37,6 +37,8 @@ import ErrorMessageView from './ErrorMessageView'
 import { faSync } from '@fortawesome/free-solid-svg-icons'
 import api from '../../../../utils/api'
 import ipcRendererSend from '../../services/ipc'
+import streamHelper from '../../../../utils/streamHelper'
+
 export default {
   data () {
     return {
@@ -103,10 +105,9 @@ export default {
   methods: {
     async getSiteOptions (keyword = null) {
       if (keyword) {
-        let selectedSite = this.siteOptions.find(s => s.name === keyword)
+        let selectedSite = this.siteOptions.find(s => s.name.toUpperCase() === keyword.toUpperCase())
         if (selectedSite) {
-          // Order matched site to the top of the list
-          this.siteOptions = this.siteOptions.sort(item => item.name.toUpperCase().indexOf(keyword.toUpperCase()) !== -1 ? -1 : 1)
+          this.siteOptions = streamHelper.sortByKeywordArray(this.siteOptions, keyword)
           return
         }
       }
@@ -114,6 +115,7 @@ export default {
       try {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
         this.siteOptions = await api.getUserSites(idToken, keyword, this.project ? this.project.id : null, 100, 0)
+        this.siteOptions = streamHelper.sortAlphaNumericArray(this.siteOptions)
         this.errorMessage = ''
         this.isLoading = false
       } catch (error) {
