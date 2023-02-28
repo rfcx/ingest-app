@@ -141,7 +141,7 @@ function showMainWindow () {
   }
 }
 
-function closeMainWindow (e) {
+async function closeMainWindow (e) {
   console.info('[MainWindow] closing main window / willQuitApp =', willQuitApp)
   if (willQuitApp) {
     console.info('[MainWindow] c exit')
@@ -170,7 +170,7 @@ function closeMainWindow (e) {
   } else if (isLogOut) {
     console.info('[MainWindow] logout')
     resetTimers()
-    logOut()
+    await authService.logout()
     createAuthWindow()
     if (mainWindow) {
       mainWindow.destroy()
@@ -231,6 +231,7 @@ async function createAppWindow (openedAsHidden) {
   } catch (err) {
     // An Entry for new users
     console.info('[MainWindow] someting wrong about Auth, creating Auth Window', err)
+    await authService.logout()
     createAuthWindow()
   }
 }
