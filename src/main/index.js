@@ -170,6 +170,7 @@ function closeMainWindow (e) {
   } else if (isLogOut) {
     console.info('[MainWindow] logout')
     resetTimers()
+    logOut()
     createAuthWindow()
     if (mainWindow) {
       mainWindow.destroy()
