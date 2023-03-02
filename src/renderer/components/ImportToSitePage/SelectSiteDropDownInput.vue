@@ -116,6 +116,9 @@ export default {
         const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
         this.siteOptions = await api.getUserSites(idToken, keyword, this.project ? this.project.id : null, 100, 0)
         this.siteOptions = streamHelper.sortAlphaNumericArray(this.siteOptions)
+        if (keyword) {
+          this.siteOptions = streamHelper.sortByKeywordArray(this.siteOptions, keyword)
+        }
         this.errorMessage = ''
         this.isLoading = false
       } catch (error) {

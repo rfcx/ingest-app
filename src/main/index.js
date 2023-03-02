@@ -171,6 +171,7 @@ async function closeMainWindow (e) {
     console.info('[MainWindow] logout')
     resetTimers()
     await authService.logout()
+    await logOut()
     createAuthWindow()
     if (mainWindow) {
       mainWindow.destroy()
@@ -313,7 +314,6 @@ async function refreshTokens () {
 }
 
 async function logOut () {
-  await authService.logout()
   await createLogoutWindow()
   settings.set('settings.production_env', true)
   await commonProcess.clearAllData()
