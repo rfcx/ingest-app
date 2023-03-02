@@ -1,11 +1,12 @@
 <a name="1.5.4"></a>
-## 1.5.4 (2023-02-24)
+## 1.5.4 (2023-03-03)
 
 ### Bug Fixes
 
 * Return users back to the universal login page if the load/parse tokens issue occurs
 * Order matched site to the top of the list
 * Fix wrong spelling on the site selector section
+* Fix a twice-logout problem
 
 <a name="1.5.3"></a>
 ## 1.5.3 (2022-12-14)
