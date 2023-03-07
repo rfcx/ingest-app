@@ -33,7 +33,7 @@ function getAuthenticationURL () {
 
 function getLogoutURL () {
   return (
-    `https://${auth0Domain}/v2/logout`
+    `https://${auth0Domain}/v2/logout?federated`
   )
 }
 
@@ -143,6 +143,7 @@ async function logout () {
   accessToken = null
   profile = null
   refreshToken = null
+  console.info('[AuthService] tokens deleted')
 }
 
 export default {
