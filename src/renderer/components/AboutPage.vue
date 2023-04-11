@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <img class="wrapper__logo" src="~@/assets/rfcx-logo.png">
-    <div class="wrapper__title">RFCx Uploader</div>
+    <div class="wrapper__title">Arbimon Uploader</div>
     <div class="wrapper__version" v-if="version">Version {{version}}</div>
     <div class="wrapper__version is-size-7">{{getEnv()}}</div>
   </div>

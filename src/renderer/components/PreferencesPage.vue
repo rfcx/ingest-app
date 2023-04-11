@@ -13,7 +13,7 @@
           <input type="checkbox" v-model="isAutoUpdateApp" v-on:click="toggleDisabled()">
           <span>Enabled</span>
         </label>
-        <div class="wrapper__descr">RFCx Uploader automatically checks for new app versions, downloads then and installs on app's restart.</div>
+        <div class="wrapper__descr">Arbimon Uploader automatically checks for new app versions, downloads then and installs on app's restart.</div>
       </div>
     </div>
     <about-page v-if="currentTab === 'about'"></about-page>

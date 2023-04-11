@@ -42,7 +42,7 @@ function createMenu (clearDataFunction, logoutFunction, preferenceFunction, abou
         { label: 'Check for Updates',
           click: updateFunction
         },
-        { label: 'About RFCx Uploader',
+        { label: 'About Arbimon Uploader',
           click: aboutFunction
         }
       ]
@@ -73,7 +73,7 @@ function createMenu (clearDataFunction, logoutFunction, preferenceFunction, abou
             })
           }
         },
-        { label: 'RFCx Uploader Support',
+        { label: 'Arbimon Uploader Support',
           click: () => {
             shell.openExternal(env.supportSiteUrl)
           }

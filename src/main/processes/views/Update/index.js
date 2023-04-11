@@ -46,10 +46,10 @@ export default {
     try {
       autoUpdater.setFeedURL(updaterFeedURL)
       autoUpdater.on('error', message => {
-        console.error('There was a problem updating the application', message)
+        console.error('[Update] There was a problem updating the application', message)
       })
-      autoUpdater.on('checking-for-update', () => console.log('checking-for-update'))
-      autoUpdater.on('update-available', () => { console.log('update-available') })
+      autoUpdater.on('checking-for-update', () => console.log('[Update] checking-for-update'))
+      autoUpdater.on('update-available', () => { console.log('[Update] update-available') })
       autoUpdater.on('update-not-available', () => {
         console.info('[Update] update-not-available')
         updateNotAvaliableHandler()

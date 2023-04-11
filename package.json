@@ -22,7 +22,7 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "build": {
-    "productName": "RFCx Uploader",
+    "productName": "Arbimon Uploader",
     "appId": "org.rfcx.ingest",
     "afterSign": "./after-sign-hook.js",
     "directories": {
