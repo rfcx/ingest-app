@@ -43,9 +43,6 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
   let uploadFileExt = fileExt
   if (fileExt === 'wav') {
     try {
-      // File.update({ where: fileId,
-      //   data: {state: 'converting', uploaded: false}
-      // })
       await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: fileId,
         params: { state: CONVERTING, uploaded: false }
@@ -63,9 +60,6 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       const getUploadIdTime = Date.now() - now
       const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.getUploadId, 'el': fileName, 'ev': getUploadIdTime }
       await analytics.send('event', analyticsEventObj)
-      // File.update({ where: fileId,
-      //   data: {state: 'uploading', uploadId: data.uploadId, progress: 0, uploaded: false}
-      // })
       await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
         id: fileId,
         params: { state: UPLOADING, uploadId: data.uploadId, progress: 0, uploaded: false }

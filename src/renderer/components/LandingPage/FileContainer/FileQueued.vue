@@ -70,7 +70,7 @@ export default {
         this.isProcessingUploading = true
         let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: this.selectedStreamId, state: [FileState.state.CONVERTING, FileState.state.UPLOADING, FileState.state.WAITING] } })
         console.log('stop files', files)
-        const state = [FileState.state.CONVERTING, FileState.state.UPLOADING, FileState.state.WAITING]
+        const state = [FileState.state.WAITING]
         await this.$file.stopQueuedFiles(this.selectedStreamId, state)
         this.$emit('updateStoppedFileCount')
         this.isProcessingUploading = false
@@ -90,7 +90,7 @@ export default {
       if (this.isRemoveQueuedFiles) return // prevent double click
       this.isRemoveQueuedFiles = true
       try {
-        const state = [FileState.state.CONVERTING, FileState.state.UPLOADING, FileState.state.WAITING, FileState.state.STOPPED]
+        const state = [FileState.state.WAITING, FileState.state.STOPPED]
         await this.$file.removeQueuedFiles(this.selectedStreamId, state)
         const queuedAndStoppedFiles = await this.$file.getExistingQueuedAndStoppedFiles(this.selectedStreamId)
         this.isRemoveQueuedFiles = false
