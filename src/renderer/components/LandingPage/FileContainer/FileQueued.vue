@@ -27,7 +27,6 @@ import ipcRendererSend from '../../../services/ipc'
 
 export default {
   props: {
-    stats: Array,
     queuedFileCount: {
       type: Number,
       default: 0
@@ -53,7 +52,6 @@ export default {
       try {
         this.isProcessingUploading = true
         let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: this.selectedStreamId, state: FileState.state.STOPPED } })
-        console.error('start files', files)
         await this.$file.putFilesIntoUploadingQueue(files)
         this.isProcessingUploading = false
       } catch (e) {
@@ -67,17 +65,20 @@ export default {
       await this.$store.dispatch('setSelectedTab', tabObject)
     },
     async stopUpload () {
+      await this.$store.dispatch('enableUploadingProcess', false)
       try {
         this.isProcessingUploading = true
         let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: this.selectedStreamId, state: [FileState.state.CONVERTING, FileState.state.UPLOADING, FileState.state.WAITING] } })
         console.log('stop files', files)
-        const stoppedFiles = await this.$file.stopQueuedFiles(files, this.selectedStreamId)
-        this.$emit('stoppedFileCount', stoppedFiles)
+        const state = [FileState.state.CONVERTING, FileState.state.UPLOADING, FileState.state.WAITING]
+        await this.$file.stopQueuedFiles(this.selectedStreamId, state)
+        this.$emit('updateStoppedFileCount')
         this.isProcessingUploading = false
-        console.log('stopped', this.isProcessingUploading, stoppedFiles, this.stoppedFileCount)
+        await this.$store.dispatch('enableUploadingProcess', true)
       } catch (e) {
         console.error('[FileQueued] error stop upload', e)
         this.isProcessingUploading = false
+        await this.$store.dispatch('enableUploadingProcess', true)
       }
 
       // set selected tab to be queue tab
@@ -89,11 +90,10 @@ export default {
       if (this.isRemoveQueuedFiles) return // prevent double click
       this.isRemoveQueuedFiles = true
       try {
-        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: this.selectedStreamId, state: [FileState.state.CONVERTING, FileState.state.UPLOADING, FileState.state.WAITING, FileState.state.STOPPED] } })
-        const queuedAndStoppedFiles = await this.$file.removeQueuedFiles(files, this.selectedStreamId)
+        const state = [FileState.state.CONVERTING, FileState.state.UPLOADING, FileState.state.WAITING, FileState.state.STOPPED]
+        await this.$file.removeQueuedFiles(this.selectedStreamId, state)
+        const queuedAndStoppedFiles = await this.$file.getExistingQueuedAndStoppedFiles(this.selectedStreamId)
         this.isRemoveQueuedFiles = false
-        const stoppedFiles = await this.$file.getExistingStoppedFiles(this.selectedStreamId)
-        this.$emit('stoppedFileCount', stoppedFiles)
         if (!queuedAndStoppedFiles) {
           // set selected tab to be queue tab
           const tabObject = {}
@@ -103,6 +103,20 @@ export default {
       } catch (e) {
         this.isRemoveQueuedFiles = false
         console.error('[FileQueued] error remove queued files', e)
+      }
+    }
+  },
+  watch: {
+    queuedFileCount: {
+      handler: async function (newValue, previousValue) {
+        if (previousValue === newValue) return
+        this.queuedFileCount = newValue
+      }
+    },
+    stoppedFileCount: {
+      handler: async function (newValue, previousValue) {
+        if (previousValue === newValue) return
+        this.stoppedFileCount = newValue
       }
     }
   }

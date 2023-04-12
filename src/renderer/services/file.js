@@ -126,13 +126,6 @@ class FileProvider {
       })
   }
 
-  async getExistingStoppedFiles (streamId) {
-    return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: [STOPPED], streamId } })
-      .then((files) => {
-        return files.length
-      })
-  }
-
   getExistingQueuedAndStoppedFiles (streamId) {
     return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: [STOPPED, WAITING, UPLOADING, CONVERTING], streamId } })
       .then((files) => {
@@ -192,30 +185,26 @@ class FileProvider {
     await store.dispatch('enableUploadingProcess', true)
   }
 
-  async removeQueuedFiles (files, streamId) {
-    const fileIds = files.map(file => file.id)
-    console.info('[FileService] removeQueuedFiles', fileIds)
+  async removeQueuedFiles (streamId, state) {
+    console.info('[FileService] removeQueuedFiles', state)
     // if there is an active session id then reuse that, otherwise generate a new one
     const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
     store.dispatch('setCurrentUploadingSessionId', sessionId)
     await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
-      where: {id: fileIds},
+      where: { streamId, state },
       values: { state: PREPARING, sessionId }
     })
-    return this.getExistingQueuedAndStoppedFiles(streamId)
   }
 
-  async stopQueuedFiles (files, streamId) {
-    const fileIds = files.map(file => file.id)
-    console.info('[FileService] stopQueuedFiles', fileIds)
+  async stopQueuedFiles (streamId, state) {
+    console.info('[FileService] stopQueuedFiles', state)
     // if there is an active session id then reuse that, otherwise generate a new one
     const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
     store.dispatch('setCurrentUploadingSessionId', sessionId)
     await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
-      where: {id: fileIds},
+      where: { streamId, state },
       values: { state: STOPPED, sessionId }
     })
-    return this.getExistingStoppedFiles(streamId)
   }
 
   /**

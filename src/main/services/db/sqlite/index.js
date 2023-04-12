@@ -82,7 +82,7 @@ const collections = {
       })
     },
     update: function (data) {
-      console.info(`[DB] db.files.update: ${data}`)
+      console.info(`[DB] db.files.update: ${data.id} ${JSON.stringify(data.params)}`)
       return models.File.findOne({ where: { id: data.id } })
         .then((file) => {
           ['durationInSecond', 'state', 'uploadId', 'stateMessage', 'progress', 'format', 'sessionId',
@@ -95,7 +95,7 @@ const collections = {
         })
     },
     bulkUpdate: function (opts) {
-      console.info(`[DB] db.files.bulkUpdate: ${opts}`)
+      console.info(`[DB] db.files.bulkUpdate: ${JSON.stringify(opts.where)} ${JSON.stringify(opts.values)}`)
       const where = opts.where || null
       const values = opts.values || {}
       return models.File.update(values, { where })

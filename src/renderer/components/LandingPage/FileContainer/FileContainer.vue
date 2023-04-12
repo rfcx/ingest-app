@@ -18,6 +18,7 @@
         v-if="selectedTab === 'Queued' && (hasFileInQueued || hasStoppedFiles)"
         :queuedFileCount="queuedFileCount"
         :stoppedFileCount="stoppedFileCount"
+        @updateStoppedFileCount="onStoppedFilesCount"
     ></file-queued>
     <summary-view
         v-if="selectedTab === 'Completed' && hasCompletedFiles"
@@ -255,6 +256,10 @@ export default {
         this.isFetchingStreamInfo = false
         console.error('updateStreamIfNeeded: fetch stream error', e)
       }
+    },
+    async onStoppedFilesCount () {
+      await this.reloadStats()
+      await this.reloadFiles(this.getQueryBySelectedTab(this.selectedTab), 0)
     }
   },
   watch: {
