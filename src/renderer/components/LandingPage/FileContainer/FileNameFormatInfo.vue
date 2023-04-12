@@ -20,7 +20,7 @@
       </options-dropdown>
     </div>
     <div>
-      <button type="button" class="button is-rounded is-cancel" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
+      <button type="button" class="button is-rounded is-cancel mr-2" @click.prevent="confirmToClearAllFiles()" :class="{ 'is-loading': isDeletingAllFiles }">Clear all</button>
       <button type="button" class="button is-rounded is-primary" @click.prevent="onClickStartUpload()" :disabled="numberOfReadyToUploadFiles < 1 || isDeletingAllFiles">Start upload ({{numberOfReadyToUploadFiles}})</button>
     </div>
     <div class="modal is-active" v-if="showSettingModal">
@@ -271,5 +271,8 @@ export default {
   }
   .align-center {
     align-items: center;
+  }
+  .mr-2 {
+    margin-right: 2px;
   }
 </style>

@@ -1,3 +1,11 @@
+<a name="1.5.5"></a>
+## 1.5.5 (2023-04-12)
+
+### Improvements
+
+* Add an ability to stop site uploading and clear all from queued list
+* Rename RFCx Uploader to Arbimon Uploader
+
 <a name="1.5.4"></a>
 ## 1.5.4 (2023-03-03)
 

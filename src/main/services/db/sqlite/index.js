@@ -151,6 +151,22 @@ const collections = {
         return files.filter(file => fileState.canRedo(file.state, file.stateMessage)).length
       })
     },
+    getNumberOfQueuedFiles: function (streamId) {
+      return models.File.findAll({
+        where: {
+          stream_id: streamId,
+          state: [fileState.state.CONVERTING, fileState.state.UPLOADING, fileState.state.WAITING]
+        }
+      }).then(files => { return files.length })
+    },
+    getNumberOfStoppedFiles: function (streamId) {
+      return models.File.findAll({
+        where: {
+          stream_id: streamId,
+          state: [fileState.state.STOPPED]
+        }
+      }).then(files => { return files.length })
+    },
     filesInStreamsCount: function (streamIds) {
       return models.File.findAll({
         where: {stream_id: streamIds},

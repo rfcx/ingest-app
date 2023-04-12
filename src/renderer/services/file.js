@@ -15,7 +15,7 @@ import fileState from '../../../utils/fileState'
 import ipcRendererSend from './ipc'
 import SongMeterFileInfo from './SongMeterFileInfo'
 
-const { PREPARING, ERROR_LOCAL, ERROR_SERVER, WAITING, PROCESSING, COMPLETED } = fileState.state
+const { PREPARING, ERROR_LOCAL, ERROR_SERVER, UPLOADING, CONVERTING, WAITING, STOPPED, PROCESSING, COMPLETED } = fileState.state
 
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
@@ -126,6 +126,20 @@ class FileProvider {
       })
   }
 
+  async getExistingStoppedFiles (streamId) {
+    return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: [STOPPED], streamId } })
+      .then((files) => {
+        return files.length
+      })
+  }
+
+  getExistingQueuedAndStoppedFiles (streamId) {
+    return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { state: [STOPPED, WAITING, UPLOADING, CONVERTING], streamId } })
+      .then((files) => {
+        return files.length
+      })
+  }
+
   async getFileObjectsFromFolder (folderPath, selectedStream, existingFileObjects = null, deploymentInfo = null) {
     // get the files in the directory
     const files = await this.searchFilesFromFolder(folderPath)
@@ -176,6 +190,32 @@ class FileProvider {
     }
     // always enable uploading process
     await store.dispatch('enableUploadingProcess', true)
+  }
+
+  async removeQueuedFiles (files, streamId) {
+    const fileIds = files.map(file => file.id)
+    console.info('[FileService] removeQueuedFiles', fileIds)
+    // if there is an active session id then reuse that, otherwise generate a new one
+    const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
+    store.dispatch('setCurrentUploadingSessionId', sessionId)
+    await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
+      where: {id: fileIds},
+      values: { state: PREPARING, sessionId }
+    })
+    return this.getExistingQueuedAndStoppedFiles(streamId)
+  }
+
+  async stopQueuedFiles (files, streamId) {
+    const fileIds = files.map(file => file.id)
+    console.info('[FileService] stopQueuedFiles', fileIds)
+    // if there is an active session id then reuse that, otherwise generate a new one
+    const sessionId = store.state.AppSetting.currentUploadingSessionId || '_' + Math.random().toString(36).substr(2, 9)
+    store.dispatch('setCurrentUploadingSessionId', sessionId)
+    await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
+      where: {id: fileIds},
+      values: { state: STOPPED, sessionId }
+    })
+    return this.getExistingStoppedFiles(streamId)
   }
 
   /**

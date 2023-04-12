@@ -1,10 +1,41 @@
 <template>
     <div class="wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10" :infinite-scroll-disabled="!infiniteScrollEnabled">
     <header-view :selectedStream="selectedStream" @onClickRefreshStream="updateStream" :isFetching="isFetchingStreamInfo"></header-view>
-    <tab :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')" :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')" :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')" :selectedTab="selectedTab"></tab>
-    <file-name-format-info v-if="selectedTab === 'Prepared' && hasPreparingFiles" :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles" :selectedStream="selectedStream" @onNeedResetFileList="resetFiles" @onNeedResetStreamList="resetStreams"></file-name-format-info>
-    <summary-view :stats="getStatsOfTab(selectedTab)" :retryableFileCount="retryableFileCount" v-if="selectedTab === 'Completed' && hasCompletedFiles"></summary-view>
-    <file-list ref="fileList" :files="files" :stats="getStatsOfTab(selectedTab)" :hasFileInQueued="hasFileInQueued" :selectedTab="selectedTab" :isDragging="isDragging" :isFetching="files.length <= 0 && isFetching" :isLoadingMore="isFetching" @onImportFiles="onImportFiles" @onNeedResetFileList="resetFiles"></file-list>
+    <tab
+        :preparingGroup="getNumberOfFilesAndStatusToRenderInTab('Prepared')"
+        :queuedGroup="getNumberOfFilesAndStatusToRenderInTab('Queued')"
+        :completedGroup="getNumberOfFilesAndStatusToRenderInTab('Completed')"
+        :selectedTab="selectedTab"
+    ></tab>
+    <file-name-format-info
+        v-if="selectedTab === 'Prepared' && hasPreparingFiles"
+        :numberOfReadyToUploadFiles="numberOfReadyToUploadFiles"
+        :selectedStream="selectedStream"
+        @onNeedResetFileList="resetFiles"
+        @onNeedResetStreamList="resetStreams"
+    ></file-name-format-info>
+    <file-queued
+        v-if="selectedTab === 'Queued' && (hasFileInQueued || hasStoppedFiles)"
+        :queuedFileCount="queuedFileCount"
+        :stoppedFileCount="stoppedFileCount"
+    ></file-queued>
+    <summary-view
+        v-if="selectedTab === 'Completed' && hasCompletedFiles"
+        :stats="getStatsOfTab(selectedTab)"
+        :retryableFileCount="retryableFileCount"
+    ></summary-view>
+    <file-list
+        ref="fileList"
+        :files="files"
+        :stats="getStatsOfTab(selectedTab)"
+        :hasFileInQueued="hasFileInQueued"
+        :selectedTab="selectedTab"
+        :isDragging="isDragging"
+        :isFetching="files.length <= 0 && isFetching"
+        :isLoadingMore="isFetching"
+        @onImportFiles="onImportFiles"
+        @onNeedResetFileList="resetFiles"
+    ></file-list>
 </div>
 </template>
 
@@ -15,6 +46,7 @@ import Tab from './Tab'
 import FileNameFormatInfo from './FileNameFormatInfo'
 import FileList from './FileList'
 import SummaryView from './Summary'
+import FileQueued from './FileQueued.vue'
 import FileState from '../../../../../utils/fileState'
 import infiniteScroll from 'vue-infinite-scroll'
 import ipcRendererSend from '../../../services/ipc'
@@ -45,6 +77,8 @@ export default {
       files: [],
       stats: [],
       retryableFileCount: 0,
+      queuedFileCount: 0,
+      stoppedFileCount: 0,
       fetchFilesInterval: null,
       selectedStream: null,
       isFetching: false,
@@ -55,7 +89,7 @@ export default {
     isDragging: Boolean
   },
   components: {
-    HeaderView, Tab, FileNameFormatInfo, FileList, SummaryView
+    HeaderView, Tab, FileNameFormatInfo, FileList, SummaryView, FileQueued
   },
   computed: {
     ...mapState({
@@ -72,6 +106,9 @@ export default {
     },
     hasFileInQueued () {
       return this.stats.find(group => FileState.isInQueuedGroup(group.state)) !== undefined
+    },
+    hasStoppedFiles () {
+      return this.stoppedFileCount > 0
     },
     hasCompletedFiles () {
       return this.stats.find(group => FileState.isInCompletedGroup(group.state)) !== undefined
@@ -107,13 +144,14 @@ export default {
       await this.reloadFiles(query, offset, true)
       this.isFetching = false
     },
+    // Get files for each tab
     getQueryBySelectedTab (selectedTab) {
       let commonQuery = { streamId: this.selectedStreamId }
       switch (selectedTab) {
         case 'Prepared':
           return { ...commonQuery, state: FileState.preparedGroup }
         case 'Queued':
-          return { ...commonQuery, state: FileState.queuedGroup }
+          return { ...commonQuery, state: [...FileState.queuedGroup, ...FileState.stoppedGroup] }
         case 'Completed':
           return { ...commonQuery, state: FileState.completedGroup }
       }
@@ -136,12 +174,13 @@ export default {
         hasErrorFiles
       }
     },
+    // Get number of files in a title of each tab
     getStatsOfTab (tab) {
       switch (tab) {
         case 'Prepared':
           return this.stats.filter(group => FileState.isInPreparedGroup(group.state))
         case 'Queued':
-          return this.stats.filter(group => FileState.isInQueuedGroup(group.state))
+          return this.stats.filter(group => FileState.isInQueuedGroup(group.state) || FileState.isInStoppedGroup(group.state))
         case 'Completed':
           return this.stats.filter(group => FileState.isInCompletedGroup(group.state))
       }
@@ -167,6 +206,8 @@ export default {
     async reloadStats () {
       this.stats = await ipcRendererSend('db.files.filesInStreamCount', `db.files.filesInStreamCount.${Date.now()}`, this.selectedStreamId)
       this.retryableFileCount = await ipcRendererSend('db.files.getNumberOfRetryableFiles', `db.files.getNumberOfRetryableFiles.${Date.now()}`, this.selectedStreamId)
+      this.queuedFileCount = await ipcRendererSend('db.files.getNumberOfQueuedFiles', `db.files.getNumberOfQueuedFiles.${Date.now()}`, this.selectedStreamId)
+      this.stoppedFileCount = await ipcRendererSend('db.files.getNumberOfStoppedFiles', `db.files.getNumberOfStoppedFiles.${Date.now()}`, this.selectedStreamId)
     },
     async initFilesFetcher () {
       // fetch at first load
