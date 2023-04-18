@@ -46,7 +46,6 @@ export default function (sequelize) {
         CONVERTING: 30, // converting to flac
         UPLOADING: 31, // uploading to server
         WAITING: 32, // in queue waiting to upload
-        STOPPED: 33, // stop gueued file to upload
         PROCESSING: 40, // uploaded, but in process of a.k.a. verifing / ingesting
         COMPLETED: 50 // uploaded and ingested
       } */

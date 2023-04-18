@@ -159,14 +159,6 @@ const collections = {
         }
       }).then(files => { return files.length })
     },
-    getNumberOfStoppedFiles: function (streamId) {
-      return models.File.findAll({
-        where: {
-          stream_id: streamId,
-          state: [fileState.state.STOPPED]
-        }
-      }).then(files => { return files.length })
-    },
     filesInStreamsCount: function (streamIds) {
       return models.File.findAll({
         where: {stream_id: streamIds},

@@ -15,10 +15,8 @@
         @onNeedResetStreamList="resetStreams"
     ></file-name-format-info>
     <file-queued
-        v-if="selectedTab === 'Queued' && (hasFileInQueued || hasStoppedFiles)"
+        v-if="selectedTab === 'Queued' && hasFileInQueued"
         :queuedFileCount="queuedFileCount"
-        :stoppedFileCount="stoppedFileCount"
-        @updateStoppedFileCount="onStoppedFilesCount"
     ></file-queued>
     <summary-view
         v-if="selectedTab === 'Completed' && hasCompletedFiles"
@@ -79,7 +77,6 @@ export default {
       stats: [],
       retryableFileCount: 0,
       queuedFileCount: 0,
-      stoppedFileCount: 0,
       fetchFilesInterval: null,
       selectedStream: null,
       isFetching: false,
@@ -107,9 +104,6 @@ export default {
     },
     hasFileInQueued () {
       return this.stats.find(group => FileState.isInQueuedGroup(group.state)) !== undefined
-    },
-    hasStoppedFiles () {
-      return this.stoppedFileCount > 0
     },
     hasCompletedFiles () {
       return this.stats.find(group => FileState.isInCompletedGroup(group.state)) !== undefined
@@ -152,7 +146,7 @@ export default {
         case 'Prepared':
           return { ...commonQuery, state: FileState.preparedGroup }
         case 'Queued':
-          return { ...commonQuery, state: [...FileState.queuedGroup, ...FileState.stoppedGroup] }
+          return { ...commonQuery, state: FileState.queuedGroup }
         case 'Completed':
           return { ...commonQuery, state: FileState.completedGroup }
       }
@@ -181,7 +175,7 @@ export default {
         case 'Prepared':
           return this.stats.filter(group => FileState.isInPreparedGroup(group.state))
         case 'Queued':
-          return this.stats.filter(group => FileState.isInQueuedGroup(group.state) || FileState.isInStoppedGroup(group.state))
+          return this.stats.filter(group => FileState.isInQueuedGroup(group.state))
         case 'Completed':
           return this.stats.filter(group => FileState.isInCompletedGroup(group.state))
       }
@@ -208,7 +202,6 @@ export default {
       this.stats = await ipcRendererSend('db.files.filesInStreamCount', `db.files.filesInStreamCount.${Date.now()}`, this.selectedStreamId)
       this.retryableFileCount = await ipcRendererSend('db.files.getNumberOfRetryableFiles', `db.files.getNumberOfRetryableFiles.${Date.now()}`, this.selectedStreamId)
       this.queuedFileCount = await ipcRendererSend('db.files.getNumberOfQueuedFiles', `db.files.getNumberOfQueuedFiles.${Date.now()}`, this.selectedStreamId)
-      this.stoppedFileCount = await ipcRendererSend('db.files.getNumberOfStoppedFiles', `db.files.getNumberOfStoppedFiles.${Date.now()}`, this.selectedStreamId)
     },
     async initFilesFetcher () {
       // fetch at first load
@@ -256,10 +249,6 @@ export default {
         this.isFetchingStreamInfo = false
         console.error('updateStreamIfNeeded: fetch stream error', e)
       }
-    },
-    async onStoppedFilesCount () {
-      await this.reloadStats()
-      await this.reloadFiles(this.getQueryBySelectedTab(this.selectedTab), 0)
     }
   },
   watch: {

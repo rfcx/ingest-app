@@ -6,14 +6,12 @@ const state = {
   CONVERTING: 30, // converting to flac
   UPLOADING: 31, // uploading to server
   WAITING: 32, // in queue waiting to upload
-  STOPPED: 33, // stop gueued file to upload
   PROCESSING: 40, // uploaded, but in process of a.k.a. verifing / ingesting
   COMPLETED: 50 // uploaded and ingested
 }
 
 const preparedGroup = [state.PREPARING, state.ERROR_LOCAL]
 const queuedGroup = [state.WAITING, state.UPLOADING, state.CONVERTING]
-const stoppedGroup = [state.STOPPED]
 const completedGroup = [state.COMPLETED, state.PROCESSING, state.ERROR_SERVER]
 
 const cannotRedoGroup = ['duplicate', 'corrupt', 'duration']
@@ -73,7 +71,6 @@ const getName = function (id, message) {
     case state.CONVERTING: return 'compressing'
     case state.WAITING: return 'waiting'
     case state.UPLOADING: return 'uploading'
-    case state.STOPPED: return 'stopped'
     case state.PROCESSING: return 'verified'
     case state.ERROR_LOCAL:
     case state.ERROR_SERVER:
@@ -94,8 +91,6 @@ const getIconName = function (id) {
       return 'ic-state-uploading.svg'
     case state.PROCESSING:
       return 'ic-state-ingesting.svg'
-    case state.STOPPED:
-      return 'ic-state-waiting.svg'
     case state.ERROR_LOCAL:
     case state.ERROR_SERVER:
     case state.DUPLICATED:
@@ -110,10 +105,6 @@ const isInPreparedGroup = function (state) {
 
 const isInQueuedGroup = function (state) {
   return queuedGroup.includes(state)
-}
-
-const isInStoppedGroup = function (state) {
-  return stoppedGroup.includes(state)
 }
 
 const isInCompletedGroup = function (state) {
@@ -171,7 +162,6 @@ export default {
   getStateByStateId,
   preparedGroup,
   queuedGroup,
-  stoppedGroup,
   completedGroup,
   getStatePriority,
   getSummaryStatePriority,
@@ -188,7 +178,6 @@ export default {
   isProcessing,
   isDuplicated,
   isCompleted,
-  isInStoppedGroup,
   cannotRedoGroup,
   canRedo,
   canRemove,
