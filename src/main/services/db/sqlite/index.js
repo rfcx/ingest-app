@@ -151,11 +151,11 @@ const collections = {
         return files.filter(file => fileState.canRedo(file.state, file.stateMessage)).length
       })
     },
-    getNumberOfQueuedFiles: function (streamId) {
+    getNumberOfWaitingFiles: function (streamId) {
       return models.File.findAll({
         where: {
           stream_id: streamId,
-          state: [fileState.state.CONVERTING, fileState.state.UPLOADING, fileState.state.WAITING]
+          state: [fileState.state.WAITING]
         }
       }).then(files => { return files.length })
     },
