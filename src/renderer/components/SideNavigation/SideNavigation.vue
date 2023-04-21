@@ -5,8 +5,8 @@
         <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
         <span class="is-size-7">{{ !isProductionEnv() ? 'staging' : '' }}</span>
       </div>
-      <div lass="wrapper__user-pic" v-click-outside="hide" @click="toggleUserMenu()">
-        <img title="Menu" class="user-pic" :src="getUserPicture()" alt="" @error="$event.target.src=require(`../../assets/ic-profile-temp.svg`)">
+      <div class="wrapper__user-pic" v-click-outside="hide" @click="toggleUserMenu()">
+        <div title="Menu" v-bind:style="{'background-image': 'url(' + (getUserPicture() || require('../../assets/ic-profile-temp.svg')) + ')'}" class="user-pic"></div>
       </div>
     </div>
     <div class="wrapper__stat" v-if="showUserMenu">
@@ -284,6 +284,8 @@
     &__user-pic {
       cursor: pointer;
       margin-left: auto;
+      height: 32px;
+      width: 32px;
     }
     &__logo {
       margin-right: 10px;
@@ -384,9 +386,12 @@
   }
   .user-pic {
     border-radius: 50%;
-    height: $full-height;
-    height: 32px;
-    width: auto;
+    height: 100%;
+    max-width: $full-height;
+    max-height: $full-height;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 100% 100%;
   }
   .menu-container {
     display: flex;
