@@ -1,12 +1,12 @@
 <template>
   <table>
     <tr class="source-type__row">
-      <span class="source-type__title">RFCx Companion SD Card</span>
+      <span class="source-type__title">Arbimon Companion SD Card</span>
     </tr>
     <template v-if="!companionDrives || companionDrives.length === 0">
       <tr>
         <img class="row__icon" src="@/assets/ic-sd-card-gray.svg"/>
-        <span class="row__source-title">No RFCx Companion SD Card detected</span>
+        <span class="row__source-title">No Arbimon Companion SD Card detected</span>
       </tr>
     </template>
     <template v-else>

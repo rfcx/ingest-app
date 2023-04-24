@@ -139,7 +139,7 @@ export default {
 
     if (this.props.deviceId && !this.props.deploymentId) { // show protip
       const recorderType = this.props.recorderType
-      this.errorMessage = `Suggestion: use the RFCx companion to deploy your ${recorderType} device in the future to pre-populate the site name below.`
+      this.errorMessage = `Suggestion: use the Arbimon Companion to deploy your ${recorderType} device in the future to pre-populate the site name below.`
     }
 
     if (this.props.deploymentId) {
@@ -210,9 +210,9 @@ export default {
     siteDropdownHelpText () {
       if (this.detectedSiteFromDeployment && this.selectedExistingSite) {
         if (this.isSelectedSiteMatchWithDetectedDeployment) {
-          return 'Detected deployment from RFCx Companion'
+          return 'Detected deployment from Arbimon Companion'
         }
-        return `Site doesn't match with detected deployment from RFCx Companion`
+        return `Site doesn't match with detected deployment from Arbimon Companion`
       }
       return null
     },

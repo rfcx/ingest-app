@@ -1,7 +1,7 @@
 <template>
   <div class="import-stream__wrapper">
     <header-view title="Import audio files" :shouldShowBackButton="true" />
-    <p class="subtitle">Insert RFCx Companion SD Card or choose the folder/files to import.</p>
+    <p class="subtitle">Insert Arbimon Companion SD Card or choose the folder/files to import.</p>
     <source-list @sourceSelected="onSourceSelected"></source-list>
     <p class="control control-btn">
         <button
