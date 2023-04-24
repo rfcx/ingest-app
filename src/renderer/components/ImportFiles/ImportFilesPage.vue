@@ -9,7 +9,7 @@
           class="button is-rounded is-primary"
           :disabled="!selectedSource"
           @click.prevent="redirectUserToSelectSiteScreen"
-        >Import</button>
+        >Next</button>
       </p>
   </div>
 </template>
