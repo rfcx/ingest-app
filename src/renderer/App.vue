@@ -13,7 +13,7 @@
   const isOnline = require('is-online')
 
   export default {
-    name: 'rfcx-uploader',
+    name: 'arbimon-uploader',
     data () {
       return {
         onLine: navigator.onLine

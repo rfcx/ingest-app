@@ -13,7 +13,7 @@
         <div class="modal-content-text" v-html="contentHTML"></div>
       </section>
       <footer class="modal-card-foot">
-        <button class="button is-rounded" @click="cancelButtonPressed()">{{ cancelButtonText }}</button>
+        <button class="button is-rounded is-cancel" @click="cancelButtonPressed()">{{ cancelButtonText }}</button>
         <button v-if="confirmButtonText" class="button is-rounded is-primary" :class="{ 'is-loading': isProcessing, 'is-danger': isDanger }" @click.prevent="confirmButtonPressed()">{{ confirmButtonText }}</button>
       </footer>
     </div>

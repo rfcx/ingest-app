@@ -42,7 +42,7 @@ export default {
     return {
       accessToken:
         'pk.eyJ1IjoicmZjeCIsImEiOiJoMEptMnlJIn0.LPKrjG_3AeYB5cqsyLpcrg',
-      mapStyle: 'mapbox://styles/rfcx/ck9g6dci83g3x1io8dl27r7aq',
+      mapStyle: 'mapbox://styles/mapbox/satellite-streets-v11',
       defaultInput: '',
       center: [15, 30],
       zoom: 2,
@@ -226,6 +226,8 @@ export default {
     font-style: normal;
     line-height: 0.86;
     letter-spacing: normal;
+    background-color: $pitch;
+    border-radius: 4px;
     color: $edit-icon-color !important;
   }
   .suggestions {

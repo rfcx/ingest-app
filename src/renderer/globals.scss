@@ -1,23 +1,66 @@
-@import url('https://fonts.googleapis.com/css?family=Lato:300,400,700');
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500&family=Roboto+Mono:wght@400;500&display=swap");
 
-$brand-primary: #2FB04A;
-$brand-primary-dark: #31984f;
+// Extended font
+
+@font-face {
+  font-family: ABCFavoritExtended;
+  font-display: auto;
+  font-weight: 500; // Medium
+  src:
+    url("~@/assets/fonts/ABCFavoritExtended-Medium.woff") format("woff"), /* Modern Browsers */
+    url("~@/assets/fonts/ABCFavoritExtendedVariable.ttf")  format("truetype"); /* Safari, Android, iOS */
+}
+
+// Expanded font
+
+@font-face {
+  font-family: ABCFavoritExpanded;
+  font-display: auto;
+  font-weight: 500;
+  src:
+    url("~@/assets/fonts/ABCFavoritExpanded-Medium.woff") format("woff"), /* Modern Browsers */
+    url("~@/assets/fonts/ABCFavoritExpandedVariable.ttf")  format("truetype"); /* Safari, Android, iOS */
+}
+
+// Primary
+$frequency: #ADFF2C;
+$echo: #14130D;
+$moss: #1e1c13;
+$pitch: #060508;
+
+// Secondary
+$spoonbill: #FFAFAF;
+$flamingo: #FF6868;
+$palm: #008059;
+$chirp: #D2FF8A;
+
+// Neutrals
+$insight: #FFFEFC;
+$cloud: #F9F6F2;
+$fog: #E9E6E1;
+$util-gray-01: #D3D2CF;
+$util-gray-02: #7F7D78;
+$util-gray-03: #4B4B4B;
+$util-gray-04: #242424;
+
+$brand-primary: $frequency;
+$brand-primary-dark: #8acc23;
 $title-text-color: #fff;
 $body-text-color: #fff;
-$white-color: #ffffff;
-$secondary-text-color: #a1a1a7;
-$error-text-color: #BA4351;
-$warning-text-color: #d2b63f;
-$backgroud-color: #131525;
-$backgroud-color-dark: #131525;
-$box-color: #292a3b;
-$button-background-color: #45485d;
-$input-placeholder: #52566e;
-$danger-color: #f14668;
-$edit-icon-color: #9B9B9B;
-$divider-color: #5f6292;
-$side-menu-background: #232436;
-$dropdown-background: #373955;
+$white-color: #FFFEFC;
+$secondary-text-color: $util-gray-01;
+$error-text-color: $flamingo;
+$warning-text-color: #FFCD00;
+$backgroud-color: $pitch;
+$backgroud-color-dark: $pitch;
+$box-color: $util-gray-04;
+$button-background-color: $pitch;
+$input-placeholder: $util-gray-02;
+$danger-color: $flamingo;
+$edit-icon-color: $util-gray-03;
+$divider-color: $util-gray-02;
+$side-menu-background: $echo;
+$dropdown-background: $pitch;
 $title-font-weight: 700;
 $navbar-height: 0rem;
 $default-padding-margin: 0.75em;
@@ -33,14 +76,14 @@ $full-width: 100%;
 $primary: $brand-primary;
 $danger: $error-text-color;
 $warning: $warning-text-color;
-$dark: $box-color;
-$family-sans-serif: 'Lato', sans-serif;
+$dark: $util-gray-04;
+$family-sans-serif: 'Poppins', sans-serif;
 $link: $brand-primary;
 
 // -- Tab
-$tabs-border-bottom-color: $box-color;
+$tabs-border-bottom-color: $util-gray-03;
 $tabs-link-color: #ffffff;
-$tabs-link-hover-color: #ffffff;
+$tabs-link-hover-color: $brand-primary;
 $tabs-border-bottom-width: 2px;
 $tabs-toggle-link-border-color: $box-color;
 $tabs-toggle-link-hover-background-color: $backgroud-color;
@@ -51,39 +94,39 @@ $table-color: $body-text-color;
 $table-head-cell-color: $body-text-color;
 $table-foot-cell-color: $body-text-color;
 $table-background-color: $backgroud-color;
-$table-row-hover-background-color: $box-color;
+$table-row-hover-background-color: $moss;
 $table-cell-border: 1px solid;
-$border: #45485d;
+$border: $util-gray-03;
 $table-cell-border-width: 0 0 2px 0;
 
 // -- Input
-$input-background-color: $box-color;
+$input-background-color: $pitch;
 $input-border-color: $box-color;
-$input-color: $body-text-color;
+$input-color: $insight;
 $label-color: $title-text-color;
 $input-disabled-background-color: $box-color;
 $input-disabled-border-color: $box-color;
 $input-disabled-color: $secondary-text-color;
 
 // -- Dropdown
-$dropdown-content-background-color: $dropdown-background;
+$dropdown-content-background-color: $pitch;
 $dropdown-item-color: $body-text-color;
 $dropdown-item-hover-color: $body-text-color;
-$dropdown-item-hover-background-color: #414364;
+$dropdown-item-hover-background-color: $moss;
 $dropdown-content-shadow: 0 0.5em 1em -0.125em rgba($divider-color, 0.1), 0 0px 0 1px rgba($divider-color, 0.02);
 
 // -- Button
-$button-color: $title-text-color;
+$button-color: $pitch;
 $button-background-color: $button-background-color;
 $button-border-color: $button-background-color;
-$button-disabled-background-color: $button-background-color;
-$button-hover-color: $title-text-color;
-$button-hover-border-color: #3b3e53;
+$button-disabled-background-color: $util-gray-03;
+$button-hover-color: $pitch;
+$button-hover-border-color: $brand-primary-dark;
 
 // Modal
 $alert-content-size: 16px;
-$modal-card-head-background-color: $box-color;
-$modal-card-body-background-color: $box-color;
+$modal-card-head-background-color: $moss;
+$modal-card-body-background-color: $moss;
 $modal-card-title-color: $body-text-color;
 $modal-card-head-padding: $default-padding;
 
@@ -152,18 +195,19 @@ a.is-button {
   padding-top: calc(0.175em - 1px);
   background-color: $brand-primary;
   align-self: center;
-  font-weight: $title-font-weight;
+  font-weight: 500;
+  font: 'ABCFavoritExtended';
   font-size: $default-font-size;
   font-style: normal;
   line-height: normal;
-  color: $white-color;
+  color: $pitch;
   border: none;
   &:hover,
   &:active,
   &:focus {
     outline: none;
     border: none;
-    color: $white-color;
+    color: $pitch;
   }
 }
 
@@ -177,7 +221,7 @@ a.is-button {
 }
 
 .default-notice {
-  background: #3b3e53;
+  background: $moss;
   color: white;
 }
 
@@ -189,4 +233,34 @@ a.is-button {
 }
 .modal-card {
   z-index: 200;
+}
+
+.button .is-rounded .is-primary {
+  color: $pitch !important;
+  font-weight: 500 !important;
+}
+
+.button.is-primary {
+  color: $pitch !important;
+  font-weight: 500 !important;
+}
+
+.button.is-primary[disabled] {
+  color: $pitch !important;
+  font-weight: 500 !important;
+}
+
+.button.is-rounded.is-cancel {
+  color: $brand-primary !important;
+  background-color: transparent !important;
+  font-weight: 500 !important;
+  border-color: $brand-primary !important;
+}
+
+.button {
+  font: 'ABCFavoritExtended' !important;
+}
+
+.tabs .is-active {
+  font-weight: 500 !important;
 }

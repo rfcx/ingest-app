@@ -16,7 +16,7 @@
       :title="alertTitle"
       :content="alertContent"
       cancelButtonText="OK"
-      :image="'rfcx-logo.png'"
+      :image="'arbimon-logo.png'"
       :isProcessing="false"
       v-if="isPopupOpened"
       @onCancelPressed="cancel()"/>
