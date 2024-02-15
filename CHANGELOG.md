@@ -1,3 +1,10 @@
+<a name="1.5.6"></a>
+## 1.5.6 (2024-02-19)
+
+### Improvements
+
+* Update color theme & logo
+
 <a name="1.5.5"></a>
 ## 1.5.5 (2023-04-12)
 
