@@ -180,7 +180,7 @@ export default {
         rgba(19, 21, 37, 0.9) 85%,
         rgba(19, 21, 37, 1) 100%
       );
-      filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#131525",endColorstr="#131525",GradientType=1);
+      filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#060508",endColorstr="#060508",GradientType=1);
     }
   }
 
@@ -209,11 +209,14 @@ export default {
     fill: $white-color;
   }
   &--suggestion {
-    color: $white-color;
-    &:hover,
+    color: $white-color !important;
+    &:hover {
+      background-color: $moss !important;
+      color: $white-color !important;
+    }
     &:active {
-      background-color: $button-hover-border-color !important;
-      color: rgb(192, 189, 189) !important;
+      background-color: $util-gray-03 !important;
+      color: $white-color !important;
     }
   }
   &--button {
@@ -228,26 +231,33 @@ export default {
     letter-spacing: normal;
     background-color: $pitch;
     border-radius: 4px;
-    color: $edit-icon-color !important;
+    color: $insight !important;
   }
   .suggestions {
     top: auto;
     bottom: 40px;
     max-height: 80px !important;
     overflow: auto;
-    background-color: rgba(46, 49, 69, 0.9);
+    background-color: $pitch;
     text-align: left;
     .active a {
-      background-color: $button-hover-border-color !important;
-      color: rgb(192, 189, 189) !important;
+      background-color: $util-gray-03 !important;
+      color: $white-color !important;
+    }
+    .active {
+      background-color: $util-gray-03 !important;
+      color: $white-color !important;
+      border: 0 !important;
       margin-bottom: 2px;
     }
-    li,
-    a {
-      &:hover,
+    li > a {
+      &:hover {
+        background-color: $moss !important;
+        color: $white-color !important;
+      }
       &:active {
-        background-color: $button-hover-border-color !important;
-        color: rgb(192, 189, 189) !important;
+        background-color: $util-gray-03 !important;
+        color: $white-color !important;
       }
     }
   }

@@ -454,6 +454,12 @@
       border-color: $button-hover-border-color;
     }
   }
+  .button.is-small.is-rounded {
+    color: $brand-primary !important;
+    background-color: transparent !important;
+    font-weight: 500 !important;
+    border-color: $brand-primary !important;
+  }
   :-ms-input-placeholder {
     color: $input-placeholder;
   }

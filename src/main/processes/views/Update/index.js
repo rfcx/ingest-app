@@ -14,7 +14,7 @@ export default {
       show: isShow,
       frame: true,
       transparent: false,
-      backgroundColor: '#131525',
+      backgroundColor: '#060508',
       titleBarStyle: 'default',
       webPreferences: { nodeIntegration: true }
     })

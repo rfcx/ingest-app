@@ -138,7 +138,7 @@ export default {
     }
 
     .faRefresh {
-      color: $pitch;
+      color: $white-color;
       font-size: 10px;
       margin-left: 4px;
     }

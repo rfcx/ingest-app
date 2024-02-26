@@ -172,21 +172,8 @@ a.is-button {
   transform: translateY(-50%);
 }
 
-.button.is-loading {
-  &:hover, &:focus, &:active, &:visited {
-    &::after {
-      border-color: transparent transparent #fff #fff !important
-    }
-  }
-}
-
-.is-cancel:hover {
-  border-color: $button-hover-border-color !important;
-  color: #fff !important;
-  background: $button-hover-border-color !important;
-}
-.is-cancel:disabled {
-  border-color: transparent !important;
+.button {
+  font: 'ABCFavoritExtended' !important;
 }
 
 .rounded-button {
@@ -209,6 +196,46 @@ a.is-button {
     border: none;
     color: $pitch;
   }
+}
+
+.is-cancel:hover {
+  border-color: $button-hover-border-color !important;
+  color: #fff !important;
+  background: $button-hover-border-color !important;
+}
+
+.is-cancel:disabled {
+  border-color: transparent !important;
+}
+
+.button.is-loading {
+  &:hover, &:focus, &:active, &:visited {
+    &::after {
+      border-color: transparent transparent #fff #fff !important
+    }
+  }
+}
+
+.button.is-primary {
+  color: $pitch !important;
+  font-weight: 500 !important;
+}
+
+.button.is-primary[disabled] {
+  color: $pitch !important;
+  font-weight: 500 !important;
+}
+
+.button.is-rounded.is-primary {
+  color: $pitch !important;
+  font-weight: 500 !important;
+}
+
+.button.is-rounded.is-cancel {
+  color: $brand-primary !important;
+  background-color: transparent !important;
+  font-weight: 500 !important;
+  border-color: $brand-primary !important;
 }
 
 .fixed-notice {
@@ -235,32 +262,10 @@ a.is-button {
   z-index: 200;
 }
 
-.button .is-rounded .is-primary {
-  color: $pitch !important;
-  font-weight: 500 !important;
-}
-
-.button.is-primary {
-  color: $pitch !important;
-  font-weight: 500 !important;
-}
-
-.button.is-primary[disabled] {
-  color: $pitch !important;
-  font-weight: 500 !important;
-}
-
-.button.is-rounded.is-cancel {
-  color: $brand-primary !important;
-  background-color: transparent !important;
-  font-weight: 500 !important;
-  border-color: $brand-primary !important;
-}
-
-.button {
-  font: 'ABCFavoritExtended' !important;
-}
-
 .tabs .is-active {
   font-weight: 500 !important;
+}
+
+.dropdown-item.is-active {
+  background-color: $util-gray-03 !important;
 }

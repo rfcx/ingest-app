@@ -53,10 +53,10 @@ function createAuthWindow () {
                 link.href = 'https://fonts.googleapis.com/css?family=Lato:300,400,700'
                 let html = document.getElementsByTagName('html')[0]
                 if (html && ${isDarkMode})
-                { html.style.backgroundColor = '#131525' }
+                { html.style.backgroundColor = '#060508' }
                 let body = document.getElementsByTagName('body')[0]
                 if (body && ${isDarkMode})
-                { body.style.backgroundColor = '#131525'; body.style.setProperty('font-family', "'Lato', sans-serif", 'important') }
+                { body.style.backgroundColor = '#060508'; body.style.setProperty('font-family', "'Lato', sans-serif", 'important') }
                 document.querySelectorAll('input').forEach(el => el.style.setProperty('font-family', "'Lato', sans-serif", 'important'))
                 document.querySelectorAll('h3').forEach(el => el.style.setProperty('font-family', "'Lato', sans-serif", 'important'))
                 document.querySelectorAll('button').forEach(el => el.style.setProperty('font-family', "'Lato', sans-serif", 'important'))`
