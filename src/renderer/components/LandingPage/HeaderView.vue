@@ -133,7 +133,7 @@ export default {
       }
     }
     .faExternal {
-      color: $white-color;
+      color: $pitch;
       font-size: $default-font-size;
     }
 

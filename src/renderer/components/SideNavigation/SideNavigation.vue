@@ -2,7 +2,7 @@
     <aside class="column menu side-menu side-menu-column wrapper" v-infinite-scroll="loadMore" infinite-scroll-distance="10" :infinite-scroll-disabled="isFetching">
     <div class="wrapper__header">
       <div class="wrapper__logo">
-        <router-link to="/"><img src="~@/assets/rfcx-logo.png" alt="rfcx" class="icon-logo"></router-link>
+        <router-link to="/"><img src="~@/assets/arbimon-logo.png" alt="rfcx" class="icon-logo"></router-link>
         <span class="is-size-7">{{ !isProductionEnv() ? 'staging' : '' }}</span>
       </div>
       <div class="wrapper__user-pic" v-click-outside="hide" @click="toggleUserMenu()">
@@ -86,7 +86,7 @@
         userSites: [],
         isFetching: false,
         alertTitle: 'Are you sure you would like to continue?',
-        alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from RFCx Arbimon or Explorer.',
+        alertContent: 'If you log out, you will lose all files and site info you have added to this app. They will not be deleted from Arbimon or Explorer.',
         streams: [],
         fetchStreamsInterval: null
       }
@@ -259,7 +259,7 @@
   .wrapper {
     &__stream-row:hover,
     &__stream-row_active {
-      background-color: #2e3145;
+      background-color: $util-gray-03;
       cursor: pointer;
     }
     &__stream-row {
@@ -453,6 +453,12 @@
       color: $button-hover-color;
       border-color: $button-hover-border-color;
     }
+  }
+  .button.is-small.is-rounded {
+    color: $brand-primary !important;
+    background-color: transparent !important;
+    font-weight: 500 !important;
+    border-color: $brand-primary !important;
   }
   :-ms-input-placeholder {
     color: $input-placeholder;

@@ -218,6 +218,10 @@ export default {
     opacity: 0.65;
   }
 
+  .dropdown-item.is-active {
+    background-color: $util-gray-03;
+  }
+
   .level {
     width: 100%;
   }

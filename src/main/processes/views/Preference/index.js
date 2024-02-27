@@ -13,7 +13,7 @@ export default {
       frame: true,
       transparent: false,
       title: 'SETTINGS',
-      backgroundColor: '#131525',
+      backgroundColor: '#060508',
       titleBarStyle: 'default',
       webPreferences: { nodeIntegration: true }
     })

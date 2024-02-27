@@ -10,7 +10,7 @@ export default {
       width: 1000,
       height: 563,
       minWidth: 400,
-      backgroundColor: '#131525',
+      backgroundColor: '#060508',
       webPreferences: { nodeIntegration: true }
     })
 

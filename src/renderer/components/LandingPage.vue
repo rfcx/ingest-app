@@ -16,7 +16,7 @@
       :title="alertTitle"
       :content="alertContent"
       cancelButtonText="OK"
-      :image="'rfcx-logo.png'"
+      :image="'arbimon-logo.png'"
       :isProcessing="false"
       v-if="isPopupOpened"
       @onCancelPressed="cancel()"/>
@@ -291,12 +291,12 @@
   }
 
   .active {
-    border: 4px solid #131525 !important;
-    background-color: #131525 !important;
+    border: 4px solid #060508 !important;
+    background-color: #060508 !important;
     opacity: 0.8 !important;
   }
   .empty {
-    background-color: #131525 !important;
+    background-color: #060508 !important;
   }
   .state-progress span {
     color: $body-text-color;

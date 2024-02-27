@@ -260,7 +260,10 @@ export default {
 
       .close-modal-btn {
         margin-top: 12px;
-        color: white;
+        color: $brand-primary !important;
+        background-color: transparent !important;
+        font-weight: 500 !important;
+        border-color: $brand-primary !important;
       }
     }
   }

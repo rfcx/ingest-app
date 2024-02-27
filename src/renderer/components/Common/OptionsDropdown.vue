@@ -89,4 +89,10 @@ export default {
   .dropdown-trigger .button.focus {
     border-color: $warning-text-color;
   }
+  .dropdown-trigger > .button {
+    color: $brand-primary !important;
+    background-color: transparent !important;
+    font-weight: 500 !important;
+    border-color: $brand-primary !important;
+  }
 </style>

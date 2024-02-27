@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <img class="wrapper__logo" src="~@/assets/rfcx-logo.png">
+    <img class="wrapper__logo" src="~@/assets/arbimon-logo.png">
     <div class="wrapper__title">Arbimon Uploader</div>
     <div class="wrapper__version" v-if="version">Version {{version}}</div>
     <div class="wrapper__version is-size-7">{{getEnv()}}</div>
@@ -36,7 +36,6 @@
     overflow: hidden !important;
     &__logo {
       margin-top: 10px;
-      width: 35px;
       height: 50px;
     }
     &__title {
