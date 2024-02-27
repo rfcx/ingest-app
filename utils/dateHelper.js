@@ -167,6 +167,14 @@ const getMomentDateFromISODate = (date) => {
   return moment.utc(date, moment.ISO_8601)
 }
 
+const getMomentDateFromISODateNow = (date) => {
+  return moment.utc(moment(), moment.ISO_8601)
+}
+
+const getMomentDateFromISODatePast = (date) => {
+  return moment.utc(moment('1971-01-01 00:00:00.0'), moment.ISO_8601)
+}
+
 const convertMomentDateToAppDate = (date) => {
   return date.format(appDate)
 }
@@ -174,6 +182,8 @@ const convertMomentDateToAppDate = (date) => {
 export default {
   getIsoDateWithFormat,
   getMomentDateFromISODate,
+  getMomentDateFromISODateNow,
+  getMomentDateFromISODatePast,
   getDefaultTimezone,
   getPossibleTimezonesFromLocation,
   tzOffsetMinutesFromTzName,

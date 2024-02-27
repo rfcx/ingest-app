@@ -581,11 +581,15 @@ class FileProvider {
   getState (timestamp, fileExt, sizeInByte) {
     const momentDate = dateHelper.getMomentDateFromISODate(timestamp)
     if (!fileHelper.isSupportedFileExtension(fileExt)) {
-      return { state: ERROR_LOCAL, message: 'File extension is not supported' }
+      return { state: ERROR_LOCAL, message: 'File extension is not supported.' }
     } else if (!momentDate.isValid()) {
-      return { state: ERROR_LOCAL, message: 'Filename does not match with a filename format' }
+      return { state: ERROR_LOCAL, message: 'Filename does not match with a filename format.' }
     } else if (sizeInByte === 0) {
-      return { state: ERROR_LOCAL, message: 'Empty file (0 byte)' }
+      return { state: ERROR_LOCAL, message: 'Empty file (0 byte).' }
+    } else if (momentDate.valueOf() >= dateHelper.getMomentDateFromISODateNow().valueOf()) {
+      return { state: ERROR_LOCAL, message: 'Filename with future date is not permitted.' }
+    } else if (momentDate.valueOf() <= dateHelper.getMomentDateFromISODatePast().valueOf()) {
+      return { state: ERROR_LOCAL, message: 'Filename with date prior to 1971 is not permitted.' }
     } else {
       return { state: PREPARING, message: '' }
     }
