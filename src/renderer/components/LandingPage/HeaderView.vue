@@ -122,6 +122,10 @@ export default {
       position: absolute;
       top: 6px;
       right: $default-padding;
+      color: $brand-primary !important;
+      background-color: transparent !important;
+      font-weight: 500 !important;
+      border: 1px solid $brand-primary !important;
       cursor: pointer;
       span {
         margin-left: 10px;
@@ -133,7 +137,7 @@ export default {
       }
     }
     .faExternal {
-      color: $pitch;
+      color: $frequency;
       font-size: $default-font-size;
     }
 

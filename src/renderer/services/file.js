@@ -362,7 +362,7 @@ class FileProvider {
     const timestamp = fileHelper.getUtcTimestamp(file)
     const songMeterFileInfo = await extractSongMeterFileInfo(file)
     const metadata = songMeterFileInfo.metadata ? {comment: songMeterFileInfo.formattedMetadata, artist: songMeterFileInfo.model} : null
-    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, timestamp, idToken, metadata, (progress) => {
+    return api.uploadFile(this.isProductionEnv(), file.id, file.name, file.path, file.extension, file.streamId, timestamp, file.durationInSecond, file.sizeInByte, idToken, metadata, (progress) => {
       // FIX progress scale when we will start work with google cloud
     }).then((uploadId) => {
       console.info(`[FileService] ⬆ on S3 ${file.name} ${uploadId} ${file.id}`)
@@ -436,6 +436,8 @@ class FileProvider {
           case 32:
             if (failureMessage.includes('is zero')) {
               return this.markFileAsFailed(file, 'Corrupted file')
+            } else if (failureMessage.includes('duration is more than 1 hour') || failureMessage.includes('exceeding our limit')) {
+              return this.markFileAsFailed(file, 'Audio duration is longer than 1 hour. Please split files into shorter durations.')
             } else if (file.retries < 3) {
               return this.markFileAsRetryToUpload(file)
             }

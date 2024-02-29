@@ -34,7 +34,7 @@ const arbimonWebUrl = (isProd, streamId = null) => {
   return baseUrl + query
 }
 
-const uploadFile = async (environment, fileId, fileName, filePath, fileExt, streamId, timestamp, idToken, metadata, progressCallback) => {
+const uploadFile = async (environment, fileId, fileName, filePath, fileExt, streamId, timestamp, duration, fileSize, idToken, metadata, progressCallback) => {
   const now = Date.now()
   const analytics = new Analytics(env.analytics.id)
   console.log(`===> upload file ${fileName}`)
@@ -55,7 +55,7 @@ const uploadFile = async (environment, fileId, fileName, filePath, fileExt, stre
       console.error('error', error)
     }
   }
-  return requestUploadUrl(environment, fileName, uploadFilePath, streamId, timestamp, idToken)
+  return requestUploadUrl(environment, fileName, uploadFilePath, streamId, timestamp, duration, fileSize, idToken)
     .then(async (data) => {
       const getUploadIdTime = Date.now() - now
       const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.getUploadId, 'el': fileName, 'ev': getUploadIdTime }
@@ -91,11 +91,11 @@ const createStream = (env, streamName, latitude, longitude, isPublic, projectId,
 
 // Part 1: Get signed url
 
-const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, idToken) => {
+const requestUploadUrl = (env, originalFilename, filePath, streamId, timestamp, duration, fileSize, idToken) => {
   // Make a request for a user with a given ID
   console.info('[API] requestUploadUrl', originalFilename)
   const sha1 = fileHelper.getCheckSum(filePath)
-  const params = { filename: originalFilename, checksum: sha1, stream: streamId, timestamp: timestamp }
+  const params = { filename: originalFilename, checksum: sha1, stream: streamId, timestamp: timestamp, duration: duration, file_size: fileSize }
   return httpClient.post(apiUrl(env) + '/uploads', params, { headers: { 'Authorization': 'Bearer ' + idToken } })
     .then(response => {
       const url = response.data.url

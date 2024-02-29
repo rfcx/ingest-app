@@ -245,7 +245,4 @@ export default {
   .clearable-input > input::-ms-clear {
     display: none;
   }
-  .help {
-    color: $secondary-text-color;
-  }
 </style>

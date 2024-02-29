@@ -31,6 +31,7 @@ $pitch: #060508;
 // Secondary
 $spoonbill: #FFAFAF;
 $flamingo: #FF6868;
+$ibis: #A31A33;
 $palm: #008059;
 $chirp: #D2FF8A;
 
@@ -60,7 +61,7 @@ $danger-color: $flamingo;
 $edit-icon-color: $util-gray-03;
 $divider-color: $util-gray-02;
 $side-menu-background: $echo;
-$dropdown-background: $pitch;
+$dropdown-background: $moss;
 $title-font-weight: 700;
 $navbar-height: 0rem;
 $default-padding-margin: 0.75em;
@@ -109,10 +110,10 @@ $input-disabled-border-color: $box-color;
 $input-disabled-color: $secondary-text-color;
 
 // -- Dropdown
-$dropdown-content-background-color: $pitch;
+$dropdown-content-background-color: $moss;
 $dropdown-item-color: $body-text-color;
 $dropdown-item-hover-color: $body-text-color;
-$dropdown-item-hover-background-color: $moss;
+$dropdown-item-hover-background-color: $util-gray-03;
 $dropdown-content-shadow: 0 0.5em 1em -0.125em rgba($divider-color, 0.1), 0 0px 0 1px rgba($divider-color, 0.02);
 
 // -- Button
@@ -245,6 +246,16 @@ a.is-button {
   right: calc((100% - 200px) / 2);
   transform: translate(50%, 0%);
   z-index: 1000;
+}
+
+.help.is-warning,
+.is-warning {
+  color: $spoonbill;
+}
+
+.is-warning.input {
+  border-color: $ibis;
+  color: $insight;
 }
 
 .default-notice {
