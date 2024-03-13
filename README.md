@@ -1,6 +1,6 @@
 # Arbimon Uploader (previously RFCx Ingest App)
 
-> Desktop application for ingesting audio to RFCx platform
+> Desktop application for ingesting audio to Arbimon
 
 - 🖥 Built with [electron-vue](https://github.com/SimulatedGREG/electron-vue)
 - 🗂 Managed states and reactive data with [vuex-orm](https://github.com/vuex-orm/vuex-orm)

@@ -6,8 +6,8 @@
   ],
   "eslint.enable": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
+    "source.fixAll.eslint": "explicit"
+},
   "vetur.format.defaultFormatter.js": "prettier-eslint",
   "vetur.format.enable": false,
 }

@@ -1,9 +1,19 @@
+<a name="1.5.7"></a>
+## 1.5.7 (2024-03-15)
+
+### Improvements
+
+* Update color theme
+* Ability to select zero coordinates site to upload the recordings
+
 <a name="1.5.6"></a>
-## 1.5.6 (2024-02-19)
+## 1.5.6 (2024-03-08)
 
 ### Improvements
 
 * Update color theme & logo
+* Prevent users from uploading files with past and future timestamps
+* Prevent users from uploading big files
 
 <a name="1.5.5"></a>
 ## 1.5.5 (2023-04-12)
