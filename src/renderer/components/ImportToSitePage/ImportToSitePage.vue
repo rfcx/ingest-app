@@ -229,7 +229,7 @@ export default {
       return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject !== null)
     },
     hasPassedValidation () {
-      return this.form.selectedSiteName && this.selectedCoordinates && this.selectedCoordinates.length > 1 && this.hasPassProjectValidation
+      return this.form.selectedSiteName && this.hasPassProjectValidation
     },
     selectedCoordinates () {
       if (typeof this.form.selectedLatitude !== 'number' || typeof this.form.selectedLongitude !== 'number') {
