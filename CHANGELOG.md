@@ -5,6 +5,8 @@
 
 * Update color theme
 * Ability to select zero coordinates site to upload the recordings
+* Ability to create a new site with zero coordinates
+* The super user has permissions to create site
 
 <a name="1.5.6"></a>
 ## 1.5.6 (2024-03-08)

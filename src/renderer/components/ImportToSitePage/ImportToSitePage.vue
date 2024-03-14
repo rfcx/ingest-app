@@ -348,8 +348,8 @@ export default {
       }
       const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
       const name = this.form.selectedSiteName
-      const latitude = this.form.selectedLatitude
-      const longitude = this.form.selectedLongitude
+      const latitude = this.form.selectedLatitude ? this.form.selectedLatitude : null
+      const longitude = this.form.selectedLongitude ? this.form.selectedLongitude : null
       const projectId = this.selectedProject.id
       const isPublic = false
       const env = settings.get('settings.production_env')
@@ -380,8 +380,8 @@ export default {
         this.isCreatingNewSite = false
         this.form.selectedProjectName = this.selectedExistingSite.project
         this.form.selectedSiteName = this.selectedExistingSite.name
-        this.form.selectedLatitude = this.selectedExistingSite.latitude
-        this.form.selectedLongitude = this.selectedExistingSite.longitude
+        this.form.selectedLatitude = this.selectedExistingSite.latitude ? this.selectedExistingSite.latitude : null
+        this.form.selectedLongitude = this.selectedExistingSite.longitude ? this.selectedExistingSite.longitude : null
       } else {
         this.isCreatingNewSite = true
         this.form.selectedProjectName = ''
