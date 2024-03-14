@@ -393,8 +393,8 @@ export default {
     },
     onUpdateLocation (coordinates) {
       console.info('onUpdateLocation', coordinates)
-      this.form.selectedLongitude = coordinates[0]
-      this.form.selectedLatitude = coordinates[1]
+      this.form.selectedLongitude = coordinates[0] === null ? 0 : coordinates[0]
+      this.form.selectedLatitude = coordinates[1] === null ? 0 : coordinates[1]
     },
     onSelectedSite (site) {
       // update site name in the form
