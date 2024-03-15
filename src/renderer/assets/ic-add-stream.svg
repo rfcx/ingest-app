@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
     <g fill="none" fill-rule="evenodd">
-        <path fill="#2FB04A" d="M4 0h12c2.21 0 4 1.79 4 4v12c0 2.21-1.79 4-4 4H4c-2.21 0-4-1.79-4-4V4c0-2.21 1.79-4 4-4z"/>
+        <path fill="#ADFF2C" d="M4 0h12c2.21 0 4 1.79 4 4v12c0 2.21-1.79 4-4 4H4c-2.21 0-4-1.79-4-4V4c0-2.21 1.79-4 4-4z"/>
         <text fill="#FFF" font-family="Avenir-Heavy, Avenir" font-size="14" font-weight="600" letter-spacing="-.261">
             <tspan x="5.469" y="14">+</tspan>
         </text>

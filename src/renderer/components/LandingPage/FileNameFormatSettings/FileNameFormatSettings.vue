@@ -63,8 +63,8 @@
       </div>
     </section>
     <footer class="modal-card-foot">
-      <button class="button is-rounded" @click="closeModal()">Cancel</button>
-      <button class="button is-rounded is-success" @click="save()" :disabled="isEmpty">Apply</button>
+      <button class="button is-rounded is-cancel " @click="closeModal()">Cancel</button>
+      <button class="button is-rounded is-primary" @click="save()" :disabled="isEmpty">Apply</button>
     </footer>
   </div>
 </template>

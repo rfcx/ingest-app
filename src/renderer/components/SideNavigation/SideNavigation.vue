@@ -364,6 +364,11 @@
     }
     &__stream-icon {
       display: flex;
+      width: 24px;
+      justify-content: center;
+      img {
+        max-width: 24px;
+      }
     }
     &__loader {
       display: inline-block;
