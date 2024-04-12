@@ -15,7 +15,7 @@ import fileState from '../../../utils/fileState'
 import ipcRendererSend from './ipc'
 import SongMeterFileInfo from './SongMeterFileInfo'
 
-const { PREPARING, ERROR_LOCAL, ERROR_SERVER, WAITING, PROCESSING, COMPLETED } = fileState.state
+const { PREPARING, ERROR_LOCAL, ERROR_SERVER, WAITING, PROCESSING, CONVERTING, COMPLETED } = fileState.state
 
 const FORMAT_AUTO_DETECT = FileFormat.fileFormat.AUTO_DETECT
 const analytics = new Analytics(env.analytics.id)
@@ -359,6 +359,12 @@ class FileProvider {
     if (!fileHelper.isExist(file.path)) {
       return Promise.reject(new Error('File does not exist'))
     }
+    // Update the status of uploading file straightaway after putting this file in the queue to prevent a duplicate upload -
+    // rfcx/arbimon-uploader/issues/217
+    await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+      id: file.id,
+      params: { state: CONVERTING, uploaded: false }
+    })
     const timestamp = fileHelper.getUtcTimestamp(file)
     const songMeterFileInfo = await extractSongMeterFileInfo(file)
     const metadata = songMeterFileInfo.metadata ? {comment: songMeterFileInfo.formattedMetadata, artist: songMeterFileInfo.model} : null
