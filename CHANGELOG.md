@@ -1,3 +1,11 @@
+<a name="1.5.8"></a>
+## 1.5.8 (2024-04-12)
+
+### Improvements
+
+* Fix the problem with duplicate uploading the same file
+* Rebuild the drivelist to support Windows auto-update
+
 <a name="1.5.7"></a>
 ## 1.5.7 (2024-03-15)
 
