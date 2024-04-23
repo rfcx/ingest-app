@@ -357,7 +357,15 @@ class FileProvider {
   async uploadFile (file, idToken) {
     console.info('[FileService] ⬆ uploading...', file.id)
     if (!fileHelper.isExist(file.path)) {
+      console.info('[FileService] ⬆ File does not exist in the folder', file.id)
       return Promise.reject(new Error('File does not exist'))
+    }
+    if (file.uploadId) {
+      console.info('[FileService] ⬆ File has uploadId', file.id, file.uploadId)
+      return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+        id: file.id,
+        params: { uploaded: true, uploadedTime: Date.now(), state: PROCESSING, stateMessage: '' }
+      })
     }
     // Update the status of uploading file straightaway after putting this file in the queue to prevent a duplicate upload -
     // rfcx/arbimon-uploader/issues/217
@@ -421,6 +429,10 @@ class FileProvider {
         const currentStateOfFile = file.state
         switch (status) {
           case 0:
+            // return ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+            //   id: file.id,
+            //   params: { state: UPLOADING }
+            // })
             if (isSuspended) {
               // If the app suspends/loses internet connection the uploading file changes the status to waiting
               return this.markFileAsSuspend(file)

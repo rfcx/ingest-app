@@ -97,11 +97,11 @@
         this.isCheckingStatus = true
         let listener = async (event, idToken) => {
           this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
+          // Get UPLOADING, PROCESSING files to check the ingest status
           const files = await this.getUploadedFiles()
           for (let file of files) {
             try {
               await this.$file.checkStatus(file, idToken, false)
-              // TODO: what happen if the ingest service never ingest/change the status
             } catch (e) {
               console.error('[QueueJobToCheckStatus] failed', e)
             }
@@ -131,6 +131,7 @@
         this.queueJobToCheckStatus()
       },
       checkAfterSuspended () {
+        // Get UPLOADING, CONVERTING files to check the ingest status
         return this.getSuspendedFiles()
           .then((files) => {
             if (files.length) {
@@ -138,9 +139,13 @@
               let listener = (event, arg) => {
                 this.$electron.ipcRenderer.removeListener('sendIdToken', listener)
                 let idToken = arg
-                return files.forEach(file => {
-                  return this.$file.checkStatus(file, idToken, true)
-                })
+                for (let file of files) {
+                  try {
+                    this.$file.checkStatus(file, idToken, true)
+                  } catch (e) {
+                    console.error('[checkAfterSuspended] failed', e)
+                  }
+                }
               }
               this.$electron.ipcRenderer.send('getIdToken')
               this.$electron.ipcRenderer.on('sendIdToken', listener)
