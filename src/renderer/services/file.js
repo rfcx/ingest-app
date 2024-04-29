@@ -411,6 +411,10 @@ class FileProvider {
       if (['write EPIPE', 'read ECONNRESET', 'Network Error', 'ETIMEDOUT', '400'].includes(error.message)) {
         return this.markFileAsFailed(file, 'Network Error')
       }
+      // error after auto retry
+      if (error.message.includes('Future date')) {
+        return this.markFileAsFailed(file, 'Filename with future date is not permitted.')
+      }
       // default
       return this.markFileAsFailed(file, 'Server failed with processing your file. Please try again later.')
     })
@@ -606,8 +610,6 @@ class FileProvider {
       return { state: ERROR_LOCAL, message: 'Filename does not match with a filename format.' }
     } else if (sizeInByte === 0) {
       return { state: ERROR_LOCAL, message: 'Empty file (0 byte).' }
-    } else if (momentDate.valueOf() >= dateHelper.getMomentDateFromISODateNow().valueOf()) {
-      return { state: ERROR_LOCAL, message: 'Filename with future date is not permitted.' }
     } else if (momentDate.valueOf() <= dateHelper.getMomentDateFromISODatePast().valueOf()) {
       return { state: ERROR_LOCAL, message: 'Filename with date prior to 1971 is not permitted.' }
     } else {

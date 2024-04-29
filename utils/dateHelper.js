@@ -167,8 +167,8 @@ const getMomentDateFromISODate = (date) => {
   return moment.utc(date, moment.ISO_8601)
 }
 
-const getMomentDateFromISODateNow = (date) => {
-  return moment.utc(moment(), moment.ISO_8601)
+const getMomentDateFromISODateNow = () => {
+  return moment.utc(moment().format('YYYY-MM-DD HH:mm:ss'), moment.ISO_8601)
 }
 
 const getMomentDateFromISODatePast = (date) => {

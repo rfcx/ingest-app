@@ -1,4 +1,11 @@
 <a name="1.5.8"></a>
+## 1.5.9 (2024-04-26)
+
+### Improvements
+
+* Improve logic for the filename with future date
+
+<a name="1.5.8"></a>
 ## 1.5.8 (2024-04-12)
 
 ### Improvements

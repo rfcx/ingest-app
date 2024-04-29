@@ -186,9 +186,9 @@ function createBackButton () {
   let btn = document.createElement('button')
   body.appendChild(btn)
   btn.innerHTML = 'Back'
-  btn.style.position = 'absolute'; btn.style.top = '20%'; btn.style.left = '10px'
+  btn.style.position = 'absolute'; btn.style.top = '20%'; btn.style.left = '10px'; btn.style.color = '#14130D';  btn.style.borderColor = '#14130D';
   btn.style.fontSize = '16px'; btn.style.padding = '3px 10px'; btn.style.borderRadius = '3px';
-  btn.style.cursor = 'pointer'; btn.style.zIndex = '1000'
+  btn.style.cursor = 'pointer'; btn.style.zIndex = '1000'; btn.style.fontWeight = '500'
   btn.onclick = function() {
   body.removeChild(btn)
   location.href = "${getUrl()}" }

@@ -6,7 +6,7 @@
         <div class="error-message">{{ content }}</div>
       </section>
       <footer class="modal-card-foot">
-        <button class="button is-rounded" @click.prevent="cancelButtonPressed()">{{ buttonText }}</button>
+        <button class="button is-rounded is-cancel" @click.prevent="cancelButtonPressed()">{{ buttonText }}</button>
       </footer>
     </div>
   </div>

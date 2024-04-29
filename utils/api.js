@@ -29,8 +29,8 @@ const explorerWebUrl = (isProd, streamId = null) => {
 }
 
 const arbimonWebUrl = (isProd, streamId = null) => {
-  let baseUrl = isProd ? env.arbimonUrl : env.staging.arbimonUrl
-  let query = streamId ? `/site/${streamId}` : ''
+  const baseUrl = isProd ? env.arbimonUrl : env.staging.arbimonUrl
+  const query = '/my-projects'
   return baseUrl + query
 }
 

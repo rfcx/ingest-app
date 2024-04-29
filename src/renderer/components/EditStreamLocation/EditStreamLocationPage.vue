@@ -38,7 +38,7 @@
           <p class="modal-card-title">Are you sure you want to delete this site?</p>
         </div>
         <footer class="modal-card-foot">
-          <button class="button is-rounded" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
+          <button class="button is-rounded is-cancel" @click="hideConfirmToDeleteStreamModal()">Cancel</button>
           <button class="button is-danger is-rounded" :class="{ 'is-loading': isDeleting }" @click.prevent="deleteStream()">Delete</button>
         </footer>
       </div>
