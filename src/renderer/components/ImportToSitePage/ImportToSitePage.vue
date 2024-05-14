@@ -229,7 +229,7 @@ export default {
       return !this.shouldShowProjectSelector || (this.shouldShowProjectSelector && this.selectedProject !== null)
     },
     hasPassedValidation () {
-      return this.form.selectedSiteName && this.hasPassProjectValidation
+      return this.form.selectedSiteName && this.selectedCoordinates && this.selectedCoordinates.length > 1 && this.hasPassProjectValidation
     },
     selectedCoordinates () {
       if (typeof this.form.selectedLatitude !== 'number' || typeof this.form.selectedLongitude !== 'number') {
@@ -348,8 +348,8 @@ export default {
       }
       const idToken = await ipcRendererSend('getIdToken', `sendIdToken`)
       const name = this.form.selectedSiteName
-      const latitude = this.form.selectedLatitude ? this.form.selectedLatitude : null
-      const longitude = this.form.selectedLongitude ? this.form.selectedLongitude : null
+      const latitude = this.form.selectedLatitude
+      const longitude = this.form.selectedLongitude
       const projectId = this.selectedProject.id
       const isPublic = false
       const env = settings.get('settings.production_env')
@@ -380,8 +380,8 @@ export default {
         this.isCreatingNewSite = false
         this.form.selectedProjectName = this.selectedExistingSite.project
         this.form.selectedSiteName = this.selectedExistingSite.name
-        this.form.selectedLatitude = this.selectedExistingSite.latitude ? this.selectedExistingSite.latitude : null
-        this.form.selectedLongitude = this.selectedExistingSite.longitude ? this.selectedExistingSite.longitude : null
+        this.form.selectedLatitude = this.selectedExistingSite.latitude
+        this.form.selectedLongitude = this.selectedExistingSite.longitude
       } else {
         this.isCreatingNewSite = true
         this.form.selectedProjectName = ''
@@ -393,8 +393,8 @@ export default {
     },
     onUpdateLocation (coordinates) {
       console.info('onUpdateLocation', coordinates)
-      this.form.selectedLongitude = coordinates[0] === null ? 0 : coordinates[0]
-      this.form.selectedLatitude = coordinates[1] === null ? 0 : coordinates[1]
+      this.form.selectedLongitude = coordinates[0]
+      this.form.selectedLatitude = coordinates[1]
     },
     onSelectedSite (site) {
       // update site name in the form

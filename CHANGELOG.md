@@ -1,4 +1,11 @@
-<a name="1.5.8"></a>
+<a name="1.5.10"></a>
+## 1.5.10 (2024-05-15)
+
+### Improvements
+
+* Make location required to create a new site
+
+<a name="1.5.9"></a>
 ## 1.5.9 (2024-04-26)
 
 ### Improvements
