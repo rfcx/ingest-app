@@ -55,6 +55,7 @@ import ConfirmAlert from '../../Common/ConfirmAlert'
 import ErrorAlert from '../../Common/ErrorAlert'
 import ipcRendererSend from '../../../services/ipc'
 import dateHelper from '../../../../../utils/dateHelper'
+import fileHelper from '../../../../../utils/fileHelper'
 
 const { PREPARING, WAITING } = fileState.state
 
@@ -126,6 +127,9 @@ export default {
         this.queueToUpload()
       }
     },
+    getWaitingFilesForSelectedStream () {
+      return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { status: WAITING, streamId: this.selectedStreamId } })
+    },
     async queueToUpload () {
       this.shouldFocusTimezoneInput = false
       this.didClickStart = false
@@ -143,11 +147,30 @@ export default {
 
       const streamId = this.selectedStreamId
       const query = { streamId, state: PREPARING }
-      const timezone = await this.getSelectedTimezoneValue(this.selectedTimezone)
-      await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
+      let timezone = await this.getSelectedTimezoneValue(this.selectedTimezone)
+      let bulkUpdateParams = {
         where: query,
-        values: { state: WAITING, stateMessage: null, sessionId, timezone }
-      })
+        values: { state: WAITING, stateMessage: null, sessionId }
+      }
+      if (this.selectedTimezone === FileTimeZoneHelper.fileTimezone.USE_FILENAME) {
+        await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, bulkUpdateParams)
+        const files = await this.getWaitingFilesForSelectedStream()
+        for (let file of files) {
+          try {
+            timezone = await fileHelper.getFileTimezoneOffsetFromName(file.name)
+            await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
+              id: file.id,
+              params: { timezone }
+            })
+          } catch (e) {
+            console.error('[queueToUpload] getFileTimezoneFromName failed', e)
+          }
+        }
+      } else {
+        bulkUpdateParams.timezone = timezone
+        await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, bulkUpdateParams)
+      }
+      console.info('[queueToUpload] selected timezone', timezone)
       this.isQueuingToUpload = false
 
       // set selected tab to be queue tab
@@ -174,6 +197,7 @@ export default {
         })
         if (files.length <= 0) return resolve(null)
         const fileInfo = await this.$file.getDeviceInfo(files[0].path)
+        console.info('<- deviceTimezoneOffset: fileInfo', fileInfo)
         return resolve(fileInfo.timezoneOffset)
       })
     },

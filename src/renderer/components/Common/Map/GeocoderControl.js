@@ -98,6 +98,10 @@ export default {
     localGeocoderOnly: {
       type: Boolean,
       default: false
+    },
+    reverseGeocode: {
+      type: Boolean,
+      default: false
     }
   },
 

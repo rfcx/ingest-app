@@ -1,9 +1,13 @@
 <a name="1.5.10"></a>
-## 1.5.10 (2024-05-15)
+## 1.5.10 (2024-05-23)
 
 ### Improvements
 
 * Make location required to create a new site
+* Show Validation errors
+* Investigate `Cannot create source file with provided data` issue
+* Add `Timezone in filename` to the list of timezones
+* Do not include files with date prior to 1971 to get device info
 
 <a name="1.5.9"></a>
 ## 1.5.9 (2024-04-26)

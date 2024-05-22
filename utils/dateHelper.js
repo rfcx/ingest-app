@@ -11,6 +11,10 @@ const getIsoDateWithFormat = (format, fileName) => {
   }
 }
 
+const getYear = (fileName) => {
+  return moment(parseTimestampAuto(fileName), appDate).year()
+}
+
 const formatIso = (obj) => {
   if (obj.year && obj.year.length === 2) {
     obj.year = '20' + obj.year
@@ -181,6 +185,7 @@ const convertMomentDateToAppDate = (date) => {
 
 export default {
   getIsoDateWithFormat,
+  getYear,
   getMomentDateFromISODate,
   getMomentDateFromISODateNow,
   getMomentDateFromISODatePast,

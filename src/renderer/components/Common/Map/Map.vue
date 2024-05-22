@@ -17,6 +17,7 @@
       placeholder="search by latitude, longitude"
       position="bottom-right"
       types="country,region,postcode,district,place,locality,neighborhood"
+      @clear="onClear"
       @result="onSelected"
       v-if="!isReadOnly"
     />
@@ -32,7 +33,7 @@
 
 <script>
 import Mapbox from 'mapbox-gl'
-import { MglMap, MglMarker, MglNavigationControl } from 'vue-mapbox'
+import { MglMap, MglMarker, MglGeolocateControl, MglNavigationControl } from 'vue-mapbox'
 import GeocoderControl from '../Map/GeocoderControl'
 import ReadOnlyGeoCoderControl from '../Map/ReadOnlyGeocoderControl'
 import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css'
@@ -51,11 +52,14 @@ export default {
       isDraggable: false
     }
   },
-  components: { MglMap, GeocoderControl, MglMarker, MglNavigationControl, ReadOnlyGeoCoderControl },
+  components: { MglMap, GeocoderControl, MglMarker, MglGeolocateControl, MglNavigationControl, ReadOnlyGeoCoderControl },
   props: ['title', 'initialCoordinates', 'isReadOnly'],
   methods: {
     getMarkerTitle () {
       return this.title ? this.title : 'marker'
+    },
+    onClear (event) {
+      this.selectedCoordinates = [null, null]
     },
     onSelected (event) {
       this.selectedCoordinates = event.result.center

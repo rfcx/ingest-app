@@ -392,13 +392,16 @@ class FileProvider {
       }
 
       // should not retry
-      const shouldNotAutoRetry = ['Invalid.', 'Request body larger than maxBodyLength limit'].includes(error.message) || ['ForbiddenError'].includes(error.name)
+      const shouldNotAutoRetry = ['Invalid.', 'Request body larger than maxBodyLength limit'].includes(error.message) || ['ForbiddenError'].includes(error.name) || error.message.includes('Future date') || error.message.includes('Validation errors')
       if (shouldNotAutoRetry) {
         if (error.message === 'Invalid.') { // (same site, same file data, different filename)
           return this.markFileAsFailed(file, 'Duplicate file. Matching sha1 signature already ingested.')
         }
         if (error.message === 'Request body larger than maxBodyLength limit') {
           return this.markFileAsFailed(file, 'File size exceeded. Maximum file size is 200 MB')
+        }
+        if (error.message.includes('Future date')) {
+          return this.markFileAsFailed(file, 'Filename with future date is not permitted.')
         }
         return this.markFileAsFailed(file, error.message)
       }
@@ -410,10 +413,6 @@ class FileProvider {
       // error after auto retry
       if (['write EPIPE', 'read ECONNRESET', 'Network Error', 'ETIMEDOUT', '400'].includes(error.message)) {
         return this.markFileAsFailed(file, 'Network Error')
-      }
-      // error after auto retry
-      if (error.message.includes('Future date')) {
-        return this.markFileAsFailed(file, 'Filename with future date is not permitted.')
       }
       // default
       return this.markFileAsFailed(file, 'Server failed with processing your file. Please try again later.')
@@ -428,7 +427,7 @@ class FileProvider {
       .then(async (data) => {
         const status = data.status
         const failureMessage = data.failureMessage
-        console.log(`===> ${file.name} ${file.uploadId} - Ingest status = ${status}`)
+        console.log(`[FileService] checkStatus ===> ${file.name} ${file.uploadId} - Ingest status = ${status}`)
         // const currentStateOfFile = File.find(file.id).state
         const currentStateOfFile = file.state
         switch (status) {
@@ -454,6 +453,11 @@ class FileProvider {
             const analyticsEventObj = { 'ec': env.analytics.category.time, 'ea': env.analytics.action.ingest, 'el': `${file.name}/${file.uploadId}`, 'ev': uploadTime }
             await analytics.send('event', analyticsEventObj)
             return this.markFileAsCompleted(file)
+          case 31:
+            if (failureMessage.includes('Cannot create source file with provided data')) {
+              return this.markFileAsFailed(file, 'Duplicate.')
+            }
+            return this.markFileAsFailed(file, failureMessage)
           case 30:
           case 32:
             if (failureMessage.includes('is zero')) {
@@ -539,7 +543,7 @@ class FileProvider {
     if (!files || files.length < 0) { return null }
     // First wav file with duration
     for (let file of files) {
-      if (fileHelper.getExtension(file.path) === 'wav' && await fileHelper.getFileDuration(file.path).catch(() => false)) {
+      if (dateHelper.getYear(file.name) > 1971 && fileHelper.getExtension(file.path) === 'wav' && fileHelper.getExtension(file.path) === 'wav' && await fileHelper.getFileDuration(file.path).catch(() => false)) {
         return this.getDeviceInfo(file)
       }
     }
