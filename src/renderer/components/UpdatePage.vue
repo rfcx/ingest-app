@@ -10,7 +10,7 @@
         <vue-markdown v-if="notes">{{notes}}</vue-markdown>
       </div>
       <div class="wrapper__controls">
-        <button class="button is-rounded btn-edit-cancel btn" @click="cancel()">{{ platform === 'mac' ? 'Cancel' : 'Install on quit' }}</button>
+        <button class="button is-rounded is-cancel btn" @click="cancel()">{{ platform === 'mac' ? 'Cancel' : 'Install on quit' }}</button>
         <button class="button is-rounded is-primary btn" :class="{ 'is-loading': isLoading }" :disabled="!newVersion" @click="update()">Update now</button>
       </div>
     </div>

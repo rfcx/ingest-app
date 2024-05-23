@@ -26,14 +26,14 @@ async function getIdToken () {
 
 function getAuthenticationURL () {
   return (
-    `https://${auth0Domain}/authorize?audience=${apiIdentifier}&scope=openid email profile offline_access&response_type=code&` +
-    `client_id=${clientId}&redirect_uri=${redirectUri}`
+    `https://${auth0Domain}/authorize?audience=${apiIdentifier}&scope=openid%20email%20profile%20offline_access` +
+    `&response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&theme=dark`
   )
 }
 
 function getLogoutURL () {
   return (
-    `https://${auth0Domain}/v2/logout?federated`
+    `https://${auth0Domain}/v2/logout?federated&client_id=${clientId}`
   )
 }
 

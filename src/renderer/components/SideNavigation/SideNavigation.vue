@@ -397,6 +397,7 @@
     background-repeat: no-repeat;
     background-position: center center;
     background-size: 100% 100%;
+    background-color: $util-gray-04
   }
   .menu-container {
     display: flex;

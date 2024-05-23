@@ -44,11 +44,14 @@ export default {
     let version = isDevelopment ? `${process.env.npm_package_version}` : app.getVersion()
     let updaterFeedURL = (isDevelopment ? 'https://localhost:3030/update/' : (settings.get('settings.production_env') ? 'https://ingest.rfcx.org/update/' : 'https://staging-ingest.rfcx.org/update/')) + platform + '/' + version
     try {
+      console.info('[Update] updaterFeedURL', updaterFeedURL)
       autoUpdater.setFeedURL(updaterFeedURL)
       autoUpdater.on('error', message => {
         console.error('[Update] There was a problem updating the application', message)
       })
-      autoUpdater.on('checking-for-update', () => console.log('[Update] checking-for-update'))
+      autoUpdater.on('checking-for-update', () => {
+        console.log('[Update] checking-for-update', autoUpdater.getFeedURL())
+      })
       autoUpdater.on('update-available', () => { console.log('[Update] update-available') })
       autoUpdater.on('update-not-available', () => {
         console.info('[Update] update-not-available')
