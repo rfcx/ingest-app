@@ -20,11 +20,11 @@ export default {
   },
   computed: {
     selectedIcon () {
-      const path = this.type === 'AudioMoth' ? 'ic-audiomoth-white' : this.type === 'Song Meter' ? 'ic-songmeter-light' : 'ic-audiomoth-white'
+      const path = this.type === 'AudioMoth' ? 'ic-audiomoth-white' : this.type === 'Song Meter' ? 'ic-songmeter-light' : 'ic-frontier-labs-white'
       return require(`../../../assets/${path}.png`)
     },
     unselectedIcon () {
-      const path = this.type === 'AudioMoth' ? 'ic-audiomoth-gray' : this.type === 'Song Meter' ? 'ic-songmeter-gray' : 'ic-audiomoth-gray'
+      const path = this.type === 'AudioMoth' ? 'ic-audiomoth-gray' : this.type === 'Song Meter' ? 'ic-songmeter-gray' : 'ic-frontier-labs-gray'
       return require(`../../../assets/${path}.png`)
     }
   }
