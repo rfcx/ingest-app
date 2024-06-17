@@ -563,6 +563,13 @@ class FileProvider {
       if (songMeterFileInfo.metadata) {
         return { deviceId: songMeterFileInfo.deviceId, deploymentId: songMeterFileInfo.deployment, timezoneOffset: songMeterFileInfo.timezoneOffset, recorderType: 'Song Meter' }
       }
+
+      // find frontier lab file
+      const fileTimezone = await fileHelper.getFileTimezoneOffsetFromName(file.name)
+      if (fileTimezone !== 0) {
+        return { deviceId: '-1', deploymentId: null, timezoneOffset: fileTimezone, recorderType: 'FRONTIER LABS' }
+      }
+
       // return null if there is no metadata
       return null
     } catch (e) {
