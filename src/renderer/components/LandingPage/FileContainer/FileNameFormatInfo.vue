@@ -11,7 +11,7 @@
         @onSelectSpecialOption="openFileNameFormatSettingModal">
       </options-dropdown>
       <options-dropdown 
-        title="Filename Timezone" 
+        title="Timezone source" 
         :options="fileNameTimezoneOptions"
         :isLoading="isUpdatingFilenameFormat"
         :selectedOptionText="selectedTimezone"
@@ -110,7 +110,7 @@ export default {
       const audiomoth = Number.isInteger(this.timezonePreference.audiomothConfig) ? `${FileTimeZoneHelper.fileTimezone.USE_DEVICE_CONFIG} (${dateHelper.formattedTzOffsetFromTzMinutes(this.timezonePreference.audiomothConfig)})` : ''
       return {
         title: `Upload audio in ${this.selectedTimezone}?`,
-        message: `The filename timezone you chose <b>${timezone}</b> is different from <b>${audiomoth}</b>`,
+        message: `The timezone source you chose <b>${timezone}</b> is different from <b>${audiomoth}</b>`,
         confirmTitle: `Upload anyway`,
         cancelTitle: `Recheck`
       }
