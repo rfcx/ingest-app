@@ -332,9 +332,13 @@ export default {
 
       // set default timezone settings
       const timezoneObject = {}
-      timezoneObject[siteId] = Number.isInteger(deploymentInfo.timezone)
-        ? FileTimezoneHelper.fileTimezone.USE_DEVICE_CONFIG
-        : FileTimezoneHelper.fileTimezone.LOCAL_TIME
+      if (this.props.recorderType === 'FRONTIER LABS') {
+        timezoneObject[siteId] = FileTimezoneHelper.fileTimezone.USE_FILENAME
+      } else if (this.props.recorderType === 'Song Meter' || this.props.recorderType === 'AudioMoth') {
+        timezoneObject[siteId] = FileTimezoneHelper.fileTimezone.USE_DEVICE_CONFIG
+      } else {
+        timezoneObject[siteId] = FileTimezoneHelper.fileTimezone.LOCAL_TIME
+      }
       await this.$store.dispatch('setSelectedTimezone', timezoneObject)
 
       // set selected stream id

@@ -238,7 +238,7 @@ export default {
     },
     async onTimezoneSave (timezone) {
       if (timezone === FileTimeZoneHelper.fileTimezone.USE_DEVICE_CONFIG && this.deviceTimezoneOffset === null) {
-        this.errorMessage = 'No device configuration found'
+        this.errorMessage = 'No timezone in metadata found'
       } else {
         this.selectedTimezone = timezone
       }
