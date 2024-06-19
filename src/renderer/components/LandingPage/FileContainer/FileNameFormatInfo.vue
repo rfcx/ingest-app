@@ -92,7 +92,7 @@ export default {
       return !this.fileNameFormatOptions.includes(this.selectedStream.timestampFormat)
     },
     fileNameTimezoneOptions () {
-      return FileTimeZoneHelper.getTimezoneOptions(this.selectedStream.timezone)
+      return FileTimeZoneHelper.getTimezoneOptions(this.selectedStream.timezone).map(item => item === 'Ignore file, use site timezone' ? item + ` (${dateHelper.formattedTzOffsetFromTimezoneName(this.selectedStream.timezone)})` : item)
     },
     timezonePreference () {
       const savedSelectedTimezone = this.$store.getters.getSelectedTimezoneByStreamId(this.selectedStreamId)
