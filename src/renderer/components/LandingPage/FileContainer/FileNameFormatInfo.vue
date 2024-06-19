@@ -11,7 +11,7 @@
         @onSelectSpecialOption="openFileNameFormatSettingModal">
       </options-dropdown>
       <options-dropdown 
-        title="Timezone source" 
+        title="Timezone source"
         :options="fileNameTimezoneOptions"
         :isLoading="isUpdatingFilenameFormat"
         :selectedOptionText="selectedTimezone"

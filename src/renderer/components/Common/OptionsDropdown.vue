@@ -15,7 +15,7 @@
           <a href="#" class="dropdown-item"
             v-for="option in options"
             :key="option"
-            :class="{'is-active': isSelectedOption(option, selectedOptionText)}"
+            :class="{'is-active': isSelectedOption(option, selectedOptionText), 'is-disabled': isDisableOption(option, selectedOptionText) }"
             @click="onSelectOption(option)">
             {{ option }}
           </a>
@@ -53,6 +53,13 @@ export default {
   methods: {
     isSelectedOption (option, selectedOptionText) {
       return selectedOptionText.includes(option)
+    },
+    isDisableOption (option, selectedOptionText) {
+      if (selectedOptionText.includes('Ignore file, use site timezone')) {
+        return false
+      } else {
+        return !selectedOptionText.includes(option)
+      }
     },
     onClick () {
       this.show = !this.show
@@ -94,5 +101,9 @@ export default {
     background-color: transparent !important;
     font-weight: 500 !important;
     border-color: $brand-primary !important;
+  }
+  .dropdown-item.is-disabled {
+    pointer-events: none;
+    opacity: 0.65;
   }
 </style>
