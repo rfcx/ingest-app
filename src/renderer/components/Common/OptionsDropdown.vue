@@ -1,7 +1,10 @@
 <template>
   <div class="dropdown-wrapper">
-    <span class="wrapper__title">{{title}}</span>
-    <div class="dropdown" :class="{'is-active': show}">
+    <div class="wrapper__title" style="display:inline">
+      <span>{{title}}</span>
+      <img v-if="title === 'Timezone source'" src="~@/assets/ic-info.svg">
+    </div>
+    <div class="dropdown" :class="{'is-active': show}" style="display:block">
       <div class="dropdown-trigger">
         <button class="button" :class="{'is-loading': isLoading, 'focus': isFocus}" aria-haspopup="true" aria-controls="dropdown-menu" @click="onClick" v-click-outside="onClickOutside">
           <span>{{ selectedOptionText }}</span>
@@ -87,6 +90,12 @@ export default {
       font-weight: $title-font-weight;
       color: $secondary-text-color;
       display: block;
+      img {
+        height: 1.25em;
+      }
+      span {
+        margin-left: 0.25em;
+      }
     }
   }
   .dropdown {
