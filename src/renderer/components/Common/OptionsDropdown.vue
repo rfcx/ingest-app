@@ -1,8 +1,14 @@
 <template>
   <div class="dropdown-wrapper">
-    <div class="wrapper__title" style="display:inline">
+    <div class="wrapper__title" style="display:flex">
       <span>{{title}}</span>
-      <img v-if="title === 'Timezone source'" src="~@/assets/ic-info.svg">
+      <img v-if="title === 'Timezone source'" src="~@/assets/ic-info.svg" class="popover-trigger" @click="togglePopover('info-popover')">
+      <div v-if="title === 'Timezone source'" id="info-popover" class="popover is-popover-top is-not-popover-hover">
+        <div class="popover-content">
+          Learn more
+          <a href="https://help.arbimon.org/article/179-using-the-arbimon-uploader-app" class="link" target="_blank">here</a>
+        </div>
+      </div>
     </div>
     <div class="dropdown" :class="{'is-active': show}" style="display:block">
       <div class="dropdown-trigger">
@@ -79,6 +85,12 @@ export default {
     onSelectSpecialOption () {
       this.$emit('onSelectSpecialOption')
       this.show = false
+    },
+    togglePopover (elementId) {
+      const el = document.getElementById(elementId)
+      if (el) {
+        el.classList.toggle('is-popover-active')
+      }
     }
   }
 }
@@ -90,8 +102,11 @@ export default {
       font-weight: $title-font-weight;
       color: $secondary-text-color;
       display: block;
+      align-items: center;
       img {
         height: 1.25em;
+        margin-left: 5px;
+        cursor: pointer;
       }
       span {
         margin-left: 0.25em;
@@ -114,5 +129,101 @@ export default {
   .dropdown-item.is-disabled {
     pointer-events: none;
     opacity: 0.65;
+  }
+  .popover {
+    position: relative;
+    display: inline-block;
+  }
+  .popover .popover-content {
+    z-index: 99999;
+    position: absolute;
+    display: inline-block;
+    opacity: 0;
+    visibility: hidden;
+    font-size: 0.75rem;
+    padding: .8rem 1.2rem;
+    color: $insight;
+    background-color: $moss;
+    border-radius: 6px;
+    box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
+    width: -webkit-max-content;
+    width: -moz-max-content;
+    width: max-content;
+    max-width: 24rem;
+  }
+
+  .popover .popover-content .link {
+    color: #ADFF2C
+  }
+
+  .popover .popover-content::before {
+    position: absolute;
+    content: '';
+    border-style: solid;
+    pointer-events: none;
+    height: 0;
+    width: 0;
+    top: 100%;
+    left: 50%;
+    border-color: transparent;
+    border-bottom-color: $moss;
+    border-left-color: $moss;
+    border-width: 0.4rem;
+    margin-left: -0.4rem;
+    margin-top: -0.4rem;
+    transform-origin: center;
+    box-shadow: -1px 1px 2px rgba(10, 10, 10, 0.2);
+  }
+
+  .popover:hover .popover-content {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .popover:hover.is-not-popover-hover .popover-content {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .popover .popover-trigger:focus ~ .popover-content {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .popover.is-popover-active .popover-content {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .popover .popover-content {
+    top: auto !important;
+    bottom: 100% !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translate(-50%, -0.7rem) !important;
+  }
+
+  .popover .popover-content::before {
+    top: 100% !important;
+    bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: rotate(-45deg);
+  }
+
+  .popover.is-popover-top .popover-content {
+    top: auto !important;
+    bottom: 100% !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translate(-50%, -0.7rem) !important;
+  }
+
+  .popover.is-popover-top .popover-content::before {
+    top: 100% !important;
+    bottom: auto !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: rotate(-45deg);
   }
 </style>
