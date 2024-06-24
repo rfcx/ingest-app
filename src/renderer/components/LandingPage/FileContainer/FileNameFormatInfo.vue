@@ -16,6 +16,7 @@
         :isLoading="isUpdatingFilenameFormat"
         :selectedOptionText="selectedTimezone"
         @onSelectOption="onTimezoneSave"
+        :recorderType="recorderType"
         :isFocus="shouldFocusTimezoneInput">
       </options-dropdown>
     </div>
@@ -78,7 +79,8 @@ export default {
       selectedTimezone: '',
       deviceTimezoneOffset: null,
       didClickStart: false,
-      shouldFocusTimezoneInput: false
+      shouldFocusTimezoneInput: false,
+      recorderType: null
     }
   },
   computed: {
@@ -119,6 +121,7 @@ export default {
   async created () {
     this.selectedTimezone = this.timezonePreference.setting
     this.deviceTimezoneOffset = await this.getDefaultDeviceTimezoneOffset()
+    this.getFileInfo()
   },
   methods: {
     onClickStartUpload () {
@@ -187,19 +190,23 @@ export default {
       return new Promise(async (resolve, reject) => {
         const savedAudioMothTimezone = this.$store.getters.getDeviceTimezoneOffsetConfigByStreamId(this.selectedStreamId)
         if (Number.isInteger(savedAudioMothTimezone)) return resolve(savedAudioMothTimezone)
-        const files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
-          where: {
-            streamId: this.selectedStreamId,
-            state: fileState.preparedGroup,
-            deviceId: { $ne: '' }
-          },
-          limit: 1
-        })
-        if (files.length <= 0) return resolve(null)
-        const fileInfo = await this.$file.getDeviceInfo(files[0].path)
-        console.info('<- deviceTimezoneOffset: fileInfo', fileInfo)
-        return resolve(fileInfo.timezoneOffset)
+        return resolve(this.getFileInfo().timezoneOffset)
       })
+    },
+    async getFileInfo () {
+      const files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
+        where: {
+          streamId: this.selectedStreamId,
+          state: fileState.preparedGroup,
+          deviceId: { $ne: '' }
+        },
+        limit: 1
+      })
+      if (files.length <= 0) return null
+      const fileInfo = await this.$file.getDeviceInfo(files[0])
+      this.recorderType = fileInfo.recorderType
+
+      return fileInfo
     },
     confirmToClearAllFiles () {
       this.clearAllFiles()
@@ -261,6 +268,7 @@ export default {
       // if updated selected stream, then reset selected timezone
       this.selectedTimezone = this.timezonePreference.setting
       this.deviceTimezoneOffset = await this.getDefaultDeviceTimezoneOffset()
+      this.getFileInfo()
     }
   }
 }

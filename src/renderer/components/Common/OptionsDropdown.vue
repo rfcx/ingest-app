@@ -24,7 +24,7 @@
           <a href="#" class="dropdown-item"
             v-for="option in options"
             :key="option"
-            :class="{'is-active': isSelectedOption(option, selectedOptionText), 'is-disabled': isDisableOption(option, selectedOptionText) }"
+            :class="{'is-active': isSelectedOption(option, selectedOptionText), 'is-disabled': isDisableOption(option, selectedOptionText, recorderType) }"
             @click="onSelectOption(option)">
             {{ option }}
           </a>
@@ -52,7 +52,8 @@ export default {
     selectedOptionText: '',
     options: Array,
     specialOptionTitle: null,
-    isFocus: false
+    isFocus: false,
+    recorderType: null
   },
   computed: {
     icons: () => ({
@@ -64,10 +65,10 @@ export default {
       return selectedOptionText.includes(option)
     },
     isDisableOption (option, selectedOptionText) {
-      if (selectedOptionText.includes('Ignore file, use site timezone')) {
-        return false
-      } else {
+      if (this.recorderType === 'FRONTIER LABS' || this.recorderType === 'Song Meter' || this.recorderType === 'AudioMoth') {
         return !selectedOptionText.includes(option)
+      } else {
+        return false
       }
     },
     onClick () {
