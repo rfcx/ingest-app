@@ -189,9 +189,16 @@ const archiverDirectory = (sourceDirectory, targetFileName) => {
 const getFileTimezoneOffsetFromName = (name) => {
   // expected format: 20231119T210000+0930_REC_-13.64526+134.30475
   const pattern = /((?<year>(19|20)[0-9][0-9])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9])?(?<timezone>([+ -])\d*))/ig
+  const pattern2 = /((?<year>(19|20)[0-9][0-9])[- /.]?(?<month>0[1-9]|1[012])[- /.]?(?<day>0[1-9]|[12][0-9]|3[01]).?(?<hour>[0-1][0-9]|2[0-3])[- :.]?(?<minute>[0-5][0-9])[- :.]?(?<second>[0-5][0-9]).?(?<milisecond>[0-9][0-9][0-9][0-9][0-9][0-9])?(?<timezone>([+ -])\d*))/ig
+
   const regExp = new RegExp(pattern, 'g')
   var result = regExp.exec(name)
-  if (result === null || (result && result.groups && !result.groups.timezone)) return 0
+
+  if (result === null || (result && result.groups && !result.groups.timezone)) {
+    const regExp2 = new RegExp(pattern2, 'g')
+    result = regExp2.exec(name)
+    if (result === null || (result && result.groups && !result.groups.timezone)) return 0
+  }
   return moment.parseZone(result[0]).utcOffset()
 }
 
