@@ -560,12 +560,18 @@ class FileProvider {
       if (audioMothFileInfo.comment) {
         return { deviceId: audioMothFileInfo.deviceId, deploymentId: audioMothFileInfo.deployment, timezoneOffset: audioMothFileInfo.timezoneOffset, recorderType: 'AudioMoth' }
       }
+      // find frontier lab file
+      const fileTimezone = await fileHelper.getFileTimezoneOffsetFromName(file.name)
+      if (fileTimezone !== 0) {
+        return { deviceId: '-1', deploymentId: null, timezoneOffset: fileTimezone, recorderType: 'FRONTIER LABS' }
+      }
       // find SongMeter metadata
       file.extension = fileHelper.getExtension(file.name)
       const songMeterFileInfo = await extractSongMeterFileInfo(file)
       if (songMeterFileInfo.metadata) {
         return { deviceId: songMeterFileInfo.deviceId, deploymentId: songMeterFileInfo.deployment, timezoneOffset: songMeterFileInfo.timezoneOffset, recorderType: 'Song Meter' }
       }
+
       // return null if there is no metadata
       return null
     } catch (e) {

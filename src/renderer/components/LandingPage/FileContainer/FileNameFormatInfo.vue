@@ -11,11 +11,12 @@
         @onSelectSpecialOption="openFileNameFormatSettingModal">
       </options-dropdown>
       <options-dropdown 
-        title="Filename Timezone" 
+        title="Timezone source"
         :options="fileNameTimezoneOptions"
         :isLoading="isUpdatingFilenameFormat"
         :selectedOptionText="selectedTimezone"
         @onSelectOption="onTimezoneSave"
+        :recorderType="recorderType"
         :isFocus="shouldFocusTimezoneInput">
       </options-dropdown>
     </div>
@@ -78,7 +79,8 @@ export default {
       selectedTimezone: '',
       deviceTimezoneOffset: null,
       didClickStart: false,
-      shouldFocusTimezoneInput: false
+      shouldFocusTimezoneInput: false,
+      recorderType: null
     }
   },
   computed: {
@@ -92,7 +94,7 @@ export default {
       return !this.fileNameFormatOptions.includes(this.selectedStream.timestampFormat)
     },
     fileNameTimezoneOptions () {
-      return FileTimeZoneHelper.getTimezoneOptions(this.selectedStream.timezone)
+      return FileTimeZoneHelper.getTimezoneOptions(this.selectedStream.timezone).map(item => item === 'Ignore file, use site timezone' ? item + ` (${dateHelper.formattedTzOffsetFromTimezoneName(this.selectedStream.timezone)})` : item)
     },
     timezonePreference () {
       const savedSelectedTimezone = this.$store.getters.getSelectedTimezoneByStreamId(this.selectedStreamId)
@@ -110,7 +112,7 @@ export default {
       const audiomoth = Number.isInteger(this.timezonePreference.audiomothConfig) ? `${FileTimeZoneHelper.fileTimezone.USE_DEVICE_CONFIG} (${dateHelper.formattedTzOffsetFromTzMinutes(this.timezonePreference.audiomothConfig)})` : ''
       return {
         title: `Upload audio in ${this.selectedTimezone}?`,
-        message: `The filename timezone you chose <b>${timezone}</b> is different from <b>${audiomoth}</b>`,
+        message: `The timezone source you chose <b>${timezone}</b> is different from <b>${audiomoth}</b>`,
         confirmTitle: `Upload anyway`,
         cancelTitle: `Recheck`
       }
@@ -119,6 +121,7 @@ export default {
   async created () {
     this.selectedTimezone = this.timezonePreference.setting
     this.deviceTimezoneOffset = await this.getDefaultDeviceTimezoneOffset()
+    this.getFileInfo()
   },
   methods: {
     onClickStartUpload () {
@@ -183,19 +186,23 @@ export default {
       return new Promise(async (resolve, reject) => {
         const savedAudioMothTimezone = this.$store.getters.getDeviceTimezoneOffsetConfigByStreamId(this.selectedStreamId)
         if (Number.isInteger(savedAudioMothTimezone)) return resolve(savedAudioMothTimezone)
-        const files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
-          where: {
-            streamId: this.selectedStreamId,
-            state: fileState.preparedGroup,
-            deviceId: { $ne: '' }
-          },
-          limit: 1
-        })
-        if (files.length <= 0) return resolve(null)
-        const fileInfo = await this.$file.getDeviceInfo(files[0].path)
-        console.info('<- deviceTimezoneOffset: fileInfo', fileInfo)
-        return resolve(fileInfo.timezoneOffset)
+        return resolve(this.getFileInfo().timezoneOffset)
       })
+    },
+    async getFileInfo () {
+      const files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, {
+        where: {
+          streamId: this.selectedStreamId,
+          state: fileState.preparedGroup,
+          deviceId: { $ne: '' }
+        },
+        limit: 1
+      })
+      if (files.length <= 0) return null
+      const fileInfo = await this.$file.getDeviceInfo(files[0])
+      this.recorderType = fileInfo.recorderType
+
+      return fileInfo
     },
     confirmToClearAllFiles () {
       this.clearAllFiles()
@@ -234,7 +241,7 @@ export default {
     },
     async onTimezoneSave (timezone) {
       if (timezone === FileTimeZoneHelper.fileTimezone.USE_DEVICE_CONFIG && this.deviceTimezoneOffset === null) {
-        this.errorMessage = 'No device configuration found'
+        this.errorMessage = 'No timezone in metadata found'
       } else {
         this.selectedTimezone = timezone
       }
@@ -257,6 +264,7 @@ export default {
       // if updated selected stream, then reset selected timezone
       this.selectedTimezone = this.timezonePreference.setting
       this.deviceTimezoneOffset = await this.getDefaultDeviceTimezoneOffset()
+      this.getFileInfo()
     }
   }
 }

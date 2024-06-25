@@ -15,16 +15,16 @@ export default {
     isSelected: false,
     type: {
       type: String,
-      validator: value => ['Song Meter', 'AudioMoth'].includes(value) ? value : undefined
+      validator: value => ['Song Meter', 'AudioMoth', 'FRONTIER LABS'].includes(value) ? value : undefined
     }
   },
   computed: {
     selectedIcon () {
-      const path = this.type === 'AudioMoth' ? 'ic-audiomoth-white' : 'ic-songmeter-light'
+      const path = this.type === 'AudioMoth' ? 'ic-audiomoth-white' : this.type === 'Song Meter' ? 'ic-songmeter-light' : 'ic-frontier-labs-white'
       return require(`../../../assets/${path}.png`)
     },
     unselectedIcon () {
-      const path = this.type === 'AudioMoth' ? 'ic-audiomoth-gray' : 'ic-songmeter-gray'
+      const path = this.type === 'AudioMoth' ? 'ic-audiomoth-gray' : this.type === 'Song Meter' ? 'ic-songmeter-gray' : 'ic-frontier-labs-gray'
       return require(`../../../assets/${path}.png`)
     }
   }

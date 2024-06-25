@@ -1,8 +1,8 @@
 const fileTimezone = {
-  UTC: 'UTC',
-  LOCAL_TIME: 'Site timezone',
-  USE_DEVICE_CONFIG: 'Device configuration',
-  USE_FILENAME: 'Timezone in filename'
+  USE_DEVICE_CONFIG: 'Timezone in metadata',
+  USE_FILENAME: 'Timezone in filename',
+  UTC: 'Ignore file, use UTC',
+  LOCAL_TIME: 'Ignore file, use site timezone'
 }
 
 function getTimezoneOptions () {
