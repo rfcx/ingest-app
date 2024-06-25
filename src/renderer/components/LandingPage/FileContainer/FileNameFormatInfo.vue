@@ -170,7 +170,7 @@ export default {
           }
         }
       } else {
-        bulkUpdateParams.timezone = timezone
+        bulkUpdateParams.values.timezone = timezone
         await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, bulkUpdateParams)
       }
       console.info('[queueToUpload] selected timezone', timezone)

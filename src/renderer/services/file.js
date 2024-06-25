@@ -414,8 +414,11 @@ class FileProvider {
       if (['write EPIPE', 'read ECONNRESET', 'Network Error', 'ETIMEDOUT', '400'].includes(error.message)) {
         return this.markFileAsFailed(file, 'Network Error')
       }
+      if (error.message.includes('Failed creating stream source file and segments')) {
+        return this.markFileAsFailed(file, 'Site creation failed. Please try again.')
+      }
       // default
-      return this.markFileAsFailed(file, 'Server failed with processing your file. Please try again later.')
+      return this.markFileAsFailed(file, 'There was a system error. Please try again later.')
     })
   }
 
@@ -477,7 +480,7 @@ class FileProvider {
         if (file.retries < 3) {
           return this.markFileAsRetryToUpload(file)
         } else {
-          return this.markFileAsFailed(file, 'Server failed with processing your file. Please try again later.')
+          return this.markFileAsFailed(file, 'There was a system error. Please try again later.')
         }
       })
   }
