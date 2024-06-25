@@ -458,7 +458,7 @@ class FileProvider {
             return this.markFileAsCompleted(file)
           case 31:
             if (failureMessage.includes('Cannot create source file with provided data')) {
-              return this.markFileAsFailed(file, 'Duplicate.')
+              return this.markFileAsCompleted(file, 'Duplicate.')
             }
             return this.markFileAsFailed(file, failureMessage)
           case 30:
