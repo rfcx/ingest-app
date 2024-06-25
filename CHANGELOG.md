@@ -1,4 +1,12 @@
 <a name="1.5.10"></a>
+## 1.5.11 (2024-06-25)
+
+### Improvements
+
+* Hotfix UTC timezone issue
+* Hotfix Timezone in filename issue
+
+<a name="1.5.10"></a>
 ## 1.5.10 (2024-05-23)
 
 ### Improvements

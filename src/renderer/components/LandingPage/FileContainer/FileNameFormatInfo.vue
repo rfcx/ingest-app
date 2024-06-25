@@ -127,9 +127,6 @@ export default {
         this.queueToUpload()
       }
     },
-    getWaitingFilesForSelectedStream () {
-      return ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { status: WAITING, streamId: this.selectedStreamId } })
-    },
     async queueToUpload () {
       this.shouldFocusTimezoneInput = false
       this.didClickStart = false
@@ -153,14 +150,13 @@ export default {
         values: { state: WAITING, stateMessage: null, sessionId }
       }
       if (this.selectedTimezone === FileTimeZoneHelper.fileTimezone.USE_FILENAME) {
-        await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, bulkUpdateParams)
-        const files = await this.getWaitingFilesForSelectedStream()
+        let files = await ipcRendererSend('db.files.query', `db.files.query.${Date.now()}`, { where: { streamId: this.selectedStreamId, state: PREPARING } })
         for (let file of files) {
           try {
             timezone = await fileHelper.getFileTimezoneOffsetFromName(file.name)
-            await ipcRendererSend('db.files.update', `db.files.update.${Date.now()}`, {
-              id: file.id,
-              params: { timezone }
+            await ipcRendererSend('db.files.bulkUpdate', `db.files.bulkUpdate.${Date.now()}`, {
+              where: { streamId, state: PREPARING, id: [file.id] },
+              values: { state: WAITING, stateMessage: null, sessionId, timezone }
             })
           } catch (e) {
             console.error('[queueToUpload] getFileTimezoneFromName failed', e)
