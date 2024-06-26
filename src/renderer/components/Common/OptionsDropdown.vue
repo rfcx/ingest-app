@@ -6,7 +6,7 @@
       <div v-if="title === 'Timezone source'" id="info-popover" class="popover is-popover-top is-not-popover-hover">
         <div class="popover-content">
           Learn more
-          <a href="https://help.arbimon.org/article/179-using-the-arbimon-uploader-app" class="link" target="_blank">here</a>
+          <a class="link" target="_blank" @click="redirectToHelp()">here</a>
         </div>
       </div>
     </div>
@@ -92,6 +92,9 @@ export default {
       if (el) {
         el.classList.toggle('is-popover-active')
       }
+    },
+    redirectToHelp () {
+      this.$electron.shell.openExternal('https://help.arbimon.org/article/179-using-the-arbimon-uploader-app')
     }
   }
 }
