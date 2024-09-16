@@ -1,4 +1,11 @@
-<a name="1.5.10"></a>
+<a name="1.5.12"></a>
+## 1.5.12 (2024-09-16)
+
+### Improvements
+
+* Hotfix uploading less then 1 minute files
+
+<a name="1.5.11"></a>
 ## 1.5.11 (2024-06-25)
 
 ### Improvements
